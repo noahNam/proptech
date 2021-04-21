@@ -1,5 +1,5 @@
 # What is [tanos](https://bitbucket.org/apartalk/tanos/src)?
-* starting point of projects
+* main platform of Apartalk
 * schema project
 * domain driven design
 * version 
