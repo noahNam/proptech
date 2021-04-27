@@ -35,7 +35,7 @@ def init_blueprint(app: Flask):
 
 
 def init_extensions(app: Flask):
-    Swagger(app, config=swagger_config)
+    Swagger(app, **swagger_config())
     jwt.init_app(app)
 
 
