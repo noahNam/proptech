@@ -16,6 +16,7 @@ inject = "*"
 pydantic = "*"
 pypubsub = "*"
 flasgger = "*"
+boto3= "1.12.17"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
