@@ -6,7 +6,7 @@ class GetUserDto(BaseModel):
 
 
 class CreateUserDto(BaseModel):
-    user_id: int
+    id: int
     nickname: str
     email: str = None
     birthday: str = None
