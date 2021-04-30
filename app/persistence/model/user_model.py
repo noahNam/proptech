@@ -11,9 +11,12 @@ class UserModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"),
         primary_key=True,
         nullable=False,
-        autoincrement=True,
     )
-    nickname = Column(String(45), nullable=False)
+    nickname = Column(String(20), nullable=False, default=DefaultE)
+    email = Column(String(40), nullable=False)
+    nickname = Column(String(20), nullable=False)
+    nickname = Column(String(20), nullable=False)
+    nickname = Column(String(20), nullable=False)
     status = Column(String(10), nullable=True)
     sex = Column(String(1), nullable=True)
 
