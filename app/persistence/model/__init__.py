@@ -1,3 +1,5 @@
 from .user_model import UserModel
 from .user_profile_img_model import UserProfileImgModel
 from .interest_region_model import InterestRegionModel
+from .user_status_log_model import UserStatsLogModel
+from .interest_region_group_model import InterestRegionGroupModel
