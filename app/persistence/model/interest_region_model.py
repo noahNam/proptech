@@ -12,6 +12,7 @@ class InterestRegionModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"),
         primary_key=True,
         nullable=False,
+        autoincrement=True
     )
     user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False)
     region_id = Column(SmallInteger, nullable=True)

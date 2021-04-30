@@ -13,6 +13,10 @@ from app.http.view.main import main as main_bp
 
 from app.http.view import api
 
+# alembic auto-generate detected
+from app.persistence.model import *
+
+
 # event listener initialization
 
 

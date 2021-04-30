@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, Integer, String, Boolean, DateTime
+from sqlalchemy import Column, BigInteger, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
 from app import db
@@ -20,12 +20,9 @@ class UserModel(db.Model):
     birthday = Column(String(8), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     is_out = Column(Boolean, nullable=False, default=False)
+    profile_img_id = Column(BigInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp())
     updated_at = Column(DateTime, default=get_server_timestamp())
-
-    profile_img = relationship(
-        "UserProfileImgModel", backref=backref("users", uselist=False)
-    )
 
     interest_regions = relationship(
         "InterestRegionModel", backref=backref("users")
