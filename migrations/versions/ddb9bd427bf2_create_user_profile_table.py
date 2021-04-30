@@ -31,10 +31,10 @@ def upgrade():
                     )
     op.create_table('users',
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), nullable=False),
-                    sa.Column('nickname', sa.String(length=20), nullable=True),
+                    sa.Column('nickname', sa.String(length=20), nullable=False),
                     sa.Column('email', sa.String(length=40), nullable=True),
-                    sa.Column('gender', sa.String(length=1), nullable=True),
                     sa.Column('birthday', sa.String(length=8), nullable=True),
+                    sa.Column('gender', sa.String(length=1), nullable=False),
                     sa.Column('is_active', sa.Boolean(), nullable=False),
                     sa.Column('is_out', sa.Boolean(), nullable=False),
                     sa.Column('profile_img_id', sa.BigInteger(), nullable=True),
