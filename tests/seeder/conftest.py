@@ -14,11 +14,9 @@ faker = Faker()
 
 
 @pytest.fixture
-def create_users(session, normal_user_factory):
-    users = normal_user_factory.build_batch(2)
-
-    session.add_all(users)
-    session.commit()
+def create_user(session, normal_user_factory):
+    user = normal_user_factory.create()
+    return user
 
 
 def make_random_today_date(between_days: int = 1, year_ago: int = 2):

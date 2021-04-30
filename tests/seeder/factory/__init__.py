@@ -1,3 +1,5 @@
+import random
+
 import factory
 from faker import Factory as FakerFactory
 from app.persistence.model.user_model import UserModel
@@ -14,6 +16,10 @@ class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = UserModel
 
-    nickname = factory.Sequence(lambda n: "test_user_{}".format(n))
-    status = "default"
-    sex = "M"
+    nickname = faker.name()
+    email = faker.email()
+    gender = random.choice('FM')
+    birthday = faker.date_of_birth().strftime("%Y%m%d")
+    is_active = True
+    is_out = False
+    profile_img_id = 1
