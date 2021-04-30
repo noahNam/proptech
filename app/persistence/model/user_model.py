@@ -2,6 +2,7 @@ from sqlalchemy import Column, BigInteger, Integer, String
 
 from app import db
 from core.domains.user.entity.user_entity import UserEntity
+from core.domains.user.enum.user_enum import UserDefaultValueEnum
 
 
 class UserModel(db.Model):
@@ -12,7 +13,7 @@ class UserModel(db.Model):
         primary_key=True,
         nullable=False,
     )
-    nickname = Column(String(20), nullable=False, default=DefaultE)
+    nickname = Column(String(20), nullable=False, default=UserDefaultValueEnum.NICKNAME.value)
     email = Column(String(40), nullable=False)
     nickname = Column(String(20), nullable=False)
     nickname = Column(String(20), nullable=False)
