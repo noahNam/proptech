@@ -14,10 +14,10 @@ class UserModel(db.Model):
         primary_key=True,
         nullable=False,
     )
-    nickname = Column(String(20), nullable=True, default=UserDefaultValueEnum.NICKNAME.value)
+    nickname = Column(String(20), nullable=False, default=UserDefaultValueEnum.NICKNAME.value)
     email = Column(String(40), nullable=True)
-    gender = Column(String(1), nullable=True)
     birthday = Column(String(8), nullable=True)
+    gender = Column(String(1), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     is_out = Column(Boolean, nullable=False, default=False)
     profile_img_id = Column(BigInteger, nullable=True)
