@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 
 
@@ -14,3 +16,5 @@ class CreateUserDto(BaseModel):
     is_active: bool
     is_out: bool
     profile_img_id: int = None
+    region_ids: List[int] = []
+    files: List = []
