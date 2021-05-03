@@ -14,6 +14,7 @@ class UserProfileImgModel(db.Model):
         autoincrement=True
     )
     file_name = Column(String(50), nullable=True)
+    uuid = Column(String(100), nullable=True)
     path = Column(String(100), nullable=True)
     extension = Column(String(10), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp())

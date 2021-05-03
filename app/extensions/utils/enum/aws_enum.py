@@ -6,7 +6,7 @@ class AwsServiceEnum(Enum):
 
 
 class S3BucketEnum(Enum):
-    LUDICER_BUCKET = "apartalk-bucket"
+    APARTALK_BUCKET = "apartalk-bucket"
 
 
 class S3PathEnum(Enum):

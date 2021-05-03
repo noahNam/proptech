@@ -1,11 +1,13 @@
+import uuid
+
 import pytest
 from pydantic import ValidationError
 
+from app.persistence.model import UserProfileImgModel
 from app.persistence.model.user_model import UserModel
-from core.domains.user.dto.user_dto import CreateUserDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
-from tests.seeder.factory import UserFactory, InterestRegionFactory
 
 create_user_dto = CreateUserDto(
     id=1,
@@ -16,6 +18,14 @@ create_user_dto = CreateUserDto(
     is_active=True,
     is_out=False,
     region_ids=[1, 2, 3]
+)
+
+create_user_profile_img_dto = CreateUserProfileImgDto(
+    user_id=1,
+    uuid_=str(uuid.uuid4()),
+    file_name="my_profile_img",
+    path="profile_imgs/",
+    extension="png",
 )
 
 
@@ -47,3 +57,25 @@ def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_uniqu
 
     with pytest.raises(NotUniqueErrorException):
         UserRepository().create_user(dto=create_user_dto)
+
+
+def test_create_user_profile_img_when_first_login_then_success(session):
+    user_profile_img_id = UserRepository().create_user_profile_img(dto=create_user_profile_img_dto)
+    user_profile_img = session.query(UserProfileImgModel).first()
+
+    assert user_profile_img_id == 1
+    assert user_profile_img.uuid == create_user_profile_img_dto.uuid_
+    assert user_profile_img.file_name == create_user_profile_img_dto.file_name
+    assert user_profile_img.path == create_user_profile_img_dto.path
+    assert user_profile_img.extension == create_user_profile_img_dto.extension
+
+
+def test_create_user_profile_img_without_user_id_when_first_login_then_validation_error(session):
+    with pytest.raises(ValidationError):
+        dummy_dto = CreateUserProfileImgDto(
+            uuid_=str(uuid.uuid4()),
+            file_name="my_profile_img",
+            path="profile_imgs/",
+            extension="png",
+        )
+        UserRepository().create_user_profile_img(dto=dummy_dto)

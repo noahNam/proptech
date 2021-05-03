@@ -18,3 +18,11 @@ class CreateUserDto(BaseModel):
     profile_img_id: int = None
     region_ids: List[int] = []
     files: List = []
+
+
+class CreateUserProfileImgDto(BaseModel):
+    user_id: int
+    uuid_: str = None
+    file_name: str = None
+    path: str = None
+    extension: str = None
