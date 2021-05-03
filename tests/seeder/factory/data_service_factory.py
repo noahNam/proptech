@@ -1,4 +1,6 @@
-from . import UserFactory
+import factory
+
+from . import UserFactory, InterestRegionFactory
 
 
 class NormalUserFactory(UserFactory):
@@ -7,4 +9,7 @@ class NormalUserFactory(UserFactory):
     Todo 참조되는 모델 이곳에 추가
     """
 
-    pass
+    @factory.post_generation
+    def interest_region(self, create, extracted, **kwargs):
+        if extracted:
+            InterestRegionFactory(**kwargs)

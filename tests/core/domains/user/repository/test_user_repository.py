@@ -1,6 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
+from app.persistence.model import InterestRegionModel
 from app.persistence.model.user_model import UserModel
 from core.domains.user.dto.user_dto import CreateUserDto
 from core.domains.user.repository.user_repository import UserRepository
@@ -46,3 +47,12 @@ def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_uniqu
 
     with pytest.raises(NotUniqueErrorException):
         UserRepository().create_user(dto=create_user_dto)
+
+
+def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_unique_error2(session, normal_user_factory):
+    user = normal_user_factory.build_batch(size=3, interest_region=True)
+    session.add_all(user)
+    session.commit()
+
+    test = session.query(InterestRegionModel).all()
+    assert 1==1

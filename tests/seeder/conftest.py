@@ -2,11 +2,15 @@ import pytest
 from datetime import date, timedelta, datetime
 from faker import Faker
 from tests.seeder.factory.data_service_factory import (
+    UserFactory,
+    InterestRegionFactory,
     NormalUserFactory,
 )
 
 MODEL_FACTORIES = [
-    NormalUserFactory,
+    UserFactory,
+    InterestRegionFactory,
+    NormalUserFactory
 ]
 
 
@@ -15,7 +19,10 @@ faker = Faker()
 
 @pytest.fixture
 def create_user(session, normal_user_factory):
-    user = normal_user_factory.create()
+    user = normal_user_factory(interest_region=True)
+    session.add(user)
+    session.commit()
+
     return user
 
 

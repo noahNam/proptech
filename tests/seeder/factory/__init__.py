@@ -2,6 +2,8 @@ import random
 
 import factory
 from faker import Factory as FakerFactory
+
+from app.persistence.model import InterestRegionModel
 from app.persistence.model.user_model import UserModel
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -23,3 +25,11 @@ class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
     is_active = True
     is_out = False
     profile_img_id = 1
+
+
+class InterestRegionFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        model = InterestRegionModel
+
+    user_id = 1
+    region_id = faker.random_digit()
