@@ -1,6 +1,7 @@
 import random
 
 import factory
+from factory import Sequence
 from faker import Factory as FakerFactory
 
 from app.persistence.model import InterestRegionModel
@@ -10,7 +11,19 @@ from app.persistence.model.user_model import UserModel
 faker = FakerFactory.create(locale="ko_KR")
 
 
-class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
+class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta(object):
+        abstract = True
+
+
+class InterestRegionFactory(BaseFactory):
+    class Meta:
+        model = InterestRegionModel
+
+    region_id = factory.Sequence(lambda n: n+1)
+
+
+class UserFactory(BaseFactory):
     """
     Define user factory
     """
@@ -26,10 +39,4 @@ class UserFactory(factory.alchemy.SQLAlchemyModelFactory):
     is_out = False
     profile_img_id = 1
 
-
-class InterestRegionFactory(factory.alchemy.SQLAlchemyModelFactory):
-    class Meta:
-        model = InterestRegionModel
-
-    user_id = 1
-    region_id = faker.random_digit()
+    interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])

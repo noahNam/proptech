@@ -12,7 +12,7 @@ class UserModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"),
         primary_key=True,
-        nullable=False,
+        nullable=False
     )
     nickname = Column(String(20), nullable=False, default=UserDefaultValueEnum.NICKNAME.value)
     email = Column(String(40), nullable=True)
