@@ -29,8 +29,10 @@ create_user_profile_img_dto = CreateUserProfileImgDto(
 )
 
 
-def test_create_user_profiles_when_first_login_then_success(session):
+def test_create_user_profiles_when_first_login_then_success(session, interest_region_factory):
     UserRepository().create_user(dto=create_user_dto)
+    interest_region_factory.create_batch(size=3, user_id=create_user_dto.id)
+
     user = session.query(UserModel).first()
 
     assert user.id == create_user_dto.id

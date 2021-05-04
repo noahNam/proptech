@@ -1,10 +1,9 @@
 import random
 
 import factory
-from factory import Sequence
 from faker import Factory as FakerFactory
 
-from app.persistence.model import InterestRegionModel
+from app.persistence.model import InterestRegionModel, InterestRegionGroupModel
 from app.persistence.model.user_model import UserModel
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -20,7 +19,7 @@ class InterestRegionFactory(BaseFactory):
     class Meta:
         model = InterestRegionModel
 
-    region_id = factory.Sequence(lambda n: n+1)
+    region_id = factory.Sequence(lambda n: n + 1)
 
 
 class UserFactory(BaseFactory):
@@ -40,3 +39,11 @@ class UserFactory(BaseFactory):
     profile_img_id = 1
 
     interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])
+
+
+class InterestRegionGroupFactory(BaseFactory):
+    class Meta:
+        model = InterestRegionGroupModel
+
+    name = faker.city()
+    interest_count = 0

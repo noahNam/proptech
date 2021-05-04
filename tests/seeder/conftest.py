@@ -2,11 +2,12 @@ import pytest
 from datetime import date, timedelta, datetime
 from faker import Faker
 
-from tests.seeder.factory import UserFactory, InterestRegionFactory
+from tests.seeder.factory import UserFactory, InterestRegionFactory, InterestRegionGroupFactory
 
 MODEL_FACTORIES = [
     UserFactory,
-    InterestRegionFactory
+    InterestRegionFactory,
+    InterestRegionGroupFactory
 ]
 
 faker = Faker()
