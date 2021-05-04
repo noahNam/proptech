@@ -19,7 +19,7 @@ class UserBaseUseCase:
     def _upload_user_profile_img(self, dto: CreateUserProfileImgDto) -> bool:
         res = S3Helper.upload(
             bucket=S3BucketEnum.APARTALK_BUCKET.value,
-            file_name=dto.origin_file,
+            file_name=dto.origin_file[0],
             object_name=dto.object_name,
         )
 
@@ -29,7 +29,8 @@ class UserBaseUseCase:
         return False if not res else True
 
     def _get_file_split_object(self, dto: CreateUserDto) -> CreateUserProfileImgDto:
-        f, extension = os.path.splitext(dto.file.filename)
+        # file[0] : upload only one file
+        f, extension = os.path.splitext(dto.file[0].filename)
         uuid_ = str(uuid.uuid4())
         object_name = S3PathEnum.PROFILE_IMGS.value + uuid_ + extension
 
@@ -69,5 +70,4 @@ class CreateUserUseCase(UserBaseUseCase):
 
                 if profile_img_id:
                     self._user_repo.update_user_profile_img_id(user_id=dto.id, profile_img_id=profile_img_id)
-
-        return UseCaseSuccessOutput()
+        return UseCaseSuccessOutput(value=dto.nickname)

@@ -53,6 +53,7 @@ class UserRepository:
                 session.query(InterestRegionGroupModel).filter_by(id=interest_region.region_id).update(
                     {"interest_count": InterestRegionGroupModel.interest_count + 1}
                 )
+                session.commit()
         except Exception as e:
             session.rollback()
             logger.error(
@@ -90,6 +91,7 @@ class UserRepository:
             session.query(UserModel).filter_by(id=user_id).update(
                 {"profile_img_id": profile_img_id}
             )
+            session.commit()
         except Exception as e:
             session.rollback()
             logger.error(

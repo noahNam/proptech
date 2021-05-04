@@ -1,7 +1,6 @@
 from typing import List
 
 from pydantic import BaseModel
-from werkzeug.datastructures import FileStorage
 
 
 class GetUserDto(BaseModel):
@@ -18,10 +17,7 @@ class CreateUserDto(BaseModel):
     is_out: bool
     profile_img_id: int = None
     region_ids: List[int] = []
-    file: FileStorage = None
-
-    class Config:
-        arbitrary_types_allowed = True
+    file: List = []
 
 
 class CreateUserProfileImgDto(BaseModel):
@@ -31,7 +27,4 @@ class CreateUserProfileImgDto(BaseModel):
     path: str = None
     extension: str = None
     object_name: str = None
-    origin_file:  FileStorage = None
-
-    class Config:
-        arbitrary_types_allowed = True
+    origin_file: List = []
