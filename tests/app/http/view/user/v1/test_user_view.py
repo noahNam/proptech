@@ -28,21 +28,21 @@ def test_create_user_when_first_login_then_success(
         user_id = 1
         authorization = make_authorization(user_id=user_id)
         headers = make_header(
-            authorization=authorization, content_type="multipart/form-data", accept="*/*"
+            authorization=authorization, content_type="multipart/form-data", accept="application/json"
         )
-        dct = dict(
+        dict_ = dict(
             id=user_id,
             nickname="Tester",
             email="test@gmail.com",
             birthday="19850509",
             gender="M",
             region_ids=json.dumps([1, 2]),
-            file=[file],
+            files=[file],
         )
 
         with test_request_context:
             response = client.post(
-                url_for("api/tanos.create_user_view"), data=dct, headers=headers
+                url_for("api/tanos.create_user_view"), data=dict_, headers=headers
             )
 
     data = response.get_json()["data"]
@@ -70,21 +70,21 @@ def test_create_user_when_s3_upload_fail_then_success(
         user_id = 1
         authorization = make_authorization(user_id=user_id)
         headers = make_header(
-            authorization=authorization, content_type="multipart/form-data", accept="*/*"
+            authorization=authorization, content_type="multipart/form-data", accept="application/json"
         )
-        dct = dict(
+        dict_ = dict(
             id=user_id,
             nickname="Tester",
             email="test@gmail.com",
             birthday="19850509",
             gender="M",
             region_ids=json.dumps([1, 2]),
-            file=[file],
+            files=[file],
         )
 
         with test_request_context:
             response = client.post(
-                url_for("api/tanos.create_user_view"), data=dct, headers=headers
+                url_for("api/tanos.create_user_view"), data=dict_, headers=headers
             )
 
     data = response.get_json()["data"]
@@ -103,7 +103,7 @@ def test_create_user_when_given_wrong_token_then_unauthorized_error(
     user_id = None
     authorization = make_authorization(user_id=user_id)
     headers = make_header(
-        authorization=authorization, content_type="multipart/form-data", accept="*/*"
+        authorization=authorization, content_type="multipart/form-data", accept="application/json"
     )
 
     with test_request_context:
