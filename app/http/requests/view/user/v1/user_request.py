@@ -1,23 +1,64 @@
-from pydantic import BaseModel, ValidationError
+import json
+from typing import List
 
-from core.domains.user.dto.user_dto import GetUserDto
+from pydantic import BaseModel, StrictInt, StrictStr, ValidationError
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
+
+from app.extensions.utils.log_helper import logger_
+from core.domains.user.dto.user_dto import CreateUserDto
+
+logger = logger_.getLogger(__name__)
 
 
-class GetUserSchema(BaseModel):
-    user_id: int
+class CreateUserSchema(BaseModel):
+    id: StrictInt
+    nickname: StrictStr
+    email: StrictStr
+    birthday: StrictStr
+    gender: StrictStr
+    is_active: bool
+    is_out: bool
+    region_ids: List[int]
+    file: List
 
 
-class GetUserRequest:
-    def __init__(self, user_id):
-        self.user_id = user_id
+class CreateUserSchemeRequest:
+    def __init__(
+        self,
+        id,
+        nickname,
+        email,
+        birthday,
+        gender,
+        region_ids,
+        file,
+    ):
+        self.id = int(id) if id else None
+        self.nickname = nickname
+        self.email = email
+        self.birthday = birthday
+        self.gender = gender
+        self.is_active = True
+        self.is_out = False
+        self.region_ids = json.loads(region_ids) if region_ids else []
+        self.file = file
 
     def validate_request_and_make_dto(self):
         try:
-            GetUserSchema(user_id=self.user_id)
-            return self.to_dto()
+            schema = CreateUserSchema(
+                id=self.id,
+                nickname=self.nickname,
+                email=self.email,
+                birthday=self.birthday,
+                gender=self.gender,
+                is_active=self.is_active,
+                is_out=self.is_out,
+                region_ids=self.region_ids,
+                file=self.file,
+            ).dict()
+            return CreateUserDto(**schema)
         except ValidationError as e:
-            print(e)
-            return False
-
-    def to_dto(self) -> GetUserDto:
-        return GetUserDto(user_id=self.user_id)
+            logger.error(
+                f"[CreateUserSchemeRequest][validate_request_and_make_dto] error : {e}"
+            )

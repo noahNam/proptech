@@ -16,6 +16,7 @@ class S3Helper:
         :param object_name: 저장할 경로 + 파일
         :return:
         """
+        result_flag = False
         client = boto3.client(
             AwsServiceEnum.S3.value,
             aws_access_key_id=current_app.config.get("AWS_ACCESS_KEY"),
@@ -28,10 +29,11 @@ class S3Helper:
             logger.error(
                 f"[S3Helper][upload] bucket : {bucket} file_name : {file_name} error : {e}"
             )
-            return False
         except Exception as e:
             logger.error(
                 f"[S3Helper][upload] bucket : {bucket} file_name : {file_name} error : {e}"
             )
-            return False
-        return True
+        else:
+            result_flag = True
+
+        return result_flag

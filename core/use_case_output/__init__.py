@@ -37,3 +37,4 @@ class FailureType:
     INTERNAL_ERROR = "internal_error"
     NOT_FOUND_ERROR = "not_found_error"
     SYSTEM_ERROR = "system_error"
+    ALREADY_EXIST = "already_exist"

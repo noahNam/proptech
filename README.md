@@ -24,6 +24,8 @@ $ vi ~/.zshrc
 * create auto-generate migrate file : `flask db migrate -m "create {name} table"`
     * `model에 설정된대로 revision 파일을 만들어주기 때문에 편리하다.`
     * `migrations/env.py의 target_metadata에 db.Model.metadata를 넣어줘야 한다.`
+    * `app.__init__.py에 pacakge import(auto-generate detected) 필요`
+    * `default 인수는 db 기본값이 아닌 sqlalchemy수준의 값이기 때문에 마이그레이션에서 동작하지 않는다.`
 * db upgrade : `flask db upgrade`
 * db downgrade : `flask db downgrade`
 * target current db : `flask db stamp {revision}`

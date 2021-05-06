@@ -3,7 +3,7 @@ from typing import Union
 from pydantic import ValidationError
 
 from app.http.responses import failure_response, success_response
-from core.domains.user.schema.user import UserResponseSchema
+from core.domains.user.schema.user_schema import CreateUserResponseSchema
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
@@ -12,7 +12,7 @@ class UserPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             value = output.value
             try:
-                schema = UserResponseSchema(id=value.id, nickname=value.nickname)
+                schema = CreateUserResponseSchema(nickname=value)
             except ValidationError as e:
                 print(e)
                 return failure_response(
@@ -23,7 +23,7 @@ class UserPresenter:
                 )
             result = {
                 "data": {"user": schema.dict()},
-                "meta": {"cursor": output.meta},
+                "meta": output.meta,
             }
             return success_response(result=result)
         elif isinstance(output, UseCaseFailureOutput):

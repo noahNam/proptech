@@ -1,3 +1,4 @@
+import os
 from typing import Optional, Dict, Any
 
 from flasgger import Swagger
@@ -13,11 +14,16 @@ from app.http.view.main import main as main_bp
 
 from app.http.view import api
 
+
+# alembic auto-generate detected
+# from app.persistence.model import *
+
+
 # event listener initialization
 
 
 def init_config(
-    app: Flask, config_name: str, settings: Optional[Dict[str, Any]] = None
+        app: Flask, config_name: str, settings: Optional[Dict[str, Any]] = None
 ) -> None:
     app_config = config[config_name]
     app.config.from_object(app_config)
@@ -30,7 +36,7 @@ def init_db(app: Flask, db: SQLAlchemy) -> None:
 
 def init_blueprint(app: Flask):
     app.register_blueprint(main_bp)
-    app.register_blueprint(api)
+    app.register_blueprint(api, url_prefix="/api/tanos")
 
 
 def init_extensions(app: Flask):
@@ -39,17 +45,24 @@ def init_extensions(app: Flask):
 
 
 def create_app(
-    config_name: str = "default", settings: Optional[Dict[str, Any]] = None
+        config_name: str = "default", settings: Optional[Dict[str, Any]] = None
 ) -> Flask:
     app = Flask(__name__)
-    init_config(app, config_name, settings)
 
-    print("\n💌💌💌Flask Config is '{}'".format(config_name))
+    if (
+            os.environ.get("FLASK_CONFIG") is not None
+            and os.environ.get("FLASK_CONFIG") is not config_name
+    ):
+        config_name = os.environ.get("FLASK_CONFIG")
+
+    init_config(app, config_name, settings)
 
     with app.app_context():
         init_blueprint(app)
         init_db(app, db)
         init_provider()
         init_extensions(app)
+
+    print("\n💌💌💌Flask Config is '{}'".format(config_name))
 
     return app

@@ -1,5 +1,5 @@
 import pytest
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, create_access_token
 
 
 @pytest.fixture()
@@ -9,7 +9,6 @@ def make_header():
         content_type: str = "application/json",
         accept: str = "application/json",
     ):
-
         return {
             "Authorization": authorization,
             "Content-Type": content_type,
@@ -17,6 +16,15 @@ def make_header():
         }
 
     return _make_header
+
+
+@pytest.fixture()
+def make_authorization():
+    def _make_authorization(user_id: int = None):
+        access_token = create_access_token(identity=user_id)
+        return "Bearer " + access_token
+
+    return _make_authorization
 
 
 @pytest.fixture()

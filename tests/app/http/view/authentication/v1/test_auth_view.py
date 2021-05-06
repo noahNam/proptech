@@ -1,19 +1,22 @@
 from flask import url_for
-from flask_jwt_extended import create_access_token
 
-from app.persistence.model.user_model import UserModel
 from core.use_case_output import FailureType
+from tests.seeder.factory import UserFactory
 
 
-def test_when_user_id_exists_then_check_auth_success(
-    client, session, test_request_context, jwt_manager, make_header
+def test_view_when_user_id_exists_then_check_auth_success(
+    client,
+    session,
+    test_request_context,
+    jwt_manager,
+    make_header,
+    make_authorization,
 ):
-    user = UserModel(nickname="Tester")
+    user = UserFactory.build()
     session.add(user)
     session.commit()
 
-    access_token = create_access_token(identity=user.id)
-    authorization = "Bearer " + access_token
+    authorization = make_authorization(user_id=user.id)
     headers = make_header(authorization=authorization)
 
     with test_request_context:
@@ -26,11 +29,10 @@ def test_when_user_id_exists_then_check_auth_success(
     assert response.json["meta"]["cursor"] is None
 
 
-def test_when_user_id_not_exists_then_check_auth_failure(
-    client, session, test_request_context, jwt_manager, make_header
+def test_view_when_user_id_not_exists_then_check_auth_failure(
+    client, session, test_request_context, jwt_manager, make_header, make_authorization
 ):
-    access_token = create_access_token(identity=None)
-    authorization = "Bearer " + access_token
+    authorization = make_authorization()
     headers = make_header(authorization=authorization)
 
     with test_request_context:
