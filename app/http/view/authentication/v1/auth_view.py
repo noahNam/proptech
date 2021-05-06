@@ -1,6 +1,6 @@
 from flask_jwt_extended import jwt_required
 
-from app.http.responses.presenters.authentication_presenter import (
+from app.http.responses.presenters.v1.authentication_presenter import (
     AuthenticationPresenter,
 )
 from app.http.view import api

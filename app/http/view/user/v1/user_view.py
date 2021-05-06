@@ -2,9 +2,9 @@ from flasgger import swag_from
 from flask import request
 from flask_jwt_extended import jwt_required
 
-from app.http.requests.view.user.v1.user_request import CreateUserSchemeRequest
+from app.http.requests.v1.user_request import CreateUserSchemeRequest
 from app.http.responses import failure_response
-from app.http.responses.presenters.user_presenter import UserPresenter
+from app.http.responses.presenters.v1.user_presenter import UserPresenter
 from app.http.view import auth_required, api
 from core.domains.user.use_case.v1.user_use_case import CreateUserUseCase
 from core.use_case_output import UseCaseFailureOutput, FailureType
