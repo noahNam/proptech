@@ -22,6 +22,7 @@ def upgrade():
     op.create_table('user_profile_imgs',
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), autoincrement=True,
                               nullable=False),
+                    sa.Column('uuid', sa.String(length=100), nullable=True),
                     sa.Column('file_name', sa.String(length=50), nullable=True),
                     sa.Column('path', sa.String(length=100), nullable=True),
                     sa.Column('extension', sa.String(length=10), nullable=True),
@@ -32,7 +33,7 @@ def upgrade():
     op.create_table('users',
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), nullable=False),
                     sa.Column('nickname', sa.String(length=20), nullable=False),
-                    sa.Column('email', sa.String(length=40), nullable=True),
+                    sa.Column('email', sa.String(length=40), nullable=False),
                     sa.Column('birthday', sa.String(length=8), nullable=True),
                     sa.Column('gender', sa.String(length=1), nullable=False),
                     sa.Column('is_active', sa.Boolean(), nullable=False),
@@ -52,6 +53,7 @@ def upgrade():
                     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
                     sa.PrimaryKeyConstraint('id')
                     )
+
 
 def downgrade():
     op.drop_table('interest_regions')
