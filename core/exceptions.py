@@ -20,34 +20,28 @@ class InvalidRequestException(Exception):
 class TokenNotFoundError(Exception):
     code = HTTPStatus.FORBIDDEN
     msg = "token_not_found"
-    pass
 
 
 class NotFoundException(Exception):
     code = HTTPStatus.NOT_FOUND
     msg = "not_found"
-    pass
 
 
 class IsNotAdminException(Exception):
     code = HTTPStatus.FORBIDDEN
     msg = "is_not_admin"
-    pass
 
 
 class EmptyBodyException(Exception):
     code = HTTPStatus.BAD_REQUEST
     msg = "invalid_request"
-    pass
 
 
 class NoAuthorizationControlException(Exception):
     code = HTTPStatus.FORBIDDEN
     msg = "has_not_authorization_to_control"
-    pass
 
 
 class NotUniqueErrorException(Exception):
     code = HTTPStatus.BAD_REQUEST
     msg = "not_unique_error"
-    pass
