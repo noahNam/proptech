@@ -1,0 +1,49 @@
+openapi: "3.0.2"
+tags:
+  - User
+security:
+  - userAuth: []
+requestBody:
+  required: true
+  content:
+    multipart/form-data:
+      schema:
+        type: object
+        required:
+          - id
+          - email
+          - gender
+          - nickname
+        properties:
+          id:
+            type: integer
+          nickname:
+            type: string
+          email:
+            type: string
+          birthday:
+            type: string
+          gender:
+            type: string
+          region_ids:
+            type: array
+            items:
+              type: integer
+          files:
+            type: array
+            items:
+              type: string
+              format: binary
+responses:
+  '200':
+    description: A user object
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/create_user'
+  '400':
+    description: unauthorized_error, invalid_request_error, not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/error'
