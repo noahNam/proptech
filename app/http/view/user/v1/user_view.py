@@ -18,9 +18,5 @@ def create_user_view():
     dto = CreateUserSchemeRequest(
         **request.form.to_dict(), file=request.files.getlist("files"),
     ).validate_request_and_make_dto()
-    if not dto:
-        return failure_response(
-            UseCaseFailureOutput(type=FailureType.INVALID_REQUEST_ERROR)
-        )
 
     return UserPresenter().transform(CreateUserUseCase().execute(dto=dto))
