@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from flask import url_for
 
 from core.use_case_output import FailureType
@@ -40,6 +42,6 @@ def test_view_when_user_id_not_exists_then_check_auth_failure(
             url_for("api/tanos.auth_for_testing_view"), headers=headers
         )
 
-    assert response.status_code == 401
-    assert response.json["type"] == FailureType.UNAUTHORIZED_ERROR
-    assert response.json["message"] == ""
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.get_json()["detail"] == HTTPStatus.UNAUTHORIZED
+    assert response.get_json()["message"] == FailureType.UNAUTHORIZED_ERROR

@@ -17,31 +17,36 @@ class InvalidRequestException(Exception):
         return rv
 
 
-class TokenNotFoundError(Exception):
+class ErrorFormat(Exception):
+    def __init__(self, **type_):
+        self.type_ = type_
+
+
+class TokenNotFoundError(ErrorFormat):
     code = HTTPStatus.FORBIDDEN
     msg = "token_not_found"
 
 
-class NotFoundException(Exception):
+class NotFoundException(ErrorFormat):
     code = HTTPStatus.NOT_FOUND
     msg = "not_found"
 
 
-class IsNotAdminException(Exception):
+class IsNotAdminException(ErrorFormat):
     code = HTTPStatus.FORBIDDEN
     msg = "is_not_admin"
 
 
-class EmptyBodyException(Exception):
+class EmptyBodyException(ErrorFormat):
     code = HTTPStatus.BAD_REQUEST
     msg = "invalid_request"
 
 
-class NoAuthorizationControlException(Exception):
+class NoAuthorizationControlException(ErrorFormat):
     code = HTTPStatus.FORBIDDEN
     msg = "has_not_authorization_to_control"
 
 
-class NotUniqueErrorException(Exception):
+class NotUniqueErrorException(ErrorFormat):
     code = HTTPStatus.BAD_REQUEST
     msg = "not_unique_error"

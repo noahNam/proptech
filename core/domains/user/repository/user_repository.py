@@ -32,7 +32,7 @@ class UserRepository:
                 f"[UserRepository][create_user] user_id : {dto.id} error : {e}"
             )
             session.rollback()
-            raise NotUniqueErrorException
+            raise NotUniqueErrorException(type_="S000")
 
     def create_interest_regions(self, dto: CreateUserDto) -> None:
         try:

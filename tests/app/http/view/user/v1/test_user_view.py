@@ -112,4 +112,5 @@ def test_create_user_when_given_wrong_token_then_unauthorized_error(
         )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.get_json()["type"] == FailureType.UNAUTHORIZED_ERROR
+    assert response.get_json()["detail"] == HTTPStatus.UNAUTHORIZED
+    assert response.get_json()["message"] == FailureType.UNAUTHORIZED_ERROR
