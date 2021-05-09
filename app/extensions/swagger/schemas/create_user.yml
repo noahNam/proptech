@@ -1,4 +1,11 @@
 create_user:
   properties:
-    nickname:
-      type: string
+    data:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            nickname:
+              type: string
+              example: Tester

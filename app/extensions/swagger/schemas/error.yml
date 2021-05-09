@@ -2,9 +2,9 @@ user:
   yml:
 error:
   properties:
-    error_message:
+    detail:
       type: string
-      example: ""
-    type:
+      example: 401
+    message:
       type: string
       example: unauthorized_error

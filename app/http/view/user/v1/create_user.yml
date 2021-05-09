@@ -17,23 +17,26 @@ requestBody:
         properties:
           id:
             type: integer
+            example: 1
           nickname:
             type: string
+            example: Tester
           email:
             type: string
+            example: test@gmail.com
           birthday:
             type: string
+            example: 19850509
           gender:
             type: string
+            example: F
           region_ids:
-            type: array
-            items:
-              type: integer
+            type: string
+            description: List[Integer]
+            example: "[1,2,3]"
           files:
-            type: array
-            items:
-              type: string
-              format: binary
+            type: string
+            format: binary
 responses:
   '200':
     description: A user object
