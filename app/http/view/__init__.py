@@ -13,10 +13,15 @@ from .user.v1.user_view import *  # noqa isort:skip
 
 @api.errorhandler(Exception)
 def handle_custom_type_exception(error):
-    if bool(error.type_.get("type_")):
+    check_custom_err = getattr(error, "type_", None)
+
+    if check_custom_err:
         return {'detail': error.type_["type_"], 'message': error.msg}, error.code
-    else:
+    elif isinstance(check_custom_err, dict):
         return {'detail': error.code, 'message': error.msg}, error.code
+    else:
+        return {'detail': HTTPStatus.INTERNAL_SERVER_ERROR,
+                'message': "Internal Server Error"}, HTTPStatus.INTERNAL_SERVER_ERROR
 
 
 @api.errorhandler(InvalidRequestException)
