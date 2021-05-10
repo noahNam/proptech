@@ -2,11 +2,11 @@ import json
 from typing import List
 
 from pydantic import BaseModel, StrictInt, StrictStr, ValidationError
-from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.user.dto.user_dto import CreateUserDto
+from core.domains.user.enum.user_enum import UserDefaultValueEnum
+from core.exceptions import InvalidRequestException
 
 logger = logger_.getLogger(__name__)
 
@@ -25,20 +25,20 @@ class CreateUserSchema(BaseModel):
 
 class CreateUserSchemeRequest:
     def __init__(
-        self,
-        id,
-        nickname,
-        email,
-        birthday,
-        gender,
-        region_ids,
-        file,
+            self,
+            id,
+            nickname,
+            email,
+            birthday,
+            gender,
+            region_ids,
+            file,
     ):
         self.id = int(id) if id else None
-        self.nickname = nickname
+        self.nickname = nickname if nickname else UserDefaultValueEnum.NICKNAME.value
         self.email = email
         self.birthday = birthday
-        self.gender = gender
+        self.gender = gender if gender else None
         self.is_active = True
         self.is_out = False
         self.region_ids = json.loads(region_ids) if region_ids else []
@@ -62,3 +62,4 @@ class CreateUserSchemeRequest:
             logger.error(
                 f"[CreateUserSchemeRequest][validate_request_and_make_dto] error : {e}"
             )
+            raise InvalidRequestException(message=e.errors())

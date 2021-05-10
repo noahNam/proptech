@@ -1,11 +1,7 @@
 from functools import wraps
-from http import HTTPStatus
-
-from flask import jsonify
 from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended.exceptions import NoAuthorizationError
 from werkzeug.local import LocalProxy
-
-from core.use_case_output import FailureType
 
 
 def _get_user_id():
@@ -21,10 +17,7 @@ def auth_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         if not user_id:
-            return (
-                jsonify({"type": FailureType.UNAUTHORIZED_ERROR, "message": ""}),
-                HTTPStatus.UNAUTHORIZED,
-            )
+            raise NoAuthorizationError
 
         return fn(*args, **kwargs)
 

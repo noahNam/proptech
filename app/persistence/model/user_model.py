@@ -15,7 +15,7 @@ class UserModel(db.Model):
         nullable=False
     )
     nickname = Column(String(20), nullable=False, default=UserDefaultValueEnum.NICKNAME.value)
-    email = Column(String(40), nullable=True)
+    email = Column(String(40), nullable=False)
     birthday = Column(String(8), nullable=True)
     gender = Column(String(1), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
