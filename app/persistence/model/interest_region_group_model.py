@@ -10,7 +10,7 @@ class InterestRegionGroupModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"),
         primary_key=True,
         nullable=False,
-        autoincrement=True
+        autoincrement=True,
     )
     name = Column(String(20), nullable=False)
     interest_count = Column(Integer, nullable=False, default=0)

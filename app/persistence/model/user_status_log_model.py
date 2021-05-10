@@ -11,7 +11,7 @@ class UserStatsLogModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"),
         primary_key=True,
         nullable=False,
-        autoincrement=True
+        autoincrement=True,
     )
     user_id = Column(BigInteger, nullable=False)
     status = Column(String(10), nullable=False)

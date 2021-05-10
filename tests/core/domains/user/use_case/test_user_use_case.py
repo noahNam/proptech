@@ -13,7 +13,7 @@ from core.use_case_output import UseCaseSuccessOutput
 
 @patch("app.extensions.utils.image_helper.S3Helper.upload", return_value=True)
 def test_create_user_when_first_login_then_success(
-        s3_upload_mock, session, create_users, interest_region_group_factory
+    s3_upload_mock, session, create_users, interest_region_group_factory
 ):
     user = create_users[0]
     interest_region_group_factory.create_batch(3)
@@ -22,9 +22,7 @@ def test_create_user_when_first_login_then_success(
     file_name = "/Users/noah/Downloads/profile_picture/noah.jpg"
     with io.open(file_name, "rb", buffering=0) as temp:
         file = FileStorage(
-            stream=temp,
-            filename=file_name,
-            content_type="multipart/form-data",
+            stream=temp, filename=file_name, content_type="multipart/form-data",
         )
 
         dto = CreateUserDto(
@@ -36,13 +34,17 @@ def test_create_user_when_first_login_then_success(
             is_active=user.is_active,
             is_out=user.is_out,
             region_ids=[1, 2, 3],
-            file=[file]
+            file=[file],
         )
 
         result = CreateUserUseCase().execute(dto=dto)
 
-    interest_regions = session.query(InterestRegionModel).filter_by(user_id=dto.id).all()
-    interest_region_groups = session.query(InterestRegionGroupModel).filter_by(id=dto.region_ids[0]).first()
+    interest_regions = (
+        session.query(InterestRegionModel).filter_by(user_id=dto.id).all()
+    )
+    interest_region_groups = (
+        session.query(InterestRegionGroupModel).filter_by(id=dto.region_ids[0]).first()
+    )
 
     assert result.type == "success"
     assert isinstance(result, UseCaseSuccessOutput)
@@ -52,7 +54,7 @@ def test_create_user_when_first_login_then_success(
 
 @patch("app.extensions.utils.image_helper.S3Helper.upload", return_value=False)
 def test_create_user_when_img_upload_fail_then_success(
-        s3_upload_mock, session, create_users, interest_region_group_factory
+    s3_upload_mock, session, create_users, interest_region_group_factory
 ):
     user = create_users[0]
     interest_region_group_factory.create_batch(3)
@@ -60,9 +62,7 @@ def test_create_user_when_img_upload_fail_then_success(
     file_name = "/Users/noah/Downloads/profile_picture/noah.jpg"
     with io.open(file_name, "rb", buffering=0) as temp:
         file = FileStorage(
-            stream=temp,
-            filename=file_name,
-            content_type="multipart/form-data",
+            stream=temp, filename=file_name, content_type="multipart/form-data",
         )
 
         dto = CreateUserDto(
@@ -74,13 +74,17 @@ def test_create_user_when_img_upload_fail_then_success(
             is_active=user.is_active,
             is_out=user.is_out,
             region_ids=[1, 2, 3],
-            file=[file]
+            file=[file],
         )
 
         result = CreateUserUseCase().execute(dto=dto)
 
-    interest_regions = session.query(InterestRegionModel).filter_by(user_id=dto.id).all()
-    interest_region_groups = session.query(InterestRegionGroupModel).filter_by(id=dto.region_ids[0]).first()
+    interest_regions = (
+        session.query(InterestRegionModel).filter_by(user_id=dto.id).all()
+    )
+    interest_region_groups = (
+        session.query(InterestRegionGroupModel).filter_by(id=dto.region_ids[0]).first()
+    )
 
     assert result.type == "success"
     assert isinstance(result, UseCaseSuccessOutput)
@@ -90,7 +94,7 @@ def test_create_user_when_img_upload_fail_then_success(
 
 @patch("app.extensions.utils.image_helper.S3Helper.upload", return_value=True)
 def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_error(
-        s3_upload_mock, session, create_users, interest_region_group_factory
+    s3_upload_mock, session, create_users, interest_region_group_factory
 ):
     user = create_users[0]
     interest_region_group_factory.create()
@@ -104,7 +108,7 @@ def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_e
         is_active=user.is_active,
         is_out=user.is_out,
         region_ids=[1, 2, 3],
-        file=[]
+        file=[],
     )
 
     with pytest.raises(NotUniqueErrorException):

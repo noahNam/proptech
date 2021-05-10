@@ -11,7 +11,7 @@ class UserProfileImgModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"),
         primary_key=True,
         nullable=False,
-        autoincrement=True
+        autoincrement=True,
     )
     file_name = Column(String(50), nullable=True)
     uuid = Column(String(100), nullable=True)

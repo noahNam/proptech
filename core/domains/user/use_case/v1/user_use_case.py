@@ -41,7 +41,7 @@ class UserBaseUseCase:
             path=S3PathEnum.PROFILE_IMGS.value,
             extension=extension,
             object_name=object_name,
-            origin_file=dto.file
+            origin_file=dto.file,
         )
 
         return create_user_profile_img_dto
@@ -49,10 +49,12 @@ class UserBaseUseCase:
 
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateUserDto
+        self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.id:
-            return UseCaseFailureOutput(detail="user id is empty", message=FailureType.NOT_FOUND_ERROR)
+            return UseCaseFailureOutput(
+                detail="user id is empty", message=FailureType.NOT_FOUND_ERROR
+            )
 
         self._user_repo.create_user(dto=dto)
         self._user_repo.create_interest_regions(dto=dto)
@@ -66,8 +68,11 @@ class CreateUserUseCase(UserBaseUseCase):
             """
             if self._upload_user_profile_img(dto=create_user_profile_img_dto):
                 profile_img_id: Optional[int] = self._user_repo.create_user_profile_img(
-                    dto=create_user_profile_img_dto)
+                    dto=create_user_profile_img_dto
+                )
 
                 if profile_img_id:
-                    self._user_repo.update_user_profile_img_id(user_id=dto.id, profile_img_id=profile_img_id)
+                    self._user_repo.update_user_profile_img_id(
+                        user_id=dto.id, profile_img_id=profile_img_id
+                    )
         return UseCaseSuccessOutput(value=dto.nickname)
