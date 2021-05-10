@@ -17,7 +17,7 @@ create_user_dto = CreateUserDto(
     gender="M",
     is_active=True,
     is_out=False,
-    region_ids=[1, 2, 3]
+    region_ids=[1, 2, 3],
 )
 
 create_user_profile_img_dto = CreateUserProfileImgDto(
@@ -29,7 +29,9 @@ create_user_profile_img_dto = CreateUserProfileImgDto(
 )
 
 
-def test_create_user_profiles_when_first_login_then_success(session, interest_region_factory):
+def test_create_user_profiles_when_first_login_then_success(
+    session, interest_region_factory
+):
     UserRepository().create_user(dto=create_user_dto)
     interest_region_factory.create_batch(size=3, user_id=create_user_dto.id)
 
@@ -41,7 +43,9 @@ def test_create_user_profiles_when_first_login_then_success(session, interest_re
     assert len(user.interest_regions) == len(create_user_dto.region_ids)
 
 
-def test_create_user_profiles_without_required_value_when_first_login_then_validation_error(session):
+def test_create_user_profiles_without_required_value_when_first_login_then_validation_error(
+    session,
+):
     with pytest.raises(ValidationError):
         dummy_dto = CreateUserDto(
             nickname="tester",
@@ -49,12 +53,14 @@ def test_create_user_profiles_without_required_value_when_first_login_then_valid
             birthday="19850509",
             is_active=True,
             is_out=False,
-            region_ids=[1, 2, 3]
+            region_ids=[1, 2, 3],
         )
         UserRepository().create_user(dto=dummy_dto)
 
 
-def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_unique_error(session):
+def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_unique_error(
+    session,
+):
     UserRepository().create_user(dto=create_user_dto)
 
     with pytest.raises(NotUniqueErrorException):
@@ -62,7 +68,9 @@ def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_uniqu
 
 
 def test_create_user_profile_img_when_first_login_then_success(session):
-    user_profile_img_id = UserRepository().create_user_profile_img(dto=create_user_profile_img_dto)
+    user_profile_img_id = UserRepository().create_user_profile_img(
+        dto=create_user_profile_img_dto
+    )
     user_profile_img = session.query(UserProfileImgModel).first()
 
     assert user_profile_img_id == 1
@@ -72,7 +80,9 @@ def test_create_user_profile_img_when_first_login_then_success(session):
     assert user_profile_img.extension == create_user_profile_img_dto.extension
 
 
-def test_create_user_profile_img_without_user_id_when_first_login_then_validation_error(session):
+def test_create_user_profile_img_without_user_id_when_first_login_then_validation_error(
+    session,
+):
     with pytest.raises(ValidationError):
         dummy_dto = CreateUserProfileImgDto(
             uuid_=str(uuid.uuid4()),

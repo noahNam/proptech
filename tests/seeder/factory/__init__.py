@@ -32,7 +32,7 @@ class UserFactory(BaseFactory):
 
     nickname = faker.name()
     email = faker.email()
-    gender = random.choice('FM')
+    gender = random.choice("FM")
     birthday = faker.date_of_birth().strftime("%Y%m%d")
     is_active = True
     is_out = False

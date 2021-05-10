@@ -25,14 +25,7 @@ class CreateUserSchema(BaseModel):
 
 class CreateUserSchemeRequest:
     def __init__(
-            self,
-            id,
-            nickname,
-            email,
-            birthday,
-            gender,
-            region_ids,
-            file,
+        self, id, nickname, email, birthday, gender, region_ids, file,
     ):
         self.id = int(id) if id else None
         self.nickname = nickname if nickname else UserDefaultValueEnum.NICKNAME.value
