@@ -21,7 +21,9 @@ def test_create_user_when_first_login_then_success(
     file_name = "/Users/noah/Downloads/profile_picture/noah.jpg"
     with io.open(file_name, "rb", buffering=0) as temp:
         file = FileStorage(
-            stream=temp, filename=file_name, content_type="multipart/form-data",
+            stream=temp,
+            filename=file_name,
+            content_type="multipart/form-data",
         )
         user_id = 1
         authorization = make_authorization(user_id=user_id)
@@ -63,7 +65,9 @@ def test_create_user_when_s3_upload_fail_then_success(
     file_name = "/Users/noah/Downloads/profile_picture/noah.jpg"
     with io.open(file_name, "rb", buffering=0) as temp:
         file = FileStorage(
-            stream=temp, filename=file_name, content_type="multipart/form-data",
+            stream=temp,
+            filename=file_name,
+            content_type="multipart/form-data",
         )
         user_id = 1
         authorization = make_authorization(user_id=user_id)
@@ -94,7 +98,11 @@ def test_create_user_when_s3_upload_fail_then_success(
 
 
 def test_create_user_when_given_wrong_token_then_unauthorized_error(
-    client, session, test_request_context, make_header, make_authorization,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
 ):
     user_id = None
     authorization = make_authorization(user_id=user_id)

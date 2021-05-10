@@ -9,7 +9,8 @@ from core.use_case_output import UseCaseSuccessOutput, FailureType, UseCaseFailu
 
 class AuthenticationPresenter:
     def transform(
-        self, response: UseCaseSuccessOutput,
+        self,
+        response: UseCaseSuccessOutput,
     ):
         try:
             schema = AuthenticationResponseSchema(type=response.type)

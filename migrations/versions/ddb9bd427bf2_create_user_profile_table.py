@@ -63,7 +63,10 @@ def upgrade():
         sa.Column("region_id", sa.SmallInteger(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=True),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["users.id"],
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
 

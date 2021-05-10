@@ -22,7 +22,9 @@ def test_create_user_when_first_login_then_success(
     file_name = "/Users/noah/Downloads/profile_picture/noah.jpg"
     with io.open(file_name, "rb", buffering=0) as temp:
         file = FileStorage(
-            stream=temp, filename=file_name, content_type="multipart/form-data",
+            stream=temp,
+            filename=file_name,
+            content_type="multipart/form-data",
         )
 
         dto = CreateUserDto(
@@ -62,7 +64,9 @@ def test_create_user_when_img_upload_fail_then_success(
     file_name = "/Users/noah/Downloads/profile_picture/noah.jpg"
     with io.open(file_name, "rb", buffering=0) as temp:
         file = FileStorage(
-            stream=temp, filename=file_name, content_type="multipart/form-data",
+            stream=temp,
+            filename=file_name,
+            content_type="multipart/form-data",
         )
 
         dto = CreateUserDto(

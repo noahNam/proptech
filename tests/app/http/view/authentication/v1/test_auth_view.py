@@ -7,7 +7,12 @@ from tests.seeder.factory import UserFactory
 
 
 def test_view_when_user_id_exists_then_check_auth_success(
-    client, session, test_request_context, jwt_manager, make_header, make_authorization,
+    client,
+    session,
+    test_request_context,
+    jwt_manager,
+    make_header,
+    make_authorization,
 ):
     user = UserFactory.build()
     session.add(user)
