@@ -1,0 +1,25 @@
+image: docker:stable
+
+options:
+  docker: true
+
+pipelines:
+  default:
+    - step:
+        name: 'Run tests'
+        image: python:3.8.2
+        caches:
+          - pip
+        script:
+          # - pip install poetry && poetry config virtualenvs.create false && poetry install
+          - FLASK_CONFIG=testing python -m pytest tests/ --ignore=tests/app/http
+        services:
+          - postgres
+definitions:
+  services:
+    postgres:
+      image: postgres:11.4
+      variables:
+        POSTGRES_DB: 'tanos'
+        POSTGRES_USER: 'postgres'
+        POSTGRES_PASSWORD: '1234'
