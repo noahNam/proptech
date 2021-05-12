@@ -72,9 +72,8 @@ RUN poetry install
 WORKDIR ${APP_DIR}
 EXPOSE 5000
 
-ENTRYPOINT ["flask"]
-CMD ["run", "--host", "0.0.0.0"]
-
+#ENTRYPOINT ["flask"]
+#CMD ["run", "--host", "0.0.0.0"]
 
 # `production` image used for runtime
 FROM python-base as production

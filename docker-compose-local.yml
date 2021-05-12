@@ -1,0 +1,38 @@
+# Local environment configuration using docker-compose
+# api service 사용시 LocalConfig -> $SQLALCHEMY_DATABASE_URI 주석 해제
+
+version: '3.7'
+
+volumes:
+  tanos_db_local: {}
+
+services:
+  postgres:
+    image: postgres
+    container_name: tanos-postgres
+    volumes:
+      - tanos_db_local:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=tanos
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8
+#    api:
+#        container_name: tanos-api
+#        build:
+#            context: .
+#            dockerfile: ./Dockerfile
+#            target: development
+#        command: >
+#            gunicorn -k gevent --bind 0.0.0.0:5000 --reload  --access-logfile - --error-logfile - application:app --log-level=DEBUG
+#            --access-logformat
+#            "{'response_code':'%(s)s','request_method':'%(m)s','request_path':'%(U)s','request_querystring':'%(q)s'}"
+#        volumes:
+#            - $__TANOS_APP_PATH__:/server/app
+#            - $__TANOS_CORE_PATH__:/server/core
+#        ports:
+#            - "5000:5000"
+#        environment:
+#            - FLASK_ENV=local
