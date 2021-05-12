@@ -1,4 +1,4 @@
-# What is [tanos](https://bitbucket.org/apartalk/tanos/src)??
+# What is [tanos](https://bitbucket.org/apartalk/tanos/src)???
 * main platform of Apartalk
 * schema project
 * domain driven design
