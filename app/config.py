@@ -16,6 +16,8 @@ class LocalConfig(Config):
     SQLALCHEMY_ECHO = True
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@localhost:5432/tanos"
+    # Local environment configuration using Docker API service
+    # SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@postgres:5432/tanos"
 
 
 class TestConfig(Config):
