@@ -32,12 +32,6 @@ ENV PYTHONUNBUFFERED=1 \
 # prepend poetry and venv to path
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
-# application root
-ENV APP_DIR /server
-COPY app ${APP_DIR}/app
-COPY core ${APP_DIR}/core
-COPY application.py VERSION ${APP_DIR}/
-
 FROM python-base as builder-base
 RUN apt-get update \
     && apt-get install -y --no-install-recommends apt-utils \
@@ -58,19 +52,19 @@ COPY poetry.lock pyproject.toml ./
 RUN poetry install --no-dev
 
 # `development` image is used during development / testing
-FROM python-base as development
-ENV FLASK_ENV=development
-WORKDIR $PYSETUP_PATH
-
-# copy in built poetry + venv
-COPY --from=builder-base $POETRY_HOME $POETRY_HOME
-COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
-
-# quicker install as runtime deps are already installed
-RUN poetry install
-
-EXPOSE 5000
-WORKDIR ${APP_DIR}
+#FROM python-base as development
+#ENV FLASK_ENV=development
+#WORKDIR $PYSETUP_PATH
+#
+## copy in built poetry + venv
+#COPY --from=builder-base $POETRY_HOME $POETRY_HOME
+#COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
+#
+## quicker install as runtime deps are already installed
+#RUN poetry install
+#
+#EXPOSE 5000
+#WORKDIR ${APP_DIR}/
 
 #ENTRYPOINT ["flask"]
 #CMD ["run", "--host", "0.0.0.0"]
@@ -80,8 +74,12 @@ FROM python-base as production
 ENV FLASK_ENV=production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
+# application root
+ENV APP_DIR /server
+COPY app ${APP_DIR}/app
+COPY core ${APP_DIR}/core
+COPY application.py VERSION ${APP_DIR}/
+
 EXPOSE 5000
-WORKDIR ${APP_DIR}
-ENTRYPOINT ["/server"]
-CMD ["run", "--host", "0.0.0.0"]
+WORKDIR ${APP_DIR}/
 
