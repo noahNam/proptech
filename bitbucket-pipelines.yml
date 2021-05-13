@@ -37,7 +37,7 @@ pipelines:
           - export AWS_SECRET_ACCESS_KEY=$AWS_TEST_SECRET_ACCESS_KEY
           - export AWS_DEFAULT_REGION=$AWS_TEST_REGION
           - pip3 install -U boto3
-          - curl -o /usr/local/biupdate.pyn/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest
+          - curl -o /usr/local/bin/ecs-cli https://amazon-ecs-cli.s3.amazonaws.com/ecs-cli-linux-amd64-latest
           - chmod +x /usr/local/bin/ecs-cli
           - python deploy/update.py -e dev -s api
 definitions:
