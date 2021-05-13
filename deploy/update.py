@@ -46,10 +46,12 @@ class ECSCompose:
         pass
 
     def get_client(self):
+        print("get_client start")
         try:
             return boto3.client("ecr", region_name="ap-northeast-2")
         except ClientError:
             self.fail("Failed to create boto3 client.\n" + str(e))
+        print("get_client end")
 
     @property
     def image(self) -> str:
@@ -80,6 +82,7 @@ class ECSCompose:
 
     @property
     def template(self) -> str:
+        print("template start")
         env = self.environment
         file_dir = (
             BASE_DIR
@@ -88,30 +91,37 @@ class ECSCompose:
             / f"docker-compose-ecs-{self.service_type}-{env}.yml"
         )
         f = open(file_dir, "r")
+        print("template end")
         return f.read()
 
     @property
     def params(self) -> str:
+        print("params start")
         env = self.environment
         service = self.service_type
+        print("params end")
         return str(
             BASE_DIR / "deploy" / f"{env}" / f"docker-ecs-params-{service}-{env}.yml"
         )
 
     @property
     def environment(self) -> str:
+        print("environment start")
         args = parser.parse_args()
         env = args.environment or os.getenv("BUILD_ENVIRONMENT", "dev")
         if env.lower() not in AVAILABLE_ENVIRONMENT:
             self.fail(f'"{env}" IS NOT AN AVAILABLE ENVIRONMENT')
 
+        print("environment end")
         return env.lower()
 
     @property
     def call_command(self) -> list:
+        print("call_command start")
         env = self.environment
         service_type = self.service_type
         if env == "dev" or (env == "prod" and service_type == "worker"):
+            print("@@@@@@@@@@@")
             return [
                 "ecs-cli",
                 "compose",
@@ -144,16 +154,21 @@ class ECSCompose:
                 "create",
             ]
 
+        print("call_command end")
+
     @property
     def ssm_parameter_name(self) -> str:
+        print("ssm_parameter_name start")
         env = self.environment
         if env == "dev":
+            print("ssm_parameter_name end")
             return f"/apartalk/{self.service}"
 
         if env == "prod":
             return f"/apartalk/{self.service}"
 
     def get_ssm_parameters(self) -> str:
+        print("get_ssm_parameters start")
         client = boto3.client("ssm")
         resp = client.get_parameter(Name=self.ssm_parameter_name)
         parameter = resp.get("Parameter")
@@ -164,17 +179,21 @@ class ECSCompose:
         if not values:
             return self.fail(f"Failed to get parameter")
 
+        print("get_ssm_parameters end")
         return values
 
     def map_ssm(self) -> None:
+        print("map_ssm start")
         env_vars = self.get_ssm_parameters()
         with open(self.compose_file_dir, mode="a") as f:
             f.write(f"\n{env_vars}")
 
         with open(self.compose_file_dir, "r") as f:
             self.debug_log(f"{f.read()}")
+        print("map_ssm end")
 
     def get_server_address(self) -> str:
+        print("get_server_address start")
         client = self.get_client()
         response = client.get_authorization_token()
         b64token = response["authorizationData"][0]["authorizationToken"]
@@ -182,11 +201,13 @@ class ECSCompose:
 
         registry = response["authorizationData"][0]["proxyEndpoint"]
 
+        print("get_server_address end")
         return registry.split("//")[1]
 
     def get_latest_tag(
         self, previous_result: Optional[list] = None, next_token: Optional[str] = None
     ) -> int:
+        print("get_latest_tag start")
         client = self.get_client()
         if next_token:
             response = client.describe_images(
@@ -209,14 +230,18 @@ class ECSCompose:
             image_tags = images[0].get("imageTags", [])
             intified_tags = sorted(intify(image_tags), reverse=True)
             return 1 if not intified_tags else intified_tags[0]
-
+        print("get_latest_tag end")
         return self.get_latest_tag(details, response_next_token)
 
     @property
     def compose_file_dir(self) -> str:
-        return str(BASE_DIR / "deploy" / f"{self.service}.yml")
+        print("compose_file_dir start")
+        file_dir = str(BASE_DIR / "deploy" / f"{self.service}.yml")
+        print("compose_file_dir end")
+        return file_dir
 
     def create_compose_file(self, server_address: str, version: int) -> str:
+        print("create_compose_file start")
         template = self.template.replace(
             "__ECR_ADDRESS__", f"{server_address}/{self.image}:{version}"
         )
@@ -224,8 +249,10 @@ class ECSCompose:
         f.write(template)
         f.close()
         self.debug_log(template)
+        print("create_compose_file end")
 
     def call(self) -> tuple:
+        print("call start")
         popen = subprocess.Popen(
             " ".join(self.call_command),
             stdout=subprocess.PIPE,
@@ -249,21 +276,29 @@ class ECSCompose:
 
             logging.info(f"💨 {line}")
             line = popen.stdout.readline().decode("utf8")
+        print("create_compose_file end")
 
     def run(self) -> None:
         server_address = self.get_server_address()
         version = self.get_latest_tag()
         logging.info(f"🦄 Using version {version}")
+        print("00000")
         self.create_compose_file(server_address, version)
+        print("11111")
         self.map_ssm()
+        print("22222")
         self.call()
+        print("33333")
         self.success()
+        print("44444")
 
     def is_ecs_cli_available(self) -> None:
+        print("is_ecs_cli_available start")
         if which("ecs-cli") is not None:
             return
 
         self.fail(f"ecs-cli must be installed")
+        print("is_ecs_cli_available end")
 
     def success(self) -> None:
         self.remove()
@@ -271,9 +306,11 @@ class ECSCompose:
         sys.exit(0)
 
     def remove(self) -> None:
+        print("remove start")
         if os.path.isfile(self.compose_file_dir):
             self.debug_log(f"{self.compose_file_dir} exists. Removing it.")
             os.remove(self.compose_file_dir)
+        print("remove end")
 
     def fail(self, message: str = "") -> None:
         logging.error(f"💥  {message}")
