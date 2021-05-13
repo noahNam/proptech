@@ -58,19 +58,19 @@ COPY poetry.lock pyproject.toml ./
 RUN poetry install --no-dev
 
 # `development` image is used during development / testing
-#FROM python-base as development
-#ENV FLASK_ENV=development
-#WORKDIR $PYSETUP_PATH
+FROM python-base as development
+ENV FLASK_ENV=development
+WORKDIR $PYSETUP_PATH
 
 # copy in built poetry + venv
-#COPY --from=builder-base $POETRY_HOME $POETRY_HOME
-#COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
+COPY --from=builder-base $POETRY_HOME $POETRY_HOME
+COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
 # quicker install as runtime deps are already installed
-#RUN poetry install
+RUN poetry install
 
-#WORKDIR ${APP_DIR}
 EXPOSE 5000
+WORKDIR ${APP_DIR}
 
 #ENTRYPOINT ["flask"]
 #CMD ["run", "--host", "0.0.0.0"]
@@ -80,7 +80,8 @@ FROM python-base as production
 ENV FLASK_ENV=production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
-WORKDIR ${APP_DIR}/
+EXPOSE 5000
+WORKDIR ${APP_DIR}
+ENTRYPOINT ["/server"]
+CMD ["run", "--host", "0.0.0.0"]
 
-#ENTRYPOINT ["flask"]
-#CMD ["run", "--host", "0.0.0.0"]
