@@ -42,7 +42,7 @@ RUN apt-get update \
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
 # cleanup
-RUN rm -rf /var/lib/apt/lists/*
+# RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
@@ -71,7 +71,7 @@ RUN poetry install --no-dev
 
 # `production` image used for runtime
 FROM python-base as production
-ENV FLASK_ENV=production
+# ENV FLASK_ENV=production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
 # application root
