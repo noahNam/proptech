@@ -2,7 +2,6 @@ version: "3"
 services:
   tanos-api-dev:
     image: __ECR_ADDRESS__
-    target: development
     ports:
       - "5000:5000"
     entrypoint: /server

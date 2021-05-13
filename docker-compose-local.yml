@@ -19,20 +19,19 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=1234
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8
-#    api:
-#        container_name: tanos-api
-#        build:
-#            context: .
-#            dockerfile: ./Dockerfile
-#            target: development
-#        command: >
-#            gunicorn -k gevent --bind 0.0.0.0:5000 --reload  --access-logfile - --error-logfile - application:app --log-level=DEBUG
-#            --access-logformat
-#            "{'response_code':'%(s)s','request_method':'%(m)s','request_path':'%(U)s','request_querystring':'%(q)s'}"
-#        volumes:
-#            - $__TANOS_APP_PATH__:/server/app
-#            - $__TANOS_CORE_PATH__:/server/core
-#        ports:
-#            - "5000:5000"
-#        environment:
-#            - FLASK_ENV=local
+#  api:
+#      container_name: tanos-api
+#      build:
+#          context: .
+#          dockerfile: ./Dockerfile
+#      command: >
+#          gunicorn -k gevent --bind 0.0.0.0:5000 --reload  --access-logfile - --error-logfile - application:app --log-level=DEBUG
+#          --access-logformat
+#          "{'response_code':'%(s)s','request_method':'%(m)s','request_path':'%(U)s','request_querystring':'%(q)s'}"
+#      volumes:
+#          - $__TANOS_APP_PATH__:/server/app
+#          - $__TANOS_CORE_PATH__:/server/core
+#      ports:
+#          - "5000:5000"
+#      environment:
+#          - FLASK_ENV=local
