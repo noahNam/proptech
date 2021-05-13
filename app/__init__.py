@@ -10,8 +10,6 @@ from app.extensions import jwt
 from app.extensions.database import db, migrate
 from app.extensions.ioc_container import init_provider
 from app.extensions.swagger import swagger_config
-from app.http.view.main import main as main_bp
-
 from app.http.view import api
 
 
@@ -35,7 +33,6 @@ def init_db(app: Flask, db: SQLAlchemy) -> None:
 
 
 def init_blueprint(app: Flask):
-    app.register_blueprint(main_bp)
     app.register_blueprint(api, url_prefix="/api/tanos")
 
 
