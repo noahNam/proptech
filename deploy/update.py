@@ -76,7 +76,7 @@ class ECSCompose:
 
     @property
     def service(self) -> str:
-        return f"{self.service_type}-tanos-{self.environment}-service"
+        return f"{self.environment}-tanos-{self.service_type}-service"
 
     @property
     def template(self) -> str:
