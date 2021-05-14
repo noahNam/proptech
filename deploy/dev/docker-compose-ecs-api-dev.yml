@@ -1,6 +1,6 @@
 version: "3"
 services:
-  tanos-api-dev:
+  dev-tanos-api:
     image: __ECR_ADDRESS__
     ports:
       - "5000:5000"
@@ -9,9 +9,9 @@ services:
       driver: awslogs
       options:
         # FIX : Change log group
-        awslogs-group: apartalk/tanos-api-dev-logs
+        awslogs-group: apartalk/dev-tanos-api-logs
         awslogs-region: ap-northeast-2
-        awslogs-stream-prefix: apartalk/tanos-api-dev-logs
+        awslogs-stream-prefix: apartalk/dev-tanos-api-logs
         awslogs-create-group: "true"
     environment:
     # Environment

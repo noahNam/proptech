@@ -17,9 +17,7 @@ from botocore.exceptions import ClientError
 parser = argparse.ArgumentParser(description="Compose image.")
 parser.add_argument("-e", "--environment", type=str, help="Specify environment")
 parser.add_argument("-d", "--debug", action="store_true", help="DEBUG")
-parser.add_argument(
-    "-s", "--service", type=str, help="Specify service (api / cron / worker)"
-)
+parser.add_argument("-s", "--service", type=str, help="Specify service (api / worker)")
 
 # logger
 logging.basicConfig(format="[%(levelname)s]\t%(message)s", level=logging.INFO)
@@ -76,7 +74,7 @@ class ECSCompose:
 
     @property
     def service(self) -> str:
-        return f"{self.environment}-tanos-{self.service_type}-service"
+        return f"{self.environment}-tanos-{self.service_type}"
 
     @property
     def template(self) -> str:
