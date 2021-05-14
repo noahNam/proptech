@@ -18,9 +18,14 @@ def test_create_user_when_first_login_then_success(
     user = create_users[0]
     interest_region_group_factory.create_batch(3)
 
-    # 실제 업로드 확인하려면 아래 경로에 이미지 첨부하고 patch 데코레이터 제거한 뒤 실행.
+    # 실제 업로드 확인하려면 아래 경로에 이미지 첨부하고 patch, skip 데코레이터 제거한 뒤 실행.
     file_name = "/Users/noah/Downloads/profile_picture/noah.jpg"
-    with io.open(file_name, "rb", buffering=0) as temp:
+    try:
+        stream = io.open(file_name, "rb", buffering=0)
+    except FileNotFoundError:
+        stream = io.BytesIO(b"aaa")
+
+    with stream as temp:
         file = FileStorage(
             stream=temp,
             filename=file_name,
@@ -62,7 +67,12 @@ def test_create_user_when_img_upload_fail_then_success(
     interest_region_group_factory.create_batch(3)
 
     file_name = "/Users/noah/Downloads/profile_picture/noah.jpg"
-    with io.open(file_name, "rb", buffering=0) as temp:
+    try:
+        stream = io.open(file_name, "rb", buffering=0)
+    except FileNotFoundError:
+        stream = io.BytesIO(b"aaa")
+
+    with stream as temp:
         file = FileStorage(
             stream=temp,
             filename=file_name,

@@ -3,12 +3,13 @@ from http import HTTPStatus
 from flask import Blueprint
 from flask_jwt_extended.exceptions import NoAuthorizationError
 
-from core.exceptions import InvalidRequestException, NotUniqueErrorException
+from core.exceptions import InvalidRequestException
 
 api: Blueprint = Blueprint(name="api/tanos", import_name=__name__)
 
 from .authentication.v1.auth_view import *  # noqa isort:skip
 from .user.v1.user_view import *  # noqa isort:skip
+from .main import *  # noqa isort:skip
 
 
 @api.errorhandler(Exception)

@@ -32,12 +32,6 @@ ENV PYTHONUNBUFFERED=1 \
 # prepend poetry and venv to path
 ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 
-# application root
-ENV APP_DIR /server
-COPY app ${APP_DIR}/app
-COPY core ${APP_DIR}/core
-COPY application.py VERSION ${APP_DIR}/
-
 FROM python-base as builder-base
 RUN apt-get update \
     && apt-get install -y --no-install-recommends apt-utils \
@@ -48,7 +42,7 @@ RUN apt-get update \
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
 # cleanup
-RUN rm -rf /var/lib/apt/lists/*
+ RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
@@ -57,27 +51,15 @@ COPY poetry.lock pyproject.toml ./
 # but not install all dev pacakges
 RUN poetry install --no-dev
 
-# `development` image is used during development / testing
-FROM python-base as development
-ENV FLASK_ENV=development
-WORKDIR $PYSETUP_PATH
-
-# copy in built poetry + venv
-COPY --from=builder-base $POETRY_HOME $POETRY_HOME
+# image used for runtime
+FROM python-base as runtime-image
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
-# quicker install as runtime deps are already installed
-RUN poetry install
+# application root
+ENV APP_DIR /server
+COPY app ${APP_DIR}/app
+COPY core ${APP_DIR}/core
+COPY application.py VERSION ${APP_DIR}/
 
-WORKDIR ${APP_DIR}
 EXPOSE 5000
-
-#ENTRYPOINT ["flask"]
-#CMD ["run", "--host", "0.0.0.0"]
-
-# `production` image used for runtime
-FROM python-base as production
-ENV FLASK_ENV=production
-COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
-
-WORKDIR ${APP_DIR}
+WORKDIR ${APP_DIR}/
