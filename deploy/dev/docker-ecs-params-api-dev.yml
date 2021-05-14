@@ -6,7 +6,7 @@ task_definition:
     cpu_limit: 256
     mem_limit: 0.5GB
   services:
-    dev-tanos-api: # container name
+    dev-tanos-api:
       cpu_shares: 200
       mem_limit: 0.4GB
 run_params:
