@@ -111,7 +111,6 @@ class ECSCompose:
     def call_command(self) -> list:
         env = self.environment
         service_type = self.service_type
-        task_definition = self.service.replace("service", "td")
 
         if env == "dev" or (env == "prod" and service_type == "worker"):
             return [
@@ -120,7 +119,7 @@ class ECSCompose:
                 "--cluster",
                 self.cluster,
                 "--project-name",
-                task_definition,
+                self.service,
                 "--file",
                 self.compose_file_dir,
                 "--ecs-params",
@@ -138,7 +137,7 @@ class ECSCompose:
                 "--cluster",
                 self.cluster,
                 "--project-name",
-                task_definition,
+                self.service,
                 "--file",
                 self.compose_file_dir,
                 "--ecs-params",
