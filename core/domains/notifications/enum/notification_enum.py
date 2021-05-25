@@ -6,6 +6,12 @@ class NotificationStatusEnum(Enum):
     FAILURE = "failure"
 
 
+class NotificationBadgeTypeEnum(Enum):
+    ALL = "all"
+    IN = "in"
+    OUT = "out"
+
+
 class DeviceTypeEnum(Enum):
     PUSH = "push"
     SMS = "sms"
