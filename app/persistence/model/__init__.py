@@ -3,3 +3,6 @@ from .user_profile_img_model import UserProfileImgModel
 from .interest_region_model import InterestRegionModel
 from .user_status_log_model import UserStatsLogModel
 from .interest_region_group_model import InterestRegionGroupModel
+from .device_model import DeviceModel
+from .device_endpoint_model import DeviceEndpointModel
+from .notification_model import NotificationModel

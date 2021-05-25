@@ -25,4 +25,4 @@ class DeviceModel(db.Model):
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=get_server_timestamp())
 
-    device_endpoints = relationship("InterestRegionModel", backref=backref("users"))
+    device_endpoints = relationship("DeviceEndpointModel", backref=backref("devices"))
