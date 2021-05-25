@@ -5,7 +5,6 @@ from sqlalchemy import (
     String,
     Boolean,
     DateTime,
-    ForeignKey,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -33,3 +32,4 @@ class UserModel(db.Model):
     updated_at = Column(DateTime, default=get_server_timestamp())
 
     interest_regions = relationship("InterestRegionModel", backref=backref("users"))
+    devices = relationship("DeviceModel", backref=backref("users"))
