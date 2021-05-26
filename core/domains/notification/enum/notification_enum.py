@@ -16,3 +16,7 @@ class DeviceTypeEnum(Enum):
     PUSH = "push"
     SMS = "sms"
     EMAIL = "email"
+
+
+class NotificationCategoryEnum(Enum):
+    APT01 = "apt01"
