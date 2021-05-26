@@ -20,6 +20,7 @@ class NotificationModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     user_id = Column(BigInteger, nullable=False)
+    endpoint = Column(String(32), nullable=False)
     category = Column(String(6), nullable=False)
     data = Column(
         "data", JSONB().with_variant(JSON, "sqlite"), nullable=False, default={}

@@ -23,6 +23,7 @@ def upgrade():
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
+        sa.Column("endpoint", sa.String(length=32), nullable=False),
         sa.Column("category", sa.String(length=6), nullable=False),
         sa.Column(
             "data",
