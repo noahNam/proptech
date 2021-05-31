@@ -23,7 +23,8 @@ def upgrade():
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
-        sa.Column("endpoint", sa.String(length=32), nullable=False),
+        sa.Column("token", sa.String(length=163), nullable=False),
+        sa.Column("endpoint", sa.String(length=100), nullable=True),
         sa.Column("category", sa.String(length=6), nullable=False),
         sa.Column(
             "data",
@@ -34,8 +35,8 @@ def upgrade():
         sa.Column("is_read", sa.Boolean(), nullable=False),
         sa.Column("is_pending", sa.Boolean(), nullable=False),
         sa.Column("status", sa.String(length=10), nullable=True),
-        sa.Column("created_at", sa.DateTime(), nullable=True),
-        sa.Column("updated_at", sa.DateTime(), nullable=True),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -44,9 +45,9 @@ def upgrade():
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
-        sa.Column("device_type", sa.String(length=3), nullable=False),
+        sa.Column("os", sa.String(length=3), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
-        sa.Column("created_at", sa.DateTime(), nullable=True),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
             ["user_id"],
             ["users.id"],
@@ -54,12 +55,12 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
-        "device_endpoints",
+        "device_tokens",
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("device_id", sa.BigInteger(), nullable=False),
-        sa.Column("endpoint", sa.String(length=32), nullable=False),
+        sa.Column("token", sa.String(length=163), nullable=False),
         sa.ForeignKeyConstraint(
             ["device_id"],
             ["devices.id"],
@@ -69,6 +70,6 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table("device_endpoints")
+    op.drop_table("device_tokens")
     op.drop_table("devices")
     op.drop_table("notifications")

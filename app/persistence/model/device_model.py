@@ -21,8 +21,8 @@ class DeviceModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False)
-    device_type = Column(String(3), nullable=False)
+    os = Column(String(3), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime, default=get_server_timestamp())
+    created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    device_endpoints = relationship("DeviceEndpointModel", backref=backref("devices"))
+    device_tokens = relationship("DeviceTokenModel", backref=backref("devices"))
