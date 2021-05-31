@@ -4,6 +4,7 @@ from enum import Enum
 class NotificationStatusEnum(Enum):
     SUCCESS = "success"
     FAILURE = "failure"
+    WAIT = "wait"
 
 
 class NotificationBadgeTypeEnum(Enum):
