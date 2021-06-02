@@ -17,12 +17,12 @@ def swagger_config():
             "openapi": "3.0.2",
             "info": {
                 "description": "powered by Flasgger",
-                "termsOfService": "/tanos",
+                "termsOfService": "/docs/tanos",
                 "title": "A swagger API",
                 "version": "1.0.0",
             },
             "host": "localhost:5000",
-            "basePath": "/tanos/",
+            "basePath": "/docs/tanos/",
             "components": {
                 "schemas": _swagger_schema,
                 "securitySchemes": {
@@ -36,11 +36,11 @@ def swagger_config():
                 "servers": [
                     {"url": "http://localhost:5000/", "description": "local server"},
                     {
-                        "url": "https://dev.apartalk.com/tanos/",
+                        "url": "https://www.apartalk.com/docs/tanos/",
                         "description": "development server",
                     },
                     {
-                        "url": "https://www.apartalk.com/tanos/",
+                        "url": "https://www.apartalk.com/docs/tanos/",
                         "description": "production server",
                     },
                 ],
@@ -49,14 +49,14 @@ def swagger_config():
             "specs": [
                 {
                     "endpoint": "apispec",
-                    "route": "/tanos/apispec.json",
+                    "route": "/docs/tanos/apispec.json",
                     "rule_filter": lambda rule: True,  # all in
                     "model_filter": lambda tag: True,  # all in
                 }
             ],
-            "static_url_path": "/tanos/apidocs/flasgger_static",
+            "static_url_path": "/docs/tanos/apidocs/flasgger_static",
             "swagger_ui": True,
-            "specs_route": "/tanos/apidocs/",
+            "specs_route": "/docs/tanos/apidocs/",
         },
         "template": {
             "info": {
