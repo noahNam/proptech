@@ -1,0 +1,10 @@
+user:
+  yml:
+unauthorized_error:
+  properties:
+    detail:
+      type: string
+      example: 401
+    message:
+      type: string
+      example: unauthorized_error

@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from typing import Union
 
 from pydantic import ValidationError
@@ -17,9 +18,10 @@ class UserPresenter:
                 print(e)
                 return failure_response(
                     UseCaseFailureOutput(
-                        detail=FailureType.SYSTEM_ERROR,
-                        message="response schema validation error",
-                    )
+                        detail="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR
                 )
             result = {
                 "data": {"user": schema.dict()},

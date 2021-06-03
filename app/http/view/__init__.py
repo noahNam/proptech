@@ -24,7 +24,7 @@ def handle_custom_type_exception(error):
         return (
             {
                 "detail": HTTPStatus.INTERNAL_SERVER_ERROR,
-                "message": "Internal Server Error",
+                "message": "internal_server_error",
             },
             HTTPStatus.INTERNAL_SERVER_ERROR,
         )
@@ -33,7 +33,7 @@ def handle_custom_type_exception(error):
 @api.errorhandler(InvalidRequestException)
 def handle_invalid_request_exception(error):
     return (
-        {"detail": error.message[0]["loc"][0], "message": "invalid_request"},
+        {"detail": error.message[0]["loc"][0], "message": "invalid_request_error"},
         error.status_code,
     )
 

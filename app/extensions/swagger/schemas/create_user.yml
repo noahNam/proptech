@@ -9,3 +9,5 @@ create_user:
             nickname:
               type: string
               example: Tester
+    meta:
+      type: null

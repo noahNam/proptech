@@ -1,10 +1,10 @@
 user:
   yml:
-error:
+invalid_request_error:
   properties:
     detail:
       type: string
-      example: 401
+      example: gender
     message:
       type: string
-      example: unauthorized_error
+      example: invalid_request_error

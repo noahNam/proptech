@@ -29,7 +29,7 @@ class TokenNotFoundError(ErrorFormat):
 
 class NotFoundException(ErrorFormat):
     code = HTTPStatus.NOT_FOUND
-    msg = "not_found"
+    msg = "not_found_error"
 
 
 class IsNotAdminException(ErrorFormat):
@@ -39,7 +39,7 @@ class IsNotAdminException(ErrorFormat):
 
 class EmptyBodyException(ErrorFormat):
     code = HTTPStatus.BAD_REQUEST
-    msg = "invalid_request"
+    msg = "invalid_request_error"
 
 
 class NoAuthorizationControlException(ErrorFormat):
