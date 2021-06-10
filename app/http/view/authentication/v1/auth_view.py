@@ -33,4 +33,4 @@ def token_refresh_view():
 
     data = get_renew_token(token).json()
 
-    return jsonify(access_token=data["data"]["token_info"]["access_token"])
+    return jsonify(access_token=data["data"]["token_info"]["access_token"], status="success")
