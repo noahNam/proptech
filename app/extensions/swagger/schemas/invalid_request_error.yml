@@ -4,7 +4,7 @@ invalid_request_error:
   properties:
     detail:
       type: string
-      example: gender
+      example: ${paramter}
     message:
       type: string
       example: invalid_request_error

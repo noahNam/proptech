@@ -1,3 +1,4 @@
+from flasgger import swag_from
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.http.view.authentication import current_user
@@ -41,6 +42,7 @@ def token_refresh_view():
 @api.route("/v1/auth/sms/send", methods=["POST"])
 @jwt_required
 @auth_required
+@swag_from("auth_send_sms_view.yml", methods=["POST"])
 def mobile_auth_sms_send_view():
     dto = MobileAuthSmsSendSchemeRequest(
         **request.get_json(),
@@ -53,6 +55,7 @@ def mobile_auth_sms_send_view():
 @api.route("/v1/auth/sms/confirm", methods=["POST"])
 @jwt_required
 @auth_required
+@swag_from("auth_confirm_sms_view.yml", methods=["POST"])
 def mobile_auth_sms_confirm_view():
     dto = MobileAuthSmsConfirmSchemeRequest(
         **request.get_json(),
