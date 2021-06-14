@@ -10,7 +10,10 @@ from app.extensions.utils.message_converter import MessageConverter
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import NotificationModel
 from core.domains.notification.dto.notification_dto import PushMessageDto
-from core.domains.notification.enum.notification_enum import NotificationCategoryEnum, NotificationBadgeTypeEnum
+from core.domains.notification.enum.notification_enum import (
+    NotificationCategoryEnum,
+    NotificationBadgeTypeEnum,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +27,15 @@ message_dto = PushMessageDto(
     badge_type=NotificationBadgeTypeEnum.ALL.value,
     title="모집공고가 새로 등록 되었습니다.",
     body="판교봇들마을3단지 모집공고가 게시되었습니다.",
-    data={"user_id": 1, "created_at": str(get_server_timestamp().replace(microsecond=0))}
+    data={
+        "user_id": 1,
+        "created_at": str(get_server_timestamp().replace(microsecond=0)),
+    },
 )
 
 
 @pytest.mark.skip(reason="삭제 예정:Hawkeye local_test.py로 대체될 예정")
-def test_push_message_via_SNS(
-        session
-):
+def test_push_message_via_SNS(session):
     # make notification message
     message_dict = MessageConverter.to_dict(message_dto)
 
@@ -55,13 +59,12 @@ def test_push_message_via_SNS(
     user_device_token = ENDPOINT
 
     # 엔드포인트에 연결할 임의의 사용자 데이터. Amazon SNS는 이 데이터를 사용하지 않습니다. 이 데이터는 UTF-8 형식이어야 하며 2KB 미만이어야 한다.
-    sns = boto3.resource('sns')
+    sns = boto3.resource("sns")
     platform_application = sns.PlatformApplication(APPLICATION_ARN)
 
     try:
         platform_application_endpoint = platform_application.create_platform_endpoint(
-            Token=user_device_token,
-            CustomUserData="1"
+            Token=user_device_token, CustomUserData="1"
         ).arn
     except ClientError as e:
         logger.exception("Could not create to platform application endpoint. %s", e)
@@ -71,8 +74,8 @@ def test_push_message_via_SNS(
 
     # push message to topic
     topic = sns.Topic(TOPIC_ARN)
-    topic.subscribe(Protocol='application', Endpoint=platform_application_endpoint)
-    res = topic.publish(Message=message, MessageStructure='json')
+    topic.subscribe(Protocol="application", Endpoint=platform_application_endpoint)
+    res = topic.publish(Message=message, MessageStructure="json")
 
     assert res.get("ResponseMetadata").get("HTTPStatusCode") == 200
 
@@ -83,28 +86,34 @@ def test_sns_get_count_application_endpoint():
     sns = boto3.client("sns")
 
     # First call does not need a NextToken
-    resp = sns.list_endpoints_by_platform_application(PlatformApplicationArn=APPLICATION_ARN)
-    count = len(resp['Endpoints'])
+    resp = sns.list_endpoints_by_platform_application(
+        PlatformApplicationArn=APPLICATION_ARN
+    )
+    count = len(resp["Endpoints"])
     enabled_count = 0
     try:
         while True:
-            for endpoint in resp['Endpoints']:
-                if endpoint['Attributes']['Enabled'] == "true":
+            for endpoint in resp["Endpoints"]:
+                if endpoint["Attributes"]["Enabled"] == "true":
                     enabled_count += 1
 
             # For the Last request, "NextToken" will not be included,
             # which will throw an exception. We use this to exit the loop.
             resp = sns.list_endpoints_by_platform_application(
-                PlatformApplicationArn=APPLICATION_ARN,
-                NextToken=ENDPOINT)
-            count += len(resp['Endpoints'])
+                PlatformApplicationArn=APPLICATION_ARN, NextToken=ENDPOINT
+            )
+            count += len(resp["Endpoints"])
     except Exception as e:
         pass
 
     finally:
         print("Total Number of Endpoints counted: " + str(count))
         print("Total Number of Endpoints enabled: " + str(enabled_count))
-        print("Percentage of Endpoints enabled: " + str((enabled_count / count) * 100) + "%")
+        print(
+            "Percentage of Endpoints enabled: "
+            + str((enabled_count / count) * 100)
+            + "%"
+        )
         print("Query time: %s seconds" % (time.time() - start_time))
 
 
@@ -113,14 +122,16 @@ def test_sns_get_value_application_endpoint():
     sns = boto3.client("sns")
 
     # First call does not need a NextToken
-    resp = sns.list_endpoints_by_platform_application(PlatformApplicationArn=APPLICATION_ARN)
+    resp = sns.list_endpoints_by_platform_application(
+        PlatformApplicationArn=APPLICATION_ARN
+    )
 
     try:
-        for endpoint in resp['Endpoints']:
-            if endpoint['Attributes']['Enabled'] == "true":
-                endpoint_arn = endpoint['EndpointArn']
-                token = endpoint['Attributes']['Token']
-                custom_user_data = endpoint['Attributes']['CustomUserData']
+        for endpoint in resp["Endpoints"]:
+            if endpoint["Attributes"]["Enabled"] == "true":
+                endpoint_arn = endpoint["EndpointArn"]
+                token = endpoint["Attributes"]["Token"]
+                custom_user_data = endpoint["Attributes"]["CustomUserData"]
     except Exception as e:
         pass
 

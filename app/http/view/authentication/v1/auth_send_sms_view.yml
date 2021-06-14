@@ -1,0 +1,87 @@
+openapi: "3.0.2"
+tags:
+  - User
+security:
+  - userAuth: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - phone_number
+        properties:
+          phone_number:
+            type: string
+            example: 01012345678
+responses:
+  '200':
+    description: A result object
+    content:
+      application/json:
+        schema:
+          properties:
+            result:
+              type: object
+              example: success
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: string
+              example: 500
+            message:
+              type: string
+              example: internal_server_error
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: string
+              example: 500
+            message:
+              type: string
+              example: Can not connect to Redis
+  '500 #3':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: string
+              example: 500
+            message:
+              type: string
+              example: redis_error
+  '500 #4':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: string
+              example: 500
+            message:
+              type: string
+              example: Can not send SMS to NCP

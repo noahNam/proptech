@@ -9,8 +9,10 @@ from app.persistence.model import (
     InterestRegionModel,
     UserProfileImgModel,
     InterestRegionGroupModel,
+    DeviceModel,
 )
 from app.persistence.model import UserModel
+from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
 from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto
 from core.exceptions import NotUniqueErrorException
 
@@ -106,4 +108,16 @@ class UserRepository:
             session.rollback()
             logger.error(
                 f"[UserRepository][update_user_profile_img_id] user_id : {user_id} error : {e}"
+            )
+
+    def update_user_mobile_auth_info(self, dto: MobileAuthConfirmSmsDto) -> None:
+        try:
+            session.query(DeviceModel).filter_by(user_id=dto.user_id).update(
+                {"phone_number": dto.phone_number, "is_auth": True}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_mobile_auth_info] user_id : {dto.user_id} error : {e}"
             )

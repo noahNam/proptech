@@ -1,10 +1,12 @@
+from http import HTTPStatus
 from typing import Dict
 
 
 class UseCaseFailureOutput:
-    def __init__(self, detail: str, message: str = None) -> None:
-        self.detail = detail
+    def __init__(self, type: str, message: str = None, code: HTTPStatus = None) -> None:
+        self.type = type
         self.message = self._format_message(message)
+        self.code = code
 
     def _format_message(self, msg):
         if isinstance(msg, Exception):
@@ -13,7 +15,7 @@ class UseCaseFailureOutput:
 
     @property
     def value(self) -> Dict:
-        return {"detail": self.detail, "message": self.message}
+        return {"type": self.type, "message": self.message}
 
     def __bool__(self):
         return False

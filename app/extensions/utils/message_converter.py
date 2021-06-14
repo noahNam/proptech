@@ -30,4 +30,6 @@ class MessageConverter:
                 "data": dto.data,
             }
         }
-        return dict(default=str(uuid.uuid4()), GCM=json.dumps(content, ensure_ascii=False))
+        return dict(
+            default=str(uuid.uuid4()), GCM=json.dumps(content, ensure_ascii=False)
+        )

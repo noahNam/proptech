@@ -6,18 +6,18 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
 from app.config import config
-from app.extensions import jwt
+from app.extensions import jwt, sms, redis
 from app.extensions.database import db, migrate
 from app.extensions.ioc_container import init_provider
 from app.extensions.swagger import swagger_config
 from app.http.view import api
-
 
 # alembic auto-generate detected
 # from app.persistence.model import *
 
 
 # event listener initialization
+from core.domains.user import event
 
 
 def init_config(
@@ -39,6 +39,8 @@ def init_blueprint(app: Flask):
 def init_extensions(app: Flask):
     Swagger(app, **swagger_config())
     jwt.init_app(app)
+    sms.init_app(app)
+    redis.init_app(app)
 
 
 def create_app(

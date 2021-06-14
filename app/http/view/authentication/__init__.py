@@ -4,19 +4,24 @@ from flask_jwt_extended.exceptions import NoAuthorizationError
 from werkzeug.local import LocalProxy
 
 
+class User:
+    def __init__(self, _id):
+        self.id = int(_id) if _id else None
+
+
 def _get_user_id():
     user_id = get_jwt_identity()
 
-    return int(user_id) if user_id else None
+    return User(user_id)
 
 
-user_id = LocalProxy(_get_user_id)
+current_user = LocalProxy(_get_user_id)
 
 
 def auth_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        if not user_id:
+        if not current_user.id:
             raise NoAuthorizationError
 
         return fn(*args, **kwargs)

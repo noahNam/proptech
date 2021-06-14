@@ -14,8 +14,7 @@ from core.domains.user.use_case.v1.user_use_case import CreateUserUseCase
 @swag_from("create_user.yml", methods=["POST"])
 def create_user_view():
     dto = CreateUserSchemeRequest(
-        **request.form.to_dict(),
-        file=request.files.getlist("files"),
+        **request.form.to_dict(), file=request.files.getlist("files"),
     ).validate_request_and_make_dto()
 
     return UserPresenter().transform(CreateUserUseCase().execute(dto=dto))

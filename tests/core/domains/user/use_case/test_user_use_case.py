@@ -12,7 +12,7 @@ from core.use_case_output import UseCaseSuccessOutput
 
 
 @patch("app.extensions.utils.image_helper.S3Helper.upload", return_value=True)
-def test_create_user_when_first_login_then_success(
+def test_create_user_use_case_when_first_login_then_success(
     s3_upload_mock, session, create_users, interest_region_group_factory
 ):
     user = create_users[0]
@@ -27,9 +27,7 @@ def test_create_user_when_first_login_then_success(
 
     with stream as temp:
         file = FileStorage(
-            stream=temp,
-            filename=file_name,
-            content_type="multipart/form-data",
+            stream=temp, filename=file_name, content_type="multipart/form-data",
         )
 
         dto = CreateUserDto(
@@ -74,9 +72,7 @@ def test_create_user_when_img_upload_fail_then_success(
 
     with stream as temp:
         file = FileStorage(
-            stream=temp,
-            filename=file_name,
-            content_type="multipart/form-data",
+            stream=temp, filename=file_name, content_type="multipart/form-data",
         )
 
         dto = CreateUserDto(

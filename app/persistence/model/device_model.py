@@ -23,6 +23,8 @@ class DeviceModel(db.Model):
     user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False)
     os = Column(String(3), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
+    is_auth = Column(Boolean, nullable=False, default=False)
+    phone_number = Column(String(11), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
     device_tokens = relationship("DeviceTokenModel", backref=backref("devices"))
