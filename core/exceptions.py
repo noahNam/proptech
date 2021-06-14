@@ -39,7 +39,7 @@ class IsNotAdminException(ErrorFormat):
 
 class EmptyBodyException(ErrorFormat):
     code = HTTPStatus.BAD_REQUEST
-    msg = "invalid_request_erro`r"
+    msg = "invalid_request_error"
 
 
 class NoAuthorizationControlException(ErrorFormat):
