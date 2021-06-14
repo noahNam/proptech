@@ -14,19 +14,19 @@ logger = logger_.getLogger(__name__)
 
 class MobileAuthSmsSendSchema(BaseModel):
     user_id: StrictInt
-    phone_number: StrictStr
+    phone_number: StrictStr = None
 
 
 class MobileAuthSmsConfirmSchema(BaseModel):
     user_id: StrictInt
-    phone_number: StrictStr
-    auth_number: StrictStr
+    phone_number: StrictStr = None
+    auth_number: StrictStr = None
 
 
 class MobileAuthSmsSendSchemeRequest:
     def __init__(
             self,
-            user_id=None,
+            user_id,
             phone_number=None,
     ):
         self.user_id = user_id
@@ -49,7 +49,7 @@ class MobileAuthSmsSendSchemeRequest:
 class MobileAuthSmsConfirmSchemeRequest:
     def __init__(
             self,
-            user_id=None,
+            user_id,
             auth_number=None,
             phone_number=None,
     ):
