@@ -21,7 +21,7 @@ class UserPresenter:
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
                     ),
-                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
             result = {
                 "data": {"user": schema.dict()},

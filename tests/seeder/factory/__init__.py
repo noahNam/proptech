@@ -4,7 +4,12 @@ import uuid
 import factory
 from faker import Factory as FakerFactory
 
-from app.persistence.model import InterestRegionModel, InterestRegionGroupModel, DeviceModel, DeviceTokenModel
+from app.persistence.model import (
+    InterestRegionModel,
+    InterestRegionGroupModel,
+    DeviceModel,
+    DeviceTokenModel,
+)
 from app.persistence.model.user_model import UserModel
 
 # factory에 사용해야 하는 Model을 가져온다

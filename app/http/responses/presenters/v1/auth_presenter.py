@@ -12,8 +12,7 @@ from core.use_case_output import UseCaseSuccessOutput, FailureType, UseCaseFailu
 
 class AuthenticationPresenter:
     def transform(
-            self,
-            response: UseCaseSuccessOutput,
+        self, response: UseCaseSuccessOutput,
     ):
         try:
             schema = AuthenticationResponseSchema(result=response.type)
@@ -44,7 +43,7 @@ class AuthSmsSendPresenter:
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
                     ),
-                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
             result = {
                 "data": schema.dict(),
@@ -67,7 +66,7 @@ class AuthSmsConfirmPresenter:
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
                     ),
-                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
             result = {
                 "data": schema.dict(),

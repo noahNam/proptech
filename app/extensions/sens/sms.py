@@ -42,43 +42,41 @@ class SmsClient:
 
         access_key = self._access_key
         secret_key = self._secret_key
-        secret_key = bytes(secret_key, 'UTF-8')
+        secret_key = bytes(secret_key, "UTF-8")
 
         method = "POST"
 
         message = method + " " + sms_uri + "\n" + timestamp + "\n" + access_key
-        message = bytes(message, 'UTF-8')
-        signing_key = base64.b64encode(hmac.new(secret_key, message, digestmod=hashlib.sha256).digest())
-
-        return SendSmsDto(
-            signing_key=signing_key,
-            timestamp=timestamp
+        message = bytes(message, "UTF-8")
+        signing_key = base64.b64encode(
+            hmac.new(secret_key, message, digestmod=hashlib.sha256).digest()
         )
+
+        return SendSmsDto(signing_key=signing_key, timestamp=timestamp)
 
     def convert_message(self, content: str, to_number: str):
         return {
-            'type': 'SMS',
-            'countryCode': '82',
-            'from': SmsServiceEnum.FROM_NUMBER.value,
-            'contentType': 'COMM',
-            'content': content,
-            'messages': [{'to': "{}".format(to_number)}]
+            "type": "SMS",
+            "countryCode": "82",
+            "from": SmsServiceEnum.FROM_NUMBER.value,
+            "contentType": "COMM",
+            "content": content,
+            "messages": [{"to": "{}".format(to_number)}],
         }
 
     def send_sms(self, dto: SendSmsDto) -> Any:
         try:
             response = requests.post(
                 self._sms_url,
-                headers={"Content-Type": "application/json; charset=utf-8",
-                         "x-ncp-apigw-timestamp": dto.timestamp,
-                         "x-ncp-iam-access-key": self._access_key,
-                         "x-ncp-apigw-signature-v2": dto.signing_key,
-                         },
-                data=json.dumps(dto.message)
+                headers={
+                    "Content-Type": "application/json; charset=utf-8",
+                    "x-ncp-apigw-timestamp": dto.timestamp,
+                    "x-ncp-iam-access-key": self._access_key,
+                    "x-ncp-apigw-signature-v2": dto.signing_key,
+                },
+                data=json.dumps(dto.message),
             )
 
             return dict(status_code=response.status_code, message=response.reason)
         except Exception as e:
-            logger.error(
-                f"[SmsClient][send_sms] error : {e}"
-            )
+            logger.error(f"[SmsClient][send_sms] error : {e}")

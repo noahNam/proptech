@@ -9,9 +9,9 @@ from app.extensions.cache.cache import RedisClient
 @pytest.fixture()
 def make_header():
     def _make_header(
-            authorization: str = None,
-            content_type: str = "application/json",
-            accept: str = "application/json",
+        authorization: str = None,
+        content_type: str = "application/json",
+        accept: str = "application/json",
     ):
         return {
             "Authorization": authorization,

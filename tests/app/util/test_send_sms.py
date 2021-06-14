@@ -13,7 +13,9 @@ def test_send_sms(sms):
 
     # make message
     to_number = "01044744412"
-    message = sms.convert_message(content=SmsMessageEnum.SMS_AUTH_MESSAGE.value, to_number=to_number)
+    message = sms.convert_message(
+        content=SmsMessageEnum.SMS_AUTH_MESSAGE.value, to_number=to_number
+    )
     send_sms_dto.message = message
 
     # send sms

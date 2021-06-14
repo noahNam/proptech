@@ -6,20 +6,21 @@ import pytest
 
 from app.extensions.utils.enum.cache_enum import RedisKeyPrefix, RedisExpire
 from app.persistence.model import DeviceModel
-from core.domains.authentication.dto.sms_dto import MobileAuthSendSmsDto, MobileAuthConfirmSmsDto
-from core.domains.authentication.use_case.v1.auth_use_case import MobileAuthSendSmsUseCase, MobileAuthConfirmSmsUseCase
+from core.domains.authentication.dto.sms_dto import (
+    MobileAuthSendSmsDto,
+    MobileAuthConfirmSmsDto,
+)
+from core.domains.authentication.use_case.v1.auth_use_case import (
+    MobileAuthSendSmsUseCase,
+    MobileAuthConfirmSmsUseCase,
+)
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput
 
 
 @pytest.mark.skip(reason="local redis 실행 안할경우 편의상 skip")
 @patch("app.extensions.sens.sms.SmsClient.send_sms")
-def test_send_sms_when_first_login_then_success(
-        send_sms, sms, redis
-):
-    dto = MobileAuthSendSmsDto(
-        user_id=1,
-        phone_number="01044744412"
-    )
+def test_send_sms_when_first_login_then_success(send_sms, sms, redis):
+    dto = MobileAuthSendSmsDto(user_id=1, phone_number="01044744412")
     send_sms.return_value = dict(status_code=202)
     result = MobileAuthSendSmsUseCase().execute(dto=dto)
 
@@ -31,9 +32,7 @@ def test_send_sms_when_first_login_then_success(
 
 
 @pytest.mark.skip(reason="local redis 실행 안할경우 편의상 skip")
-def test_confirm_sms_when_first_login_then_success(
-        sms, redis, session, user_factory
-):
+def test_confirm_sms_when_first_login_then_success(sms, redis, session, user_factory):
     user = user_factory.build_batch(size=1)
     session.add_all(user)
     session.commit()
@@ -43,15 +42,11 @@ def test_confirm_sms_when_first_login_then_success(
     key = f"{RedisKeyPrefix.MOBILE_AUTH.value}:{phone_number}"
 
     redis.set(
-        key=key,
-        value=auth_number,
-        ex=RedisExpire.MOBILE_AUTH_TIME.value,
+        key=key, value=auth_number, ex=RedisExpire.MOBILE_AUTH_TIME.value,
     )
 
     dto = MobileAuthConfirmSmsDto(
-        user_id=1,
-        phone_number="01044744412",
-        auth_number=auth_number
+        user_id=1, phone_number="01044744412", auth_number=auth_number
     )
     result = MobileAuthConfirmSmsUseCase().execute(dto=dto)
 
@@ -66,7 +61,7 @@ def test_confirm_sms_when_first_login_then_success(
 
 @pytest.mark.skip(reason="local redis 실행 안할경우 편의상 skip")
 def test_confirm_sms_when_first_login_with_wrong_auth_number_then_failure(
-        sms, redis, session, user_factory
+    sms, redis, session, user_factory
 ):
     user = user_factory.build_batch(size=1)
     session.add_all(user)
@@ -77,15 +72,11 @@ def test_confirm_sms_when_first_login_with_wrong_auth_number_then_failure(
     key = f"{RedisKeyPrefix.MOBILE_AUTH.value}:{phone_number}"
 
     redis.set(
-        key=key,
-        value=auth_number,
-        ex=RedisExpire.MOBILE_AUTH_TIME.value,
+        key=key, value=auth_number, ex=RedisExpire.MOBILE_AUTH_TIME.value,
     )
 
     dto = MobileAuthConfirmSmsDto(
-        user_id=1,
-        phone_number="01044744412",
-        auth_number=1234
+        user_id=1, phone_number="01044744412", auth_number=1234
     )
     result = MobileAuthConfirmSmsUseCase().execute(dto=dto)
 

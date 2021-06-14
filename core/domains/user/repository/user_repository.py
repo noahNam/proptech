@@ -8,7 +8,8 @@ from app.extensions.database import session
 from app.persistence.model import (
     InterestRegionModel,
     UserProfileImgModel,
-    InterestRegionGroupModel, DeviceModel,
+    InterestRegionGroupModel,
+    DeviceModel,
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
@@ -72,7 +73,7 @@ class UserRepository:
             )
 
     def _create_interest_region_objects(
-            self, dto: CreateUserDto
+        self, dto: CreateUserDto
     ) -> List[InterestRegionModel]:
         return [
             InterestRegionModel(user_id=dto.id, region_id=region_id)

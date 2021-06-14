@@ -27,9 +27,7 @@ def test_create_user_use_case_when_first_login_then_success(
 
     with stream as temp:
         file = FileStorage(
-            stream=temp,
-            filename=file_name,
-            content_type="multipart/form-data",
+            stream=temp, filename=file_name, content_type="multipart/form-data",
         )
 
         dto = CreateUserDto(
@@ -74,9 +72,7 @@ def test_create_user_when_img_upload_fail_then_success(
 
     with stream as temp:
         file = FileStorage(
-            stream=temp,
-            filename=file_name,
-            content_type="multipart/form-data",
+            stream=temp, filename=file_name, content_type="multipart/form-data",
         )
 
         dto = CreateUserDto(

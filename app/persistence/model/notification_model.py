@@ -29,6 +29,8 @@ class NotificationModel(db.Model):
     )
     is_read = Column("is_read", Boolean, nullable=False, default=False)
     is_pending = Column("is_pending", Boolean, nullable=False, default=True)
-    status = Column(String(10), nullable=True, default=NotificationStatusEnum.WAIT.value)
+    status = Column(
+        String(10), nullable=True, default=NotificationStatusEnum.WAIT.value
+    )
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
