@@ -17,13 +17,13 @@ def handle_custom_type_exception(error):
     check_custom_err = getattr(error, "type_", None)
 
     if check_custom_err:
-        return {"detail": error.type_["type_"], "message": error.msg}, error.code
+        return {"type": error.type_["type_"], "message": error.msg}, error.code
     elif isinstance(check_custom_err, dict):
-        return {"detail": error.code, "message": error.msg}, error.code
+        return {"type": error.code, "message": error.msg}, error.code
     else:
         return (
             {
-                "detail": HTTPStatus.INTERNAL_SERVER_ERROR,
+                "type": HTTPStatus.INTERNAL_SERVER_ERROR,
                 "message": "internal_server_error",
             },
             HTTPStatus.INTERNAL_SERVER_ERROR,
@@ -33,7 +33,7 @@ def handle_custom_type_exception(error):
 @api.errorhandler(InvalidRequestException)
 def handle_invalid_request_exception(error):
     return (
-        {"detail": error.message[0]["loc"][0], "message": "invalid_request_error"},
+        {"type": error.message[0]["loc"][0], "message": "invalid_request_error"},
         error.status_code,
     )
 
@@ -41,6 +41,6 @@ def handle_invalid_request_exception(error):
 @api.errorhandler(NoAuthorizationError)
 def handle_no_authorization_exception(error):
     return (
-        {"detail": HTTPStatus.UNAUTHORIZED, "message": "unauthorized_error"},
+        {"type": HTTPStatus.UNAUTHORIZED, "message": "unauthorized_error"},
         HTTPStatus.UNAUTHORIZED,
     )

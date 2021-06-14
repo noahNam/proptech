@@ -1,13 +1,17 @@
 import pytest
+from flask import Flask
 from flask_jwt_extended import JWTManager, create_access_token
+
+from app.extensions import SmsClient
+from app.extensions.cache.cache import RedisClient
 
 
 @pytest.fixture()
 def make_header():
     def _make_header(
-        authorization: str = None,
-        content_type: str = "application/json",
-        accept: str = "application/json",
+            authorization: str = None,
+            content_type: str = "application/json",
+            accept: str = "application/json",
     ):
         return {
             "Authorization": authorization,
@@ -41,3 +45,22 @@ def test_request_context(app):
 @pytest.fixture()
 def jwt_manager(app):
     return JWTManager(app)
+
+
+@pytest.fixture(scope="function")
+def sms(app: Flask):
+    _sms = SmsClient()
+    _sms.init_app(app=app)
+    return _sms
+
+
+@pytest.fixture(scope="function")
+def redis(app: Flask):
+    redis_url = "redis://localhost:6379"
+    _redis = RedisClient()
+    _redis.init_app(app=app, url=redis_url)
+
+    yield _redis
+
+    _redis.flushall()
+    _redis.disconnect()

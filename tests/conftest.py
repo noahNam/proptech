@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from pytest_factoryboy import register
 from sqlalchemy.orm import scoped_session
 from app import create_app
+from app.extensions import SmsClient, RedisClient
 from app.extensions.database import db as _db
 from .seeder.conftest import *
 
@@ -88,3 +89,22 @@ def set_factories_session(session):
     # 예시) UserFactory._meta.sqlalchemy_session = session
     for factory in MODEL_FACTORIES:
         factory._meta.sqlalchemy_session = session
+
+
+@pytest.fixture(scope="function")
+def sms(app: Flask):
+    _sms = SmsClient()
+    _sms.init_app(app=app)
+    return _sms
+
+
+@pytest.fixture(scope="function")
+def redis(app: Flask):
+    redis_url = "redis://localhost:6379"
+    _redis = RedisClient()
+    _redis.init_app(app=app, url=redis_url)
+
+    yield _redis
+
+    _redis.flushall()
+    _redis.disconnect()

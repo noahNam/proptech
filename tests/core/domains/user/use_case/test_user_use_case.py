@@ -12,7 +12,7 @@ from core.use_case_output import UseCaseSuccessOutput
 
 
 @patch("app.extensions.utils.image_helper.S3Helper.upload", return_value=True)
-def test_create_user_when_first_login_then_success(
+def test_create_user_use_case_when_first_login_then_success(
     s3_upload_mock, session, create_users, interest_region_group_factory
 ):
     user = create_users[0]

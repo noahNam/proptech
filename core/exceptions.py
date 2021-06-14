@@ -39,7 +39,7 @@ class IsNotAdminException(ErrorFormat):
 
 class EmptyBodyException(ErrorFormat):
     code = HTTPStatus.BAD_REQUEST
-    msg = "invalid_request_error"
+    msg = "invalid_request_erro`r"
 
 
 class NoAuthorizationControlException(ErrorFormat):
@@ -50,3 +50,8 @@ class NoAuthorizationControlException(ErrorFormat):
 class NotUniqueErrorException(ErrorFormat):
     code = HTTPStatus.BAD_REQUEST
     msg = "not_unique_error"
+
+
+class RedisErrorException(ErrorFormat):
+    code = HTTPStatus.INTERNAL_SERVER_ERROR
+    msg = "redis_error"

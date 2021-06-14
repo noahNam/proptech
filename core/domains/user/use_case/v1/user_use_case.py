@@ -53,7 +53,7 @@ class CreateUserUseCase(UserBaseUseCase):
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.id:
             return UseCaseFailureOutput(
-                detail="user_id", message=FailureType.NOT_FOUND_ERROR
+                type="user_id", message=FailureType.NOT_FOUND_ERROR
             )
 
         self._user_repo.create_user(dto=dto)

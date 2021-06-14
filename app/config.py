@@ -3,12 +3,22 @@ import os
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or "auckland"
-    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or "hawaii"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_ECHO = False
     DEBUG = False
+
+    # JWT
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or "hawaii"
+
+    # Redis
+    REDIS_URL = os.environ.get("REDIS_URL") or "redis://localhost:6379"
+
+    # Naver Cloud Platform Environment
+    SENS_SID = os.environ.get("SENS_SID") or "ncp:sms:kr:268333493425:test-apartalk"
+    NCP_ACCESS_KEY = os.environ.get("NCP_ACCESS_KEY") or "g4yBBz9JRbfEsEiN7PM0"
+    NCP_SECRET_KEY = os.environ.get("NCP_SECRET_KEY") or "p8InI44k4bp15jVod2xynDGGBSdZMuqlvLy8vuCM"
 
 
 class LocalConfig(Config):

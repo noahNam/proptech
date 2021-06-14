@@ -18,7 +18,7 @@ class UserPresenter:
                 print(e)
                 return failure_response(
                     UseCaseFailureOutput(
-                        detail="response schema validation error",
+                        type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR
@@ -29,4 +29,4 @@ class UserPresenter:
             }
             return success_response(result=result)
         elif isinstance(output, UseCaseFailureOutput):
-            return failure_response(output=output)
+            return failure_response(output=output, status_code=output.code)
