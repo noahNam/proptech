@@ -84,6 +84,38 @@ def test_auth_send_sms_when_first_login_then_success(
 
 @pytest.mark.skip(reason="local redis 실행 안할경우 편의상 skip")
 @patch("app.extensions.sens.sms.SmsClient.send_sms")
+def test_auth_send_sms_when_not_input_phone_number_then_error(
+        # send_sms,
+        client,
+        test_request_context,
+        jwt_manager,
+        make_header,
+        make_authorization,
+):
+    # send_sms.return_value = dict(status_code=202)
+    authorization = make_authorization(user_id=3)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json"
+    )
+    dict_ = dict(
+        phone_number=None
+    )
+
+    with test_request_context:
+        response = client.post(
+            url_for("api/tanos.mobile_auth_sms_send_view"), data=json.dumps(dict_), headers=headers
+        )
+
+    data = response.get_json()
+    assert response.status_code == 500
+    assert data["type"] == 500
+    assert data["message"] == "Can not send SMS to NCP"
+
+
+@pytest.mark.skip(reason="local redis 실행 안할경우 편의상 skip")
+@patch("app.extensions.sens.sms.SmsClient.send_sms")
 def test_send_sms_view_when_first_login_then_error(
         send_sms,
         client,
