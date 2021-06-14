@@ -7,6 +7,11 @@ volumes:
   tanos_db_local: {}
 
 services:
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+
   postgres:
     image: postgres
     container_name: tanos-postgres
