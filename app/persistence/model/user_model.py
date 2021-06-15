@@ -22,6 +22,7 @@ class UserModel(db.Model):
     interested_house_type = Column(
         String(10), nullable=True
     )
+    is_agree_terms = Column(Boolean, nullable=False, default=True)
     is_active = Column(Boolean, nullable=False, default=True)
     is_out = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, default=get_server_timestamp())
