@@ -15,10 +15,10 @@ requestBody:
         properties:
           phone_number:
             type: string
-            example: 01012345678
+            example: "01012345678"
           auth_number:
             type: string
-            example: 1234
+            example: "1234"
 responses:
   '200':
     description: A result object
