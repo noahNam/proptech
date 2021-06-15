@@ -22,7 +22,7 @@ def upgrade():
     op.create_table(
         "users",
         sa.Column(
-            "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
+            "id", sa.BigInteger(), nullable=False
         ),
         sa.Column("is_home_owner", sa.Boolean(), nullable=True),
         sa.Column("interested_house_type", sa.String(length=10), nullable=True),

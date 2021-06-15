@@ -1,7 +1,6 @@
 from sqlalchemy import (
     Column,
     BigInteger,
-    Integer,
     String,
     Boolean,
     DateTime,
@@ -16,7 +15,7 @@ class UserModel(db.Model):
     __tablename__ = "users"
 
     id = Column(
-        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
+        BigInteger, primary_key=True, nullable=False
     )
     is_home_owner = Column(Boolean, nullable=True)
     interested_house_type = Column(

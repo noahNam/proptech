@@ -2,8 +2,6 @@ from sqlalchemy import (
     Column,
     BigInteger,
     Integer,
-    String,
-    Boolean,
     ForeignKey,
     SmallInteger,
     DateTime,
