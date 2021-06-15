@@ -7,7 +7,6 @@ from app.extensions.utils.log_helper import logger_
 from app.extensions.database import session
 from app.persistence.model import (
     InterestRegionModel,
-    UserProfileImgModel,
     InterestRegionGroupModel,
     DeviceModel,
 )
@@ -73,30 +72,12 @@ class UserRepository:
             )
 
     def _create_interest_region_objects(
-        self, dto: CreateUserDto
+            self, dto: CreateUserDto
     ) -> List[InterestRegionModel]:
         return [
             InterestRegionModel(user_id=dto.id, region_id=region_id)
             for region_id in dto.region_ids
         ]
-
-    def create_user_profile_img(self, dto: CreateUserProfileImgDto) -> Optional[int]:
-        try:
-            user_profile_img = UserProfileImgModel(
-                uuid=dto.uuid_,
-                file_name=dto.file_name,
-                path=dto.path,
-                extension=dto.extension,
-            )
-            session.add(user_profile_img)
-            session.commit()
-
-            return user_profile_img.id
-        except Exception as e:
-            logger.error(
-                f"[UserRepository][update_user_profile_img] user_id : {dto.user_id} error : {e}"
-            )
-            session.rollback()
 
     def update_user_profile_img_id(self, user_id: int, profile_img_id: int) -> None:
         try:
