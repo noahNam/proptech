@@ -11,10 +11,14 @@ requestBody:
         type: object
         required:
           - phone_number
+          - auth_number
         properties:
           phone_number:
             type: string
             example: 01012345678
+          auth_number:
+            type: string
+            example: 1234
 responses:
   '200':
     description: A result object

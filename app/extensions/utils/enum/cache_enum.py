@@ -6,4 +6,4 @@ class RedisKeyPrefix(Enum):
 
 
 class RedisExpire(Enum):
-    MOBILE_AUTH_TIME = 120
+    MOBILE_AUTH_TIME = 180
