@@ -8,7 +8,8 @@ from app.extensions.database import session
 from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
-    DeviceModel, DeviceTokenModel,
+    DeviceModel,
+    DeviceTokenModel,
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
@@ -72,7 +73,7 @@ class UserRepository:
             )
 
     def _create_interest_region_objects(
-            self, dto: CreateUserDto
+        self, dto: CreateUserDto
     ) -> List[InterestRegionModel]:
         return [
             InterestRegionModel(user_id=dto.user_id, region_id=region_id)
@@ -101,10 +102,7 @@ class UserRepository:
 
     def create_device_token(self, dto: CreateUserDto, device_id) -> None:
         try:
-            device_token = DeviceTokenModel(
-                device_id=device_id,
-                token=dto.token,
-            )
+            device_token = DeviceTokenModel(device_id=device_id, token=dto.token,)
             session.add(device_token)
             session.commit()
         except exc.IntegrityError as e:

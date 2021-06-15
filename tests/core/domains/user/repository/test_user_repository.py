@@ -19,12 +19,12 @@ create_user_dto = CreateUserDto(
     os="AOS",
     is_active_device=True,
     is_auth=False,
-    token=str(uuid.uuid4())
+    token=str(uuid.uuid4()),
 )
 
 
 def test_create_user_profiles_when_first_login_then_success(
-        session, interest_region_factory
+    session, interest_region_factory
 ):
     UserRepository().create_user(dto=create_user_dto)
     interest_region_factory.create_batch(size=1, user_id=create_user_dto.user_id)
@@ -41,7 +41,7 @@ def test_create_user_profiles_when_first_login_then_success(
 
 
 def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_unique_error(
-        session,
+    session,
 ):
     UserRepository().create_user(dto=create_user_dto)
 

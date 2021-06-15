@@ -55,7 +55,7 @@ class UserBaseUseCase:
 
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateUserDto
+        self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(

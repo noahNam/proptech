@@ -2,7 +2,9 @@ from sqlalchemy import (
     Column,
     BigInteger,
     Boolean,
-    DateTime, SmallInteger, Integer,
+    DateTime,
+    SmallInteger,
+    Integer,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -13,11 +15,11 @@ from app.extensions.utils.time_helper import get_server_timestamp
 class UserModel(db.Model):
     __tablename__ = "users"
 
-    id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False)
-    home_owner_type = Column(SmallInteger, nullable=False)
-    interested_house_type = Column(
-        SmallInteger, nullable=False
+    id = Column(
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
+    home_owner_type = Column(SmallInteger, nullable=False)
+    interested_house_type = Column(SmallInteger, nullable=False)
     is_required_agree_terms = Column(Boolean, nullable=False, default=False)
     is_active = Column(Boolean, nullable=False, default=True)
     is_out = Column(Boolean, nullable=False, default=False)

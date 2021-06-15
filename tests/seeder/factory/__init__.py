@@ -59,10 +59,19 @@ class UserFactory(BaseFactory):
         model = UserModel
 
     home_owner_type = random.choice(
-        [UserHomeOwnerType.OWNER.value, UserHomeOwnerType.NOT_OWNER.value, UserHomeOwnerType.BEFORE_OWNER.value])
+        [
+            UserHomeOwnerType.OWNER.value,
+            UserHomeOwnerType.NOT_OWNER.value,
+            UserHomeOwnerType.BEFORE_OWNER.value,
+        ]
+    )
     interested_house_type = random.choice(
-        [UserInterestedHouseType.SUBSCRIPTION.value, UserInterestedHouseType.RENT.value,
-         UserInterestedHouseType.BUY_HOUSE.value])
+        [
+            UserInterestedHouseType.SUBSCRIPTION.value,
+            UserInterestedHouseType.RENT.value,
+            UserInterestedHouseType.BUY_HOUSE.value,
+        ]
+    )
     is_required_agree_terms = True
     is_active = True
     is_out = False

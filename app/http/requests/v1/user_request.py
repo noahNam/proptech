@@ -27,7 +27,14 @@ class CreateUserSchema(BaseModel):
 
 class CreateUserSchemeRequest:
     def __init__(
-            self, user_id, home_owner_type, interested_house_type, region_ids, uuid, os, token
+        self,
+        user_id,
+        home_owner_type,
+        interested_house_type,
+        region_ids,
+        uuid,
+        os,
+        token,
     ):
         self.user_id = int(user_id) if user_id else None
         self.home_owner_type = home_owner_type

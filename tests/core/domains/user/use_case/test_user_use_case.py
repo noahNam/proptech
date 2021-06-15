@@ -10,7 +10,7 @@ from core.use_case_output import UseCaseSuccessOutput
 
 
 def test_create_user_use_case_when_first_login_then_success(
-        session, create_users, create_interest_region_groups
+    session, create_users, create_interest_region_groups
 ):
     dto = CreateUserDto(
         user_id=4,
@@ -24,7 +24,7 @@ def test_create_user_use_case_when_first_login_then_success(
         os="AOS",
         is_active_device=True,
         is_auth=False,
-        token=str(uuid.uuid4())
+        token=str(uuid.uuid4()),
     )
 
     result = CreateUserUseCase().execute(dto=dto)
@@ -43,7 +43,7 @@ def test_create_user_use_case_when_first_login_then_success(
 
 
 def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_error(
-        session, create_users, interest_region_group_factory
+    session, create_users, interest_region_group_factory
 ):
     user = create_users[0]
     interest_region_group_factory.create()
@@ -60,7 +60,7 @@ def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_e
         os="AOS",
         is_active_device=True,
         is_auth=False,
-        token=str(uuid.uuid4())
+        token=str(uuid.uuid4()),
     )
 
     with pytest.raises(NotUniqueErrorException):
