@@ -44,6 +44,7 @@ def upgrade():
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
+        sa.Column("uuid", sa.String(length=36), nullable=False),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column("os", sa.String(length=3), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
