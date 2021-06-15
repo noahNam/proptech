@@ -26,7 +26,7 @@ def upgrade():
         ),
         sa.Column("is_home_owner", sa.Boolean(), nullable=True),
         sa.Column("interested_house_type", sa.String(length=10), nullable=True),
-        sa.Column("is_agree_terms", sa.Boolean(), nullable=False),
+        sa.Column("is_required_agree_terms", sa.Boolean(), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("is_out", sa.Boolean(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=True),
