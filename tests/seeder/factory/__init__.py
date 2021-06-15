@@ -13,6 +13,8 @@ from app.persistence.model import (
 from app.persistence.model.user_model import UserModel
 
 # factory에 사용해야 하는 Model을 가져온다
+from core.domains.user.enum.user_enum import UserHomeOwnerType, UserInterestedHouseType
+
 faker = FakerFactory.create(locale="ko_KR")
 
 
@@ -39,10 +41,11 @@ class DeviceFactory(BaseFactory):
     class Meta:
         model = DeviceModel
 
+    uuid = str(uuid.uuid4())
     os = "AOS"
     is_active = True
-    is_auth = False
-    phone_number = None
+    is_auth = True
+    phone_number = "01012345678"
 
     device_tokens = factory.List([factory.SubFactory(DeviceTokenFactory)])
 
@@ -55,13 +58,14 @@ class UserFactory(BaseFactory):
     class Meta:
         model = UserModel
 
-    nickname = faker.name()
-    email = faker.email()
-    gender = random.choice("FM")
-    birthday = faker.date_of_birth().strftime("%Y%m%d")
+    home_owner_type = random.choice(
+        [UserHomeOwnerType.OWNER.value, UserHomeOwnerType.NOT_OWNER.value, UserHomeOwnerType.BEFORE_OWNER.value])
+    interested_house_type = random.choice(
+        [UserInterestedHouseType.SUBSCRIPTION.value, UserInterestedHouseType.RENT.value,
+         UserInterestedHouseType.BUY_HOUSE.value])
+    is_required_agree_terms = True
     is_active = True
     is_out = False
-    profile_img_id = 1
 
     interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])
     devices = factory.List([factory.SubFactory(DeviceFactory)])

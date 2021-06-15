@@ -5,50 +5,58 @@ from pydantic import BaseModel, StrictInt, StrictStr, ValidationError
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.user.dto.user_dto import CreateUserDto
-from core.domains.user.enum.user_enum import UserDefaultValueEnum
 from core.exceptions import InvalidRequestException
 
 logger = logger_.getLogger(__name__)
 
 
 class CreateUserSchema(BaseModel):
-    id: StrictInt
-    nickname: StrictStr
-    email: StrictStr
-    birthday: StrictStr
-    gender: StrictStr
+    user_id: StrictInt
+    home_owner_type: int
+    interested_house_type: int
+    is_required_agree_terms: bool
     is_active: bool
     is_out: bool
-    region_ids: List[int]
-    file: List
+    region_ids: List[int] = []
+    uuid: str
+    os: str
+    is_active_device: bool
+    is_auth: bool
+    token: str
 
 
 class CreateUserSchemeRequest:
     def __init__(
-        self, id, nickname, email, birthday, gender, region_ids, file,
+            self, user_id, home_owner_type, interested_house_type, region_ids, uuid, os, token
     ):
-        self.id = int(id) if id else None
-        self.nickname = nickname if nickname else UserDefaultValueEnum.NICKNAME.value
-        self.email = email
-        self.birthday = birthday
-        self.gender = gender if gender else None
+        self.user_id = int(user_id) if user_id else None
+        self.home_owner_type = home_owner_type
+        self.interested_house_type = interested_house_type
+        self.is_required_agree_terms = False
         self.is_active = True
         self.is_out = False
         self.region_ids = json.loads(region_ids) if region_ids else []
-        self.file = file
+        self.uuid = uuid
+        self.os = os
+        self.is_active_device = True
+        self.is_auth = False
+        self.token = token
 
     def validate_request_and_make_dto(self):
         try:
             schema = CreateUserSchema(
-                id=self.id,
-                nickname=self.nickname,
-                email=self.email,
-                birthday=self.birthday,
-                gender=self.gender,
+                user_id=self.user_id,
+                home_owner_type=self.home_owner_type,
+                interested_house_type=self.interested_house_type,
+                is_required_agree_terms=self.is_required_agree_terms,
                 is_active=self.is_active,
                 is_out=self.is_out,
                 region_ids=self.region_ids,
-                file=self.file,
+                uuid=self.uuid,
+                os=self.os,
+                is_active_device=self.is_active_device,
+                is_auth=self.is_auth,
+                token=self.token,
             ).dict()
             return CreateUserDto(**schema)
         except ValidationError as e:

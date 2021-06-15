@@ -22,6 +22,15 @@ def create_users(session, user_factory):
     return users
 
 
+@pytest.fixture
+def create_interest_region_groups(session, interest_region_group_factory):
+    interest_region_groups = interest_region_group_factory.build_batch(size=3)
+    session.add_all(interest_region_groups)
+    session.commit()
+
+    return interest_region_groups
+
+
 def make_random_today_date(between_days: int = 1, year_ago: int = 2):
     """
     주어진 날의 00:00:00 ~ 23:59:59 사이의 랜덤 시간을 만든다.

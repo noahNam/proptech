@@ -8,16 +8,18 @@ class GetUserDto(BaseModel):
 
 
 class CreateUserDto(BaseModel):
-    id: int
-    nickname: str
-    email: str = None
-    birthday: str = None
-    gender: str
+    user_id: int
+    home_owner_type: int
+    interested_house_type: int
+    is_required_agree_terms: bool
     is_active: bool
     is_out: bool
-    profile_img_id: int = None
     region_ids: List[int] = []
-    file: List = []
+    uuid: str
+    os: str
+    is_active_device: bool
+    is_auth: bool
+    token: str
 
 
 class CreateUserProfileImgDto(BaseModel):
