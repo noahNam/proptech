@@ -11,14 +11,13 @@ from core.use_case_output import UseCaseSuccessOutput
 
 
 def test_create_user_use_case_when_first_login_then_success(
-        session, create_users, create_interest_region_groups
+        session, create_users
 ):
     dto = CreateUserDto(
         user_id=4,
         is_required_agree_terms=False,
         is_active=True,
         is_out=False,
-        region_ids=[1],
         uuid=str(uuid.uuid4()),
         os="AOS",
         is_active_device=True,
@@ -28,31 +27,20 @@ def test_create_user_use_case_when_first_login_then_success(
 
     result = CreateUserUseCase().execute(dto=dto)
 
-    interest_regions = (
-        session.query(InterestRegionModel).filter_by(user_id=dto.user_id).all()
-    )
-    interest_region_groups = (
-        session.query(InterestRegionGroupModel).filter_by(id=dto.region_ids[0]).first()
-    )
-
     assert result.type == "success"
     assert isinstance(result, UseCaseSuccessOutput)
-    assert len(interest_regions) == len(dto.region_ids)
-    assert interest_region_groups.interest_count == 1
 
 
 def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_error(
-        session, create_users, interest_region_group_factory
+        session, create_users
 ):
     user = create_users[0]
-    interest_region_group_factory.create()
 
     dto = CreateUserDto(
         user_id=user.id,
         is_required_agree_terms=False,
         is_active=True,
         is_out=False,
-        region_ids=[1],
         uuid=str(uuid.uuid4()),
         os="AOS",
         is_active_device=True,
@@ -75,7 +63,6 @@ def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_s
         is_required_agree_terms=False,
         is_active=True,
         is_out=False,
-        region_ids=[1],
         uuid=str(uuid.uuid4()),
         os="AOS",
         is_active_device=True,
@@ -95,7 +82,6 @@ def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_s
         is_required_agree_terms=False,
         is_active=True,
         is_out=False,
-        region_ids=[1],
         uuid=str(uuid.uuid4()),
         os="AOS",
         is_active_device=True,
@@ -122,4 +108,3 @@ def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_s
     assert app_agree_term.required_terms_yn == create_app_agree_term_dto.required_terms_yn
     assert app_agree_term.receipt_marketing_yn is True
     assert app_agree_term.receipt_marketing_date is not None
-

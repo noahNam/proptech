@@ -15,7 +15,6 @@ class CreateUserSchema(BaseModel):
     is_required_agree_terms: bool
     is_active: bool
     is_out: bool
-    region_ids: List[int] = []
     uuid: str
     os: str
     is_active_device: bool
@@ -27,7 +26,6 @@ class CreateUserSchemeRequest:
     def __init__(
         self,
         user_id,
-        region_ids,
         uuid,
         os,
         token,
@@ -36,7 +34,6 @@ class CreateUserSchemeRequest:
         self.is_required_agree_terms = False
         self.is_active = True
         self.is_out = False
-        self.region_ids = json.loads(region_ids) if region_ids else []
         self.uuid = uuid
         self.os = os
         self.is_active_device = True
@@ -50,7 +47,6 @@ class CreateUserSchemeRequest:
                 is_required_agree_terms=self.is_required_agree_terms,
                 is_active=self.is_active,
                 is_out=self.is_out,
-                region_ids=self.region_ids,
                 uuid=self.uuid,
                 os=self.os,
                 is_active_device=self.is_active_device,

@@ -30,10 +30,6 @@ requestBody:
           gender:
             type: string
             example: F
-          region_ids:
-            type: string
-            description: List[Integer]
-            example: "[1,2,3]"
           files:
             type: string
             format: binary

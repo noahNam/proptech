@@ -13,7 +13,6 @@ create_user_dto = CreateUserDto(
     is_required_agree_terms=False,
     is_active=True,
     is_out=False,
-    region_ids=[1],
     uuid=str(uuid.uuid4()),
     os="AOS",
     is_active_device=True,
@@ -41,7 +40,6 @@ def test_create_user_profiles_when_first_login_then_success(
     assert user.is_required_agree_terms == create_user_dto.is_required_agree_terms
     assert user.is_active == create_user_dto.is_active
     assert user.is_out == create_user_dto.is_out
-    assert len(user.interest_regions) == len(create_user_dto.region_ids)
 
 
 def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_unique_error(

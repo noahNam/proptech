@@ -70,5 +70,6 @@ class InterestRegionGroupFactory(BaseFactory):
     class Meta:
         model = InterestRegionGroupModel
 
+    level = 2
     name = faker.city()
     interest_count = 0

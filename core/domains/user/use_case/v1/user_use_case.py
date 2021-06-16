@@ -1,6 +1,6 @@
 import os
 import uuid
-from typing import Union, Optional, List
+from typing import Union
 
 import inject
 
@@ -63,8 +63,6 @@ class CreateUserUseCase(UserBaseUseCase):
             )
 
         self._user_repo.create_user(dto=dto)
-        self._user_repo.create_interest_regions(dto=dto)
-        self._user_repo.update_interest_region_group_counts(dto=dto)
 
         device_id = self._user_repo.create_device(dto=dto)
         self._user_repo.create_device_token(dto=dto, device_id=device_id)

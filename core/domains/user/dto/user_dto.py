@@ -1,7 +1,6 @@
 from typing import List
 
 from pydantic import BaseModel
-from sqlalchemy import DateTime
 
 
 class GetUserDto(BaseModel):
@@ -13,7 +12,6 @@ class CreateUserDto(BaseModel):
     is_required_agree_terms: bool
     is_active: bool
     is_out: bool
-    region_ids: List[int] = []
     uuid: str
     os: str
     is_active_device: bool

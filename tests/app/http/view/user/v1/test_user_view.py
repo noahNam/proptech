@@ -19,7 +19,6 @@ def test_create_user_when_first_login_then_success(
         accept="application/json",
     )
     dict_ = dict(
-        region_ids=json.dumps([1]),
         uuid=str(uuid.uuid4()),
         os="AOS",
         token=str(uuid.uuid4()),
@@ -60,7 +59,7 @@ def test_create_user_when_given_wrong_token_then_unauthorized_error(
 
 
 def test_create_user_to_verify_data_when_first_login_tehn_success(
-        client, session, test_request_context, make_header, make_authorization, create_interest_region_groups
+        client, session, test_request_context, make_header, make_authorization
 ):
     user_id = 1
     authorization = make_authorization(user_id=user_id)
@@ -70,7 +69,6 @@ def test_create_user_to_verify_data_when_first_login_tehn_success(
         accept="application/json",
     )
     dict_ = dict(
-        region_ids=json.dumps([1]),
         uuid=str(uuid.uuid4()),
         os="AOS",
         token=str(uuid.uuid4()),
@@ -85,12 +83,6 @@ def test_create_user_to_verify_data_when_first_login_tehn_success(
 
     user = (
         session.query(UserModel).filter_by(id=user_id).first()
-    )
-    interest_region = (
-        session.query(InterestRegionModel).filter_by(user_id=user_id).first()
-    )
-    interest_region_group = (
-        session.query(InterestRegionGroupModel).filter_by(id=interest_region.id).first()
     )
     device = (
         session.query(DeviceModel).filter_by(user_id=user_id).first()
@@ -107,11 +99,6 @@ def test_create_user_to_verify_data_when_first_login_tehn_success(
     assert user.is_required_agree_terms is False
     assert user.is_active is True
     assert user.is_out is False
-
-    # interest_regions
-    assert interest_region.user_id == user_id
-    assert interest_region.region_id == 1
-    assert interest_region_group.interest_count == 1
 
     # devices
     assert device.user_id == user_id
