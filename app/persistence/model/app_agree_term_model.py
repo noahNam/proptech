@@ -14,6 +14,6 @@ class AppAgreeTermModel(db.Model):
     private_user_info_yn = Column(Boolean, nullable=False)
     required_terms_yn = Column(Boolean, nullable=False)
     receipt_marketing_yn = Column(Boolean, nullable=False)
-    receipt_marketing_date = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    receipt_marketing_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)

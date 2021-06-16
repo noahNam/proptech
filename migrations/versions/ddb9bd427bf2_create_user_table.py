@@ -24,8 +24,6 @@ def upgrade():
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
-        sa.Column("home_owner_type", sa.SmallInteger(), nullable=False),
-        sa.Column("interested_house_type", sa.SmallInteger(), nullable=False),
         sa.Column("is_required_agree_terms", sa.Boolean(), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("is_out", sa.Boolean(), nullable=False),

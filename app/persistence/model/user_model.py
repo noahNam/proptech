@@ -3,7 +3,6 @@ from sqlalchemy import (
     BigInteger,
     Boolean,
     DateTime,
-    SmallInteger,
     Integer,
 )
 from sqlalchemy.orm import relationship, backref
@@ -18,8 +17,6 @@ class UserModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
-    home_owner_type = Column(SmallInteger, nullable=False)
-    interested_house_type = Column(SmallInteger, nullable=False)
     is_required_agree_terms = Column(Boolean, nullable=False, default=False)
     is_active = Column(Boolean, nullable=False, default=True)
     is_out = Column(Boolean, nullable=False, default=False)

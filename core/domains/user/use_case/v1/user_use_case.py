@@ -6,7 +6,7 @@ import inject
 
 from app.extensions.utils.enum.aws_enum import S3PathEnum, S3BucketEnum
 from app.extensions.utils.image_helper import S3Helper
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermDto
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -55,7 +55,7 @@ class UserBaseUseCase:
 
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
-        self, dto: CreateUserDto
+            self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -85,5 +85,20 @@ class CreateUserUseCase(UserBaseUseCase):
         #             self._user_repo.update_user_profile_img_id(
         #                 user_id=dto.id, profile_img_id=profile_img_id
         #             )
+
+        return UseCaseSuccessOutput()
+
+
+class CreateAppAgreeTerms(UserBaseUseCase):
+    def execute(
+            self, dto: CreateAppAgreeTermDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id", message=FailureType.NOT_FOUND_ERROR
+            )
+
+        self._user_repo.create_app_agree_terms(dto=dto)
+        self._user_repo.update_user_required_agree_terms(dto=dto)
 
         return UseCaseSuccessOutput()

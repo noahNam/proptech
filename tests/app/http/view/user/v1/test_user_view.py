@@ -19,8 +19,6 @@ def test_create_user_when_first_login_then_success(
         accept="application/json",
     )
     dict_ = dict(
-        home_owner_type=1,
-        interested_house_type=2,
         region_ids=json.dumps([1]),
         uuid=str(uuid.uuid4()),
         os="AOS",
@@ -72,8 +70,6 @@ def test_create_user_to_verify_data_when_first_login_tehn_success(
         accept="application/json",
     )
     dict_ = dict(
-        home_owner_type=1,
-        interested_house_type=2,
         region_ids=json.dumps([1]),
         uuid=str(uuid.uuid4()),
         os="AOS",
@@ -108,8 +104,6 @@ def test_create_user_to_verify_data_when_first_login_tehn_success(
     assert data["result"] == "success"
 
     # users
-    assert user.home_owner_type == dict_['home_owner_type']
-    assert user.interested_house_type == dict_['interested_house_type']
     assert user.is_required_agree_terms is False
     assert user.is_active is True
     assert user.is_out is False

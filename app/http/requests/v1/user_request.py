@@ -12,8 +12,6 @@ logger = logger_.getLogger(__name__)
 
 class CreateUserSchema(BaseModel):
     user_id: StrictInt
-    home_owner_type: int
-    interested_house_type: int
     is_required_agree_terms: bool
     is_active: bool
     is_out: bool
@@ -29,16 +27,12 @@ class CreateUserSchemeRequest:
     def __init__(
         self,
         user_id,
-        home_owner_type,
-        interested_house_type,
         region_ids,
         uuid,
         os,
         token,
     ):
         self.user_id = int(user_id) if user_id else None
-        self.home_owner_type = home_owner_type
-        self.interested_house_type = interested_house_type
         self.is_required_agree_terms = False
         self.is_active = True
         self.is_out = False
@@ -53,8 +47,6 @@ class CreateUserSchemeRequest:
         try:
             schema = CreateUserSchema(
                 user_id=self.user_id,
-                home_owner_type=self.home_owner_type,
-                interested_house_type=self.interested_house_type,
                 is_required_agree_terms=self.is_required_agree_terms,
                 is_active=self.is_active,
                 is_out=self.is_out,

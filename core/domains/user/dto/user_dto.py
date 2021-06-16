@@ -1,6 +1,7 @@
 from typing import List
 
 from pydantic import BaseModel
+from sqlalchemy import DateTime
 
 
 class GetUserDto(BaseModel):
@@ -9,8 +10,6 @@ class GetUserDto(BaseModel):
 
 class CreateUserDto(BaseModel):
     user_id: int
-    home_owner_type: int
-    interested_house_type: int
     is_required_agree_terms: bool
     is_active: bool
     is_out: bool
@@ -30,3 +29,10 @@ class CreateUserProfileImgDto(BaseModel):
     extension: str = None
     object_name: str = None
     origin_file: List = []
+
+
+class CreateAppAgreeTermDto(BaseModel):
+    user_id: int
+    private_user_info_yn: bool
+    required_terms_yn: bool
+    receipt_marketing_yn: bool
