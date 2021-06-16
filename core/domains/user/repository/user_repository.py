@@ -10,11 +10,11 @@ from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
     DeviceModel,
-    DeviceTokenModel, AppAgreeTermModel,
+    DeviceTokenModel, AppAgreeTermsModel,
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -123,11 +123,11 @@ class UserRepository:
                 f"[UserRepository][update_user_mobile_auth_info] user_id : {dto.user_id} error : {e}"
             )
 
-    def create_app_agree_terms(self, dto: CreateAppAgreeTermDto) -> None:
+    def create_app_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
             receipt_marketing_date = get_server_timestamp() if dto.receipt_marketing_yn else None
 
-            user = AppAgreeTermModel(
+            user = AppAgreeTermsModel(
                 user_id=dto.user_id,
                 private_user_info_yn=dto.private_user_info_yn,
                 required_terms_yn=dto.required_terms_yn,
@@ -143,7 +143,7 @@ class UserRepository:
             session.rollback()
             raise NotUniqueErrorException(type_="T004")
 
-    def update_user_required_agree_terms(self, dto: CreateAppAgreeTermDto) -> None:
+    def update_user_required_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
             session.query(UserModel).filter_by(id=dto.user_id).update(
                 {"is_required_agree_terms": True}

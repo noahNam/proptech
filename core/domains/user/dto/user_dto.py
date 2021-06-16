@@ -29,7 +29,7 @@ class CreateUserProfileImgDto(BaseModel):
     origin_file: List = []
 
 
-class CreateAppAgreeTermDto(BaseModel):
+class CreateAppAgreeTermsDto(BaseModel):
     user_id: int
     private_user_info_yn: bool
     required_terms_yn: bool

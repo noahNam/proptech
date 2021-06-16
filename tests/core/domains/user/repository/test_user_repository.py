@@ -2,9 +2,9 @@ import uuid
 
 import pytest
 
-from app.persistence.model import AppAgreeTermModel
+from app.persistence.model import AppAgreeTermsModel
 from app.persistence.model.user_model import UserModel
-from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
 
@@ -20,7 +20,7 @@ create_user_dto = CreateUserDto(
     token=str(uuid.uuid4()),
 )
 
-create_app_agree_term_dto = CreateAppAgreeTermDto(
+create_app_agree_term_dto = CreateAppAgreeTermsDto(
     user_id=1,
     private_user_info_yn=True,
     required_terms_yn=True,
@@ -56,7 +56,7 @@ def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_s
 ):
     UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
 
-    result = session.query(AppAgreeTermModel).filter_by(user_id=1).first()
+    result = session.query(AppAgreeTermsModel).filter_by(user_id=1).first()
     assert result.user_id == create_app_agree_term_dto.user_id
     assert result.private_user_info_yn == create_app_agree_term_dto.private_user_info_yn
     assert result.required_terms_yn == create_app_agree_term_dto.required_terms_yn
@@ -70,7 +70,7 @@ def test_agree_terms_repo_when_app_first_start_with_receipt_marketing_then_succe
     create_app_agree_term_dto.receipt_marketing_yn = True
     UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
 
-    result = session.query(AppAgreeTermModel).filter_by(user_id=1).first()
+    result = session.query(AppAgreeTermsModel).filter_by(user_id=1).first()
     assert result.user_id == create_app_agree_term_dto.user_id
     assert result.private_user_info_yn == create_app_agree_term_dto.private_user_info_yn
     assert result.required_terms_yn == create_app_agree_term_dto.required_terms_yn

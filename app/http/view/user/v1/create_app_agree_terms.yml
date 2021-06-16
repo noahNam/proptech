@@ -10,22 +10,14 @@ requestBody:
       schema:
         type: object
         required:
-          - uuid
-          - os
-          - token
+          - receipt_marketing_yn
         properties:
-          uuid:
+          receipt_marketing_yn:
             type: string
-            example: aaaaaaaaaaaaaaaaaaa
-          os:
-            type: string
-            example: AOS
-          token:
-            type: string
-            example: bbbbbbbbbbbbbbbbbbb
+            example: True or False
 responses:
   '200':
-    description: A user object
+    description: A app_agree_terms object
     content:
       application/json:
         schema:

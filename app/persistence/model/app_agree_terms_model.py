@@ -4,7 +4,7 @@ from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 
 
-class AppAgreeTermModel(db.Model):
+class AppAgreeTermsModel(db.Model):
     __tablename__ = "app_agree_terms"
 
     id = Column(

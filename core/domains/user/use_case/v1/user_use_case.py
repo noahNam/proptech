@@ -6,7 +6,7 @@ import inject
 
 from app.extensions.utils.enum.aws_enum import S3PathEnum, S3BucketEnum
 from app.extensions.utils.image_helper import S3Helper
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -89,7 +89,7 @@ class CreateUserUseCase(UserBaseUseCase):
 
 class CreateAppAgreeTerms(UserBaseUseCase):
     def execute(
-            self, dto: CreateAppAgreeTermDto
+            self, dto: CreateAppAgreeTermsDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
