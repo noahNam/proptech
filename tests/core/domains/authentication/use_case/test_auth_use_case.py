@@ -67,7 +67,7 @@ def test_confirm_sms_when_first_login_with_wrong_auth_number_then_failure(
     session.add_all(user)
     session.commit()
 
-    phone_number = "01044744412"
+    phone_number = user[0].devices[0].phone_number
     auth_number = str(randint(1000, 10000))
     key = f"{RedisKeyPrefix.MOBILE_AUTH.value}:{phone_number}"
 
@@ -76,14 +76,13 @@ def test_confirm_sms_when_first_login_with_wrong_auth_number_then_failure(
     )
 
     dto = MobileAuthConfirmSmsDto(
-        user_id=1, phone_number="01044744412", auth_number=1234
+        user_id=1, phone_number=phone_number, auth_number=12345
     )
     result = MobileAuthConfirmSmsUseCase().execute(dto=dto)
 
     device = session.query(DeviceModel).filter_by(user_id=user[0].id).first()
 
-    assert device.phone_number is None
-    assert device.is_auth is False
+    assert device.phone_number == phone_number
     assert result.type == "success"
     assert isinstance(result, UseCaseSuccessOutput)
     assert redis.is_exists(key) == 0

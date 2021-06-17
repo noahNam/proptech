@@ -6,44 +6,30 @@ security:
 requestBody:
   required: true
   content:
-    multipart/form-data:
+    application/json:
       schema:
         type: object
         required:
-          - id
-          - email
-          - gender
-          - nickname
+          - uuid
+          - os
+          - token
         properties:
-          id:
-            type: integer
-            example: 1
-          nickname:
+          uuid:
             type: string
-            example: Tester
-          email:
+            example: aaaaaaaaaaaaaaaaaaa
+          os:
             type: string
-            example: test@gmail.com
-          birthday:
+            example: AOS
+          token:
             type: string
-            example: 19850509
-          gender:
-            type: string
-            example: F
-          region_ids:
-            type: string
-            description: List[Integer]
-            example: "[1,2,3]"
-          files:
-            type: string
-            format: binary
+            example: bbbbbbbbbbbbbbbbbbb
 responses:
   '200':
     description: A user object
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/create_user'
+          $ref: '#/components/schemas/only_result'
   '400 #1':
     description: invalid_request_error
     content:

@@ -20,33 +20,13 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "user_profile_imgs",
-        sa.Column(
-            "id",
-            sa.BigInteger().with_variant(sa.Integer(), "sqlite"),
-            autoincrement=True,
-            nullable=False,
-        ),
-        sa.Column("uuid", sa.String(length=100), nullable=True),
-        sa.Column("file_name", sa.String(length=50), nullable=True),
-        sa.Column("path", sa.String(length=100), nullable=True),
-        sa.Column("extension", sa.String(length=10), nullable=True),
-        sa.Column("created_at", sa.DateTime(), nullable=True),
-        sa.Column("updated_at", sa.DateTime(), nullable=True),
-        sa.PrimaryKeyConstraint("id"),
-    )
-    op.create_table(
         "users",
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
-        sa.Column("nickname", sa.String(length=20), nullable=False),
-        sa.Column("email", sa.String(length=40), nullable=False),
-        sa.Column("birthday", sa.String(length=8), nullable=True),
-        sa.Column("gender", sa.String(length=1), nullable=False),
+        sa.Column("is_required_agree_terms", sa.Boolean(), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("is_out", sa.Boolean(), nullable=False),
-        sa.Column("profile_img_id", sa.BigInteger(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=True),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
@@ -71,4 +51,3 @@ def upgrade():
 def downgrade():
     op.drop_table("interest_regions")
     op.drop_table("users")
-    op.drop_table("user_profile_imgs")

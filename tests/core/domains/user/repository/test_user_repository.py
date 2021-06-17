@@ -1,65 +1,49 @@
 import uuid
 
 import pytest
-from pydantic import ValidationError
 
-from app.persistence.model import UserProfileImgModel
+from app.persistence.model import AppAgreeTermsModel
 from app.persistence.model.user_model import UserModel
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
 
 create_user_dto = CreateUserDto(
-    id=1,
-    nickname="tester",
-    email="test@gmail.com",
-    birthday="19850509",
-    gender="M",
+    user_id=1,
+    is_required_agree_terms=False,
     is_active=True,
     is_out=False,
-    region_ids=[1, 2, 3],
+    uuid=str(uuid.uuid4()),
+    os="AOS",
+    is_active_device=True,
+    is_auth=False,
+    token=str(uuid.uuid4()),
 )
 
-create_user_profile_img_dto = CreateUserProfileImgDto(
+create_app_agree_term_dto = CreateAppAgreeTermsDto(
     user_id=1,
-    uuid_=str(uuid.uuid4()),
-    file_name="my_profile_img",
-    path="profile_imgs/",
-    extension="png",
+    private_user_info_yn=True,
+    required_terms_yn=True,
+    receipt_marketing_yn=False
 )
 
 
 def test_create_user_profiles_when_first_login_then_success(
-    session, interest_region_factory
+        session, interest_region_factory
 ):
     UserRepository().create_user(dto=create_user_dto)
-    interest_region_factory.create_batch(size=3, user_id=create_user_dto.id)
+    interest_region_factory.create_batch(size=1, user_id=create_user_dto.user_id)
 
     user = session.query(UserModel).first()
 
-    assert user.id == create_user_dto.id
-    assert user.nickname == create_user_dto.nickname
-    assert user.profile_img_id is None
-    assert len(user.interest_regions) == len(create_user_dto.region_ids)
-
-
-def test_create_user_profiles_without_required_value_when_first_login_then_validation_error(
-    session,
-):
-    with pytest.raises(ValidationError):
-        dummy_dto = CreateUserDto(
-            nickname="tester",
-            email="test@gmail.com",
-            birthday="19850509",
-            is_active=True,
-            is_out=False,
-            region_ids=[1, 2, 3],
-        )
-        UserRepository().create_user(dto=dummy_dto)
+    assert user.id == create_user_dto.user_id
+    assert user.is_required_agree_terms == create_user_dto.is_required_agree_terms
+    assert user.is_active == create_user_dto.is_active
+    assert user.is_out == create_user_dto.is_out
 
 
 def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_unique_error(
-    session,
+        session,
 ):
     UserRepository().create_user(dto=create_user_dto)
 
@@ -67,27 +51,39 @@ def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_uniqu
         UserRepository().create_user(dto=create_user_dto)
 
 
-def test_create_user_profile_img_when_first_login_then_success(session):
-    user_profile_img_id = UserRepository().create_user_profile_img(
-        dto=create_user_profile_img_dto
-    )
-    user_profile_img = session.query(UserProfileImgModel).first()
-
-    assert user_profile_img_id == 1
-    assert user_profile_img.uuid == create_user_profile_img_dto.uuid_
-    assert user_profile_img.file_name == create_user_profile_img_dto.file_name
-    assert user_profile_img.path == create_user_profile_img_dto.path
-    assert user_profile_img.extension == create_user_profile_img_dto.extension
-
-
-def test_create_user_profile_img_without_user_id_when_first_login_then_validation_error(
-    session,
+def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_success(
+        session
 ):
-    with pytest.raises(ValidationError):
-        dummy_dto = CreateUserProfileImgDto(
-            uuid_=str(uuid.uuid4()),
-            file_name="my_profile_img",
-            path="profile_imgs/",
-            extension="png",
-        )
-        UserRepository().create_user_profile_img(dto=dummy_dto)
+    UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
+
+    result = session.query(AppAgreeTermsModel).filter_by(user_id=1).first()
+    assert result.user_id == create_app_agree_term_dto.user_id
+    assert result.private_user_info_yn == create_app_agree_term_dto.private_user_info_yn
+    assert result.required_terms_yn == create_app_agree_term_dto.required_terms_yn
+    assert result.receipt_marketing_yn == create_app_agree_term_dto.receipt_marketing_yn
+    assert result.receipt_marketing_date is None
+
+
+def test_agree_terms_repo_when_app_first_start_with_receipt_marketing_then_success(
+        session
+):
+    create_app_agree_term_dto.receipt_marketing_yn = True
+    UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
+
+    result = session.query(AppAgreeTermsModel).filter_by(user_id=1).first()
+    assert result.user_id == create_app_agree_term_dto.user_id
+    assert result.private_user_info_yn == create_app_agree_term_dto.private_user_info_yn
+    assert result.required_terms_yn == create_app_agree_term_dto.required_terms_yn
+    assert result.receipt_marketing_yn is True
+    assert result.receipt_marketing_date is not None
+
+
+def test_update_user_required_agree_terms_when_app_first_start_then_success(
+        session
+):
+    # user.is_required_agree_terms = False
+    UserRepository().create_user(dto=create_user_dto)
+    UserRepository().update_user_required_agree_terms(dto=create_app_agree_term_dto)
+
+    result = session.query(UserModel).filter_by(id=create_user_dto.user_id).first()
+    assert result.is_required_agree_terms is True

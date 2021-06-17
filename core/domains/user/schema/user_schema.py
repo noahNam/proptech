@@ -2,4 +2,8 @@ from pydantic import BaseModel, StrictStr
 
 
 class CreateUserResponseSchema(BaseModel):
-    nickname: StrictStr
+    result: StrictStr
+
+
+class CreateAppAgreeTermsResponseSchema(BaseModel):
+    result: StrictStr

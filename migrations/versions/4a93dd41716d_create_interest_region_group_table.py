@@ -24,6 +24,7 @@ def upgrade():
             autoincrement=True,
             nullable=False,
         ),
+        sa.Column("level", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(length=20), nullable=False),
         sa.Column("interest_count", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("id"),

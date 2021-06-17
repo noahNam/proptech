@@ -78,16 +78,9 @@ def test_auth_send_sms_when_first_login_then_success(
 
 
 @pytest.mark.skip(reason="local redis 실행 안할경우 편의상 skip")
-@patch("app.extensions.sens.sms.SmsClient.send_sms")
 def test_auth_send_sms_when_not_input_phone_number_then_error(
-    # send_sms,
-    client,
-    test_request_context,
-    jwt_manager,
-    make_header,
-    make_authorization,
+    client, test_request_context, jwt_manager, make_header, make_authorization,
 ):
-    # send_sms.return_value = dict(status_code=202)
     authorization = make_authorization(user_id=3)
     headers = make_header(
         authorization=authorization,
@@ -187,6 +180,7 @@ def test_auth_confirm_view_sms_when_input_correct_auth_number_then_success(
     assert data["result"] == "success"
 
 
+@pytest.mark.skip(reason="local redis 실행 안할경우 편의상 skip")
 def test_auth_confirm_view_sms_when_input_wrong_number_then_failure(
     redis,
     client,

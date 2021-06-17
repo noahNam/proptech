@@ -10,67 +10,51 @@ requestBody:
       schema:
         type: object
         required:
-          - phone_number
-          - auth_number
+          - receipt_marketing_yn
         properties:
-          phone_number:
+          receipt_marketing_yn:
             type: string
-            example: "01012345678"
-          auth_number:
-            type: string
-            example: "1234"
+            example: True or False
 responses:
   '200':
-    description: A result object
+    description: A app_agree_terms object
     content:
       application/json:
         schema:
           $ref: '#/components/schemas/only_result'
-  '400':
+  '400 #1':
     description: invalid_request_error
     content:
       application/json:
         schema:
           $ref: '#/components/schemas/invalid_request_error'
+  '400 #2':
+    description: not_unique_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/t001_not_unique_error'
   '401':
     description: unauthorized_error
     content:
       application/json:
         schema:
           $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
   '500 #1':
     description: internal_server_error
     content:
       application/json:
         schema:
-          properties:
-            detail:
-              type: string
-              example: 500
-            message:
-              type: string
-              example: internal_server_error
+          $ref: '#/components/schemas/internal_server_error'
   '500 #2':
     description: internal_server_error
     content:
       application/json:
         schema:
-          properties:
-            detail:
-              type: string
-              example: 500
-            message:
-              type: string
-              example: Can not connect to Redis
-  '500 #3':
-    description: internal_server_error
-    content:
-      application/json:
-        schema:
-          properties:
-            detail:
-              type: string
-              example: 500
-            message:
-              type: string
-              example: redis_error
+          $ref: '#/components/schemas/response_schema_validation_error'

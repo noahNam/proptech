@@ -5,15 +5,16 @@ from sqlalchemy import exc
 from app.extensions.utils.log_helper import logger_
 
 from app.extensions.database import session
+from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     InterestRegionModel,
-    UserProfileImgModel,
     InterestRegionGroupModel,
     DeviceModel,
+    DeviceTokenModel, AppAgreeTermsModel,
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -23,11 +24,8 @@ class UserRepository:
     def create_user(self, dto: CreateUserDto) -> None:
         try:
             user = UserModel(
-                id=dto.id,
-                nickname=dto.nickname,
-                email=dto.email,
-                birthday=dto.birthday,
-                gender=dto.gender,
+                id=dto.user_id,
+                is_required_agree_terms=dto.is_required_agree_terms,
                 is_active=dto.is_active,
                 is_out=dto.is_out,
             )
@@ -35,7 +33,7 @@ class UserRepository:
             session.commit()
         except exc.IntegrityError as e:
             logger.error(
-                f"[UserRepository][create_user] user_id : {dto.id} error : {e}"
+                f"[UserRepository][create_user] user_id : {dto.user_id} error : {e}"
             )
             session.rollback()
             raise NotUniqueErrorException(type_="T001")
@@ -51,7 +49,7 @@ class UserRepository:
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[UserRepository][create_interest_regions] user_id : {dto.id} error : {e}"
+                f"[UserRepository][create_interest_regions] user_id : {dto.user_id} error : {e}"
             )
 
     def update_interest_region_group_counts(self, dto: CreateUserDto) -> None:
@@ -66,49 +64,52 @@ class UserRepository:
                     {"interest_count": InterestRegionGroupModel.interest_count + 1}
                 )
                 session.commit()
+
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[UserRepository][update_interest_region_group_counts] user_id : {dto.id} error : {e}"
+                f"[UserRepository][update_interest_region_group_counts] user_id : {dto.user_id} error : {e}"
             )
 
     def _create_interest_region_objects(
-        self, dto: CreateUserDto
+            self, dto: CreateUserDto
     ) -> List[InterestRegionModel]:
         return [
-            InterestRegionModel(user_id=dto.id, region_id=region_id)
+            InterestRegionModel(user_id=dto.user_id, region_id=region_id)
             for region_id in dto.region_ids
         ]
 
-    def create_user_profile_img(self, dto: CreateUserProfileImgDto) -> Optional[int]:
+    def create_device(self, dto: CreateUserDto) -> Optional[int]:
         try:
-            user_profile_img = UserProfileImgModel(
-                uuid=dto.uuid_,
-                file_name=dto.file_name,
-                path=dto.path,
-                extension=dto.extension,
+            device = DeviceModel(
+                user_id=dto.user_id,
+                uuid=dto.uuid,
+                os=dto.os,
+                is_active=dto.is_active_device,
+                is_auth=dto.is_auth,
             )
-            session.add(user_profile_img)
+            session.add(device)
             session.commit()
 
-            return user_profile_img.id
-        except Exception as e:
+            return device.id
+        except exc.IntegrityError as e:
             logger.error(
-                f"[UserRepository][update_user_profile_img] user_id : {dto.user_id} error : {e}"
+                f"[UserRepository][create_devices] user_id : {dto.user_id} error : {e}"
             )
             session.rollback()
+            raise NotUniqueErrorException(type_="T002")
 
-    def update_user_profile_img_id(self, user_id: int, profile_img_id: int) -> None:
+    def create_device_token(self, dto: CreateUserDto, device_id) -> None:
         try:
-            session.query(UserModel).filter_by(id=user_id).update(
-                {"profile_img_id": profile_img_id}
-            )
+            device_token = DeviceTokenModel(device_id=device_id, token=dto.token, )
+            session.add(device_token)
             session.commit()
-        except Exception as e:
-            session.rollback()
+        except exc.IntegrityError as e:
             logger.error(
-                f"[UserRepository][update_user_profile_img_id] user_id : {user_id} error : {e}"
+                f"[UserRepository][create_device_token] user_id : {dto.user_id} error : {e}"
             )
+            session.rollback()
+            raise NotUniqueErrorException(type_="T003")
 
     def update_user_mobile_auth_info(self, dto: MobileAuthConfirmSmsDto) -> None:
         try:
@@ -121,3 +122,36 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_user_mobile_auth_info] user_id : {dto.user_id} error : {e}"
             )
+
+    def create_app_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
+        try:
+            receipt_marketing_date = get_server_timestamp() if dto.receipt_marketing_yn else None
+
+            user = AppAgreeTermsModel(
+                user_id=dto.user_id,
+                private_user_info_yn=dto.private_user_info_yn,
+                required_terms_yn=dto.required_terms_yn,
+                receipt_marketing_yn=dto.receipt_marketing_yn,
+                receipt_marketing_date=receipt_marketing_date,
+            )
+            session.add(user)
+            session.commit()
+        except exc.IntegrityError as e:
+            logger.error(
+                f"[UserRepository][create_app_agree_terms] user_id : {dto.user_id} error : {e}"
+            )
+            session.rollback()
+            raise NotUniqueErrorException(type_="T004")
+
+    def update_user_required_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
+        try:
+            session.query(UserModel).filter_by(id=dto.user_id).update(
+                {"is_required_agree_terms": True}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_required_agree_terms] user_id : {dto.user_id} error : {e}"
+            )
+            raise NotUniqueErrorException(type_="T005")

@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "80f2d6eebad0"
-down_revision = "24b8fa736f0f"
+down_revision = "4a93dd41716d"
 branch_labels = None
 depends_on = None
 
@@ -44,12 +44,14 @@ def upgrade():
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
+        sa.Column("uuid", sa.String(length=36), nullable=False),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column("os", sa.String(length=3), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("is_auth", sa.Boolean(), nullable=False),
         sa.Column("phone_number", sa.String(length=11), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
         sa.PrimaryKeyConstraint("id"),
     )
