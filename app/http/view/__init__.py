@@ -1,3 +1,4 @@
+import sentry_sdk
 from http import HTTPStatus
 
 from flask import Blueprint
@@ -14,8 +15,8 @@ from .main import *  # noqa isort:skip
 
 @api.errorhandler(Exception)
 def handle_custom_type_exception(error):
+    sentry_sdk.capture_exception(error)
     check_custom_err = getattr(error, "type_", None)
-
     if check_custom_err:
         return {"type": error.type_["type_"], "message": error.msg}, error.code
     elif isinstance(check_custom_err, dict):
@@ -32,6 +33,7 @@ def handle_custom_type_exception(error):
 
 @api.errorhandler(InvalidRequestException)
 def handle_invalid_request_exception(error):
+    sentry_sdk.capture_exception(error)
     return (
         {"type": error.message[0]["loc"][0], "message": "invalid_request_error"},
         error.status_code,
@@ -40,6 +42,7 @@ def handle_invalid_request_exception(error):
 
 @api.errorhandler(NoAuthorizationError)
 def handle_no_authorization_exception(error):
+    sentry_sdk.capture_exception(error)
     return (
         {"type": HTTPStatus.UNAUTHORIZED, "message": "unauthorized_error"},
         HTTPStatus.UNAUTHORIZED,
