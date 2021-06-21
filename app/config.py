@@ -25,6 +25,7 @@ class Config:
 
 class LocalConfig(Config):
     os.environ["FLASK_ENV"] = "local"
+    SENTRY_ENVIRONMENT = "local"
     SQLALCHEMY_ECHO = True
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@localhost:5432/tanos"
@@ -43,12 +44,15 @@ class TestConfig(Config):
 
 class DevelopmentConfig(Config):
     os.environ["FLASK_ENV"] = "development"
+    SENTRY_ENVIRONMENT = "dev"
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get("DEV_DATABASE_URL") or "sqlite:///:memory:"
-
+    SENTRY_KEY = os.environ.get("SENTRY_KEY")
 
 class ProductionConfig(Config):
     os.environ["FLASK_ENV"] = "production"
+    SENTRY_ENVIRONMENT = "prod"
+    SENTRY_KEY = os.environ.get("SENTRY_KEY")
 
 
 config = dict(
