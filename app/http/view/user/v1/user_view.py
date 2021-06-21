@@ -13,6 +13,7 @@ from core.domains.user.use_case.v1.user_use_case import CreateUserUseCase, Creat
 @auth_required
 @swag_from("create_user.yml", methods=["POST"])
 def create_user_view():
+    division_by_zero = 1 / 0
     dto = CreateUserRequestSchema(
         **request.get_json(), user_id=current_user.id,
     ).validate_request_and_make_dto()
