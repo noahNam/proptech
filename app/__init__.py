@@ -11,6 +11,7 @@ from app.extensions.database import db, migrate
 from app.extensions.ioc_container import init_provider
 from app.extensions.swagger import swagger_config
 from app.http.view import api
+import sentry_sdk
 
 # alembic auto-generate detected
 # from app.persistence.model import *
@@ -21,7 +22,7 @@ from core.domains.user import event
 
 
 def init_config(
-    app: Flask, config_name: str, settings: Optional[Dict[str, Any]] = None
+        app: Flask, config_name: str, settings: Optional[Dict[str, Any]] = None
 ) -> None:
     app_config = config[config_name]
     app.config.from_object(app_config)
@@ -43,14 +44,27 @@ def init_extensions(app: Flask):
     redis.init_app(app)
 
 
+def init_sentry(app: Flask):
+    if app.config.get("SENTRY_KEY", None):
+        sentry_sdk.init(
+            app.config.get("SENTRY_KEY"),
+            environment=app.config.get("SENTRY_ENVIRONMENT"),
+
+            # Set traces_sample_rate to 1.0 to capture 100%
+            # of transactions for performance monitoring.
+            # We recommend adjusting this value in production.
+            traces_sample_rate=1.0
+        )
+
+
 def create_app(
-    config_name: str = "default", settings: Optional[Dict[str, Any]] = None
+        config_name: str = "default", settings: Optional[Dict[str, Any]] = None
 ) -> Flask:
     app = Flask(__name__)
 
     if (
-        os.environ.get("FLASK_CONFIG") is not None
-        and os.environ.get("FLASK_CONFIG") is not config_name
+            os.environ.get("FLASK_CONFIG") is not None
+            and os.environ.get("FLASK_CONFIG") is not config_name
     ):
         config_name = os.environ.get("FLASK_CONFIG")
 
@@ -61,6 +75,7 @@ def create_app(
         init_db(app, db)
         init_provider()
         init_extensions(app)
+        init_sentry(app)
 
     print("\n💌💌💌Flask Config is '{}'".format(config_name))
 
