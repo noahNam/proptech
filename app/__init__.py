@@ -12,7 +12,6 @@ from app.extensions.ioc_container import init_provider
 from app.extensions.swagger import swagger_config
 from app.http.view import api
 import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
 
 # alembic auto-generate detected
 # from app.persistence.model import *
@@ -50,7 +49,6 @@ def init_sentry(app: Flask):
         sentry_sdk.init(
             app.config.get("SENTRY_KEY"),
             environment=app.config.get("SENTRY_ENVIRONMENT"),
-            integrations=[FlaskIntegration()],
 
             # Set traces_sample_rate to 1.0 to capture 100%
             # of transactions for performance monitoring.
