@@ -1,0 +1,19 @@
+user:
+  yml:
+not_found_error:
+  properties:
+    detail:
+      type: string
+      example: 404
+    message:
+      type: string
+      example: not_found_error
+user_not_found_error:
+  properties:
+    detail:
+      type: string
+      example: user_id
+    message:
+      type: string
+      example: not_found_error
+

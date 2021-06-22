@@ -1,68 +1,110 @@
-from app.persistence.model.post_model import PostModel
-from app.persistence.model.user_model import UserModel
-from core.domains.user.dto.user_dto import GetUserDto
-from core.domains.user.use_case.v1.user_use_case import (
-    GetUserUseCase,
-    GetUserWithPostUseCase,
-)
+import uuid
+
+import pytest
+
+from app.persistence.model import UserModel, AppAgreeTermsModel
+from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto
+from core.domains.user.repository.user_repository import UserRepository
+from core.domains.user.use_case.v1.user_use_case import CreateUserUseCase, CreateAppAgreeTerms
+from core.exceptions import NotUniqueErrorException
+from core.use_case_output import UseCaseSuccessOutput
 
 
-def test_when_get_user_then_success(session):
-    user = UserModel(nickname="Tester")
+def test_create_user_use_case_when_first_login_then_success(
+        session, create_users
+):
+    dto = CreateUserDto(
+        user_id=4,
+        is_required_agree_terms=False,
+        is_active=True,
+        is_out=False,
+        uuid=str(uuid.uuid4()),
+        os="AOS",
+        is_active_device=True,
+        is_auth=False,
+        token=str(uuid.uuid4()),
+    )
 
-    session.add(user)
-    session.commit()
+    result = CreateUserUseCase().execute(dto=dto)
 
-    dto = GetUserDto(user_id=user.id)
-
-    result = GetUserUseCase().execute(dto=dto)
-
-    assert result.value == user.to_entity()
-
-
-def test_when_get_user_with_post_by_pypubsub_success(session):
-    user = UserModel(nickname="Tester")
-
-    session.add(user)
-    session.commit()
-
-    post = PostModel(user_id=user.id, title="post title", body="post body")
-
-    session.add(post)
-    session.commit()
-
-    dto = GetUserDto(user_id=user.id)
-
-    result = GetUserWithPostUseCase().execute(dto=dto)
-
-    user_entity = result.value
-    posts_entity = user_entity.posts
-
-    assert user_entity.id == user.id
-    assert posts_entity[0].id == post.id
+    assert result.type == "success"
+    assert isinstance(result, UseCaseSuccessOutput)
 
 
-def test_when_check_post_existing_then_success(session):
-    """
-    단 시간에 여러 번 pypubsub listener 호출 후 누락되는 거 없는지 확인
-    """
-    user = UserModel(nickname="Tester")
+def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_error(
+        session, create_users
+):
+    user = create_users[0]
 
-    session.add(user)
-    session.commit()
+    dto = CreateUserDto(
+        user_id=user.id,
+        is_required_agree_terms=False,
+        is_active=True,
+        is_out=False,
+        uuid=str(uuid.uuid4()),
+        os="AOS",
+        is_active_device=True,
+        is_auth=False,
+        token=str(uuid.uuid4()),
+    )
 
-    post = PostModel(user_id=user.id, title="post title", body="post body")
+    with pytest.raises(NotUniqueErrorException):
+        CreateUserUseCase().execute(dto=dto)
 
-    session.add(post)
-    session.commit()
 
-    dto = GetUserDto(user_id=user.id)
+def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_success(
+        session, create_users, interest_region_group_factory
+):
+    user = create_users[0]
+    interest_region_group_factory.create()
 
-    for _ in range(700):
-        result = GetUserWithPostUseCase().execute(dto=dto)
+    dto = CreateUserDto(
+        user_id=user.id,
+        is_required_agree_terms=False,
+        is_active=True,
+        is_out=False,
+        uuid=str(uuid.uuid4()),
+        os="AOS",
+        is_active_device=True,
+        is_auth=False,
+        token=str(uuid.uuid4()),
+    )
 
-        user_entity = result.value
-        posts_entity = user_entity.posts
+    with pytest.raises(NotUniqueErrorException):
+        CreateUserUseCase().execute(dto=dto)
 
-        assert user_entity.id == user.id
-        assert posts_entity[0].id == post.id
+
+def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_success(
+        session
+):
+    create_user_dto = CreateUserDto(
+        user_id=1,
+        is_required_agree_terms=False,
+        is_active=True,
+        is_out=False,
+        uuid=str(uuid.uuid4()),
+        os="AOS",
+        is_active_device=True,
+        is_auth=False,
+        token=str(uuid.uuid4()),
+    )
+
+    create_app_agree_term_dto = CreateAppAgreeTermsDto(
+        user_id=1,
+        private_user_info_yn=True,
+        required_terms_yn=True,
+        receipt_marketing_yn=True
+    )
+
+    UserRepository().create_user(dto=create_user_dto)
+    CreateAppAgreeTerms().execute(dto=create_app_agree_term_dto)
+
+    user = session.query(UserModel).filter_by(id=create_user_dto.user_id).first()
+    app_agree_term = session.query(AppAgreeTermsModel).filter_by(user_id=create_app_agree_term_dto.user_id).first()
+
+    assert user.is_required_agree_terms is True
+    assert app_agree_term.user_id == create_app_agree_term_dto.user_id
+    assert app_agree_term.private_user_info_yn == create_app_agree_term_dto.private_user_info_yn
+    assert app_agree_term.required_terms_yn == create_app_agree_term_dto.required_terms_yn
+    assert app_agree_term.receipt_marketing_yn is True
+    assert app_agree_term.receipt_marketing_date is not None

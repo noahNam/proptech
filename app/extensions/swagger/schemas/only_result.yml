@@ -1,0 +1,10 @@
+only_result:
+  properties:
+    data:
+      type: object
+      properties:
+        result:
+          type: object
+          example: success or failure
+    meta:
+      type: null

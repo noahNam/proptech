@@ -16,6 +16,13 @@ inject = "*"
 pydantic = "*"
 pypubsub = "*"
 flasgger = "*"
+boto3= "1.12.17"
+gevent = "^20.1.0"
+gunicorn = "==20.0.4"
+requests = "^2.25.1"
+redis = "^3.5.3"
+newrelic = "*"
+sentry-sdk = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"

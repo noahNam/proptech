@@ -1,10 +1,12 @@
+from http import HTTPStatus
 from typing import Dict
 
 
 class UseCaseFailureOutput:
-    def __init__(self, type: str, message: str = None) -> None:
+    def __init__(self, type: str, message: str = None, code: HTTPStatus = None) -> None:
         self.type = type
         self.message = self._format_message(message)
+        self.code = code
 
     def _format_message(self, msg):
         if isinstance(msg, Exception):
@@ -34,6 +36,7 @@ class UseCaseSuccessOutput:
 class FailureType:
     INVALID_REQUEST_ERROR = "invalid_request_error"
     UNAUTHORIZED_ERROR = "unauthorized_error"
-    INTERNAL_ERROR = "internal_error"
+    INTERNAL_ERROR = "internal_server_error"
     NOT_FOUND_ERROR = "not_found_error"
     SYSTEM_ERROR = "system_error"
+    ALREADY_EXIST = "already_exist"

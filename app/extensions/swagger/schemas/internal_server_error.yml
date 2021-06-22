@@ -1,0 +1,18 @@
+user:
+  yml:
+internal_server_error:
+  properties:
+    detail:
+      type: string
+      example: 500
+    message:
+      type: string
+      example: internal_server_error
+response_schema_validation_error:
+  properties:
+    detail:
+      type: string
+      example: response schema validation error
+    message:
+      type: string
+      example: internal_server_error
