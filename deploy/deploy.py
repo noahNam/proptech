@@ -15,11 +15,11 @@ class BlueGreenDeploy:
 
     @property
     def ecs_client(self):
-        return boto3.client("ecs")
+        return boto3.client("ecs", region_name="ap-northeast-2")
 
     @property
     def code_deploy_client(self):
-        return boto3.client("codedeploy")
+        return boto3.client("codedeploy", region_name="ap-northeast-2")
 
     @property
     def base_appspec(self) -> dict:
