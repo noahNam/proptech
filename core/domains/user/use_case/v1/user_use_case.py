@@ -21,7 +21,7 @@ class UserBaseUseCase:
              프로필 이미지 등록은 사용 X -> 다만 추후 사용 가능성 있기 때문에 남겨둠
          """
         res = S3Helper.upload(
-            bucket=S3BucketEnum.APARTALK_BUCKET.value,
+            bucket=S3BucketEnum.TOADHOME_BUCKET.value,
             file_name=dto.origin_file[0],
             object_name=dto.object_name,
         )
