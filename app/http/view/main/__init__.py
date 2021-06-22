@@ -1,14 +1,9 @@
-from flask import Blueprint, Flask, jsonify
+from flask import jsonify
 
-from app.__meta__ import __api_name__, __version__
-
-main = Blueprint("main", __name__)
-
-
-def init_main_blueprint(app: Flask):
-    app.register_blueprint(main)
+from app.__meta__ import __version__
+from app.http.view import api
 
 
-@main.route("/")
+@api.route("/main/health_check", methods=["GET"])
 def index():
-    return jsonify({"name": __api_name__, "version": __version__})
+    return jsonify({"version": __version__})

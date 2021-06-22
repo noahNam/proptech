@@ -1,0 +1,10 @@
+user:
+  yml:
+invalid_request_error:
+  properties:
+    detail:
+      type: string
+      example: ${paramter}
+    message:
+      type: string
+      example: invalid_request_error
