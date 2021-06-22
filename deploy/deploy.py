@@ -59,8 +59,8 @@ class BlueGreenDeploy:
 
     def create_deployment(self, app_spec_content: str) -> None:
         deploy_result = self.code_deploy_client.create_deployment(
-            applicationName="AppECS-tanos-prod-cluster-tanos-api-prod",
-            deploymentGroupName="DgpECS-tanos-prod-cluster-tanos-api-prod",
+            applicationName="AppECS-prod-tanos-api-cluster-prod-tanos-api",
+            deploymentGroupName="DgpECS-prod-tanos-api-cluster-prod-tanos-api",
             deploymentConfigName="CodeDeployDefault.ECSAllAtOnce",
             revision={
                 "revisionType": "AppSpecContent",
