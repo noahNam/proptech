@@ -40,7 +40,7 @@ def swagger_config():
                         "description": "development server",
                     },
                     {
-                        "url": "https://www.apartalk.com/docs/tanos/",
+                        "url": "https://www.toadhome.com/docs/tanos/",
                         "description": "production server",
                     },
                 ],
