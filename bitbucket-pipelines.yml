@@ -28,7 +28,7 @@ pipelines:
           services:
             - postgres
       - step:
-          name: 'Build & Push to apartalk/tanos-api-prod'
+          name: 'Build & Push to toadhome/tanos-api-prod'
           image: 'python:3.8.2'
           trigger: manual
           script:
@@ -40,7 +40,7 @@ pipelines:
           caches:
             - docker
       - step:
-          name: 'Create TaskDefinition for apartalk/tanos-api-prod'
+          name: 'Create TaskDefinition for toadhome/tanos-api-prod'
           image: 'python:3.8.2'
           trigger: manual
           script:
