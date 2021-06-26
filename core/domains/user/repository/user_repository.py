@@ -10,11 +10,12 @@ from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
     DeviceModel,
-    DeviceTokenModel, AppAgreeTermsModel,
+    DeviceTokenModel, AppAgreeTermsModel, UserProfileModel,
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto, \
+    UpsertUserInfoDto
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -149,9 +150,26 @@ class UserRepository:
                 {"is_required_agree_terms": True}
             )
             session.commit()
-        except Exception as e:
+        except exc.IntegrityError as e:
             session.rollback()
             logger.error(
                 f"[UserRepository][update_user_required_agree_terms] user_id : {dto.user_id} error : {e}"
             )
             raise NotUniqueErrorException(type_="T005")
+
+    def create_user_profiles(self, dto: UpsertUserInfoDto):
+        try:
+            user_profile = UserProfileModel(
+                user_id=dto.user_id,
+                nickname=dto.value,
+                last_update_code=dto.code
+            )
+
+            session.add(user_profile)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][create_user_profiles] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception(str(e))

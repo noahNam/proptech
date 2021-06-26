@@ -87,7 +87,7 @@ class CreateUserUseCase(UserBaseUseCase):
         return UseCaseSuccessOutput()
 
 
-class CreateAppAgreeTerms(UserBaseUseCase):
+class CreateAppAgreeTermsUseCase(UserBaseUseCase):
     def execute(
             self, dto: CreateAppAgreeTermsDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
@@ -100,3 +100,18 @@ class CreateAppAgreeTerms(UserBaseUseCase):
         self._user_repo.update_user_required_agree_terms(dto=dto)
 
         return UseCaseSuccessOutput()
+
+
+# class CreateUserInfoUseCase(UserBaseUseCase):
+#     def execute(
+#             self, dto: CreateAppAgreeTermsDto
+#     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+#         if not dto.user_id:
+#             return UseCaseFailureOutput(
+#                 type="user_id", message=FailureType.NOT_FOUND_ERROR
+#             )
+#
+#         self._user_repo.create_app_agree_terms(dto=dto)
+#         self._user_repo.update_user_required_agree_terms(dto=dto)
+#
+#         return UseCaseSuccessOutput()
