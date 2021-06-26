@@ -46,7 +46,8 @@ class DeviceFactory(BaseFactory):
     is_auth = True
     phone_number = "01012345678"
 
-    device_tokens = factory.List([factory.SubFactory(DeviceTokenFactory)])
+    # device_tokens = factory.List([factory.SubFactory(DeviceTokenFactory)])
+    device_tokens = factory.SubFactory(DeviceTokenFactory)
 
 
 class UserFactory(BaseFactory):
@@ -61,8 +62,10 @@ class UserFactory(BaseFactory):
     is_active = True
     is_out = False
 
-    interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])
-    devices = factory.List([factory.SubFactory(DeviceFactory)])
+    # interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])
+    # devices = factory.List([factory.SubFactory(DeviceFactory)])
+    interest_regions = factory.SubFactory(InterestRegionFactory)
+    devices = factory.SubFactory(DeviceFactory)
 
 
 class InterestRegionGroupFactory(BaseFactory):

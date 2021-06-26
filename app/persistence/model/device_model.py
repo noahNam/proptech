@@ -29,4 +29,4 @@ class DeviceModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    device_tokens = relationship("DeviceTokenModel", backref=backref("devices"))
+    device_tokens = relationship("DeviceTokenModel", backref=backref("devices"), uselist=False)

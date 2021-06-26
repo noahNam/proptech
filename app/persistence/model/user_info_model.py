@@ -10,7 +10,7 @@ from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.user_profile_model import UserProfileModel
 
 
-class UserProfileModel(db.Model):
+class UserInfoModel(db.Model):
     __tablename__ = "user_infos"
 
     id = Column(
