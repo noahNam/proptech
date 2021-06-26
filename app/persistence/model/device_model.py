@@ -20,7 +20,7 @@ class DeviceModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
-    user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False)
+    user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True)
     uuid = Column(String(36), nullable=False)
     os = Column(String(3), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
