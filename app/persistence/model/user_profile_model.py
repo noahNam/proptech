@@ -3,7 +3,7 @@ from sqlalchemy import (
     BigInteger,
     Boolean,
     DateTime,
-    Integer, ForeignKey, String,
+    Integer, ForeignKey, String, SmallInteger,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -20,7 +20,7 @@ class UserProfileModel(db.Model):
     )
     user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True)
     nickname = Column(String(12), nullable=True)
-    last_update_code = Column(Boolean, nullable=True)
+    last_update_code = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 

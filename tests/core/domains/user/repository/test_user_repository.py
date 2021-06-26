@@ -2,9 +2,9 @@ import uuid
 
 import pytest
 
-from app.persistence.model import AppAgreeTermsModel
+from app.persistence.model import AppAgreeTermsModel, UserProfileModel
 from app.persistence.model.user_model import UserModel
-from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto, UpsertUserInfoDto
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
 
@@ -87,3 +87,19 @@ def test_update_user_required_agree_terms_when_app_first_start_then_success(
 
     result = session.query(UserModel).filter_by(id=create_user_dto.user_id).first()
     assert result.is_required_agree_terms is True
+
+
+def test_create_user_profiles_when_start_user_ifno_then_succes(
+        session
+):
+    dto = UpsertUserInfoDto(
+        user_id=1,
+        code="1000",
+        value="noah"
+    )
+    UserRepository().create_user_profiles(dto=dto)
+
+    result = session.query(UserProfileModel).filter_by(user_id=dto.user_id).first()
+
+    assert result.nickname == dto.value
+    assert result.last_update_code == dto.code
