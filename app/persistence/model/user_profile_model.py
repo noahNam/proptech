@@ -24,4 +24,4 @@ class UserProfileModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    user_infos = relationship("UserProfileModel", backref=backref("user_profiles"))
+    user_infos = relationship("UserInfoModel", backref=backref("user_profiles"))

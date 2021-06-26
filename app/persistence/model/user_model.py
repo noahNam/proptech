@@ -25,4 +25,4 @@ class UserModel(db.Model):
 
     interest_regions = relationship("InterestRegionModel", backref=backref("users"), uselist=False)
     devices = relationship("DeviceModel", backref=backref("users"), uselist=False)
-    user_profiles = relationship("InterestRegionModel", backref=backref("users"), uselist=False)
+    user_profiles = relationship("UserProfileModel", backref=backref("users"), uselist=False)
