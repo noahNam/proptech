@@ -34,3 +34,10 @@ class CreateAppAgreeTermsDto(BaseModel):
     private_user_info_yn: bool
     required_terms_yn: bool
     receipt_marketing_yn: bool
+
+
+class UpsertUserInfoDto(BaseModel):
+    user_id: int
+    user_profile_id: int = None
+    code: int
+    value: str

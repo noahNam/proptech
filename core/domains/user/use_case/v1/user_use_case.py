@@ -6,7 +6,8 @@ import inject
 
 from app.extensions.utils.enum.aws_enum import S3PathEnum, S3BucketEnum
 from app.extensions.utils.image_helper import S3Helper
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto, \
+    UpsertUserInfoDto
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -87,7 +88,7 @@ class CreateUserUseCase(UserBaseUseCase):
         return UseCaseSuccessOutput()
 
 
-class CreateAppAgreeTerms(UserBaseUseCase):
+class CreateAppAgreeTermsUseCase(UserBaseUseCase):
     def execute(
             self, dto: CreateAppAgreeTermsDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
@@ -98,5 +99,25 @@ class CreateAppAgreeTerms(UserBaseUseCase):
 
         self._user_repo.create_app_agree_terms(dto=dto)
         self._user_repo.update_user_required_agree_terms(dto=dto)
+
+        return UseCaseSuccessOutput()
+
+
+class CreateUserInfoUseCase:
+    def execute(
+            self, dto: UpsertUserInfoDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id", message=FailureType.NOT_FOUND_ERROR
+            )
+
+        # todo. code==1000 (설문 시작 후 닉네임 생성 시) -> user_profiles create 및 update
+
+        # todo. code!=1000 -> user_infos create 및 update, user_profile_id 조회 및 dto push
+
+        # todo. code!=1000 -> user_profiles.last_update_code update
+
+        # todo. SQS Data 전송
 
         return UseCaseSuccessOutput()
