@@ -10,11 +10,11 @@ from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
     DeviceModel,
-    DeviceTokenModel, AppAgreeTermsModel, UserProfileModel,
+    DeviceTokenModel, AppAgreeTermsModel, UserProfileModel, UserInfoModel,
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto, \
+from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto, \
     UpsertUserInfoDto
 from core.exceptions import NotUniqueErrorException
 
@@ -157,7 +157,14 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T005")
 
-    def create_user_profiles(self, dto: UpsertUserInfoDto):
+    def get_user_profile_id(self, dto: UpsertUserInfoDto):
+        user_profile = session.query(UserProfileModel.id).filter_by(user_id=dto.user_id).first()
+        if not user_profile:
+            return None
+
+        return user_profile.id
+
+    def create_user_nickname(self, dto: UpsertUserInfoDto):
         try:
             user_profile = UserProfileModel(
                 user_id=dto.user_id,
@@ -167,9 +174,64 @@ class UserRepository:
 
             session.add(user_profile)
             session.commit()
-        except Exception as e:
+        except exc.IntegrityError as e:
             session.rollback()
             logger.error(
                 f"[UserRepository][create_user_profiles] user_id : {dto.user_id} error : {e}"
             )
-            raise Exception(str(e))
+            raise NotUniqueErrorException(type_="T006")
+
+    def update_user_nickname(self, dto: UpsertUserInfoDto):
+        try:
+            session.query(UserProfileModel).filter_by(user_id=dto.user_id).update(
+                {"nickname": dto.value, "last_update_code": dto.code}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_nickname] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
+
+    def create_user_info(self, dto: UpsertUserInfoDto):
+        try:
+            user_info = UserInfoModel(
+                user_profile_id=dto.user_profile_id,
+                code=dto.code,
+                value=dto.value
+            )
+            session.add(user_info)
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][create_user_info] user_id : {dto.user_id} error : {e}"
+            )
+            raise NotUniqueErrorException(type_="T007")
+
+    def update_user_info(self, dto: UpsertUserInfoDto):
+        try:
+            session.query(UserInfoModel).filter_by(user_profile_id=dto.user_profile_id, code=dto.code).update(
+                {"value": dto.value}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_info] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
+
+    def update_last_code_to_user_info(self, dto: UpsertUserInfoDto):
+        try:
+            session.query(UserProfileModel).filter_by(user_id=dto.user_id).update(
+                {"last_update_code": dto.code}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_nickname] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
