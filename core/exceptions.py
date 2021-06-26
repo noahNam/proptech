@@ -52,6 +52,11 @@ class NotUniqueErrorException(ErrorFormat):
     msg = "not_unique_error"
 
 
+class IntegrityErrorException(ErrorFormat):
+    code = HTTPStatus.BAD_REQUEST
+    msg = "integrity_error"
+
+
 class RedisErrorException(ErrorFormat):
     code = HTTPStatus.INTERNAL_SERVER_ERROR
     msg = "redis_error"
