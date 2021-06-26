@@ -38,5 +38,6 @@ class CreateAppAgreeTermsDto(BaseModel):
 
 class UpsertUserInfoDto(BaseModel):
     user_id: int
+    user_profile_id: int = None
     code: int
     value: str
