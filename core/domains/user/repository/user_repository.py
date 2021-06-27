@@ -226,6 +226,11 @@ class UserRepository:
                 {"value": dto.value}
             )
             session.commit()
+
+            user_info_model2 = (
+                session.query(UserInfoModel).filter_by(user_profile_id=dto.user_profile_id,
+                                                       code=dto.code).first()
+            )
         except Exception as e:
             session.rollback()
             logger.error(
