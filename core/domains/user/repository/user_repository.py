@@ -1,6 +1,6 @@
-from typing import Optional, List
+from typing import Optional, List, Union
 
-from sqlalchemy import exc
+from sqlalchemy import exc, exists
 
 from app.extensions.utils.log_helper import logger_
 
@@ -15,7 +15,8 @@ from app.persistence.model import (
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
 from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto, \
-    UpsertUserInfoDto
+    UpsertUserInfoDto, GetUserInfoDto
+from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -157,14 +158,21 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T005")
 
-    def get_user_profile_id(self, dto: UpsertUserInfoDto):
+    def get_user_profile_id(self, dto: UpsertUserInfoDto) -> Optional[int]:
         user_profile = session.query(UserProfileModel.id).filter_by(user_id=dto.user_id).first()
         if not user_profile:
             return None
 
         return user_profile.id
 
-    def create_user_nickname(self, dto: UpsertUserInfoDto):
+    def is_user_info(self, dto: UpsertUserInfoDto) -> Optional[UserInfoEntity]:
+        return session.query(
+            exists()
+                .where(UserInfoModel.user_profile_id == dto.user_profile_id)
+                .where(UserInfoModel.code == dto.code)
+        ).scalar()
+
+    def create_user_nickname(self, dto: UpsertUserInfoDto) -> int:
         try:
             user_profile = UserProfileModel(
                 user_id=dto.user_id,
@@ -174,6 +182,8 @@ class UserRepository:
 
             session.add(user_profile)
             session.commit()
+
+            return user_profile.id
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
@@ -183,7 +193,7 @@ class UserRepository:
 
     def update_user_nickname(self, dto: UpsertUserInfoDto):
         try:
-            session.query(UserProfileModel).filter_by(user_id=dto.user_id).update(
+            session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
                 {"nickname": dto.value, "last_update_code": dto.code}
             )
             session.commit()
@@ -194,7 +204,7 @@ class UserRepository:
             )
             raise Exception
 
-    def create_user_info(self, dto: UpsertUserInfoDto):
+    def create_user_info(self, dto: UpsertUserInfoDto) -> None:
         try:
             user_info = UserInfoModel(
                 user_profile_id=dto.user_profile_id,
@@ -210,7 +220,7 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T007")
 
-    def update_user_info(self, dto: UpsertUserInfoDto):
+    def update_user_info(self, dto: UpsertUserInfoDto) -> None:
         try:
             session.query(UserInfoModel).filter_by(user_profile_id=dto.user_profile_id, code=dto.code).update(
                 {"value": dto.value}
@@ -223,7 +233,7 @@ class UserRepository:
             )
             raise Exception
 
-    def update_last_code_to_user_info(self, dto: UpsertUserInfoDto):
+    def update_last_code_to_user_info(self, dto: UpsertUserInfoDto) -> None:
         try:
             session.query(UserProfileModel).filter_by(user_id=dto.user_id).update(
                 {"last_update_code": dto.code}
@@ -235,3 +245,11 @@ class UserRepository:
                 f"[UserRepository][update_user_nickname] user_id : {dto.user_id} error : {e}"
             )
             raise Exception
+
+    def get_user_info(self, dto: GetUserInfoDto) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
+        user_info = session.query(UserInfoModel).filter_by(user_profile_id=dto.user_profile_id, code=dto.code).first()
+
+        if not user_info:
+            return UserInfoEmptyEntity(code=dto.code)
+
+        return user_info.to_entity()
