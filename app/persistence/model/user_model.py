@@ -23,5 +23,6 @@ class UserModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp())
     updated_at = Column(DateTime, default=get_server_timestamp())
 
-    interest_regions = relationship("InterestRegionModel", backref=backref("users"))
-    devices = relationship("DeviceModel", backref=backref("users"))
+    interest_regions = relationship("InterestRegionModel", backref=backref("users"), uselist=False)
+    devices = relationship("DeviceModel", backref=backref("users"), uselist=False)
+    user_profiles = relationship("UserProfileModel", backref=backref("users"), uselist=False)

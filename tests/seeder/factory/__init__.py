@@ -13,7 +13,6 @@ from app.persistence.model import (
 from app.persistence.model.user_model import UserModel
 
 # factory에 사용해야 하는 Model을 가져온다
-from core.domains.user.enum.user_enum import UserHomeOwnerType, UserInterestedHouseType
 
 faker = FakerFactory.create(locale="ko_KR")
 
@@ -47,7 +46,8 @@ class DeviceFactory(BaseFactory):
     is_auth = True
     phone_number = "01012345678"
 
-    device_tokens = factory.List([factory.SubFactory(DeviceTokenFactory)])
+    # device_tokens = factory.List([factory.SubFactory(DeviceTokenFactory)])
+    device_tokens = factory.SubFactory(DeviceTokenFactory)
 
 
 class UserFactory(BaseFactory):
@@ -62,8 +62,10 @@ class UserFactory(BaseFactory):
     is_active = True
     is_out = False
 
-    interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])
-    devices = factory.List([factory.SubFactory(DeviceFactory)])
+    # interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])
+    # devices = factory.List([factory.SubFactory(DeviceFactory)])
+    interest_regions = factory.SubFactory(InterestRegionFactory)
+    devices = factory.SubFactory(DeviceFactory)
 
 
 class InterestRegionGroupFactory(BaseFactory):
