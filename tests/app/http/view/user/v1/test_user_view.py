@@ -6,7 +6,6 @@ from flask import url_for
 
 from app.persistence.model import DeviceModel, DeviceTokenModel, \
     UserModel, AppAgreeTermsModel, UserProfileModel, UserInfoModel
-from core.domains.user.entity.user_entity import UserInfoEntity
 from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum
 from core.use_case_output import FailureType
 
