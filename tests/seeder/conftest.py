@@ -5,10 +5,16 @@ from faker import Faker
 from tests.seeder.factory import (
     UserFactory,
     InterestRegionFactory,
-    InterestRegionGroupFactory, UserProfileFactory,
+    InterestRegionGroupFactory,
+    UserProfileFactory,
 )
 
-MODEL_FACTORIES = [UserFactory, InterestRegionFactory, InterestRegionGroupFactory, UserProfileFactory]
+MODEL_FACTORIES = [
+    UserFactory,
+    InterestRegionFactory,
+    InterestRegionGroupFactory,
+    UserProfileFactory,
+]
 
 faker = Faker()
 

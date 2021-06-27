@@ -1,7 +1,12 @@
 from pydantic import BaseModel, StrictInt, ValidationError
 
 from app.extensions.utils.log_helper import logger_
-from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto, UpsertUserInfoDto, GetUserInfoDto
+from core.domains.user.dto.user_dto import (
+    CreateUserDto,
+    CreateAppAgreeTermsDto,
+    UpsertUserInfoDto,
+    GetUserInfoDto,
+)
 from core.exceptions import InvalidRequestException
 
 logger = logger_.getLogger(__name__)
@@ -39,11 +44,7 @@ class GetUserInfoSchema(BaseModel):
 
 class CreateUserRequestSchema:
     def __init__(
-            self,
-            user_id,
-            uuid,
-            os,
-            token,
+        self, user_id, uuid, os, token,
     ):
         self.user_id = int(user_id) if user_id else None
         self.is_required_agree_terms = False
@@ -78,9 +79,7 @@ class CreateUserRequestSchema:
 
 class CreateAppAgreeTermsRequestSchema:
     def __init__(
-            self,
-            user_id,
-            receipt_marketing_yn,
+        self, user_id, receipt_marketing_yn,
     ):
         self.user_id = int(user_id) if user_id else None
         self.private_user_info_yn = True
@@ -105,10 +104,7 @@ class CreateAppAgreeTermsRequestSchema:
 
 class UpsertUserInfoRequestSchema:
     def __init__(
-            self,
-            user_id,
-            code,
-            value,
+        self, user_id, code, value,
     ):
         self.user_id = int(user_id) if user_id else None
         self.code = code
@@ -117,9 +113,7 @@ class UpsertUserInfoRequestSchema:
     def validate_request_and_make_dto(self):
         try:
             schema = UpsertUserInfoSchema(
-                user_id=self.user_id,
-                code=self.code,
-                value=self.value,
+                user_id=self.user_id, code=self.code, value=self.value,
             ).dict()
             return UpsertUserInfoDto(**schema)
         except ValidationError as e:
@@ -131,19 +125,14 @@ class UpsertUserInfoRequestSchema:
 
 class GetUserInfoRequestSchema:
     def __init__(
-            self,
-            user_id,
-            code,
+        self, user_id, code,
     ):
         self.user_id = int(user_id) if user_id else None
         self.code = code
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserInfoSchema(
-                user_id=self.user_id,
-                code=self.code,
-            ).dict()
+            schema = GetUserInfoSchema(user_id=self.user_id, code=self.code,).dict()
             return GetUserInfoDto(**schema)
         except ValidationError as e:
             logger.error(

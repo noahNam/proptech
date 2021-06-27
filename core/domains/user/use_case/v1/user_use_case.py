@@ -6,12 +6,31 @@ import inject
 
 from app.extensions.utils.enum.aws_enum import S3PathEnum, S3BucketEnum
 from app.extensions.utils.image_helper import S3Helper
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto, \
-    UpsertUserInfoDto, GetUserInfoDto
-from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoCodeValueEntity, UserInfoEmptyEntity
-from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, IsHouseHolderCodeEnum, IsMarriedCodeEnum, \
-    NumberDependentsEnum, IsChildEnum, IsSubAccountEnum, MonthlyIncomeEnum, AssetsRealEstateEnum, AssetsCarEnum, \
-    AssetsTotalEnum, SpecialCondEnum
+from core.domains.user.dto.user_dto import (
+    CreateUserDto,
+    CreateUserProfileImgDto,
+    CreateAppAgreeTermsDto,
+    UpsertUserInfoDto,
+    GetUserInfoDto,
+)
+from core.domains.user.entity.user_entity import (
+    UserInfoEntity,
+    UserInfoCodeValueEntity,
+    UserInfoEmptyEntity,
+)
+from core.domains.user.enum.user_info_enum import (
+    IsHouseOwnerCodeEnum,
+    IsHouseHolderCodeEnum,
+    IsMarriedCodeEnum,
+    NumberDependentsEnum,
+    IsChildEnum,
+    IsSubAccountEnum,
+    MonthlyIncomeEnum,
+    AssetsRealEstateEnum,
+    AssetsCarEnum,
+    AssetsTotalEnum,
+    SpecialCondEnum,
+)
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -60,7 +79,7 @@ class UserBaseUseCase:
 
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateUserDto
+        self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -94,7 +113,7 @@ class CreateUserUseCase(UserBaseUseCase):
 
 class CreateAppAgreeTermsUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateAppAgreeTermsDto
+        self, dto: CreateAppAgreeTermsDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -109,7 +128,7 @@ class CreateAppAgreeTermsUseCase(UserBaseUseCase):
 
 class UpsertUserInfoUseCase(UserBaseUseCase):
     def execute(
-            self, dto: UpsertUserInfoDto
+        self, dto: UpsertUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -146,7 +165,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
 class GetUserInfoUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserInfoDto
+        self, dto: GetUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -160,7 +179,9 @@ class GetUserInfoUseCase(UserBaseUseCase):
             # nickname 생성 전 (즉, 최초 설문으로 user_profile_id가 없음)
             user_info: UserInfoEmptyEntity = self._make_empty_user_info_entity(dto=dto)
         else:
-            user_info: Union[UserInfoEntity, UserInfoEmptyEntity] = self._user_repo.get_user_info(dto=dto)
+            user_info: Union[
+                UserInfoEntity, UserInfoEmptyEntity
+            ] = self._user_repo.get_user_info(dto=dto)
             self._bind_detail_code_values(user_info=user_info)
 
         return UseCaseSuccessOutput(value=user_info)
@@ -168,20 +189,21 @@ class GetUserInfoUseCase(UserBaseUseCase):
     def _make_empty_user_info_entity(self, dto: GetUserInfoDto) -> UserInfoEmptyEntity:
         return UserInfoEmptyEntity(code=dto.code)
 
-    def _bind_detail_code_values(self, user_info: Union[UserInfoEntity, UserInfoEmptyEntity]):
+    def _bind_detail_code_values(
+        self, user_info: Union[UserInfoEntity, UserInfoEmptyEntity]
+    ):
         bind_detail_code_dict = {
-            '1005': IsHouseOwnerCodeEnum,
-            '1007': IsHouseHolderCodeEnum,
-            '1008': IsMarriedCodeEnum,
-            '1010': NumberDependentsEnum,
-            '1011': IsChildEnum,
-            '1015': IsSubAccountEnum,
-            '1019': MonthlyIncomeEnum,
-            '1020': AssetsRealEstateEnum,
-            '1021': AssetsCarEnum,
-            '1022': AssetsTotalEnum,
-            '1025': SpecialCondEnum,
-
+            "1005": IsHouseOwnerCodeEnum,
+            "1007": IsHouseHolderCodeEnum,
+            "1008": IsMarriedCodeEnum,
+            "1010": NumberDependentsEnum,
+            "1011": IsChildEnum,
+            "1015": IsSubAccountEnum,
+            "1019": MonthlyIncomeEnum,
+            "1020": AssetsRealEstateEnum,
+            "1021": AssetsCarEnum,
+            "1022": AssetsTotalEnum,
+            "1025": SpecialCondEnum,
         }
 
         bind_code = bind_detail_code_dict.get(str(user_info.code))

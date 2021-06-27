@@ -22,7 +22,7 @@ from core.domains.user import event
 
 
 def init_config(
-        app: Flask, config_name: str, settings: Optional[Dict[str, Any]] = None
+    app: Flask, config_name: str, settings: Optional[Dict[str, Any]] = None
 ) -> None:
     app_config = config[config_name]
     app.config.from_object(app_config)
@@ -49,22 +49,21 @@ def init_sentry(app: Flask):
         sentry_sdk.init(
             app.config.get("SENTRY_KEY"),
             environment=app.config.get("SENTRY_ENVIRONMENT"),
-
             # Set traces_sample_rate to 1.0 to capture 100%
             # of transactions for performance monitoring.
             # We recommend adjusting this value in production.
-            traces_sample_rate=1.0
+            traces_sample_rate=1.0,
         )
 
 
 def create_app(
-        config_name: str = "default", settings: Optional[Dict[str, Any]] = None
+    config_name: str = "default", settings: Optional[Dict[str, Any]] = None
 ) -> Flask:
     app = Flask(__name__)
 
     if (
-            os.environ.get("FLASK_CONFIG") is not None
-            and os.environ.get("FLASK_CONFIG") is not config_name
+        os.environ.get("FLASK_CONFIG") is not None
+        and os.environ.get("FLASK_CONFIG") is not config_name
     ):
         config_name = os.environ.get("FLASK_CONFIG")
 

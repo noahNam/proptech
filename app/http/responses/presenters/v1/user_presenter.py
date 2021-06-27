@@ -4,8 +4,12 @@ from typing import Union
 from pydantic import ValidationError
 
 from app.http.responses import failure_response, success_response
-from core.domains.user.schema.user_schema import CreateUserResponseSchema, CreateAppAgreeTermsResponseSchema, \
-    UpsertUserInfoResponseSchema, GetUserInfoResponseSchema
+from core.domains.user.schema.user_schema import (
+    CreateUserResponseSchema,
+    CreateAppAgreeTermsResponseSchema,
+    UpsertUserInfoResponseSchema,
+    GetUserInfoResponseSchema,
+)
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 

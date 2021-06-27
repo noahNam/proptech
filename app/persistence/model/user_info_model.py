@@ -2,7 +2,10 @@ from sqlalchemy import (
     Column,
     BigInteger,
     DateTime,
-    Integer, ForeignKey, String, SmallInteger,
+    Integer,
+    ForeignKey,
+    String,
+    SmallInteger,
 )
 
 from app import db
@@ -17,7 +20,9 @@ class UserInfoModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
-    user_profile_id = Column(BigInteger, ForeignKey(UserProfileModel.id), nullable=False)
+    user_profile_id = Column(
+        BigInteger, ForeignKey(UserProfileModel.id), nullable=False
+    )
     code = Column(SmallInteger, nullable=True)
     value = Column(String(8), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
