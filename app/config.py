@@ -1,5 +1,5 @@
 import os
-
+from urllib.parse import quote as urlquote
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or "auckland"
@@ -28,9 +28,10 @@ class LocalConfig(Config):
     SENTRY_ENVIRONMENT = "local"
     SQLALCHEMY_ECHO = True
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@localhost:5432/tanos"
     # Local environment configuration using Docker API service
     # SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@postgres:5432/tanos"
+    # Prod migrate
+    # SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://postgres:%s@localhost:5432/tanos" % urlquote("password")
 
 
 class TestConfig(Config):

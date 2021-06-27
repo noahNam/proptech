@@ -5,7 +5,7 @@ import pytest
 from app.persistence.model import UserModel, AppAgreeTermsModel
 from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto
 from core.domains.user.repository.user_repository import UserRepository
-from core.domains.user.use_case.v1.user_use_case import CreateUserUseCase, CreateAppAgreeTerms
+from core.domains.user.use_case.v1.user_use_case import CreateUserUseCase, CreateAppAgreeTermsUseCase
 from core.exceptions import NotUniqueErrorException
 from core.use_case_output import UseCaseSuccessOutput
 
@@ -97,7 +97,7 @@ def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_s
     )
 
     UserRepository().create_user(dto=create_user_dto)
-    CreateAppAgreeTerms().execute(dto=create_app_agree_term_dto)
+    CreateAppAgreeTermsUseCase().execute(dto=create_app_agree_term_dto)
 
     user = session.query(UserModel).filter_by(id=create_user_dto.user_id).first()
     app_agree_term = session.query(AppAgreeTermsModel).filter_by(user_id=create_app_agree_term_dto.user_id).first()
