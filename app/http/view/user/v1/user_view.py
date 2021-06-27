@@ -52,7 +52,7 @@ def create_app_agree_terms_view():
 @api.route("/v1/users/info", methods=["POST"])
 @jwt_required
 @auth_required
-# @swag_from("create_app_agree_terms.yml", methods=["POST"])
+@swag_from("upsert_user_info.yml", methods=["POST"])
 def upsert_user_info_view():
     dto = UpsertUserInfoRequestSchema(
         **request.get_json(), user_id=current_user.id,
@@ -64,7 +64,7 @@ def upsert_user_info_view():
 @api.route("/v1/users/info", methods=["GET"])
 @jwt_required
 @auth_required
-# @swag_from("create_app_agree_terms.yml", methods=["POST"])
+@swag_from("get_user_info.yml", methods=["GET"])
 def get_user_info_view():
     dto = GetUserInfoRequestSchema(
         **request.get_json(), user_id=current_user.id,
