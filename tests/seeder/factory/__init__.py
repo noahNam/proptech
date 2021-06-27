@@ -11,7 +11,8 @@ from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
     DeviceModel,
-    DeviceTokenModel, UserProfileModel,
+    DeviceTokenModel,
+    UserProfileModel,
 )
 from app.persistence.model.user_model import UserModel
 
