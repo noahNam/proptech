@@ -40,4 +40,10 @@ class UpsertUserInfoDto(BaseModel):
     user_id: int
     user_profile_id: int = None
     code: int
-    value: str
+    value: str = None
+
+
+class GetUserInfoDto(BaseModel):
+    user_id: int
+    user_profile_id: int = None
+    code: int

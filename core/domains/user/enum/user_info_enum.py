@@ -31,121 +31,55 @@ class CodeEnum(Enum):
 
 
 class IsHouseOwnerCodeEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "있어요"
-    COND_2_CD = 2
-    COND_2_NM = "없어요"
-    COND_3_CD = 3
-    COND_3_NM = "과거에 있었지만 현재는 처분했어요"
+    COND_CD = [1, 2, 3]
+    COND_NM = ["있어요", "없어요", "과거에 있었지만 현재는 처분했어요"]
 
 
 class IsHouseHolderCodeEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "예"
-    COND_2_CD = 2
-    COND_2_NM = "아니요"
+    COND_CD = [1, 2]
+    COND_NM = ["예", "아니요"]
 
 
 class IsMarriedCodeEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "기혼(외벌이)"
-    COND_2_CD = 2
-    COND_2_NM = "기혼(맞벌이)"
-    COND_3_CD = 3
-    COND_3_NM = "미혼"
-    COND_4_CD = 4
-    COND_4_NM = "한부모"
+    COND_CD = [1, 2, 3, 4]
+    COND_NM = ["기혼(외벌이)", "기혼(맞벌이)", "미혼", "한부모"]
 
 
 class NumberDependentsEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "1명"
-    COND_2_CD = 2
-    COND_2_NM = "2명"
-    COND_3_CD = 3
-    COND_3_NM = "3명"
-    COND_4_CD = 4
-    COND_4_NM = "4명"
-    COND_5_CD = 5
-    COND_5_NM = "5명"
-    COND_6_CD = 6
-    COND_6_NM = "6명 이상"
-    COND_7_CD = 7
-    COND_7_NM = "없어요"
+    COND_CD = [1, 2, 3, 4, 5, 6, 7]
+    COND_NM = ["1명", "2명", "3명", "4명", "5명", "6명 이상", "없어요"]
 
 
 class IsChildEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "있어요"
-    COND_2_CD = 2
-    COND_2_NM = "없어요"
+    COND_CD = [1, 2]
+    COND_NM = ["있어요", "없어요"]
 
 
 class IsSubAccountEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "있어요"
-    COND_2_CD = 2
-    COND_2_NM = "없어요"
+    COND_CD = [1, 2]
+    COND_NM = ["있어요", "없어요"]
 
 
 class MonthlyIncomeEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "70%"
-    COND_2_CD = 2
-    COND_2_NM = "80%"
-    COND_3_CD = 3
-    COND_3_NM = "100%"
-    COND_4_CD = 4
-    COND_4_NM = "110%"
-    COND_5_CD = 5
-    COND_5_NM = "120%"
-    COND_6_CD = 6
-    COND_6_NM = "130%"
-    COND_7_CD = 7
-    COND_7_NM = "140%"
+    COND_CD = [1, 2, 3, 4, 5, 6, 7]
+    COND_NM = ["70%", "80%", "100%", "110%", "120%", "130%", "140%"]
 
 
 class AssetsRealEstateEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "12,600만원 이하"
-    COND_2_CD = 2
-    COND_2_NM = "21,550만원 이하"
-    COND_3_CD = 3
-    COND_3_NM = "21,550만원 초과"
-    COND_4_CD = 4
-    COND_4_NM = "없음"
+    COND_CD = [1, 2, 3, 4]
+    COND_NM = ["12,600만원 이하", "21,550만원 이하", "21,550만원 초과", "없음"]
 
 
 class AssetsCarEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "2,494만원 이하"
-    COND_2_CD = 2
-    COND_2_NM = "2,797만원 이하"
-    COND_3_CD = 3
-    COND_3_NM = "2,797만원 초과"
-    COND_4_CD = 4
-    COND_4_NM = "없음"
+    COND_CD = [1, 2, 3, 4]
+    COND_NM = ["2,494만원 이하", "2,797만원 이하", "2,797만원 초과", "없음"]
 
 
 class AssetsTotalEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "21,500만원 이하"
-    COND_2_CD = 2
-    COND_2_NM = "25,400만원 이하"
-    COND_3_CD = 3
-    COND_3_NM = "29,200만원 이하"
-    COND_4_CD = 4
-    COND_4_NM = "29,200만원 초과"
-    COND_5_CD = 5
-    COND_5_NM = "없음"
+    COND_CD = [1, 2, 3, 4, 5]
+    COND_NM = ["21,500만원 이하", "25,400만원 이하", "29,200만원 이하", "29,200만원 초과", "없음"]
 
 
 class SpecialCondEnum(Enum):
-    COND_1_CD = 1
-    COND_1_NM = "공통"
-    COND_2_CD = 2
-    COND_2_NM = "국민주택"
-    COND_3_CD = 3
-    COND_3_NM = "민영주택"
-    COND_4_CD = 4
-    COND_4_NM = "없음"
+    COND_CD = [1, 2, 3, 4]
+    COND_NM = ["공통", "국민주택", "민영주택", "없음"]
