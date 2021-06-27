@@ -4,7 +4,9 @@ import pytest
 
 from app.persistence.model import AppAgreeTermsModel, UserProfileModel, UserInfoModel
 from app.persistence.model.user_model import UserModel
-from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto, UpsertUserInfoDto
+from core.domains.user.dto.user_dto import CreateUserDto, CreateAppAgreeTermsDto, UpsertUserInfoDto, GetUserInfoDto
+from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoCodeValueEntity, UserInfoEmptyEntity
+from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
 
@@ -197,3 +199,36 @@ def test_get_user_profile_id_when_input_user_data_then_none(
     get_user_profile_id = UserRepository().get_user_profile_id(dto=upsert_user_info_dto)
 
     assert get_user_profile_id is None
+
+
+def test_get_user_info_when_input_user_data_then_success(
+        session
+):
+    UserRepository().create_user_info(dto=upsert_user_info_dto)
+    dto = GetUserInfoDto(
+        user_id=upsert_user_info_dto.user_id,
+        user_profile_id=upsert_user_info_dto.user_profile_id,
+        code=upsert_user_info_dto.code,
+    )
+
+    user_info: UserInfoEntity = UserRepository().get_user_info(dto=dto)
+
+    assert user_info.user_profile_id == dto.user_profile_id
+    assert user_info.code == dto.code
+    assert user_info.user_value == upsert_user_info_dto.value
+
+
+def test_get_user_info_when_input_user_data_then_None(
+        session
+):
+    UserRepository().create_user_info(dto=upsert_user_info_dto)
+    dto = GetUserInfoDto(
+        user_id=upsert_user_info_dto.user_id,
+        user_profile_id=upsert_user_info_dto.user_profile_id,
+        code=upsert_user_info_dto.code + 1,
+        value=upsert_user_info_dto.value
+    )
+
+    user_info: UserInfoEmptyEntity = UserRepository().get_user_info(dto=dto)
+
+    assert isinstance(user_info, UserInfoEmptyEntity)
