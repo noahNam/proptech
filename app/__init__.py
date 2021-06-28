@@ -14,7 +14,7 @@ from app.extensions.swagger import swagger_config
 from app.http.view import api
 
 # alembic auto-generate detected
-from app.persistence.model import *
+# from app.persistence.model import *
 
 
 # event listener initialization
@@ -72,7 +72,7 @@ def create_app(
     with app.app_context():
         init_blueprint(app)
         init_db(app, db)
-        init_provider()
+        init_provider(app)
         init_extensions(app)
         init_sentry(app)
 

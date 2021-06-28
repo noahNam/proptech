@@ -23,6 +23,15 @@ class Config:
         os.environ.get("NCP_SECRET_KEY") or "p8InI44k4bp15jVod2xynDGGBSdZMuqlvLy8vuCM"
     )
 
+    # AWS ENV
+    AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY") or "AKIATBBH6H6PNXVM54ND"
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY") or "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"
+    AWS_REGION_NAME = os.environ.get("AWS_REGION_NAME") or "ap-northeast-2"
+
+    # SQS
+    SQS_BASE = os.environ.get("SQS_BASE") or "https://sqs.ap-northeast-2.amazonaws.com/208389685150"
+    SQS_USER_DATA_SYNC_TO_LAKE = os.environ.get("SQS_USER_DATA_SYNC_TO_LAKE") or "USER_DATA_SYNC_TO_LAKE_QUEUE"
+
 
 class LocalConfig(Config):
     os.environ["FLASK_ENV"] = "local"
