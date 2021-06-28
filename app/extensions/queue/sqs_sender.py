@@ -14,7 +14,7 @@ class SqsMessageSender:
     def __init__(self):
         self.__target_q = None
 
-        self.__sender = boto3.client(
+        self.__sqs = boto3.client(
             "sqs",
             region_name=current_app.config["AWS_REGION_NAME"],
             aws_access_key_id=current_app.config["AWS_ACCESS_KEY"],
@@ -38,7 +38,7 @@ class SqsMessageSender:
                     "[SqsMessageSender][Set] Target Queue {0}".format(self.__target_q)
                 )
 
-            response = self.__sender.send_message(
+            response = self.__sqs.send_message(
                 QueueUrl=self.__target_q,
                 DelaySeconds=0,
                 MessageAttributes={},
@@ -71,7 +71,7 @@ class SqsMessageSender:
                 )
 
             # SQS에 큐가 비워질때까지 메세지 조회
-            resp = self.__sender.receive_message(
+            resp = self.__sqs.receive_message(
                 QueueUrl=self.__target_q,
                 AttributeNames=['All'],
                 MaxNumberOfMessages=10
@@ -93,7 +93,7 @@ class SqsMessageSender:
                 for msg in resp['Messages']
             ]
 
-            resp = self.__sender.delete_message_batch(
+            resp = self.__sqs.delete_message_batch(
                 QueueUrl=self.__target_q, Entries=entries
             )
 
