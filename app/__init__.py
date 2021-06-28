@@ -1,4 +1,5 @@
 import os
+import sentry_sdk
 from typing import Optional, Dict, Any
 
 from flasgger import Swagger
@@ -11,7 +12,6 @@ from app.extensions.database import db, migrate
 from app.extensions.ioc_container import init_provider
 from app.extensions.swagger import swagger_config
 from app.http.view import api
-import sentry_sdk
 
 # alembic auto-generate detected
 # from app.persistence.model import *
@@ -72,7 +72,7 @@ def create_app(
     with app.app_context():
         init_blueprint(app)
         init_db(app, db)
-        init_provider()
+        init_provider(app)
         init_extensions(app)
         init_sentry(app)
 

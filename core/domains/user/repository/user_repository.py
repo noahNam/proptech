@@ -81,7 +81,7 @@ class UserRepository:
             )
 
     def _create_interest_region_objects(
-        self, dto: CreateUserDto
+            self, dto: CreateUserDto
     ) -> List[InterestRegionModel]:
         return [
             InterestRegionModel(user_id=dto.user_id, region_id=region_id)
@@ -110,7 +110,7 @@ class UserRepository:
 
     def create_device_token(self, dto: CreateUserDto, device_id) -> None:
         try:
-            device_token = DeviceTokenModel(device_id=device_id, token=dto.token,)
+            device_token = DeviceTokenModel(device_id=device_id, token=dto.token, )
             session.add(device_token)
             session.commit()
         except exc.IntegrityError as e:
@@ -179,8 +179,8 @@ class UserRepository:
     def is_user_info(self, dto: UpsertUserInfoDto) -> Optional[UserInfoEntity]:
         return session.query(
             exists()
-            .where(UserInfoModel.user_profile_id == dto.user_profile_id)
-            .where(UserInfoModel.code == dto.code)
+                .where(UserInfoModel.user_profile_id == dto.user_profile_id)
+                .where(UserInfoModel.code == dto.code)
         ).scalar()
 
     def create_user_nickname(self, dto: UpsertUserInfoDto) -> int:
@@ -213,13 +213,15 @@ class UserRepository:
             )
             raise Exception
 
-    def create_user_info(self, dto: UpsertUserInfoDto) -> None:
+    def create_user_info(self, dto: UpsertUserInfoDto) -> UserInfoEntity:
         try:
             user_info = UserInfoModel(
                 user_profile_id=dto.user_profile_id, code=dto.code, value=dto.value
             )
             session.add(user_info)
             session.commit()
+
+            return user_info.to_entity()
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
@@ -227,17 +229,18 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T007")
 
-    def update_user_info(self, dto: UpsertUserInfoDto) -> None:
+    def update_user_info(self, dto: UpsertUserInfoDto) -> UserInfoEntity:
         try:
-            session.query(UserInfoModel).filter_by(
+            user_info_id = session.query(UserInfoModel).filter_by(
                 user_profile_id=dto.user_profile_id, code=dto.code
             ).update({"value": dto.value})
             session.commit()
 
-            user_info_model2 = (
-                session.query(UserInfoModel)
-                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-                .first()
+            return UserInfoEntity(
+                id=user_info_id,
+                user_profile_id=dto.user_profile_id,
+                code=dto.code,
+                user_value=dto.value
             )
         except Exception as e:
             session.rollback()
@@ -260,12 +263,12 @@ class UserRepository:
             raise Exception
 
     def get_user_info(
-        self, dto: GetUserInfoDto
+            self, dto: GetUserInfoDto
     ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
         user_info = (
             session.query(UserInfoModel)
-            .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-            .first()
+                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
+                .first()
         )
 
         if not user_info:

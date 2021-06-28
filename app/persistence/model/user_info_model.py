@@ -5,7 +5,7 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    SmallInteger,
+    SmallInteger, UniqueConstraint,
 )
 
 from app import db
@@ -16,6 +16,9 @@ from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoCodeVal
 
 class UserInfoModel(db.Model):
     __tablename__ = "user_infos"
+    __table_args__ = (
+        UniqueConstraint('user_profile_id', 'code'),
+    )
 
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
