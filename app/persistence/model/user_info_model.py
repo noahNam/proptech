@@ -5,7 +5,7 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    SmallInteger,
+    SmallInteger, UniqueConstraint,
 )
 
 from app import db
@@ -21,12 +21,15 @@ class UserInfoModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     user_profile_id = Column(
-        BigInteger, ForeignKey(UserProfileModel.id), nullable=False
+        BigInteger, ForeignKey(UserProfileModel.id), nullable=False, unique=True
     )
-    code = Column(SmallInteger, nullable=True)
+    code = Column(SmallInteger, nullable=True, unique=True)
     value = Column(String(8), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+
+    # __table_args__ = (UniqueConstraint('user_profile_id', 'code', name='uc_user_infos'))
+    db.UniqueConstraint("user_profile_id", "code")
 
     def to_entity(self) -> UserInfoEntity:
         return UserInfoEntity(
