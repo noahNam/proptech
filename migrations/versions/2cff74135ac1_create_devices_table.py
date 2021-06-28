@@ -26,7 +26,7 @@ def upgrade():
                     sa.Column('phone_number', sa.String(length=11), nullable=True),
                     sa.Column('created_at', sa.DateTime(), nullable=False),
                     sa.Column('updated_at', sa.DateTime(), nullable=False),
-                    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+                    sa.ForeignKeyConstraint(['user_id'], ['users.id']),
                     sa.PrimaryKeyConstraint('id'),
                     sa.UniqueConstraint('user_id')
                     )
