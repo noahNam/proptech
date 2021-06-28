@@ -1,4 +1,5 @@
 import os
+import sentry_sdk
 from typing import Optional, Dict, Any
 
 from flasgger import Swagger
@@ -11,10 +12,9 @@ from app.extensions.database import db, migrate
 from app.extensions.ioc_container import init_provider
 from app.extensions.swagger import swagger_config
 from app.http.view import api
-import sentry_sdk
 
 # alembic auto-generate detected
-# from app.persistence.model import *
+from app.persistence.model import *
 
 
 # event listener initialization
