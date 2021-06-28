@@ -4,20 +4,24 @@ from typing import Union, Optional
 
 import inject
 
+from app.extensions.queue import SqsTypeEnum, SenderDto
+from app.extensions.queue.sender import QueueMessageSender
 from app.extensions.utils.enum.aws_enum import S3PathEnum, S3BucketEnum
 from app.extensions.utils.image_helper import S3Helper
+from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateUserProfileImgDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto,
+    GetUserInfoDto, SendUserInfoToLakeDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
     UserInfoCodeValueEntity,
     UserInfoEmptyEntity,
 )
+from core.domains.user.enum.user_enum import UserSqsTypeEnum
 from core.domains.user.enum.user_info_enum import (
     IsHouseOwnerCodeEnum,
     IsHouseHolderCodeEnum,
@@ -37,8 +41,14 @@ from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, Fai
 
 class UserBaseUseCase:
     @inject.autoparams()
-    def __init__(self, user_repo: UserRepository):
+    def __init__(self, user_repo: UserRepository, queue_msg_sender: QueueMessageSender):
         self._user_repo = user_repo
+        self._sqs = queue_msg_sender
+
+    def _send_sqs_message(self, queue_type: SqsTypeEnum, msg: SenderDto) -> bool:
+        return self._sqs.send_message(
+            queue_type=queue_type, msg=msg, logging=True
+        )
 
     def _upload_user_profile_img(self, dto: CreateUserProfileImgDto) -> bool:
         """
@@ -79,7 +89,7 @@ class UserBaseUseCase:
 
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
-        self, dto: CreateUserDto
+            self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -113,7 +123,7 @@ class CreateUserUseCase(UserBaseUseCase):
 
 class CreateAppAgreeTermsUseCase(UserBaseUseCase):
     def execute(
-        self, dto: CreateAppAgreeTermsDto
+            self, dto: CreateAppAgreeTermsDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -128,7 +138,7 @@ class CreateAppAgreeTermsUseCase(UserBaseUseCase):
 
 class UpsertUserInfoUseCase(UserBaseUseCase):
     def execute(
-        self, dto: UpsertUserInfoDto
+            self, dto: UpsertUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -151,21 +161,38 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
         dto.user_profile_id = user_profile_id
         if not self._user_repo.is_user_info(dto=dto):
-            self._user_repo.create_user_info(dto=dto)
+            user_info: UserInfoEntity = self._user_repo.create_user_info(dto=dto)
         else:
-            self._user_repo.update_user_info(dto=dto)
+            user_info: UserInfoEntity = self._user_repo.update_user_info(dto=dto)
 
         # 마지막으로 진행한 설문 단계 저장
         self._user_repo.update_last_code_to_user_info(dto=dto)
 
-        # todo. SQS Data 전송
+        # SQS Data 전송 -> Data Lake
+        if user_info.user_value:
+            msg: SenderDto = self._make_sqs_send_message(user_info=user_info, user_id=dto.user_id)
+            self._send_sqs_message(queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg)
 
         return UseCaseSuccessOutput()
+
+    def _make_sqs_send_message(self, user_info: UserInfoEntity, user_id: int) -> SenderDto:
+        send_user_info_to_lake_dto = SendUserInfoToLakeDto(
+            user_id=user_id,
+            user_profile_id=user_info.user_profile_id,
+            code=user_info.code,
+            value=user_info.user_value,
+        )
+
+        return SenderDto(
+            msg_type=UserSqsTypeEnum.SEND_USER_DATA_TO_LAKE.value,
+            msg=send_user_info_to_lake_dto.to_dict(),
+            msg_created_at=get_server_timestamp().strftime("%Y/%m/%d, %H:%M:%S"),
+        )
 
 
 class GetUserInfoUseCase(UserBaseUseCase):
     def execute(
-        self, dto: GetUserInfoDto
+            self, dto: GetUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -190,7 +217,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
         return UserInfoEmptyEntity(code=dto.code)
 
     def _bind_detail_code_values(
-        self, user_info: Union[UserInfoEntity, UserInfoEmptyEntity]
+            self, user_info: Union[UserInfoEntity, UserInfoEmptyEntity]
     ):
         bind_detail_code_dict = {
             "1005": IsHouseOwnerCodeEnum,

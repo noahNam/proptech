@@ -8,8 +8,6 @@ from core.domains.authentication.dto.sms_dto import (
     MobileAuthSendSmsDto,
     MobileAuthConfirmSmsDto,
 )
-from core.domains.user.dto.user_dto import CreateUserDto
-from core.domains.user.enum.user_enum import UserDefaultValueEnum
 from core.exceptions import InvalidRequestException
 
 logger = logger_.getLogger(__name__)
@@ -28,7 +26,7 @@ class MobileAuthSmsConfirmSchema(BaseModel):
 
 class MobileAuthSmsSendSchemeRequest:
     def __init__(
-        self, user_id, phone_number=None,
+            self, user_id, phone_number=None,
     ):
         self.user_id = user_id
         self.phone_number = phone_number
@@ -48,7 +46,7 @@ class MobileAuthSmsSendSchemeRequest:
 
 class MobileAuthSmsConfirmSchemeRequest:
     def __init__(
-        self, user_id, auth_number=None, phone_number=None,
+            self, user_id, auth_number=None, phone_number=None,
     ):
         self.user_id = user_id
         self.auth_number = auth_number

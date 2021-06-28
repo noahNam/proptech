@@ -47,3 +47,13 @@ class GetUserInfoDto(BaseModel):
     user_id: int
     user_profile_id: int = None
     code: int
+
+
+class SendUserInfoToLakeDto(BaseModel):
+    user_id: int = None
+    user_profile_id: int
+    code: int
+    value: str = None
+
+    def to_dict(self):
+        return self.dict()
