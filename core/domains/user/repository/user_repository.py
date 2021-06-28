@@ -213,13 +213,15 @@ class UserRepository:
             )
             raise Exception
 
-    def create_user_info(self, dto: UpsertUserInfoDto) -> None:
+    def create_user_info(self, dto: UpsertUserInfoDto) -> UserInfoEntity:
         try:
             user_info = UserInfoModel(
                 user_profile_id=dto.user_profile_id, code=dto.code, value=dto.value
             )
             session.add(user_info)
             session.commit()
+
+            return user_info.to_entity()
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
@@ -227,17 +229,18 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T007")
 
-    def update_user_info(self, dto: UpsertUserInfoDto) -> None:
+    def update_user_info(self, dto: UpsertUserInfoDto) -> UserInfoEntity:
         try:
-            session.query(UserInfoModel).filter_by(
+            user_info_id = session.query(UserInfoModel).filter_by(
                 user_profile_id=dto.user_profile_id, code=dto.code
             ).update({"value": dto.value})
             session.commit()
 
-            user_info_model2 = (
-                session.query(UserInfoModel)
-                    .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-                    .first()
+            return UserInfoEntity(
+                id=user_info_id,
+                user_profile_id=dto.user_profile_id,
+                code=dto.code,
+                user_value=dto.value
             )
         except Exception as e:
             session.rollback()
