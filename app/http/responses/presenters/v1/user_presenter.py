@@ -17,7 +17,7 @@ class GetUserPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = GetUserResponseSchema(result=output.value)
+                schema = GetUserResponseSchema(user=output.value)
             except ValidationError as e:
                 print(e)
                 return failure_response(

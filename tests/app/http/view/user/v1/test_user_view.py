@@ -36,9 +36,9 @@ def test_get_user_view_then_success(
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]["is_required_agree_terms"] is True
-    assert data["result"]["is_active"] is True
-    assert data["result"]["is_out"] is False
+    assert data["user"]["is_required_agree_terms"] is True
+    assert data["user"]["is_active"] is True
+    assert data["user"]["is_out"] is False
 
 
 def test_get_user_view_then_not_found_user(

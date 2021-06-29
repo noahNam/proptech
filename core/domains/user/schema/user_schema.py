@@ -16,7 +16,7 @@ class GetUserInfoBaseSchema(BaseModel):
 
 
 class GetUserResponseSchema(BaseModel):
-    result: GetUserBaseSchema
+    user: GetUserBaseSchema
 
 
 class CreateUserResponseSchema(BaseModel):
