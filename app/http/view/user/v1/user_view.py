@@ -6,21 +6,33 @@ from app.http.requests.v1.user_request import (
     CreateUserRequestSchema,
     CreateAppAgreeTermsRequestSchema,
     UpsertUserInfoRequestSchema,
-    GetUserInfoRequestSchema,
+    GetUserInfoRequestSchema, GetUserRequestSchema,
 )
 from app.http.responses.presenters.v1.user_presenter import (
     CreateUserPresenter,
     CreateAppAgreeTermsPresenter,
     UpsertUserInfoPresenter,
-    GetUserInfoPresenter,
+    GetUserInfoPresenter, GetUserPresenter,
 )
 from app.http.view import auth_required, api, current_user
 from core.domains.user.use_case.v1.user_use_case import (
     CreateUserUseCase,
     CreateAppAgreeTermsUseCase,
     UpsertUserInfoUseCase,
-    GetUserInfoUseCase,
+    GetUserInfoUseCase, GetUserUseCase,
 )
+
+
+@api.route("/v1/users", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_user.yml", methods=["GET"])
+def get_user_view():
+    dto = GetUserRequestSchema(
+        user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return GetUserPresenter().transform(GetUserUseCase().execute(dto=dto))
 
 
 @api.route("/v1/users", methods=["POST"])

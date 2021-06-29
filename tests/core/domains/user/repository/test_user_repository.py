@@ -12,10 +12,8 @@ from core.domains.user.dto.user_dto import (
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
-    UserInfoCodeValueEntity,
-    UserInfoEmptyEntity,
+    UserInfoEmptyEntity, UserEntity,
 )
-from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
 
@@ -43,8 +41,17 @@ upsert_user_info_dto = UpsertUserInfoDto(
 )
 
 
+def test_get_user_repo_then_success(create_users):
+    user = UserRepository().get_user(create_users[0].id)
+    assert isinstance(user, UserEntity)
+    assert user.is_required_agree_terms == create_users[0].is_required_agree_terms
+    assert user.id == create_users[0].id
+    assert user.is_out == create_users[0].is_out
+    assert user.is_active == create_users[0].is_active
+
+
 def test_create_user_profiles_when_first_login_then_success(
-    session, interest_region_factory
+        session, interest_region_factory
 ):
     UserRepository().create_user(dto=create_user_dto)
     interest_region_factory.create_batch(size=1, user_id=create_user_dto.user_id)
@@ -58,7 +65,7 @@ def test_create_user_profiles_when_first_login_then_success(
 
 
 def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_unique_error(
-    session,
+        session,
 ):
     UserRepository().create_user(dto=create_user_dto)
 
@@ -67,7 +74,7 @@ def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_uniqu
 
 
 def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_success(
-    session,
+        session,
 ):
     UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
 
@@ -80,7 +87,7 @@ def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_s
 
 
 def test_agree_terms_repo_when_app_first_start_with_receipt_marketing_then_success(
-    session,
+        session,
 ):
     create_app_agree_term_dto.receipt_marketing_yn = True
     UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
@@ -106,8 +113,8 @@ def test_create_user_nickname_when_start_user_info_then_success(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_dto)
     result = (
         session.query(UserProfileModel)
-        .filter_by(user_id=upsert_user_info_dto.user_id)
-        .first()
+            .filter_by(user_id=upsert_user_info_dto.user_id)
+            .first()
     )
 
     assert result.nickname == upsert_user_info_dto.value
@@ -122,8 +129,8 @@ def test_update_user_nickname_when_update_user_info_then_success(session):
 
     result = (
         session.query(UserProfileModel)
-        .filter_by(user_id=upsert_user_info_dto.user_id)
-        .first()
+            .filter_by(user_id=upsert_user_info_dto.user_id)
+            .first()
     )
 
     assert result.nickname == "noah2"
@@ -135,11 +142,11 @@ def test_create_user_info_when_input_user_data_then_success(session):
 
     result = (
         session.query(UserInfoModel)
-        .filter_by(
+            .filter_by(
             user_profile_id=upsert_user_info_dto.user_profile_id,
             code=upsert_user_info_dto.code,
         )
-        .first()
+            .first()
     )
 
     assert result.user_profile_id == upsert_user_info_dto.user_profile_id
@@ -148,7 +155,7 @@ def test_create_user_info_when_input_user_data_then_success(session):
 
 
 def test_create_user_info_when_input_user_data_without_profile_id_then_error(
-    session, create_users
+        session, create_users
 ):
     dto = UpsertUserInfoDto(user_id=create_users[0].id, code=1005, value="1")
     with pytest.raises(NotUniqueErrorException):
@@ -163,11 +170,11 @@ def test_update_user_info_when_input_user_data_then_success(session):
 
     result = (
         session.query(UserInfoModel)
-        .filter_by(
+            .filter_by(
             user_profile_id=upsert_user_info_dto.user_profile_id,
             code=upsert_user_info_dto.code,
         )
-        .first()
+            .first()
     )
 
     assert result.user_profile_id == upsert_user_info_dto.user_profile_id

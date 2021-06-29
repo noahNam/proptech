@@ -1,5 +1,6 @@
 import os
 import uuid
+from http import HTTPStatus
 from typing import Union, Optional
 
 import inject
@@ -14,12 +15,12 @@ from core.domains.user.dto.user_dto import (
     CreateUserProfileImgDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, SendUserInfoToLakeDto,
+    GetUserInfoDto, SendUserInfoToLakeDto, GetUserDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
     UserInfoCodeValueEntity,
-    UserInfoEmptyEntity,
+    UserInfoEmptyEntity, UserEntity,
 )
 from core.domains.user.enum.user_enum import UserSqsTypeEnum
 from core.domains.user.enum.user_info_enum import (
@@ -87,13 +88,25 @@ class UserBaseUseCase:
         return create_user_profile_img_dto
 
 
+class GetUserUseCase(UserBaseUseCase):
+    def execute(self, dto: GetUserDto) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        user: UserEntity = self._user_repo.get_user(user_id=dto.user_id)
+
+        if not user:
+            return UseCaseFailureOutput(
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+            )
+
+        return UseCaseSuccessOutput(value=user)
+
+
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
             self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
         self._user_repo.create_user(dto=dto)
@@ -127,7 +140,7 @@ class CreateAppAgreeTermsUseCase(UserBaseUseCase):
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
         self._user_repo.create_app_agree_terms(dto=dto)
@@ -142,7 +155,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
         user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(dto=dto)
@@ -196,7 +209,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
         user_profile_id: int = self._user_repo.get_user_profile_id(dto=dto)

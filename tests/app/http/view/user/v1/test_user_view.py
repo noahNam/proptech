@@ -17,6 +17,50 @@ from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum
 from core.use_case_output import FailureType
 
 
+def test_get_user_view_then_success(
+        client, session, test_request_context, make_header, make_authorization, create_users
+):
+    user_id = create_users[0].id
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_user_view"),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"]["is_required_agree_terms"] is True
+    assert data["result"]["is_active"] is True
+    assert data["result"]["is_out"] is False
+
+
+def test_get_user_view_then_not_found_user(
+        client, session, test_request_context, make_header, make_authorization, create_users
+):
+    user_id = 5
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_user_view"),
+            headers=headers,
+        )
+
+    assert response.status_code == 404
+
+
 def test_create_user_when_first_login_then_success(
         client, session, test_request_context, make_header, make_authorization,
 ):
