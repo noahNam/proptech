@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 import pytest
 
@@ -8,12 +9,15 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto,
+    GetUserInfoDto, AvgMonthlyIncomeWokrerDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
-    UserInfoEmptyEntity, UserEntity,
+    UserInfoEmptyEntity, UserEntity, UserInfoCodeValueEntity,
 )
+from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, IsHouseHolderCodeEnum, IsMarriedCodeEnum, \
+    NumberDependentsEnum, IsChildEnum, IsSubAccountEnum, MonthlyIncomeEnum, AssetsRealEstateEnum, AssetsCarEnum, \
+    AssetsTotalEnum, SpecialCondEnum, CodeEnum
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
 
@@ -238,3 +242,109 @@ def test_get_user_info_when_input_user_data_then_None(session):
     user_info: UserInfoEmptyEntity = UserRepository().get_user_info(dto=dto)
 
     assert isinstance(user_info, UserInfoEmptyEntity)
+
+
+def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_monthly_income_worker_factory, session,
+                                                                          create_users):
+    avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
+    session.add(avg_monthly_income_workers)
+    session.commit()
+
+    income_result: AvgMonthlyIncomeWokrerDto = UserRepository().get_avg_monthly_income_workers()
+
+    assert isinstance(income_result, AvgMonthlyIncomeWokrerDto)
+    assert income_result.three == avg_monthly_income_workers.three
+    assert income_result.four == avg_monthly_income_workers.four
+    assert income_result.five == avg_monthly_income_workers.five
+    assert income_result.six == avg_monthly_income_workers.six
+    assert income_result.seven == avg_monthly_income_workers.seven
+    assert income_result.eight == avg_monthly_income_workers.eight
+
+    dto = GetUserInfoDto(
+        user_id=create_users[0].id,
+        user_profile_id=create_users[0].id,
+        code=1005,
+    )
+
+    # 외벌이, 맞벌이 확인
+    # 외벌이 -> 1,3,4 / 맞벌이 -> 2
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=1, user_profile_id=1, code=CodeEnum.IS_MARRIED.value, value="2"
+    )
+    UserRepository().create_user_info(dto=upsert_user_info_dto)
+
+    # 부양가족 수
+    # 3인 이하->1,2,3 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8 / 없어요->9
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=1, user_profile_id=1, code=CodeEnum.NUMBER_DEPENDENTS.value, value="5"
+    )
+    UserRepository().create_user_info(dto=upsert_user_info_dto)
+
+    user_info_code = str(CodeEnum.MONTHLY_INCOME.value)
+
+    bind_detail_code_dict = {
+        "1005": IsHouseOwnerCodeEnum,
+        "1007": IsHouseHolderCodeEnum,
+        "1008": IsMarriedCodeEnum,
+        "1010": NumberDependentsEnum,
+        "1011": IsChildEnum,
+        "1015": IsSubAccountEnum,
+        "1019": MonthlyIncomeEnum,
+        "1020": AssetsRealEstateEnum,
+        "1021": AssetsCarEnum,
+        "1022": AssetsTotalEnum,
+        "1025": SpecialCondEnum,
+    }
+
+    user_info = UserInfoEntity(id=1, user_profile_id=1, code=user_info_code)
+    bind_code = bind_detail_code_dict.get(user_info_code)
+    # dto.code != "1019" 일 떄로 변경
+    dto_code = "1019"
+    if dto_code != "1019":
+
+        user_info_code_value_entity = UserInfoCodeValueEntity()
+        user_info_code_value_entity.detail_code = bind_code.COND_CD.value
+        user_info_code_value_entity.name = bind_code.COND_NM.value
+
+        user_info.code_values = user_info_code_value_entity
+    else:
+        # 외벌이, 맞벌이 확인
+        # 외벌이 -> 1,3,4 / 맞벌이 -> 2
+        result1: UserInfoEntity = UserRepository().get_user_info_by_code(user_profile_id=upsert_user_info_dto.user_profile_id, code=CodeEnum.IS_MARRIED.value)
+
+        # 부양가족 수
+        # 3인 이하->1,2,3,9 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
+        result2: UserInfoEntity = UserRepository().get_user_info_by_code(user_profile_id=upsert_user_info_dto.user_profile_id, code=CodeEnum.NUMBER_DEPENDENTS.value)
+
+        # 부양가족별 default 소득
+        income_result_dict = {
+            "1": income_result.three,
+            "2": income_result.three,
+            "3": income_result.three,
+            "4": income_result.four,
+            "5": income_result.five,
+            "6": income_result.six,
+            "7": income_result.seven,
+            "8": income_result.eight,
+            "9": income_result.three,
+        }
+
+        calc_result_list = []
+        my_basic_income = income_result_dict.get(result2.user_value)
+
+        monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_value != "2" else MonthlyIncomeEnum.COND_CD_2.value
+
+        for percentage_num in monthly_income_enum:
+            income_by_segment = (int(my_basic_income) * percentage_num) / 100
+            income_by_segment = round(income_by_segment)
+            calc_result_list.append(income_by_segment)
+
+        user_info_code_value_entity = UserInfoCodeValueEntity()
+
+        user_info_code_value_entity.detail_code = monthly_income_enum
+        user_info_code_value_entity.name = calc_result_list
+
+        user_info.code_values = user_info_code_value_entity
+
+        assert isinstance(user_info, UserInfoEntity)
+        assert len(user_info.code_values.detail_code) == len(user_info.code_values.name)
