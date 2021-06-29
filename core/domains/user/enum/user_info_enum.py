@@ -46,8 +46,8 @@ class IsMarriedCodeEnum(Enum):
 
 
 class NumberDependentsEnum(Enum):
-    COND_CD = [1, 2, 3, 4, 5, 6, 7]
-    COND_NM = ["1명", "2명", "3명", "4명", "5명", "6명 이상", "없어요"]
+    COND_CD = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    COND_NM = ["1명", "2명", "3명", "4명", "5명", "6명", "7명", "8명", "없어요"]
 
 
 class IsChildEnum(Enum):
@@ -61,8 +61,21 @@ class IsSubAccountEnum(Enum):
 
 
 class MonthlyIncomeEnum(Enum):
-    COND_CD = [1, 2, 3, 4, 5, 6, 7]
-    COND_NM = ["70%", "80%", "100%", "110%", "120%", "130%", "140%"]
+    # # 외벌이 기준
+    # COND_CD_1 = [1, 2, 3, 4, 5, 6]
+    # COND_NM_1 = ["50%", "70%", "80%", "100%", "120%", "130%"]
+    #
+    # # 맞벌이 기준
+    # COND_CD_2 = [1, 2, 3, 4, 5, 6]
+    # COND_NM_2 = ["50%", "80%", "110%", "120%", "130%", "140%"]
+
+    # 2020년 외벌이 기준
+    COND_CD_1 = [50, 70, 80, 100, 120, 130]
+    COND_NM_1 = []
+
+    # 2020년 맞벌이 기준
+    COND_CD_2 = [50, 80, 110, 120, 130, 140]
+    COND_NM_2 = []
 
 
 class AssetsRealEstateEnum(Enum):

@@ -12,7 +12,7 @@ from app.persistence.model import (
     InterestRegionGroupModel,
     DeviceModel,
     DeviceTokenModel,
-    UserProfileModel,
+    UserProfileModel, AvgMonthlyIncomeWokrerModel,
 )
 from app.persistence.model.user_model import UserModel
 
@@ -88,3 +88,17 @@ class InterestRegionGroupFactory(BaseFactory):
     level = 2
     name = faker.city()
     interest_count = 0
+
+
+class AvgMonthlyIncomeWorkerFactory(BaseFactory):
+    class Meta:
+        model = AvgMonthlyIncomeWokrerModel
+
+    year = "2020"
+    three = 6030160
+    four = 7094205
+    five = 7094205
+    six = 7393647
+    seven = 7778023
+    eight = 8162399
+    is_active = True

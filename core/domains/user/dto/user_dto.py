@@ -57,3 +57,18 @@ class SendUserInfoToLakeDto(BaseModel):
 
     def to_dict(self):
         return self.dict()
+
+
+class GetUserInfoDto(BaseModel):
+    user_id: int
+    user_profile_id: int = None
+    code: int
+
+
+class AvgMonthlyIncomeWokrerDto(BaseModel):
+    three: int
+    four: int
+    five: int
+    six: int
+    seven: int
+    eight: int

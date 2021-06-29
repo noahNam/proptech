@@ -13,7 +13,7 @@ from app.persistence.model import (
     DeviceTokenModel,
     AppAgreeTermsModel,
     UserProfileModel,
-    UserInfoModel,
+    UserInfoModel, AvgMonthlyIncomeWokrerModel,
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
@@ -21,7 +21,7 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto,
+    GetUserInfoDto, AvgMonthlyIncomeWokrerDto,
 )
 from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity
 from core.exceptions import NotUniqueErrorException
@@ -282,3 +282,28 @@ class UserRepository:
             return UserInfoEmptyEntity(code=dto.code)
 
         return user_info.to_entity()
+
+    def get_user_info_by_code(self, user_profile_id: int, code: int) -> Optional[UserInfoEntity]:
+        user_info = (
+            session.query(UserInfoModel)
+                .filter_by(user_profile_id=user_profile_id, code=code)
+                .first()
+        )
+        if not user_info:
+            return None
+
+        return user_info.to_entity()
+
+    def get_avg_monthly_income_workers(self) -> AvgMonthlyIncomeWokrerDto:
+        result = session.query(AvgMonthlyIncomeWokrerModel).filter_by(is_active=True).first()
+        return self._make_avg_monthly_income_worker_object(result)
+
+    def _make_avg_monthly_income_worker_object(self, result: AvgMonthlyIncomeWokrerModel) -> AvgMonthlyIncomeWokrerDto:
+        return AvgMonthlyIncomeWokrerDto(
+            three=result.three,
+            four=result.four,
+            five=result.five,
+            six=result.six,
+            seven=result.seven,
+            eight=result.eight
+        )
