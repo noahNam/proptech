@@ -23,13 +23,20 @@ from core.domains.user.dto.user_dto import (
     UpsertUserInfoDto,
     GetUserInfoDto,
 )
-from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity
+from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
 
 
 class UserRepository:
+    def get_user(self, user_id: int) -> Optional[UserEntity]:
+        user = session.query(UserModel).filter_by(id=user_id).first()
+        if not user:
+            return None
+
+        return user.to_entity()
+
     def create_user(self, dto: CreateUserDto) -> None:
         try:
             user = UserModel(

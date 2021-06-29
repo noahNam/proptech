@@ -13,7 +13,7 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto,
+    GetUserInfoDto, GetUserDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEmptyEntity,
@@ -26,10 +26,21 @@ from core.domains.user.use_case.v1.user_use_case import (
     CreateUserUseCase,
     CreateAppAgreeTermsUseCase,
     UpsertUserInfoUseCase,
-    GetUserInfoUseCase,
+    GetUserInfoUseCase, GetUserUseCase,
 )
 from core.exceptions import NotUniqueErrorException
 from core.use_case_output import UseCaseSuccessOutput
+
+
+def test_get_user_use_case_then_success(session, create_users):
+    dto = GetUserDto(
+        user_id=create_users[0].id,
+    )
+
+    result = GetUserUseCase().execute(dto=dto)
+
+    assert result.type == "success"
+    assert isinstance(result, UseCaseSuccessOutput)
 
 
 def test_create_user_use_case_when_first_login_then_success(session, create_users):
