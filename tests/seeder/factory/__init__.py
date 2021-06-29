@@ -6,7 +6,7 @@ from faker import Factory as FakerFactory
 from flask import current_app
 from sqlalchemy.orm import scoped_session
 
-from app import db
+from app import db, SidoCodeModel
 from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
@@ -102,3 +102,13 @@ class AvgMonthlyIncomeWorkerFactory(BaseFactory):
     seven = 7778023
     eight = 8162399
     is_active = True
+
+
+class SidoCodeFactory(BaseFactory):
+    class Meta:
+        model = SidoCodeModel
+
+    sido_code = 11
+    sido_name = "서울특별시"
+    sigugun_code = 11010
+    sigugun_name = "종로구"

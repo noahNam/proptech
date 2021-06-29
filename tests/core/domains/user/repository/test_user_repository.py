@@ -310,11 +310,13 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
     else:
         # 외벌이, 맞벌이 확인
         # 외벌이 -> 1,3,4 / 맞벌이 -> 2
-        result1: UserInfoEntity = UserRepository().get_user_info_by_code(user_profile_id=upsert_user_info_dto.user_profile_id, code=CodeEnum.IS_MARRIED.value)
+        result1: UserInfoEntity = UserRepository().get_user_info_by_code(
+            user_profile_id=upsert_user_info_dto.user_profile_id, code=CodeEnum.IS_MARRIED.value)
 
         # 부양가족 수
         # 3인 이하->1,2,3,9 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
-        result2: UserInfoEntity = UserRepository().get_user_info_by_code(user_profile_id=upsert_user_info_dto.user_profile_id, code=CodeEnum.NUMBER_DEPENDENTS.value)
+        result2: UserInfoEntity = UserRepository().get_user_info_by_code(
+            user_profile_id=upsert_user_info_dto.user_profile_id, code=CodeEnum.NUMBER_DEPENDENTS.value)
 
         # 부양가족별 default 소득
         income_result_dict = {
@@ -348,3 +350,20 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
 
         assert isinstance(user_info, UserInfoEntity)
         assert len(user_info.code_values.detail_code) == len(user_info.code_values.name)
+
+
+def test_asdfaaaa(session, sido_code_factory, create_users):
+    sido_codes = sido_code_factory.build_batch(size=3)
+    session.add_all(sido_codes)
+    session.commit()
+
+    codes, names = UserRepository().get_sido_codes()
+
+    user_info_code_value_entity = UserInfoCodeValueEntity()
+    user_info_code_value_entity.detail_code = codes
+    user_info_code_value_entity.name = names
+
+    user_info = UserInfoEntity(id=create_users[0].id, user_profile_id=create_users[0].id, code=CodeEnum.ADDRESS.value)
+    user_info.code_values = user_info_code_value_entity
+
+    assert isinstance(user_info, UserInfoEntity)

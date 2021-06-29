@@ -7,7 +7,8 @@ from tests.seeder.factory import (
     InterestRegionFactory,
     InterestRegionGroupFactory,
     UserProfileFactory,
-    AvgMonthlyIncomeWorkerFactory
+    AvgMonthlyIncomeWorkerFactory,
+    SidoCodeFactory
 )
 
 MODEL_FACTORIES = [
@@ -15,7 +16,8 @@ MODEL_FACTORIES = [
     InterestRegionFactory,
     InterestRegionGroupFactory,
     UserProfileFactory,
-    AvgMonthlyIncomeWorkerFactory
+    AvgMonthlyIncomeWorkerFactory,
+    SidoCodeFactory
 ]
 
 faker = Faker()

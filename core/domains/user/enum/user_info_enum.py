@@ -4,8 +4,8 @@ from enum import Enum
 class CodeEnum(Enum):
     NICKNAME = "1000"
     BIRTHDAY = "1001"
-    ADDRESS_LV1 = "1002"
-    ADDRESS_LV2 = "1003"
+    ADDRESS = "1002"
+    # ADDRESS_LV2 = "1003"
     ADDRESS_DATE = "1004"
     IS_HOUSE_OWNER = "1005"
     SELL_HOUSE_DATE = "1006"
@@ -28,6 +28,11 @@ class CodeEnum(Enum):
     IS_SUPPORT_PARENT = "1023"
     SUPPORT_PARENT_DATE = "1024"
     SPECIAL_COND = "1025"
+
+
+class AddressCodeEnum(Enum):
+    COND_CD = []
+    COND_NM = []
 
 
 class IsHouseOwnerCodeEnum(Enum):
