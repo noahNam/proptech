@@ -10,15 +10,21 @@ responses:
       application/json:
         schema:
           properties:
-            is_active:
-              type: boolean
-              example: True
-            is_out:
-              type: boolean
-              example: False
-            is_required_agree_terms:
-              type: boolean
-              example: True
+            data:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    is_active:
+                      type: boolean
+                      example: True
+                    is_out:
+                      type: boolean
+                      example: False
+                    is_required_agree_terms:
+                      type: boolean
+                      example: True
   '400':
     description: invalid_request_error
     content:
