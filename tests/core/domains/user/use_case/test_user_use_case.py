@@ -330,7 +330,7 @@ def test_get_user_info_when_secondary_input_data_then_get_user_data(
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
-def test_upsert_user_info_when_create_user_data_then_success(_send_sqs_message, session, create_users,
+def test_get_user_info_when_monthly_income_then_success(_send_sqs_message, session, create_users,
                                                              avg_monthly_income_worker_factory):
     avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
     session.add(avg_monthly_income_workers)

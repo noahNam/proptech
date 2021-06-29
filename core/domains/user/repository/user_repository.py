@@ -13,7 +13,7 @@ from app.persistence.model import (
     DeviceTokenModel,
     AppAgreeTermsModel,
     UserProfileModel,
-    UserInfoModel, AvgMonthlyIncomeWokrerModel,
+    UserInfoModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
@@ -21,7 +21,7 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, AvgMonthlyIncomeWokrerDto,
+    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, SidoCodeDto, SigugunCodeDto,
 )
 from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity
 from core.exceptions import NotUniqueErrorException
@@ -307,3 +307,21 @@ class UserRepository:
             seven=result.seven,
             eight=result.eight
         )
+
+    def get_sido_codes(self) -> Union[List, List]:
+        result = session.query(SidoCodeModel).all()
+
+        sido_code_list = []
+        sido_name_list = []
+        sigugun_code_list = []
+        sigugun_name_list = []
+
+        for data in result:
+            sido_code_list.append(data.sido_code)
+            sido_name_list.append(data.sido_name)
+            sigugun_code_list.append(data.sigugun_code)
+            sigugun_name_list.append(data.sigugun_name)
+
+        codes = [sido_code_list, sigugun_code_list]
+        names = [sido_name_list, sigugun_name_list]
+        return codes, names

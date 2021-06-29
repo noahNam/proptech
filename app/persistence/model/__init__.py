@@ -8,3 +8,4 @@ from .user_profile_model import UserProfileModel
 from .user_info_model import UserInfoModel
 from .notification_model import NotificationModel
 from .avg_monthly_income_worker_model import AvgMonthlyIncomeWokrerModel
+from .sido_codes import SidoCodeModel

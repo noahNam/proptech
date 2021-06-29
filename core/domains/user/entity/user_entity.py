@@ -18,7 +18,8 @@ class UserInfoEntity(BaseModel):
     user_profile_id: int
     code: int
     user_value: str = None
-    code_values: UserInfoCodeValueEntity = None
+    # code_values: UserInfoCodeValueEntity = None
+    code_values: list = []
 
 
 class UserInfoEmptyEntity(BaseModel):

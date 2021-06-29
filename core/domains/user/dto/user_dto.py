@@ -72,3 +72,13 @@ class AvgMonthlyIncomeWokrerDto(BaseModel):
     six: int
     seven: int
     eight: int
+
+
+class SidoCodeDto(BaseModel):
+    sido_code: list
+    sido_name: list
+
+
+class SigugunCodeDto(BaseModel):
+    sigugun_code: list
+    sigugun_name: list

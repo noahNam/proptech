@@ -34,7 +34,7 @@ from core.domains.user.enum.user_info_enum import (
     AssetsRealEstateEnum,
     AssetsCarEnum,
     AssetsTotalEnum,
-    SpecialCondEnum, CodeEnum,
+    SpecialCondEnum, CodeEnum, AddressCodeEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -225,7 +225,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
 
             if not user_info.user_profile_id:
                 user_info.user_profile_id = user_profile_id
-            self._bind_detail_code_values(user_info=user_info)
+                self._bind_detail_code_values(user_info=user_info)
 
         return UseCaseSuccessOutput(value=user_info)
 
@@ -236,6 +236,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
             self, user_info: Union[UserInfoEntity, UserInfoEmptyEntity]
     ):
         bind_detail_code_dict = {
+            "1002": AddressCodeEnum,
             "1005": IsHouseOwnerCodeEnum,
             "1007": IsHouseHolderCodeEnum,
             "1008": IsMarriedCodeEnum,
@@ -254,7 +255,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
         if not bind_code:
             return
 
-        if bind_code != MonthlyIncomeEnum:
+        if bind_code != MonthlyIncomeEnum and bind_code != MonthlyIncomeEnum:
             user_info_code_value_entity = UserInfoCodeValueEntity()
 
             user_info_code_value_entity.detail_code = bind_code.COND_CD.value
