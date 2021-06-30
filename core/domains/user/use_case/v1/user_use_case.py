@@ -15,7 +15,7 @@ from core.domains.user.dto.user_dto import (
     CreateUserProfileImgDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, SendUserInfoToLakeDto, GetUserDto, AvgMonthlyIncomeWokrerDto,
+    GetUserInfoDto, SendUserInfoToLakeDto, GetUserDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
@@ -165,26 +165,35 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
             클린코드 측면에서 upsert는 되도록 사용 자제 권장한다고 본적이 있어서 제외했지만 이에 따른 코드 복잡성 증가
             코드 컨벤션 논의 필요 -> 논의 후 필요 시 refactoring
         """
-        if dto.code == 1000:
-            # code==1000 (설문 시작 후 닉네임 생성 시) -> user_profiles 갱신
-            if not user_profile_id:
-                user_profile_id: int = self._user_repo.create_user_nickname(dto=dto)
+
+        for idx in range(len(dto.codes)):
+            detail_dto = UpsertUserInfoDetailDto(
+                user_id=dto.user_id,
+                user_profile_id=user_profile_id,
+                code=dto.codes[idx],
+                value=dto.values[idx] if dto.values else None
+            )
+
+            if detail_dto.code == CodeEnum.NICKNAME.value:
+                # code==1000 (설문 시작 후 닉네임 생성 시) -> user_profiles 갱신
+                if not user_profile_id:
+                    user_profile_id: int = self._user_repo.create_user_nickname(dto=detail_dto)
+                else:
+                    self._user_repo.update_user_nickname(dto=detail_dto)
+
+            detail_dto.user_profile_id = user_profile_id
+            if not self._user_repo.is_user_info(dto=detail_dto):
+                user_info: UserInfoEntity = self._user_repo.create_user_info(dto=detail_dto)
             else:
-                self._user_repo.update_user_nickname(dto=dto)
+                user_info: UserInfoEntity = self._user_repo.update_user_info(dto=detail_dto)
 
-        dto.user_profile_id = user_profile_id
-        if not self._user_repo.is_user_info(dto=dto):
-            user_info: UserInfoEntity = self._user_repo.create_user_info(dto=dto)
-        else:
-            user_info: UserInfoEntity = self._user_repo.update_user_info(dto=dto)
+            # 마지막으로 진행한 설문 단계 저장
+            self._user_repo.update_last_code_to_user_info(dto=detail_dto)
 
-        # 마지막으로 진행한 설문 단계 저장
-        self._user_repo.update_last_code_to_user_info(dto=dto)
-
-        # SQS Data 전송 -> Data Lake
-        if user_info.user_value:
-            msg: SenderDto = self._make_sqs_send_message(user_info=user_info, user_id=dto.user_id)
-            self._send_sqs_message(queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg)
+            # SQS Data 전송 -> Data Lake
+            if user_info.user_values:
+                msg: SenderDto = self._make_sqs_send_message(user_info=user_info, user_id=detail_dto.user_id)
+                self._send_sqs_message(queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg)
 
         return UseCaseSuccessOutput()
 
@@ -193,7 +202,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
             user_id=user_id,
             user_profile_id=user_info.user_profile_id,
             code=user_info.code,
-            value=user_info.user_value,
+            value=user_info.user_values[0],
         )
 
         return SenderDto(
@@ -219,13 +228,25 @@ class GetUserInfoUseCase(UserBaseUseCase):
             # nickname 생성 전 (즉, 최초 설문으로 user_profile_id가 없음)
             user_info: UserInfoEmptyEntity = self._make_empty_user_info_entity(dto=dto)
         else:
-            user_info: Union[
-                UserInfoEntity, UserInfoEmptyEntity
-            ] = self._user_repo.get_user_info(dto=dto)
+            if dto.code != CodeEnum.ADDRESS.value:
+                # 한 질문지에 한개의 유저 데이터를 넘겨 줘야 할 떄
+                user_info: Union[
+                    UserInfoEntity, UserInfoEmptyEntity
+                ] = self._user_repo.get_user_info(dto=dto)
 
-            if not user_info.user_profile_id:
-                user_info.user_profile_id = user_profile_id
-                self._bind_detail_code_values(user_info=user_info)
+            else:
+                # 한 질문지에 복수개의 유저 데이터를 넘겨 줘야 할 떄(거주지)
+                both_code_dict = {
+                    "1002": [CodeEnum.ADDRESS.value, CodeEnum.ADDRESS_DETAIL.value],
+                }
+                codes = both_code_dict.get(str(dto.code))
+
+                user_info: Union[
+                    UserInfoEntity, UserInfoEmptyEntity
+                ] = self._user_repo.get_user_multi_data_info(dto=dto, codes=codes)
+
+            user_info.user_profile_id = user_profile_id
+            self._bind_detail_code_values(user_info=user_info)
 
         return UseCaseSuccessOutput(value=user_info)
 
@@ -255,14 +276,18 @@ class GetUserInfoUseCase(UserBaseUseCase):
         if not bind_code:
             return
 
-        if bind_code != MonthlyIncomeEnum and bind_code != MonthlyIncomeEnum:
+        if bind_code != MonthlyIncomeEnum and bind_code != AddressCodeEnum:
             user_info_code_value_entity = UserInfoCodeValueEntity()
 
             user_info_code_value_entity.detail_code = bind_code.COND_CD.value
             user_info_code_value_entity.name = bind_code.COND_NM.value
 
-            user_info.code_values = user_info_code_value_entity
-        else:
+            user_info.code_values = [user_info_code_value_entity]
+        elif bind_code == AddressCodeEnum:
+            user_info_code_value_entity1, user_info_code_value_entity2 = self._user_repo.get_sido_codes()
+            user_info.code_values = [user_info_code_value_entity1, user_info_code_value_entity2]
+
+        elif bind_code == MonthlyIncomeEnum:
             # 외벌이, 맞벌이 확인
             # 외벌이 -> 1,3,4 / 맞벌이 -> 2
             result1: UserInfoEntity = UserRepository().get_user_info_by_code(user_profile_id=user_info.user_profile_id,
@@ -288,9 +313,9 @@ class GetUserInfoUseCase(UserBaseUseCase):
             }
 
             calc_result_list = []
-            my_basic_income = income_result_dict.get(result2.user_value)
+            my_basic_income = income_result_dict.get(result2.user_values[0])
 
-            monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_value != "2" else MonthlyIncomeEnum.COND_CD_2.value
+            monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_values[0] != "2" else MonthlyIncomeEnum.COND_CD_2.value
 
             for percentage_num in monthly_income_enum:
                 income_by_segment = (int(my_basic_income) * percentage_num) / 100
@@ -302,4 +327,4 @@ class GetUserInfoUseCase(UserBaseUseCase):
             user_info_code_value_entity.detail_code = monthly_income_enum
             user_info_code_value_entity.name = calc_result_list
 
-            user_info.code_values = user_info_code_value_entity
+            user_info.code_values = [user_info_code_value_entity]

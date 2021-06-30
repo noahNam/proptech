@@ -21,9 +21,10 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, SidoCodeDto, SigugunCodeDto,
+    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, SidoCodeDto, SigugunCodeDto, UpsertUserInfoDetailDto,
 )
-from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity
+from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity, \
+    UserInfoCodeValueEntity
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -190,7 +191,7 @@ class UserRepository:
                 .where(UserInfoModel.code == dto.code)
         ).scalar()
 
-    def create_user_nickname(self, dto: UpsertUserInfoDto) -> int:
+    def create_user_nickname(self, dto: UpsertUserInfoDetailDto) -> int:
         try:
             user_profile = UserProfileModel(
                 user_id=dto.user_id, nickname=dto.value, last_update_code=dto.code
@@ -207,7 +208,7 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T006")
 
-    def update_user_nickname(self, dto: UpsertUserInfoDto):
+    def update_user_nickname(self, dto: UpsertUserInfoDetailDto):
         try:
             session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
                 {"nickname": dto.value, "last_update_code": dto.code}
@@ -220,7 +221,7 @@ class UserRepository:
             )
             raise Exception
 
-    def create_user_info(self, dto: UpsertUserInfoDto) -> UserInfoEntity:
+    def create_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
         try:
             user_info = UserInfoModel(
                 user_profile_id=dto.user_profile_id, code=dto.code, value=dto.value
@@ -236,7 +237,7 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T007")
 
-    def update_user_info(self, dto: UpsertUserInfoDto) -> UserInfoEntity:
+    def update_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
         try:
             user_info_id = session.query(UserInfoModel).filter_by(
                 user_profile_id=dto.user_profile_id, code=dto.code
@@ -256,7 +257,7 @@ class UserRepository:
             )
             raise Exception
 
-    def update_last_code_to_user_info(self, dto: UpsertUserInfoDto) -> None:
+    def update_last_code_to_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
             session.query(UserProfileModel).filter_by(user_id=dto.user_id).update(
                 {"last_update_code": dto.code}
@@ -283,6 +284,27 @@ class UserRepository:
 
         return user_info.to_entity()
 
+    def get_user_multi_data_info(
+            self, dto: GetUserInfoDto, codes: list
+    ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
+        # 복수개의 유저 결과를 리턴할 때
+        user_info = (
+            session.query(UserInfoModel)
+                .filter(UserInfoModel.user_profile_id == dto.user_profile_id,
+                        UserInfoModel.code.in_(codes))
+                .all()
+        )
+
+        if not user_info:
+            return UserInfoEmptyEntity(code=dto.code)
+
+        user_values = []
+        for query in user_info:
+            user_values.append(query.value)
+
+        return UserInfoEntity(id=user_info[0].id, user_profile_id=dto.user_profile_id, code=dto.code,
+                              user_values=user_values)
+
     def get_user_info_by_code(self, user_profile_id: int, code: int) -> Optional[UserInfoEntity]:
         user_info = (
             session.query(UserInfoModel)
@@ -308,9 +330,11 @@ class UserRepository:
             eight=result.eight
         )
 
-    def get_sido_codes(self) -> Union[List, List]:
+    def get_sido_codes(self) -> Union[UserInfoCodeValueEntity, UserInfoCodeValueEntity]:
         result = session.query(SidoCodeModel).all()
+        return self._make_sido_codes_object(result)
 
+    def _make_sido_codes_object(self, result: List[SidoCodeModel]):
         sido_code_list = []
         sido_name_list = []
         sigugun_code_list = []
@@ -322,6 +346,12 @@ class UserRepository:
             sigugun_code_list.append(data.sigugun_code)
             sigugun_name_list.append(data.sigugun_name)
 
-        codes = [sido_code_list, sigugun_code_list]
-        names = [sido_name_list, sigugun_name_list]
-        return codes, names
+        user_info_code_value_entity_1 = UserInfoCodeValueEntity()
+        user_info_code_value_entity_1.detail_code = sido_code_list
+        user_info_code_value_entity_1.name = sido_name_list
+
+        user_info_code_value_entity_2 = UserInfoCodeValueEntity()
+        user_info_code_value_entity_2.detail_code = sigugun_code_list
+        user_info_code_value_entity_2.name = sigugun_name_list
+
+        return user_info_code_value_entity_1, user_info_code_value_entity_2

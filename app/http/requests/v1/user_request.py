@@ -37,8 +37,8 @@ class CreateAppAgreeTermsSchema(BaseModel):
 
 class UpsertUserInfoSchema(BaseModel):
     user_id: StrictInt
-    code: int
-    value: str
+    codes: list
+    values: list = []
 
 
 class GetUserInfoSchema(BaseModel):
@@ -127,16 +127,16 @@ class CreateAppAgreeTermsRequestSchema:
 
 class UpsertUserInfoRequestSchema:
     def __init__(
-            self, user_id, code, value,
+            self, user_id, codes, values,
     ):
         self.user_id = int(user_id) if user_id else None
-        self.code = code
-        self.value = value
+        self.codes = codes
+        self.values = values
 
     def validate_request_and_make_dto(self):
         try:
             schema = UpsertUserInfoSchema(
-                user_id=self.user_id, code=self.code, value=self.value,
+                user_id=self.user_id, codes=self.codes, values=self.values,
             ).dict()
             return UpsertUserInfoDto(**schema)
         except ValidationError as e:
