@@ -43,7 +43,7 @@ class UpsertUserInfoSchema(BaseModel):
 
 class GetUserInfoSchema(BaseModel):
     user_id: StrictInt
-    code: int
+    codes: list
 
 
 class GetUserRequestSchema:
@@ -148,14 +148,14 @@ class UpsertUserInfoRequestSchema:
 
 class GetUserInfoRequestSchema:
     def __init__(
-            self, user_id, code,
+            self, user_id, codes,
     ):
         self.user_id = int(user_id) if user_id else None
-        self.code = code
+        self.codes = codes
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserInfoSchema(user_id=self.user_id, code=self.code, ).dict()
+            schema = GetUserInfoSchema(user_id=self.user_id, codes=self.codes, ).dict()
             return GetUserInfoDto(**schema)
         except ValidationError as e:
             logger.error(

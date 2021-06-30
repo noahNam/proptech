@@ -35,6 +35,11 @@ class AddressCodeEnum(Enum):
     COND_NM = []
 
 
+class AddressDetailCodeEnum(Enum):
+    COND_CD = []
+    COND_NM = []
+
+
 class IsHouseOwnerCodeEnum(Enum):
     COND_CD = [1, 2, 3]
     COND_NM = ["있어요", "없어요", "과거에 있었지만 현재는 처분했어요"]

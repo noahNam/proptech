@@ -14,15 +14,12 @@ class UserInfoCodeValueEntity(BaseModel):
 
 
 class UserInfoEntity(BaseModel):
-    id: int
-    user_profile_id: int
     code: int
-    code_values: list = None
-    user_values: list = None
+    code_values: UserInfoCodeValueEntity = None
+    user_value: str = None
 
 
 class UserInfoEmptyEntity(BaseModel):
-    user_profile_id: int = None
     code: int
-    code_values: list = None
-    user_values: list = None
+    code_values: UserInfoCodeValueEntity = None
+    user_value: str = None

@@ -442,7 +442,7 @@ def test_get_user_info_when_no_user_data_with_none_detail_code_then_success(
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(code=1000, )
+    dict_ = dict(codes=[1000], )
 
     with test_request_context:
         response = client.get(
@@ -453,9 +453,9 @@ def test_get_user_info_when_no_user_data_with_none_detail_code_then_success(
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]["code"] == dict_.get("code")
-    assert data["result"]["code_values"] is None
-    assert data["result"]["user_values"] is None
+    assert data["result"][0]["code"] == dict_.get("codes")[0]
+    assert data["result"][0]["code_values"] is None
+    assert data["result"][0]["user_value"] is None
 
 
 def test_get_user_info_when_no_user_data_with_detail_code_then_success(
@@ -468,7 +468,7 @@ def test_get_user_info_when_no_user_data_with_detail_code_then_success(
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(code=1005, )
+    dict_ = dict(codes=[1005], )
 
     with test_request_context:
         response = client.get(
@@ -479,14 +479,14 @@ def test_get_user_info_when_no_user_data_with_detail_code_then_success(
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]["code"] == dict_.get("code")
-    assert len(data["result"]["code_values"][0]["detail_code"]) == 3
-    assert len(data["result"]["code_values"][0]["name"]) == 3
+    assert data["result"][0]["code"] == dict_.get("codes")[0]
+    assert len(data["result"][0]["code_values"]["detail_code"]) == 3
+    assert len(data["result"][0]["code_values"]["name"]) == 3
     assert (
-            data["result"]["code_values"][0]["detail_code"]
+            data["result"][0]["code_values"]["detail_code"]
             == IsHouseOwnerCodeEnum.COND_CD.value
     )
-    assert data["result"]["code_values"][0]["name"] == IsHouseOwnerCodeEnum.COND_NM.value
+    assert data["result"][0]["code_values"]["name"] == IsHouseOwnerCodeEnum.COND_NM.value
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
@@ -510,7 +510,7 @@ def test_get_user_info_when_exist_user_data_with_detail_code_then_success(
             headers=headers,
         )
 
-    dict2_ = dict(code=1005, )
+    dict2_ = dict(codes=[1005], )
 
     with test_request_context:
         response = client.get(
@@ -521,15 +521,15 @@ def test_get_user_info_when_exist_user_data_with_detail_code_then_success(
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]["code"] == dict_.get("codes")[0]
-    assert data["result"]["user_values"] == dict_.get("values")
-    assert len(data["result"]["code_values"][0]["detail_code"]) == 3
-    assert len(data["result"]["code_values"][0]["name"]) == 3
+    assert data["result"][0]["code"] == dict_.get("codes")[0]
+    assert data["result"][0]["user_value"] == dict_.get("values")[0]
+    assert len(data["result"][0]["code_values"]["detail_code"]) == 3
+    assert len(data["result"][0]["code_values"]["name"]) == 3
     assert (
-            data["result"]["code_values"][0]["detail_code"]
+            data["result"][0]["code_values"]["detail_code"]
             == IsHouseOwnerCodeEnum.COND_CD.value
     )
-    assert data["result"]["code_values"][0]["name"] == IsHouseOwnerCodeEnum.COND_NM.value
+    assert data["result"][0]["code_values"]["name"] == IsHouseOwnerCodeEnum.COND_NM.value
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
@@ -565,7 +565,7 @@ def test_get_user_info_view_when_monthly_income_then_success(
         accept="application/json",
     )
 
-    dict_ = dict(code=CodeEnum.MONTHLY_INCOME.value)
+    dict_ = dict(codes=[CodeEnum.MONTHLY_INCOME.value])
 
     with test_request_context:
         response = client.get(
@@ -576,15 +576,15 @@ def test_get_user_info_view_when_monthly_income_then_success(
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]["code"] == dict_.get("code")
-    assert data["result"]["user_values"] is None
+    assert data["result"][0]["code"] == dict_.get("codes")[0]
+    assert data["result"][0]["user_value"] is None
     assert (
-            data["result"]["code_values"][0]["detail_code"]
+            data["result"][0]["code_values"]["detail_code"]
             == MonthlyIncomeEnum.COND_CD_2.value
     )
-    assert len(data["result"]["code_values"][0]["detail_code"]) == len(data["result"]["code_values"][0]["name"])
+    assert len(data["result"][0]["code_values"]["detail_code"]) == len(data["result"][0]["code_values"]["name"])
     # 맞벌이, 부양가족 5인 기준
-    assert data["result"]["code_values"][0]["name"] == [3547102, 5675364, 7803626, 8513046, 9222466, 9931887]
+    assert data["result"][0]["code_values"]["name"] == [3547102, 5675364, 7803626, 8513046, 9222466, 9931887]
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
@@ -600,7 +600,7 @@ def test_get_user_info_view_when_get_address_then_success(
         accept="application/json",
     )
 
-    dict_ = dict(code=CodeEnum.ADDRESS.value)
+    dict_ = dict(codes=[CodeEnum.ADDRESS.value, CodeEnum.ADDRESS_DETAIL.value])
 
     with test_request_context:
         response = client.get(
@@ -611,11 +611,11 @@ def test_get_user_info_view_when_get_address_then_success(
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]["code"] == dict_.get("code")
-    assert data["result"]["user_values"] == dict_.get("value")
-    assert len(data["result"]["code_values"]) == 2
-    assert len(data["result"]["code_values"][0]["detail_code"]) == len(data["result"]["code_values"][0]["name"])
-    assert len(data["result"]["code_values"][1]["detail_code"]) == len(data["result"]["code_values"][1]["name"])
+    assert data["result"][0]["code"] == dict_.get("codes")[0]
+    assert data["result"][0]["user_value"] is None
+    assert len(data["result"][0]["code_values"]) == 2
+    assert len(data["result"][0]["code_values"]["detail_code"]) == len(data["result"][0]["code_values"]["name"])
+    assert len(data["result"][1]["code_values"]["detail_code"]) == len(data["result"][1]["code_values"]["name"])
 
 
 def test_get_user_info_when_no_user_data_with_detail_code_then_success(
@@ -628,7 +628,7 @@ def test_get_user_info_when_no_user_data_with_detail_code_then_success(
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(code=1005, )
+    dict_ = dict(codes=[1005])
 
     with test_request_context:
         response = client.get(
@@ -639,18 +639,18 @@ def test_get_user_info_when_no_user_data_with_detail_code_then_success(
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]["code"] == dict_.get("code")
-    assert len(data["result"]["code_values"][0]["detail_code"]) == 3
-    assert len(data["result"]["code_values"][0]["name"]) == 3
+    assert data["result"][0]["code"] == dict_.get("codes")[0]
+    assert len(data["result"][0]["code_values"]["detail_code"]) == 3
+    assert len(data["result"][0]["code_values"]["name"]) == 3
     assert (
-            data["result"]["code_values"][0]["detail_code"]
+            data["result"][0]["code_values"]["detail_code"]
             == IsHouseOwnerCodeEnum.COND_CD.value
     )
-    assert data["result"]["code_values"][0]["name"] == IsHouseOwnerCodeEnum.COND_NM.value
+    assert data["result"][0]["code_values"]["name"] == IsHouseOwnerCodeEnum.COND_NM.value
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
-def test_upsert_user_info_view_when_input_address_then_create_both_data_success(
+def test_get_user_info_view_when_input_address_then_create_both_data_success(
         _send_sqs_message, client, session, test_request_context, make_header, make_authorization, user_factory,
         create_sido_codes
 ):
@@ -674,7 +674,7 @@ def test_upsert_user_info_view_when_input_address_then_create_both_data_success(
             headers=headers,
         )
 
-    dict2_ = dict(code=CodeEnum.ADDRESS.value, )
+    dict2_ = dict(codes=[CodeEnum.ADDRESS.value, CodeEnum.ADDRESS_DETAIL.value])
 
     with test_request_context:
         response = client.get(
@@ -685,8 +685,54 @@ def test_upsert_user_info_view_when_input_address_then_create_both_data_success(
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]['code'] == CodeEnum.ADDRESS.value
-    assert len(data["result"]['code_values']) == 2
-    assert len(data["result"]['user_values']) == 2
-    assert data["result"]['user_values'][0] == dict_.get("values")[0]
-    assert data["result"]['user_values'][1] == dict_.get("values")[1]
+    assert data["result"][0]['code'] == CodeEnum.ADDRESS.value
+    assert len(data["result"]) == len(dict2_.get("codes"))
+    assert data["result"][0]['user_value'] == dict_.get("values")[0]
+    assert data["result"][1]['user_value'] == dict_.get("values")[1]
+
+
+@patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
+def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_success(
+        _send_sqs_message, client, session, test_request_context, make_header, make_authorization, user_factory,
+):
+    user_id = 1
+    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    session.add(user)
+    session.commit()
+
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+    dict_ = dict(
+        codes=[CodeEnum.CHILD_AGE_SIX.value, CodeEnum.CHILD_AGE_NINETEEN.value, CodeEnum.CHILD_AGE_TWENTY.value],
+        values=["1", "2", "True"])
+
+    with test_request_context:
+        client.post(
+            url_for("api/tanos.upsert_user_info_view"),
+            data=json.dumps(dict_),
+            headers=headers,
+        )
+
+    dict2_ = dict(
+        codes=[CodeEnum.CHILD_AGE_SIX.value, CodeEnum.CHILD_AGE_NINETEEN.value, CodeEnum.CHILD_AGE_TWENTY.value])
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_user_info_view"),
+            data=json.dumps(dict2_),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"][0]['code'] == CodeEnum.CHILD_AGE_SIX.value
+    assert data["result"][1]['code'] == CodeEnum.CHILD_AGE_NINETEEN.value
+    assert data["result"][2]['code'] == CodeEnum.CHILD_AGE_TWENTY.value
+    assert len(data["result"]) == len(dict2_.get("codes"))
+    assert data["result"][0]['user_value'] == dict_.get("values")[0]
+    assert data["result"][1]['user_value'] == dict_.get("values")[1]
+    assert data["result"][2]['user_value'] == dict_.get("values")[2]
