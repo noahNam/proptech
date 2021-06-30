@@ -3,12 +3,16 @@ import uuid
 
 import factory
 from faker import Factory as FakerFactory
+from flask import current_app
+from sqlalchemy.orm import scoped_session
 
+from app import db
 from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
     DeviceModel,
     DeviceTokenModel,
+    UserProfileModel,
 )
 from app.persistence.model.user_model import UserModel
 
@@ -50,6 +54,14 @@ class DeviceFactory(BaseFactory):
     device_tokens = factory.SubFactory(DeviceTokenFactory)
 
 
+class UserProfileFactory(BaseFactory):
+    class Meta:
+        model = UserProfileModel
+
+    nickname = "noah"
+    last_update_code = 1000
+
+
 class UserFactory(BaseFactory):
     """
     Define user factory
@@ -66,6 +78,7 @@ class UserFactory(BaseFactory):
     # devices = factory.List([factory.SubFactory(DeviceFactory)])
     interest_regions = factory.SubFactory(InterestRegionFactory)
     devices = factory.SubFactory(DeviceFactory)
+    user_profiles = factory.SubFactory(UserProfileFactory)
 
 
 class InterestRegionGroupFactory(BaseFactory):

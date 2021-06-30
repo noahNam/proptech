@@ -1,21 +1,55 @@
 import os
 import uuid
-from typing import Union
+from http import HTTPStatus
+from typing import Union, Optional
 
 import inject
 
+from app.extensions.queue import SqsTypeEnum, SenderDto
+from app.extensions.queue.sender import QueueMessageSender
 from app.extensions.utils.enum.aws_enum import S3PathEnum, S3BucketEnum
 from app.extensions.utils.image_helper import S3Helper
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto, \
-    UpsertUserInfoDto
+from app.extensions.utils.time_helper import get_server_timestamp
+from core.domains.user.dto.user_dto import (
+    CreateUserDto,
+    CreateUserProfileImgDto,
+    CreateAppAgreeTermsDto,
+    UpsertUserInfoDto,
+    GetUserInfoDto, SendUserInfoToLakeDto, GetUserDto,
+)
+from core.domains.user.entity.user_entity import (
+    UserInfoEntity,
+    UserInfoCodeValueEntity,
+    UserInfoEmptyEntity, UserEntity,
+)
+from core.domains.user.enum.user_enum import UserSqsTypeEnum
+from core.domains.user.enum.user_info_enum import (
+    IsHouseOwnerCodeEnum,
+    IsHouseHolderCodeEnum,
+    IsMarriedCodeEnum,
+    NumberDependentsEnum,
+    IsChildEnum,
+    IsSubAccountEnum,
+    MonthlyIncomeEnum,
+    AssetsRealEstateEnum,
+    AssetsCarEnum,
+    AssetsTotalEnum,
+    SpecialCondEnum,
+)
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
 class UserBaseUseCase:
     @inject.autoparams()
-    def __init__(self, user_repo: UserRepository):
+    def __init__(self, user_repo: UserRepository, queue_msg_sender: QueueMessageSender):
         self._user_repo = user_repo
+        self._sqs = queue_msg_sender
+
+    def _send_sqs_message(self, queue_type: SqsTypeEnum, msg: SenderDto) -> bool:
+        return self._sqs.send_message(
+            queue_type=queue_type, msg=msg, logging=True
+        )
 
     def _upload_user_profile_img(self, dto: CreateUserProfileImgDto) -> bool:
         """
@@ -54,13 +88,25 @@ class UserBaseUseCase:
         return create_user_profile_img_dto
 
 
+class GetUserUseCase(UserBaseUseCase):
+    def execute(self, dto: GetUserDto) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        user: UserEntity = self._user_repo.get_user(user_id=dto.user_id)
+
+        if not user:
+            return UseCaseFailureOutput(
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+            )
+
+        return UseCaseSuccessOutput(value=user)
+
+
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
             self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
         self._user_repo.create_user(dto=dto)
@@ -94,7 +140,7 @@ class CreateAppAgreeTermsUseCase(UserBaseUseCase):
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
         self._user_repo.create_app_agree_terms(dto=dto)
@@ -103,21 +149,109 @@ class CreateAppAgreeTermsUseCase(UserBaseUseCase):
         return UseCaseSuccessOutput()
 
 
-class CreateUserInfoUseCase:
+class UpsertUserInfoUseCase(UserBaseUseCase):
     def execute(
             self, dto: UpsertUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
-        # todo. code==1000 (설문 시작 후 닉네임 생성 시) -> user_profiles create 및 update
+        user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(dto=dto)
 
-        # todo. code!=1000 -> user_infos create 및 update, user_profile_id 조회 및 dto push
+        """
+            upsert 사용 X
+            클린코드 측면에서 upsert는 되도록 사용 자제 권장한다고 본적이 있어서 제외했지만 이에 따른 코드 복잡성 증가
+            코드 컨벤션 논의 필요 -> 논의 후 필요 시 refactoring
+        """
+        if dto.code == 1000:
+            # code==1000 (설문 시작 후 닉네임 생성 시) -> user_profiles 갱신
+            if not user_profile_id:
+                user_profile_id: int = self._user_repo.create_user_nickname(dto=dto)
+            else:
+                self._user_repo.update_user_nickname(dto=dto)
 
-        # todo. code!=1000 -> user_profiles.last_update_code update
+        dto.user_profile_id = user_profile_id
+        if not self._user_repo.is_user_info(dto=dto):
+            user_info: UserInfoEntity = self._user_repo.create_user_info(dto=dto)
+        else:
+            user_info: UserInfoEntity = self._user_repo.update_user_info(dto=dto)
 
-        # todo. SQS Data 전송
+        # 마지막으로 진행한 설문 단계 저장
+        self._user_repo.update_last_code_to_user_info(dto=dto)
+
+        # SQS Data 전송 -> Data Lake
+        if user_info.user_value:
+            msg: SenderDto = self._make_sqs_send_message(user_info=user_info, user_id=dto.user_id)
+            self._send_sqs_message(queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg)
 
         return UseCaseSuccessOutput()
+
+    def _make_sqs_send_message(self, user_info: UserInfoEntity, user_id: int) -> SenderDto:
+        send_user_info_to_lake_dto = SendUserInfoToLakeDto(
+            user_id=user_id,
+            user_profile_id=user_info.user_profile_id,
+            code=user_info.code,
+            value=user_info.user_value,
+        )
+
+        return SenderDto(
+            msg_type=UserSqsTypeEnum.SEND_USER_DATA_TO_LAKE.value,
+            msg=send_user_info_to_lake_dto.to_dict(),
+            msg_created_at=get_server_timestamp().strftime("%Y/%m/%d, %H:%M:%S"),
+        )
+
+
+class GetUserInfoUseCase(UserBaseUseCase):
+    def execute(
+            self, dto: GetUserInfoDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+            )
+
+        user_profile_id: int = self._user_repo.get_user_profile_id(dto=dto)
+        dto.user_profile_id = user_profile_id
+
+        if not dto.user_profile_id:
+            # nickname 생성 전 (즉, 최초 설문으로 user_profile_id가 없음)
+            user_info: UserInfoEmptyEntity = self._make_empty_user_info_entity(dto=dto)
+        else:
+            user_info: Union[
+                UserInfoEntity, UserInfoEmptyEntity
+            ] = self._user_repo.get_user_info(dto=dto)
+            self._bind_detail_code_values(user_info=user_info)
+
+        return UseCaseSuccessOutput(value=user_info)
+
+    def _make_empty_user_info_entity(self, dto: GetUserInfoDto) -> UserInfoEmptyEntity:
+        return UserInfoEmptyEntity(code=dto.code)
+
+    def _bind_detail_code_values(
+            self, user_info: Union[UserInfoEntity, UserInfoEmptyEntity]
+    ):
+        bind_detail_code_dict = {
+            "1005": IsHouseOwnerCodeEnum,
+            "1007": IsHouseHolderCodeEnum,
+            "1008": IsMarriedCodeEnum,
+            "1010": NumberDependentsEnum,
+            "1011": IsChildEnum,
+            "1015": IsSubAccountEnum,
+            "1019": MonthlyIncomeEnum,
+            "1020": AssetsRealEstateEnum,
+            "1021": AssetsCarEnum,
+            "1022": AssetsTotalEnum,
+            "1025": SpecialCondEnum,
+        }
+
+        bind_code = bind_detail_code_dict.get(str(user_info.code))
+
+        if bind_code:
+            user_info_code_value_entity = UserInfoCodeValueEntity()
+
+            user_info_code_value_entity.detail_code = bind_code.COND_CD.value
+            user_info_code_value_entity.name = bind_code.COND_NM.value
+
+            user_info.code_values = user_info_code_value_entity

@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager, create_access_token
 
 from app.extensions import SmsClient
 from app.extensions.cache.cache import RedisClient
+from app.extensions.queue.sqs_sender import SqsMessageSender
 
 
 @pytest.fixture()
@@ -52,6 +53,12 @@ def sms(app: Flask):
     _sms = SmsClient()
     _sms.init_app(app=app)
     return _sms
+
+
+@pytest.fixture(scope="function")
+def sqs(app: Flask):
+    _sqs = SqsMessageSender()
+    return _sqs
 
 
 @pytest.fixture(scope="function")
