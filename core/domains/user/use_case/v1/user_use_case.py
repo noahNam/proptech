@@ -92,11 +92,6 @@ class GetUserUseCase(UserBaseUseCase):
     def execute(self, dto: GetUserDto) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         user: UserEntity = self._user_repo.get_user(user_id=dto.user_id)
 
-        if not user:
-            return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
-            )
-
         return UseCaseSuccessOutput(value=user)
 
 
@@ -315,7 +310,8 @@ class GetUserInfoUseCase(UserBaseUseCase):
             calc_result_list = []
             my_basic_income = income_result_dict.get(result2.user_values[0])
 
-            monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_values[0] != "2" else MonthlyIncomeEnum.COND_CD_2.value
+            monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_values[
+                                                                                 0] != "2" else MonthlyIncomeEnum.COND_CD_2.value
 
             for percentage_num in monthly_income_enum:
                 income_by_segment = (int(my_basic_income) * percentage_num) / 100
