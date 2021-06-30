@@ -6,9 +6,15 @@ from tests.seeder.factory import (
     UserFactory,
     InterestRegionFactory,
     InterestRegionGroupFactory,
+    UserProfileFactory,
 )
 
-MODEL_FACTORIES = [UserFactory, InterestRegionFactory, InterestRegionGroupFactory]
+MODEL_FACTORIES = [
+    UserFactory,
+    InterestRegionFactory,
+    InterestRegionGroupFactory,
+    UserProfileFactory,
+]
 
 faker = Faker()
 
