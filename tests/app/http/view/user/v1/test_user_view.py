@@ -690,3 +690,88 @@ def test_upsert_user_info_view_when_input_address_then_create_both_data_success(
     assert len(data["result"]['user_values']) == 2
     assert data["result"]['user_values'][0] == dict_.get("values")[0]
     assert data["result"]['user_values'][1] == dict_.get("values")[1]
+
+
+@patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
+def test_upsert_user_info_view_when_input_address_then_create_both_data_success(
+        _send_sqs_message, client, session, test_request_context, make_header, make_authorization, user_factory,
+        create_sido_codes
+):
+    user_id = 1
+    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    session.add(user)
+    session.commit()
+
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+    dict_ = dict(codes=[CodeEnum.ADDRESS.value, CodeEnum.ADDRESS_DETAIL.value], values=["29", "29010"])
+
+    with test_request_context:
+        client.post(
+            url_for("api/tanos.upsert_user_info_view"),
+            data=json.dumps(dict_),
+            headers=headers,
+        )
+
+    dict2_ = dict(code=CodeEnum.ADDRESS.value, )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_user_info_view"),
+            data=json.dumps(dict2_),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"]['code'] == CodeEnum.ADDRESS.value
+    assert len(data["result"]['code_values']) == 2
+    assert len(data["result"]['user_values']) == 2
+    assert data["result"]['user_values'][0] == dict_.get("values")[0]
+    assert data["result"]['user_values'][1] == dict_.get("values")[1]
+
+
+@patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
+def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_success(
+        _send_sqs_message, client, session, test_request_context, make_header, make_authorization, user_factory,
+):
+    user_id = 1
+    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    session.add(user)
+    session.commit()
+
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+    dict_ = dict(codes=[CodeEnum.CHILD_AGE_SIX.value, CodeEnum.CHILD_AGE_NINETEEN.value, CodeEnum.CHILD_AGE_TWENTY.value], values=["1", "2", "True"])
+
+    with test_request_context:
+        client.post(
+            url_for("api/tanos.upsert_user_info_view"),
+            data=json.dumps(dict_),
+            headers=headers,
+        )
+
+    dict2_ = dict(code=CodeEnum.CHILD_AGE_SIX.value)
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_user_info_view"),
+            data=json.dumps(dict2_),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"]['code'] == CodeEnum.ADDRESS.value
+    assert len(data["result"]['code_values']) == 2
+    assert len(data["result"]['user_values']) == 2
+    assert data["result"]['user_values'][0] == dict_.get("values")[0]
+    assert data["result"]['user_values'][1] == dict_.get("values")[1]
