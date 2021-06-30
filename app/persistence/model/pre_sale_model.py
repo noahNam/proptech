@@ -27,7 +27,9 @@ class PreSaleModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    real_estate_id = Column(BigInteger, ForeignKey(RealEstateModel.id), nullable=False)
+    real_estate_id = Column(BigInteger,
+                            ForeignKey(RealEstateModel.id, ondelete="CASCADE"),
+                            nullable=False)
     name = Column(String(50), nullable=False)
     region = Column(String(20), nullable=False)
     housing_category = Column(Enum(HousingCategoryEnum, values_callable=lambda obj: [e.value for e in obj]),
@@ -36,9 +38,9 @@ class PreSaleModel(db.Model):
                        nullable=False)
     trade_type = Column(Enum(PreSaleTypeEnum, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
     construct_company = Column(String(30), nullable=True)
-    housing_type = Column(String(12), nullable=False)
-    supply_price = Column(Integer, nullable=False)
+    private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
+    supply_price = Column(Integer, nullable=False)
     notes = Column(String(50), nullable=True)
     is_available = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)

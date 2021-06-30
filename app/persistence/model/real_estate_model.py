@@ -1,3 +1,4 @@
+from geoalchemy2 import Geometry
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -32,11 +33,10 @@ class RealEstateModel(db.Model):
     road_number = Column(String(10), nullable=True)
     land_number = Column(String(10), nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
-    latitude = Column(Float, nullable=False)
-    longitude = Column(Float, nullable=False)
+    coordinates = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
 
-    real_trades = relationship("RealTradeModel", backref=backref("real_estates"), lazy="subquery")
-    pre_sales = relationship("PreSaleModel", backref=backref("real_estates"), lazy="subquery")
+    real_trades = relationship("RealTradeModel", backref=backref("real_estates"))
+    pre_sales = relationship("PreSaleModel", backref=backref("real_estates"))
 
     def __repr__(self):
         return (

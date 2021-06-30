@@ -3,8 +3,8 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     ForeignKey,
-    DateTime,
     SmallInteger,
+    Date,
 )
 
 from app import db
@@ -21,19 +21,22 @@ class SubscriptionScheduleModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    pre_sales_id = Column(BigInteger, ForeignKey(PreSaleModel.id), nullable=False, unique=True)
-    offer_date = Column(DateTime, nullable=False)
-    subscription_start_date = Column(DateTime, nullable=False)
-    subscription_end_date = Column(DateTime, nullable=False)
-    special_supply_date = Column(DateTime, nullable=False)
-    special_supply_etc_date = Column(DateTime, nullable=False)
-    first_supply_date = Column(DateTime, nullable=False)
-    first_supply_etc_date = Column(DateTime, nullable=False)
-    second_supply_date = Column(DateTime, nullable=False)
-    second_supply_etc_date = Column(DateTime, nullable=False)
-    notice_winner_date = Column(DateTime, nullable=False)
-    contract_start_date = Column(DateTime, nullable=False)
-    contract_end_date = Column(DateTime, nullable=False)
+    pre_sales_id = Column(BigInteger,
+                          ForeignKey(PreSaleModel.id, ondelete="CASCADE"),
+                          nullable=False,
+                          unique=True)
+    offer_date = Column(Date, nullable=False)
+    subscription_start_date = Column(Date, nullable=False)
+    subscription_end_date = Column(Date, nullable=False)
+    special_supply_date = Column(Date, nullable=False)
+    special_supply_etc_date = Column(Date, nullable=False)
+    first_supply_date = Column(Date, nullable=False)
+    first_supply_etc_date = Column(Date, nullable=False)
+    second_supply_date = Column(Date, nullable=False)
+    second_supply_etc_date = Column(Date, nullable=False)
+    notice_winner_date = Column(Date, nullable=False)
+    contract_start_date = Column(Date, nullable=False)
+    contract_end_date = Column(Date, nullable=False)
     move_in_year = Column(SmallInteger, nullable=False)
     move_in_month = Column(SmallInteger, nullable=False)
 
