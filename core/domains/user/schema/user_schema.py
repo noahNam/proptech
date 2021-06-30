@@ -11,8 +11,8 @@ class GetUserBaseSchema(BaseModel):
 
 class GetUserInfoBaseSchema(BaseModel):
     code: StrictInt
-    user_value: StrictStr = None
-    code_values: UserInfoCodeValueEntity = None
+    code_values: list = None
+    user_values: list = None
 
 
 class GetUserResponseSchema(BaseModel):

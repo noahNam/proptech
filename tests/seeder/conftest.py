@@ -7,6 +7,8 @@ from tests.seeder.factory import (
     InterestRegionFactory,
     InterestRegionGroupFactory,
     UserProfileFactory,
+    AvgMonthlyIncomeWorkerFactory,
+    SidoCodeFactory
 )
 
 MODEL_FACTORIES = [
@@ -14,6 +16,8 @@ MODEL_FACTORIES = [
     InterestRegionFactory,
     InterestRegionGroupFactory,
     UserProfileFactory,
+    AvgMonthlyIncomeWorkerFactory,
+    SidoCodeFactory
 ]
 
 faker = Faker()
@@ -26,6 +30,22 @@ def create_users(session, user_factory):
     session.commit()
 
     return users
+
+
+@pytest.fixture
+def create_sido_codes(session, sido_code_factory):
+    sido_code_1 = sido_code_factory.build(sido_code=11, sido_name='서울특별시', sigugun_code='11010', sigugun_name='종로구')
+    sido_code_2 = sido_code_factory.build(sido_code=11, sido_name='서울특별시', sigugun_code='11020', sigugun_name='중구')
+    sido_code_3 = sido_code_factory.build(sido_code=11, sido_name='서울특별시', sigugun_code='11030', sigugun_name='용산구')
+    sido_code_4 = sido_code_factory.build(sido_code=29, sido_name='세종특별자치시', sigugun_code='29010', sigugun_name='세종시')
+    sido_code_5 = sido_code_factory.build(sido_code=31, sido_name='경기도', sigugun_code='31011', sigugun_name='수원시 장안구')
+    sido_code_6 = sido_code_factory.build(sido_code=31, sido_name='경기도', sigugun_code='31012', sigugun_name='수원시 권선구')
+    sido_code_7 = sido_code_factory.build(sido_code=31, sido_name='경기도', sigugun_code='31030', sigugun_name='의정부시')
+    sido_code_8 = sido_code_factory.build(sido_code=33, sido_name='충청북도', sigugun_code='33320', sigugun_name='보은군')
+
+    list = [sido_code_1, sido_code_2, sido_code_3, sido_code_4, sido_code_5, sido_code_6, sido_code_7, sido_code_8]
+    session.add_all(list)
+    session.commit()
 
 
 @pytest.fixture

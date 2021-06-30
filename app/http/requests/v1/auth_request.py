@@ -1,6 +1,3 @@
-import json
-from typing import List
-
 from pydantic import BaseModel, StrictInt, StrictStr, ValidationError
 
 from app.extensions.utils.log_helper import logger_
