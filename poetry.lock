@@ -255,6 +255,17 @@ Flask = ">=0.10"
 SQLAlchemy = ">=0.8.0"
 
 [[package]]
+name = "geoalchemy2"
+version = "0.9.1"
+description = "Using SQLAlchemy with Spatial Databases"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+SQLAlchemy = ">=1.1"
+
+[[package]]
 name = "gevent"
 version = "20.12.1"
 description = "Coroutine-based network library"
@@ -844,7 +855,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "00642b7cf37b7d26d5dd5400fc2ba2c82d99d5ef554b5d6c22e9f7ea455238a4"
+content-hash = "08f65bb06b4835a404d3528ea9aee87c13df7d7274111910984276836eb7f4fa"
 
 [metadata.files]
 alembic = [
@@ -965,6 +976,10 @@ flask-migrate = [
 flask-sqlalchemy = [
     {file = "Flask-SQLAlchemy-2.5.1.tar.gz", hash = "sha256:2bda44b43e7cacb15d4e05ff3cc1f8bc97936cc464623424102bfc2c35e95912"},
     {file = "Flask_SQLAlchemy-2.5.1-py2.py3-none-any.whl", hash = "sha256:f12c3d4cc5cc7fdcc148b9527ea05671718c3ea45d50c7e732cceb33f574b390"},
+]
+geoalchemy2 = [
+    {file = "GeoAlchemy2-0.9.1-py2.py3-none-any.whl", hash = "sha256:1984f7b189b1994edad7800154973ebd48a26094376a2c9cd7447133051faf60"},
+    {file = "GeoAlchemy2-0.9.1.tar.gz", hash = "sha256:de0d0b1ff2f7f26ddff0a69d9a33940020707caedd442fa13b28affec842dafb"},
 ]
 gevent = [
     {file = "gevent-20.12.1-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:0f9fa230c5878704b9e286ad5038bac3b70d293bf10e9efa8b2ae1d7d80e7e08"},
