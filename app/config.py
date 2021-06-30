@@ -30,7 +30,7 @@ class Config:
 
     # SQS
     SQS_BASE = os.environ.get("SQS_BASE") or "https://sqs.ap-northeast-2.amazonaws.com/208389685150"
-    SQS_USER_DATA_SYNC_TO_LAKE = os.environ.get("SQS_USER_DATA_SYNC_TO_LAKE") or "USER_DATA_SYNC_TO_LAKE_QUEUE"
+    SQS_USER_DATA_SYNC_TO_LAKE = os.environ.get("SQS_USER_DATA_SYNC_TO_LAKE") or "USER_DATA_SYNC_TO_LAKE_QUEUE.fifo"
 
 
 class LocalConfig(Config):

@@ -5,6 +5,7 @@ from flask import current_app
 
 from app.extensions.queue import SqsTypeEnum, SenderDto
 from app.extensions.utils.log_helper import logger_
+from core.domains.user.enum.user_enum import UserSqsTypeEnum
 
 logger = logger_.getLogger(__name__)
 
@@ -43,6 +44,7 @@ class SqsMessageSender:
                 DelaySeconds=0,
                 MessageAttributes={},
                 MessageBody=msg.to_json(),
+                MessageGroupId=UserSqsTypeEnum.SEND_USER_DATA_TO_LAKE.value
             )
 
             if logging:
