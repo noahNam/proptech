@@ -17,7 +17,7 @@ from core.domains.user.dto.user_dto import (
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEmptyEntity,
-    UserInfoEntity,
+    UserInfoEntity, UserInfoCodeValueEntity,
 )
 from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, CodeEnum
 from core.domains.user.repository.user_repository import UserRepository
@@ -248,15 +248,15 @@ def test_get_user_info_when_first_input_nickname_then_get_none_user_data(
         session, create_users
 ):
     get_user_info_dto = GetUserInfoDto(
-        user_id=create_users[0].id, user_profile_id=None, code=1000,
+        user_id=create_users[0].id, user_profile_id=None, codes=[1000],
     )
     result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, UserInfoEmptyEntity)
-    assert result.value.code == get_user_info_dto.code
-    assert result.value.code_values is None
-    assert result.value.user_values is None
+    assert isinstance(result.value, list)
+    assert result.value[0].code == get_user_info_dto.codes[0]
+    assert result.value[0].code_values is None
+    assert result.value[0].user_value is None
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
@@ -268,37 +268,34 @@ def test_get_user_info_when_secondary_input_nickname_then_get_user_data(_send_sq
     UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
 
     get_user_info_dto = GetUserInfoDto(
-        user_id=user_id, user_profile_id=None, code=1000,
+        user_id=user_id, user_profile_id=None, codes=[1000],
     )
     result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, UserInfoEntity)
-    assert isinstance(result.value.code_values, list)
-    assert result.value.code == get_user_info_dto.code
-    assert result.value.user_values == upsert_user_info_dto.values
-    assert len(result.value.code_values[0].detail_code) == 0
-    assert len(result.value.code_values[0].name) == 0
-    assert result.value.user_profile_id == 1
+    assert isinstance(result.value, list)
+    assert result.value[0].code_values is None
+    assert result.value[0].code == get_user_info_dto.codes[0]
+    assert result.value[0].user_value == upsert_user_info_dto.values[0]
 
 
 def test_get_user_info_when_first_input_data_then_get_none_user_data(
         session, create_users
 ):
     get_user_info_dto = GetUserInfoDto(
-        user_id=create_users[0].id, user_profile_id=None, code=1005,
+        user_id=create_users[0].id, user_profile_id=None, codes=[1005],
     )
     result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, UserInfoEmptyEntity)
-    assert isinstance(result.value.code_values, list)
-    assert result.value.code == get_user_info_dto.code
-    assert result.value.user_values is None
-    assert len(result.value.code_values[0].detail_code) == len(
+    assert isinstance(result.value, list)
+    assert isinstance(result.value[0].code_values, UserInfoCodeValueEntity)
+    assert result.value[0].code == get_user_info_dto.codes[0]
+    assert result.value[0].user_value is None
+    assert len(result.value[0].code_values.detail_code) == len(
         IsHouseOwnerCodeEnum.COND_CD.value
     )
-    assert len(result.value.code_values[0].name) == len(IsHouseOwnerCodeEnum.COND_NM.value)
+    assert len(result.value[0].code_values.name) == len(IsHouseOwnerCodeEnum.COND_NM.value)
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
@@ -312,20 +309,19 @@ def test_get_user_info_when_secondary_input_data_then_get_user_data(
     UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
 
     get_user_info_dto = GetUserInfoDto(
-        user_id=user_id, user_profile_id=None, code=1005,
+        user_id=user_id, user_profile_id=None, codes=[1005],
     )
     result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, UserInfoEntity)
-    assert isinstance(result.value.code_values, list)
-    assert result.value.code == get_user_info_dto.code
-    assert result.value.user_values == upsert_user_info_dto.values
-    assert len(result.value.code_values[0].detail_code) == len(
+    assert isinstance(result.value, list)
+    assert isinstance(result.value[0].code_values, UserInfoCodeValueEntity)
+    assert result.value[0].code == get_user_info_dto.codes[0]
+    assert result.value[0].user_value == upsert_user_info_dto.values[0]
+    assert len(result.value[0].code_values.detail_code) == len(
         IsHouseOwnerCodeEnum.COND_CD.value
     )
-    assert len(result.value.code_values[0].name) == len(IsHouseOwnerCodeEnum.COND_NM.value)
-    assert result.value.user_profile_id == 1
+    assert len(result.value[0].code_values.name) == len(IsHouseOwnerCodeEnum.COND_NM.value)
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
@@ -365,11 +361,11 @@ def test_get_user_info_when_monthly_income_then_success(_send_sqs_message, sessi
 def test_get_user_info_when_monthly_income_then_success(_send_sqs_message, session, create_users,
                                                         create_sido_codes):
     get_user_info_dto = GetUserInfoDto(
-        user_id=create_users[0].id, user_profile_id=create_users[0].id, code=CodeEnum.ADDRESS.value,
+        user_id=create_users[0].id, user_profile_id=create_users[0].id, codes=[CodeEnum.ADDRESS.value],
     )
     result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert len(result.value.code_values) == 2
-    assert len(result.value.code_values[0].detail_code) == len(result.value.code_values[0].name)
-    assert len(result.value.code_values[1].detail_code) == len(result.value.code_values[1].name)
+    assert len(result.value) == 1
+    assert len(result.value[0].code_values.detail_code) == len(result.value[0].code_values.name)
+    assert len(result.value[0].code_values.detail_code) == len(result.value[0].code_values.name)
