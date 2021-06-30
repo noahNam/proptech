@@ -8,6 +8,7 @@ from sqlalchemy import (
     SmallInteger,
     Boolean,
     Enum,
+    Date,
 )
 
 from app import db
@@ -26,10 +27,12 @@ class RealTradeModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    real_estate_id = Column(BigInteger, ForeignKey(RealEstateModel.id), nullable=False)
-    area = Column(Float, nullable=False)
+    real_estate_id = Column(BigInteger,
+                            ForeignKey(RealEstateModel.id, ondelete="CASCADE"),
+                            nullable=False)
+    private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
-    contract_date = Column(DateTime, nullable=False)
+    contract_date = Column(Date, nullable=False)
     deposit_price = Column(Integer, nullable=False)
     rent_price = Column(Integer, nullable=False)
     trade_price = Column(Integer, nullable=False)
