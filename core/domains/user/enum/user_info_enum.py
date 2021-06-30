@@ -2,32 +2,37 @@ from enum import Enum
 
 
 class CodeEnum(Enum):
-    NICKNAME = "1000"
-    BIRTHDAY = "1001"
-    ADDRESS_LV1 = "1002"
-    ADDRESS_LV2 = "1003"
-    ADDRESS_DATE = "1004"
-    IS_HOUSE_OWNER = "1005"
-    SELL_HOUSE_DATE = "1006"
-    IS_HOUSE_HOLDER = "1007"
-    IS_MARRIED = "1008"
-    MARRIAGE_REG_DATE = "1009"
-    NUMBER_DEPENDENTS = "1010"
-    IS_CHILD = "1011"
-    CHILD_AGE_SIX = "1012"
-    CHILD_AGE_NINETEEN = "1013"
-    CHILD_AGE_TWENTY = "1014"
-    IS_SUB_ACCOUNT = "1015"
-    SUB_ACCOUNT_DATE = "1016"
-    SUB_ACCOUNT_TIMES = "1017"
-    SUB_ACCOUNT_TOTAL_PRICE = "1018"
-    MONTHLY_INCOME = "1019"
-    ASSETS_REAL_ESTATE = "1020"
-    ASSETS_CAR = "1021"
-    ASSETS_TOTAL = "1022"
-    IS_SUPPORT_PARENT = "1023"
-    SUPPORT_PARENT_DATE = "1024"
-    SPECIAL_COND = "1025"
+    NICKNAME = 1000
+    BIRTHDAY = 1001
+    ADDRESS = 1002
+    ADDRESS_DETAIL = 1003
+    ADDRESS_DATE = 1004
+    IS_HOUSE_OWNER = 1005
+    SELL_HOUSE_DATE = 1006
+    IS_HOUSE_HOLDER = 1007
+    IS_MARRIED = 1008
+    MARRIAGE_REG_DATE = 1009
+    NUMBER_DEPENDENTS = 1010
+    IS_CHILD = 1011
+    CHILD_AGE_SIX = 1012
+    CHILD_AGE_NINETEEN = 1013
+    CHILD_AGE_TWENTY = 1014
+    IS_SUB_ACCOUNT = 1015
+    SUB_ACCOUNT_DATE = 1016
+    SUB_ACCOUNT_TIMES = 1017
+    SUB_ACCOUNT_TOTAL_PRICE = 1018
+    MONTHLY_INCOME = 1019
+    ASSETS_REAL_ESTATE = 1020
+    ASSETS_CAR = 1021
+    ASSETS_TOTAL = 1022
+    IS_SUPPORT_PARENT = 1023
+    SUPPORT_PARENT_DATE = 1024
+    SPECIAL_COND = 1025
+
+
+class AddressCodeEnum(Enum):
+    COND_CD = []
+    COND_NM = []
 
 
 class IsHouseOwnerCodeEnum(Enum):
@@ -46,8 +51,8 @@ class IsMarriedCodeEnum(Enum):
 
 
 class NumberDependentsEnum(Enum):
-    COND_CD = [1, 2, 3, 4, 5, 6, 7]
-    COND_NM = ["1명", "2명", "3명", "4명", "5명", "6명 이상", "없어요"]
+    COND_CD = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    COND_NM = ["1명", "2명", "3명", "4명", "5명", "6명", "7명", "8명", "없어요"]
 
 
 class IsChildEnum(Enum):
@@ -61,8 +66,21 @@ class IsSubAccountEnum(Enum):
 
 
 class MonthlyIncomeEnum(Enum):
-    COND_CD = [1, 2, 3, 4, 5, 6, 7]
-    COND_NM = ["70%", "80%", "100%", "110%", "120%", "130%", "140%"]
+    # # 외벌이 기준
+    # COND_CD_1 = [1, 2, 3, 4, 5, 6]
+    # COND_NM_1 = ["50%", "70%", "80%", "100%", "120%", "130%"]
+    #
+    # # 맞벌이 기준
+    # COND_CD_2 = [1, 2, 3, 4, 5, 6]
+    # COND_NM_2 = ["50%", "80%", "110%", "120%", "130%", "140%"]
+
+    # 2020년 외벌이 기준
+    COND_CD_1 = [50, 70, 80, 100, 120, 130]
+    COND_NM_1 = []
+
+    # 2020년 맞벌이 기준
+    COND_CD_2 = [50, 80, 110, 120, 130, 140]
+    COND_NM_2 = []
 
 
 class AssetsRealEstateEnum(Enum):

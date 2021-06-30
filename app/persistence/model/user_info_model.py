@@ -36,6 +36,6 @@ class UserInfoModel(db.Model):
             id=self.id,
             user_profile_id=self.user_profile_id,
             code=self.code,
-            user_value=self.value,
-            code_values=UserInfoCodeValueEntity(),
+            user_values=[self.value],
+            code_values=[UserInfoCodeValueEntity()],
         )

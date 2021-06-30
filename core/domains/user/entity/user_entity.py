@@ -17,12 +17,12 @@ class UserInfoEntity(BaseModel):
     id: int
     user_profile_id: int
     code: int
-    user_value: str = None
-    code_values: UserInfoCodeValueEntity = None
+    code_values: list = None
+    user_values: list = None
 
 
 class UserInfoEmptyEntity(BaseModel):
     user_profile_id: int = None
     code: int
-    user_value: str = None
-    code_values: UserInfoCodeValueEntity = None
+    code_values: list = None
+    user_values: list = None
