@@ -9,7 +9,7 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, AvgMonthlyIncomeWokrerDto,
+    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
@@ -40,7 +40,11 @@ create_app_agree_term_dto = CreateAppAgreeTermsDto(
     receipt_marketing_yn=False,
 )
 
-upsert_user_info_dto = UpsertUserInfoDto(
+upsert_user_info_detail_dto = UpsertUserInfoDto(
+    user_id=1, user_profile_id=1, codes=[1005], values=["1"]
+)
+
+upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
     user_id=1, user_profile_id=1, code=1005, value="1"
 )
 
@@ -114,83 +118,83 @@ def test_update_user_required_agree_terms_when_app_first_start_then_success(sess
 
 
 def test_create_user_nickname_when_start_user_info_then_success(session):
-    UserRepository().create_user_nickname(dto=upsert_user_info_dto)
+    UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
     result = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
+            .filter_by(user_id=upsert_user_info_detail_dto.user_id)
             .first()
     )
 
-    assert result.nickname == upsert_user_info_dto.value
-    assert result.last_update_code == upsert_user_info_dto.code
+    assert result.nickname == upsert_user_info_detail_dto.value
+    assert result.last_update_code == upsert_user_info_detail_dto.code
 
 
 def test_update_user_nickname_when_update_user_info_then_success(session):
-    UserRepository().create_user_nickname(dto=upsert_user_info_dto)
+    UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
 
-    upsert_user_info_dto.value = "noah2"
-    UserRepository().update_user_nickname(dto=upsert_user_info_dto)
+    upsert_user_info_detail_dto.value = "noah2"
+    UserRepository().update_user_nickname(dto=upsert_user_info_detail_dto)
 
     result = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
+            .filter_by(user_id=upsert_user_info_detail_dto.user_id)
             .first()
     )
 
     assert result.nickname == "noah2"
-    assert result.last_update_code == upsert_user_info_dto.code
+    assert result.last_update_code == upsert_user_info_detail_dto.code
 
 
 def test_create_user_info_when_input_user_data_then_success(session):
-    UserRepository().create_user_info(dto=upsert_user_info_dto)
+    UserRepository().create_user_info(dto=upsert_user_info_detail_dto)
 
     result = (
         session.query(UserInfoModel)
             .filter_by(
-            user_profile_id=upsert_user_info_dto.user_profile_id,
-            code=upsert_user_info_dto.code,
+            user_profile_id=upsert_user_info_detail_dto.user_profile_id,
+            code=upsert_user_info_detail_dto.code,
         )
             .first()
     )
 
-    assert result.user_profile_id == upsert_user_info_dto.user_profile_id
-    assert result.code == upsert_user_info_dto.code
-    assert result.value == upsert_user_info_dto.value
+    assert result.user_profile_id == upsert_user_info_detail_dto.user_profile_id
+    assert result.code == upsert_user_info_detail_dto.code
+    assert result.value == upsert_user_info_detail_dto.value
 
 
 def test_create_user_info_when_input_user_data_without_profile_id_then_error(
         session, create_users
 ):
-    dto = UpsertUserInfoDto(user_id=create_users[0].id, code=1005, value="1")
+    dto = UpsertUserInfoDetailDto(user_id=create_users[0].id, code=1005, value="1")
     with pytest.raises(NotUniqueErrorException):
         UserRepository().create_user_info(dto=dto)
 
 
 def test_update_user_info_when_input_user_data_then_success(session):
-    UserRepository().create_user_info(dto=upsert_user_info_dto)
+    UserRepository().create_user_info(dto=upsert_user_info_detail_dto)
 
-    upsert_user_info_dto.value = "2"
-    UserRepository().update_user_info(dto=upsert_user_info_dto)
+    upsert_user_info_detail_dto.value = "2"
+    UserRepository().update_user_info(dto=upsert_user_info_detail_dto)
 
     result = (
         session.query(UserInfoModel)
             .filter_by(
-            user_profile_id=upsert_user_info_dto.user_profile_id,
-            code=upsert_user_info_dto.code,
+            user_profile_id=upsert_user_info_detail_dto.user_profile_id,
+            code=upsert_user_info_detail_dto.code,
         )
             .first()
     )
 
-    assert result.user_profile_id == upsert_user_info_dto.user_profile_id
-    assert result.code == upsert_user_info_dto.code
+    assert result.user_profile_id == upsert_user_info_detail_dto.user_profile_id
+    assert result.code == upsert_user_info_detail_dto.code
     assert result.value == "2"
 
 
 def test_update_last_code_to_user_info_when_input_user_data_then_success(session):
-    UserRepository().create_user_nickname(dto=upsert_user_info_dto)
+    UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
 
-    dto = UpsertUserInfoDto(
-        user_id=upsert_user_info_dto.user_id, user_profile_id=1, code=1007, value="2"
+    dto = UpsertUserInfoDetailDto(
+        user_id=upsert_user_info_detail_dto.user_id, user_profile_id=1, code=1007, value="2"
     )
     UserRepository().update_last_code_to_user_info(dto=dto)
 
@@ -200,43 +204,43 @@ def test_update_last_code_to_user_info_when_input_user_data_then_success(session
 
 
 def test_get_user_profile_id_when_input_user_data_then_success(session):
-    UserRepository().create_user_nickname(dto=upsert_user_info_dto)
-    get_user_profile_id = UserRepository().get_user_profile_id(dto=upsert_user_info_dto)
+    UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
+    get_user_profile_id = UserRepository().get_user_profile_id(dto=upsert_user_info_detail_dto)
 
     assert get_user_profile_id == 1
 
 
 def test_get_user_profile_id_when_input_user_data_then_none(session):
-    UserRepository().create_user_nickname(dto=upsert_user_info_dto)
+    UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
 
-    upsert_user_info_dto.user_id = upsert_user_info_dto.user_id + 1
-    get_user_profile_id = UserRepository().get_user_profile_id(dto=upsert_user_info_dto)
+    upsert_user_info_detail_dto.user_id = upsert_user_info_detail_dto.user_id + 1
+    get_user_profile_id = UserRepository().get_user_profile_id(dto=upsert_user_info_detail_dto)
 
     assert get_user_profile_id is None
 
 
 def test_get_user_info_when_input_user_data_then_success(session):
-    UserRepository().create_user_info(dto=upsert_user_info_dto)
+    UserRepository().create_user_info(dto=upsert_user_info_detail_dto)
     dto = GetUserInfoDto(
-        user_id=upsert_user_info_dto.user_id,
-        user_profile_id=upsert_user_info_dto.user_profile_id,
-        code=upsert_user_info_dto.code,
+        user_id=upsert_user_info_detail_dto.user_id,
+        user_profile_id=upsert_user_info_detail_dto.user_profile_id,
+        code=upsert_user_info_detail_dto.code,
     )
 
     user_info: UserInfoEntity = UserRepository().get_user_info(dto=dto)
 
     assert user_info.user_profile_id == dto.user_profile_id
     assert user_info.code == dto.code
-    assert user_info.user_value == upsert_user_info_dto.value
+    assert user_info.user_values[0] == upsert_user_info_detail_dto.value
 
 
 def test_get_user_info_when_input_user_data_then_None(session):
-    UserRepository().create_user_info(dto=upsert_user_info_dto)
+    UserRepository().create_user_info(dto=upsert_user_info_detail_dto)
     dto = GetUserInfoDto(
-        user_id=upsert_user_info_dto.user_id,
-        user_profile_id=upsert_user_info_dto.user_profile_id,
-        code=upsert_user_info_dto.code + 1,
-        value=upsert_user_info_dto.value,
+        user_id=upsert_user_info_detail_dto.user_id,
+        user_profile_id=upsert_user_info_detail_dto.user_profile_id,
+        code=upsert_user_info_detail_dto.code + 1,
+        value=upsert_user_info_detail_dto.value,
     )
 
     user_info: UserInfoEmptyEntity = UserRepository().get_user_info(dto=dto)
@@ -260,25 +264,19 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
     assert income_result.seven == avg_monthly_income_workers.seven
     assert income_result.eight == avg_monthly_income_workers.eight
 
-    dto = GetUserInfoDto(
-        user_id=create_users[0].id,
-        user_profile_id=create_users[0].id,
-        code=1005,
-    )
-
     # 외벌이, 맞벌이 확인
     # 외벌이 -> 1,3,4 / 맞벌이 -> 2
-    upsert_user_info_dto = UpsertUserInfoDto(
+    upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
         user_id=1, user_profile_id=1, code=CodeEnum.IS_MARRIED.value, value="2"
     )
-    UserRepository().create_user_info(dto=upsert_user_info_dto)
+    UserRepository().create_user_info(dto=upsert_user_info_detail_dto)
 
     # 부양가족 수
     # 3인 이하->1,2,3 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8 / 없어요->9
-    upsert_user_info_dto = UpsertUserInfoDto(
+    upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
         user_id=1, user_profile_id=1, code=CodeEnum.NUMBER_DEPENDENTS.value, value="5"
     )
-    UserRepository().create_user_info(dto=upsert_user_info_dto)
+    UserRepository().create_user_info(dto=upsert_user_info_detail_dto)
 
     user_info_code = str(CodeEnum.MONTHLY_INCOME.value)
 
@@ -311,12 +309,12 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
         # 외벌이, 맞벌이 확인
         # 외벌이 -> 1,3,4 / 맞벌이 -> 2
         result1: UserInfoEntity = UserRepository().get_user_info_by_code(
-            user_profile_id=upsert_user_info_dto.user_profile_id, code=CodeEnum.IS_MARRIED.value)
+            user_profile_id=upsert_user_info_detail_dto.user_profile_id, code=CodeEnum.IS_MARRIED.value)
 
         # 부양가족 수
         # 3인 이하->1,2,3,9 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
         result2: UserInfoEntity = UserRepository().get_user_info_by_code(
-            user_profile_id=upsert_user_info_dto.user_profile_id, code=CodeEnum.NUMBER_DEPENDENTS.value)
+            user_profile_id=upsert_user_info_detail_dto.user_profile_id, code=CodeEnum.NUMBER_DEPENDENTS.value)
 
         # 부양가족별 default 소득
         income_result_dict = {
@@ -332,9 +330,9 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
         }
 
         calc_result_list = []
-        my_basic_income = income_result_dict.get(result2.user_value)
+        my_basic_income = income_result_dict.get(result2.user_values[0])
 
-        monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_value != "2" else MonthlyIncomeEnum.COND_CD_2.value
+        monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_values[0] != "2" else MonthlyIncomeEnum.COND_CD_2.value
 
         for percentage_num in monthly_income_enum:
             income_by_segment = (int(my_basic_income) * percentage_num) / 100
@@ -352,18 +350,12 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
         assert len(user_info.code_values.detail_code) == len(user_info.code_values.name)
 
 
-def test_asdfaaaa(session, sido_code_factory, create_users):
-    sido_codes = sido_code_factory.build_batch(size=3)
-    session.add_all(sido_codes)
-    session.commit()
-
-    codes, names = UserRepository().get_sido_codes()
-
-    user_info_code_value_entity = UserInfoCodeValueEntity()
-    user_info_code_value_entity.detail_code = codes
-    user_info_code_value_entity.name = names
+def test_get_sido_when_input_user_data_then_success(session, create_sido_codes, create_users):
+    user_info_code_value_entity1, user_info_code_value_entity2 = UserRepository().get_sido_codes()
 
     user_info = UserInfoEntity(id=create_users[0].id, user_profile_id=create_users[0].id, code=CodeEnum.ADDRESS.value)
-    user_info.code_values = user_info_code_value_entity
+    user_info.code_values = [user_info_code_value_entity1, user_info_code_value_entity2]
 
     assert isinstance(user_info, UserInfoEntity)
+    assert isinstance(user_info.code_values[0], UserInfoCodeValueEntity)
+    assert isinstance(user_info.code_values[1], UserInfoCodeValueEntity)
