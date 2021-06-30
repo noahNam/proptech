@@ -13,8 +13,7 @@ from app.persistence.model import (
     UserProfileModel,
     UserInfoModel,
 )
-from core.domains.user.dto.user_dto import UpsertUserInfoDto, UpsertUserInfoDetailDto
-from core.domains.user.entity.user_entity import UserInfoEntity
+from core.domains.user.dto.user_dto import UpsertUserInfoDetailDto
 from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, CodeEnum, MonthlyIncomeEnum
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import FailureType
@@ -44,11 +43,11 @@ def test_get_user_view_then_success(
     assert data["user"]["is_out"] is False
 
 
-def test_get_user_view_then_not_found_user(
-        client, session, test_request_context, make_header, make_authorization, create_users
+def test_get_user_view_then_user_is_not_found(
+        client, session, test_request_context, make_header, make_authorization
 ):
-    user_id = 5
-    authorization = make_authorization(user_id=user_id)
+    user_id = 1
+    authorization = make_authorization(user_id=1)
     headers = make_header(
         authorization=authorization,
         content_type="application/json",
@@ -61,7 +60,9 @@ def test_get_user_view_then_not_found_user(
             headers=headers,
         )
 
-    assert response.status_code == 404
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["user"] is None
 
 
 def test_create_user_when_first_login_then_success(
