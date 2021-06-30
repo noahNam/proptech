@@ -33,9 +33,6 @@ class UserInfoModel(db.Model):
 
     def to_entity(self) -> UserInfoEntity:
         return UserInfoEntity(
-            id=self.id,
-            user_profile_id=self.user_profile_id,
             code=self.code,
-            user_values=[self.value],
-            code_values=[UserInfoCodeValueEntity()],
+            user_value=self.value,
         )

@@ -22,9 +22,11 @@ from core.domains.user.dto.user_dto import (
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
     GetUserInfoDto, AvgMonthlyIncomeWokrerDto, SidoCodeDto, SigugunCodeDto, UpsertUserInfoDetailDto,
+    GetUserInfoDetailDto,
 )
 from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity, \
     UserInfoCodeValueEntity
+from core.domains.user.enum.user_info_enum import CodeEnum
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -271,7 +273,7 @@ class UserRepository:
             raise Exception
 
     def get_user_info(
-            self, dto: GetUserInfoDto
+            self, dto: GetUserInfoDetailDto
     ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
         user_info = (
             session.query(UserInfoModel)
@@ -330,28 +332,24 @@ class UserRepository:
             eight=result.eight
         )
 
-    def get_sido_codes(self) -> Union[UserInfoCodeValueEntity, UserInfoCodeValueEntity]:
+    def get_sido_codes(self, dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
         result = session.query(SidoCodeModel).all()
-        return self._make_sido_codes_object(result)
+        return self._make_sido_codes_object(result, dto)
 
-    def _make_sido_codes_object(self, result: List[SidoCodeModel]):
-        sido_code_list = []
-        sido_name_list = []
-        sigugun_code_list = []
-        sigugun_name_list = []
+    def _make_sido_codes_object(self, result: List[SidoCodeModel], dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
+        code_list = []
+        name_list = []
 
         for data in result:
-            sido_code_list.append(data.sido_code)
-            sido_name_list.append(data.sido_name)
-            sigugun_code_list.append(data.sigugun_code)
-            sigugun_name_list.append(data.sigugun_name)
+            if dto.code == CodeEnum.ADDRESS.value:
+                code_list.append(data.sido_code)
+                name_list.append(data.sido_name)
+            else:
+                code_list.append(data.sigugun_code)
+                name_list.append(data.sigugun_name)
 
-        user_info_code_value_entity_1 = UserInfoCodeValueEntity()
-        user_info_code_value_entity_1.detail_code = sido_code_list
-        user_info_code_value_entity_1.name = sido_name_list
+        user_info_code_value_entity = UserInfoCodeValueEntity()
+        user_info_code_value_entity.detail_code = code_list
+        user_info_code_value_entity.name = name_list
 
-        user_info_code_value_entity_2 = UserInfoCodeValueEntity()
-        user_info_code_value_entity_2.detail_code = sigugun_code_list
-        user_info_code_value_entity_2.name = sigugun_name_list
-
-        return user_info_code_value_entity_1, user_info_code_value_entity_2
+        return user_info_code_value_entity
