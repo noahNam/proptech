@@ -223,7 +223,14 @@ class GetUserInfoUseCase(UserBaseUseCase):
             # nickname 생성 전 (즉, 최초 설문으로 user_profile_id가 없음)
             user_info: UserInfoEmptyEntity = self._make_empty_user_info_entity(dto=dto)
         else:
-            if dto.code != CodeEnum.ADDRESS.value:
+            both_code_dict = {
+                "1002": [CodeEnum.ADDRESS.value, CodeEnum.ADDRESS_DETAIL.value],
+                "1012": [CodeEnum.CHILD_AGE_SIX.value, CodeEnum.CHILD_AGE_NINETEEN.value,
+                         CodeEnum.CHILD_AGE_TWENTY.value],
+            }
+            codes = both_code_dict.get(str(dto.code))
+
+            if not codes:
                 # 한 질문지에 한개의 유저 데이터를 넘겨 줘야 할 떄
                 user_info: Union[
                     UserInfoEntity, UserInfoEmptyEntity
@@ -231,11 +238,6 @@ class GetUserInfoUseCase(UserBaseUseCase):
 
             else:
                 # 한 질문지에 복수개의 유저 데이터를 넘겨 줘야 할 떄(거주지)
-                both_code_dict = {
-                    "1002": [CodeEnum.ADDRESS.value, CodeEnum.ADDRESS_DETAIL.value],
-                }
-                codes = both_code_dict.get(str(dto.code))
-
                 user_info: Union[
                     UserInfoEntity, UserInfoEmptyEntity
                 ] = self._user_repo.get_user_multi_data_info(dto=dto, codes=codes)
