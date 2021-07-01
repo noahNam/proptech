@@ -13,11 +13,10 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, GetUserDto, UpsertUserInfoDetailDto,
+    GetUserInfoDto, GetUserDto,
 )
 from core.domains.user.entity.user_entity import (
-    UserInfoEmptyEntity,
-    UserInfoEntity, UserInfoCodeValueEntity,
+    UserInfoCodeValueEntity,
 )
 from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, CodeEnum
 from core.domains.user.repository.user_repository import UserRepository

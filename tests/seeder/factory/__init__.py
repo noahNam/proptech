@@ -1,12 +1,9 @@
-import random
 import uuid
 
 import factory
 from faker import Factory as FakerFactory
-from flask import current_app
-from sqlalchemy.orm import scoped_session
 
-from app import db, SidoCodeModel
+from app import SidoCodeModel, NotificationModel
 from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
@@ -17,6 +14,8 @@ from app.persistence.model import (
 from app.persistence.model.user_model import UserModel
 
 # factory에 사용해야 하는 Model을 가져온다
+from core.domains.notification.enum.notification_enum import NotificationTopicEnum, NotificationBadgeTypeEnum, \
+    NotificationStatusEnum
 
 faker = FakerFactory.create(locale="ko_KR")
 
@@ -112,3 +111,18 @@ class SidoCodeFactory(BaseFactory):
     sido_name = "서울특별시"
     sigugun_code = 11010
     sigugun_name = "종로구"
+
+
+class NotificationFactory(BaseFactory):
+    class Meta:
+        model = NotificationModel
+
+    user_id = 1
+    token = "device-token"
+    endpoint = "application-platform-endpoint"
+    topic = NotificationTopicEnum.SUB_NEWS.value
+    badge_type = NotificationBadgeTypeEnum.ALL.value
+    message = {}
+    is_read = False
+    is_pending = False
+    status = NotificationStatusEnum.WAIT.value
