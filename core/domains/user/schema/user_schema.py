@@ -9,12 +9,6 @@ class GetUserBaseSchema(BaseModel):
     is_out: bool
 
 
-# class GetUserInfoBaseSchema(BaseModel):
-#     code: StrictInt
-#     code_values: UserInfoCodeValueEntity = None
-#     user_value: str = None
-
-
 class GetUserResponseSchema(BaseModel):
     user: GetUserBaseSchema
 
