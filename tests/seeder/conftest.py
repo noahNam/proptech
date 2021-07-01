@@ -2,13 +2,17 @@ import pytest
 from datetime import date, timedelta, datetime
 from faker import Faker
 
+from app.extensions.utils.message_converter import MessageConverter
+from app.extensions.utils.time_helper import get_server_timestamp
+from core.domains.notification.dto.notification_dto import PushMessageDto
+from core.domains.notification.enum.notification_enum import NotificationBadgeTypeEnum, NotificationTopicEnum
 from tests.seeder.factory import (
     UserFactory,
     InterestRegionFactory,
     InterestRegionGroupFactory,
     UserProfileFactory,
     AvgMonthlyIncomeWorkerFactory,
-    SidoCodeFactory
+    SidoCodeFactory, NotificationFactory
 )
 
 MODEL_FACTORIES = [
@@ -17,7 +21,8 @@ MODEL_FACTORIES = [
     InterestRegionGroupFactory,
     UserProfileFactory,
     AvgMonthlyIncomeWorkerFactory,
-    SidoCodeFactory
+    SidoCodeFactory,
+    NotificationFactory
 ]
 
 faker = Faker()
@@ -55,6 +60,63 @@ def create_interest_region_groups(session, interest_region_group_factory):
     session.commit()
 
     return interest_region_groups
+
+
+@pytest.fixture
+def create_notifications(session, notification_factory):
+    user_id = 1
+
+    # 분양소식
+    message_dto = PushMessageDto(
+        title="분양소식",
+        content="관심 설정 해두신 동탄 메르시 분양이 시작됐습니다.",
+        created_at=str(get_server_timestamp().replace(microsecond=0)),
+        badge_type=NotificationBadgeTypeEnum.ALL.value,
+        data={
+            "user_id": user_id,
+            "topic": NotificationTopicEnum.SUB_NEWS.value,
+        },
+    )
+    # make notification message
+    message_dict_1 = MessageConverter.to_dict(message_dto)
+
+    # 분양일정
+    message_dto = PushMessageDto(
+        title="분양일정",
+        content="관심 설정 해두신 동탄 메르시 신청 당일입니다.신청을 서둘러 주세요:)",
+        created_at=str(get_server_timestamp().replace(microsecond=0)),
+        badge_type=NotificationBadgeTypeEnum.ALL.value,
+        data={
+            "user_id": user_id,
+            "topic": NotificationTopicEnum.SUB_SCHEDULE.value,
+        },
+    )
+    # make notification message
+    message_dict_2 = MessageConverter.to_dict(message_dto)
+
+    # 공지사항
+    message_dto = PushMessageDto(
+        title="공지사항",
+        content="2.0버전이 출시되었습니다.업데이트 요청 드립니다.",
+        created_at=str(get_server_timestamp().replace(microsecond=0)),
+        badge_type=NotificationBadgeTypeEnum.ALL.value,
+        data={
+            "user_id": user_id,
+            "topic": NotificationTopicEnum.OFFICIAL.value,
+        },
+    )
+    # make notification message
+    message_dict_3 = MessageConverter.to_dict(message_dto)
+
+    notification_1 = notification_factory.build(message=message_dict_1, topic=NotificationTopicEnum.SUB_NEWS.value)
+    notification_2 = notification_factory.build(message=message_dict_2, topic=NotificationTopicEnum.SUB_SCHEDULE.value)
+    notification_3 = notification_factory.build(message=message_dict_3, topic=NotificationTopicEnum.OFFICIAL.value)
+
+    notifications = [notification_1, notification_2, notification_3]
+    session.add_all(notifications)
+    session.commit()
+
+    return notifications
 
 
 def make_random_today_date(between_days: int = 1, year_ago: int = 2):
