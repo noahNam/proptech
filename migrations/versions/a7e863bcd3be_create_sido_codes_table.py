@@ -1,16 +1,16 @@
 """create sido_codes table
 
-Revision ID: 8f1494f5cf5b
-Revises: e4a3c0dae264
-Create Date: 2021-06-30 00:07:41.244282
+Revision ID: a7e863bcd3be
+Revises: 55c0b80a9d4c
+Create Date: 2021-07-01 23:24:34.418290
 
 """
 from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '8f1494f5cf5b'
-down_revision = 'e4a3c0dae264'
+revision = 'a7e863bcd3be'
+down_revision = '55c0b80a9d4c'
 branch_labels = None
 depends_on = None
 
