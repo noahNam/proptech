@@ -27,7 +27,7 @@ message_dto = PushMessageDto(
     badge_type=NotificationBadgeTypeEnum.ALL.value,
     data={
         "user_id": 1,
-        "topic": NotificationTopicEnum.APT01.value,
+        "topic": NotificationTopicEnum.SUB_NEWS.value,
     },
 )
 
@@ -42,7 +42,7 @@ def test_push_message_via_SNS(session):
         user_id=1,
         token="user-token",
         endpoint=ENDPOINT,
-        topic=NotificationTopicEnum.APT01.value,
+        topic=NotificationTopicEnum.SUB_NEWS.value,
         badge_type=NotificationBadgeTypeEnum.ALL.value,
         message=message_dict,
         is_read=False,

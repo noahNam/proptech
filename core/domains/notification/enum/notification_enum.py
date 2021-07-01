@@ -20,4 +20,6 @@ class DeviceTypeEnum(Enum):
 
 
 class NotificationTopicEnum(Enum):
-    APT01 = "apt01"
+    OFFICIAL = "apt001"
+    SUB_NEWS = "apt002"
+    SUB_SCHEDULE = "apt003"

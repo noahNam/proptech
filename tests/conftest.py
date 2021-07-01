@@ -89,6 +89,7 @@ def set_factories_session(session):
     # 예시) UserFactory._meta.sqlalchemy_session = session
     for factory in MODEL_FACTORIES:
         factory._meta.sqlalchemy_session = session
+        # factory._meta.sqlalchemy_session_persistence = 'flush'
 
 
 @pytest.fixture(scope="function")
