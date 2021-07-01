@@ -5,7 +5,7 @@ from sqlalchemy import (
     String,
     Boolean,
     DateTime,
-    JSON,
+    JSON, SmallInteger,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -23,14 +23,15 @@ class NotificationModel(db.Model):
     user_id = Column(BigInteger, nullable=False)
     token = Column(String(163), nullable=False)
     endpoint = Column(String(100), nullable=True, default="")
-    category = Column(String(6), nullable=False)
-    data = Column(
+    topic = Column(String(6), nullable=False)
+    badge_type = Column(String(3), nullable=False)
+    message = Column(
         "data", JSONB().with_variant(JSON, "sqlite"), nullable=False, default={}
     )
     is_read = Column("is_read", Boolean, nullable=False, default=False)
     is_pending = Column("is_pending", Boolean, nullable=False, default=True)
     status = Column(
-        String(10), nullable=True, default=NotificationStatusEnum.WAIT.value
+        SmallInteger, nullable=False, default=NotificationStatusEnum.WAIT.value
     )
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)

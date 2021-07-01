@@ -2,9 +2,9 @@ from pydantic import BaseModel
 
 
 class PushMessageDto(BaseModel):
-    token: str
-    category: str
-    badge_type: str
+    # token: str
     title: str
-    body: str
+    content: str
+    created_at: str
+    badge_type: str
     data: dict
