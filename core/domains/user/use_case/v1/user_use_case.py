@@ -254,12 +254,12 @@ class GetUserInfoUseCase(UserBaseUseCase):
             "1008": IsMarriedCodeEnum,
             "1010": NumberDependentsEnum,
             "1011": IsChildEnum,
-            "1015": IsSubAccountEnum,
-            "1019": MonthlyIncomeEnum,
-            "1020": AssetsRealEstateEnum,
-            "1021": AssetsCarEnum,
-            "1022": AssetsTotalEnum,
-            "1025": SpecialCondEnum,
+            "1016": IsSubAccountEnum,
+            "1020": MonthlyIncomeEnum,
+            "1021": AssetsRealEstateEnum,
+            "1022": AssetsCarEnum,
+            "1023": AssetsTotalEnum,
+            "1026": SpecialCondEnum,
         }
 
         bind_code = bind_detail_code_dict.get(str(dto.code))

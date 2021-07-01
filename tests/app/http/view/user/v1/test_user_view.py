@@ -584,7 +584,7 @@ def test_get_user_info_view_when_monthly_income_then_success(
     )
     assert len(data["result"][0]["code_values"]["detail_code"]) == len(data["result"][0]["code_values"]["name"])
     # 맞벌이, 부양가족 5인 기준
-    assert data["result"][0]["code_values"]["name"] == [3547102, 5675364, 7803626, 8513046, 9222466, 9931887]
+    assert data["result"][0]["code_values"]["name"] == [3547102, 5675364, 7803626, 8513046, 9222466, 9931887, 11350728]
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
