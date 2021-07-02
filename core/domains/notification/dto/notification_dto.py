@@ -11,6 +11,7 @@ class PushMessageDto(BaseModel):
 
 class GetNotificationDto(BaseModel):
     user_id: int
+    category: str
     topics: list = []
 
 
