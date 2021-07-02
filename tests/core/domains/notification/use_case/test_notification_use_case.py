@@ -49,23 +49,6 @@ def test_update_notification_use_case_when_read_push_then_success(session, creat
     assert result2.value[0].is_read is True
 
 
-def test_get_badge_use_case_then_true(session, create_users, create_notifications):
-    get_notification_dto = UpdateNotificationDto(
-        user_id=create_users[0].id, notification_id=create_notifications[0].id
-    )
-    result1 = UpdateNotificationUseCase().execute(dto=get_notification_dto)
-
-    get_notification_dto = GetBadgeDto(
-        user_id=create_users[0].id, category=NotificationHistoryCategoryEnum.MY.value
-    )
-    result2 = GetNotificationUseCase().execute(dto=get_notification_dto)
-
-    assert isinstance(result1, UseCaseSuccessOutput)
-    assert isinstance(result2, UseCaseSuccessOutput)
-    assert result1.type == "success"
-    assert result2.value[0].is_read is True
-
-
 def test_get_badge_repo_when_my_page_then_return_true(create_users, create_notifications):
     get_badge_dto = GetBadgeDto(
         user_id=create_users[0].id,
