@@ -11,7 +11,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.notification.entity.notification_entity import NotificationEntity
+from core.domains.notification.entity.notification_entity import NotificationEntity, NotificationHistoryEntity
 from core.domains.notification.enum.notification_enum import NotificationStatusEnum
 
 
@@ -49,4 +49,5 @@ class NotificationModel(db.Model):
             is_read=self.is_read,
             is_pending=self.is_pending,
             status=self.status,
+            created_at=self.created_at
         )
