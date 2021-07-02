@@ -14,7 +14,7 @@ from core.domains.notification.use_case.v1.notification_use_case import GetNotif
 @api.route("/v1/notifications", methods=["GET"])
 @jwt_required
 @auth_required
-# @swag_from("get_user.yml", methods=["GET"])
+@swag_from("get_notification.yml", methods=["GET"])
 def get_notification_view():
     dto = GetNotificationRequestSchema(
         **request.get_json(), user_id=current_user.id,
@@ -26,7 +26,7 @@ def get_notification_view():
 @api.route("/v1/notifications/badge", methods=["GET"])
 @jwt_required
 @auth_required
-# @swag_from("get_user.yml", methods=["GET"])
+@swag_from("get_badge.yml", methods=["GET"])
 def get_badge_view():
     dto = GetBadgeRequestSchema(
         **request.get_json(), user_id=current_user.id,
@@ -38,7 +38,7 @@ def get_badge_view():
 @api.route("/v1/notifications/<int:notification_id>", methods=["PATCH"])
 @jwt_required
 @auth_required
-# @swag_from("create_user.yml", methods=["PATCH"])
+@swag_from("update_notification.yml", methods=["PATCH"])
 def update_notification_view(notification_id):
     dto = UpdateNotificationRequestSchema(
         notification_id=notification_id, user_id=current_user.id,
