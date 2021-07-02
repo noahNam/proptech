@@ -4,13 +4,12 @@ from datetime import datetime
 import factory
 from faker import Factory as FakerFactory
 
-from app import SidoCodeModel, NotificationModel
 from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
     DeviceModel,
     DeviceTokenModel,
-    UserProfileModel, AvgMonthlyIncomeWokrerModel,
+    UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel
 )
 from app.persistence.model.user_model import UserModel
 

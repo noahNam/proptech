@@ -1,11 +1,11 @@
 from datetime import timedelta
 from typing import Optional, List
 
-from app import NotificationModel
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
 
 from app.extensions.database import session
+from app.persistence.model import NotificationModel
 from core.domains.notification.dto.notification_dto import GetBadgeDto, GetNotificationDto, UpdateNotificationDto
 from core.domains.notification.entity.notification_entity import NotificationEntity
 
