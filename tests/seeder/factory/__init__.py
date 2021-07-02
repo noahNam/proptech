@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 import factory
 from faker import Factory as FakerFactory
@@ -126,3 +127,4 @@ class NotificationFactory(BaseFactory):
     is_read = False
     is_pending = False
     status = NotificationStatusEnum.WAIT.value
+    created_at = datetime.now().strptime("20210701", "%Y%m%d")

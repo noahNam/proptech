@@ -23,3 +23,8 @@ class NotificationTopicEnum(Enum):
     OFFICIAL = "apt001"
     SUB_NEWS = "apt002"
     SUB_SCHEDULE = "apt003"
+
+
+class NotificationHistoryCategoryEnum(Enum):
+    OFFICIAL = "official"
+    MY = "my"
