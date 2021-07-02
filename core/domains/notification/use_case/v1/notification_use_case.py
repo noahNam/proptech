@@ -1,6 +1,6 @@
 import json
 from http import HTTPStatus
-from typing import Union, Optional, List
+from typing import Union, List
 
 import inject
 
@@ -92,3 +92,4 @@ class GetBadgeUseCase(NotificationBaseUseCase):
 
         result: bool = self._notification_repo.get_badge(dto=dto)
         return UseCaseSuccessOutput(value=result)
+

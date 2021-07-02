@@ -1,0 +1,47 @@
+from flasgger import swag_from
+from flask import request
+from flask_jwt_extended import jwt_required
+
+from app.http.requests.v1.notification_request import GetNotificationRequestSchema, GetBadgeRequestSchema, \
+    UpdateNotificationRequestSchema
+from app.http.responses.presenters.v1.notification_presenter import GetNotificationPresenter, GetBadgePresenter, \
+    UpdateNotificationPresenter
+from app.http.view import auth_required, api, current_user
+from core.domains.notification.use_case.v1.notification_use_case import GetNotificationUseCase, GetBadgeUseCase, \
+    UpdateNotificationUseCase
+
+
+@api.route("/v1/notifications", methods=["GET"])
+@jwt_required
+@auth_required
+# @swag_from("get_user.yml", methods=["GET"])
+def get_notification_view():
+    dto = GetNotificationRequestSchema(
+        **request.get_json(), user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return GetNotificationPresenter().transform(GetNotificationUseCase().execute(dto=dto))
+
+
+@api.route("/v1/notifications/badge", methods=["GET"])
+@jwt_required
+@auth_required
+# @swag_from("get_user.yml", methods=["GET"])
+def get_badge_view():
+    dto = GetBadgeRequestSchema(
+        **request.get_json(), user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return GetBadgePresenter().transform(GetBadgeUseCase().execute(dto=dto))
+
+
+@api.route("/v1/notifications/<int:notification_id>", methods=["PATCH"])
+@jwt_required
+@auth_required
+# @swag_from("create_user.yml", methods=["PATCH"])
+def update_notification_view(notification_id):
+    dto = UpdateNotificationRequestSchema(
+        notification_id=notification_id, user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return UpdateNotificationPresenter().transform(UpdateNotificationUseCase().execute(dto=dto))
