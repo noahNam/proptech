@@ -1,35 +1,33 @@
 openapi: "3.0.2"
 tags:
-  - User
+  - Notification
 security:
   - userAuth: []
 requestBody:
   required: true
-  description: codes는 integer / values는 string
   content:
     application/json:
       schema:
         type: object
         required:
-          - codes
+          - category
         properties:
-          codes:
-            type: array
-            items:
-              type: integer
-              example: 1002, 1003
-          values:
-            type: array
-            items:
-              type: string
-              example: 11, 11010
+          category:
+            type: string
+            example: offical or my
 responses:
   '200':
-    description: A upsert_user_info object
+    description: badge를 보여줘야할 경우 True 아니면 False
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/only_result'
+          properties:
+            data:
+              type: object
+              properties:
+                result:
+                  type: string
+                  example: true or false
   '400':
     description: invalid_request_error
     content:
