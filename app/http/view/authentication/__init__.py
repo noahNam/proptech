@@ -1,7 +1,12 @@
 from functools import wraps
-from flask_jwt_extended import get_jwt_identity
+
+from flask import request
+from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from flask_jwt_extended.exceptions import NoAuthorizationError
+from jwt import ExpiredSignatureError
 from werkzeug.local import LocalProxy
+
+from app.extensions.utils.auth_helper import set_renew_token
 
 
 class User:
@@ -25,5 +30,20 @@ def auth_required(fn):
             raise NoAuthorizationError
 
         return fn(*args, **kwargs)
+
+    return wrapper
+
+
+def jwt_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        try:
+            verify_jwt_in_request()
+            return fn(*args, **kwargs)
+        except ExpiredSignatureError:
+            auth_header = request.headers.get("Authorization")
+            bearer, _, token = auth_header.partition(" ")
+            set_renew_token(token).json()
+            raise ExpiredSignatureError
 
     return wrapper

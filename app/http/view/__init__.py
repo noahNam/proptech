@@ -3,6 +3,7 @@ from http import HTTPStatus
 
 from flask import Blueprint
 from flask_jwt_extended.exceptions import NoAuthorizationError
+from jwt import ExpiredSignatureError
 
 from core.exceptions import InvalidRequestException
 
@@ -46,5 +47,13 @@ def handle_no_authorization_exception(error):
     sentry_sdk.capture_exception(error)
     return (
         {"type": HTTPStatus.UNAUTHORIZED, "message": "unauthorized_error"},
+        HTTPStatus.UNAUTHORIZED,
+    )
+
+
+@api.errorhandler(ExpiredSignatureError)
+def handle_invalid_request_exception(error):
+    return (
+        {"type": HTTPStatus.UNAUTHORIZED, "message": "Signature has expired"},
         HTTPStatus.UNAUTHORIZED,
     )
