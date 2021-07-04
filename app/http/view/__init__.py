@@ -1,10 +1,12 @@
+import jwt
 import sentry_sdk
 from http import HTTPStatus
 
 from flask import Blueprint
 from flask_jwt_extended.exceptions import NoAuthorizationError
+from jwt import ExpiredSignatureError
 
-from core.exceptions import InvalidRequestException
+from core.exceptions import InvalidRequestException, TokenValidationErrorException
 
 api: Blueprint = Blueprint(name="api/tanos", import_name=__name__)
 
@@ -47,4 +49,18 @@ def handle_no_authorization_exception(error):
     return (
         {"type": HTTPStatus.UNAUTHORIZED, "message": "unauthorized_error"},
         HTTPStatus.UNAUTHORIZED,
+    )
+
+
+@api.errorhandler(ExpiredSignatureError)
+def handle_signature_has_expired_exception(error):
+    pass
+
+
+@api.errorhandler(TokenValidationErrorException)
+def handle_token_validation_exception(error):
+    sentry_sdk.capture_exception(error)
+    return (
+        {"type": error.code, "message": error.msg},
+        error.code,
     )
