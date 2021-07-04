@@ -24,12 +24,13 @@ def _get_user_id():
         - 다른 validation 경우는 튕겨내면 되기 때문에 문제가 안되나, ExpiredSignatureError의 경우 요청을 모두 처리하고 토큰 갱신필요 여부를 응답 헤더에 내려줘야함.
         - 따라서 아래와 같이 ExpiredSignatureError의 경우 예외를 두어서 처리하도록 수정
     """
-    auth_header = request.headers.get("Authorization")
-    bearer, _, token = auth_header.partition(" ")
     is_expired = False
     decoded, user_id = None, None
 
     try:
+        auth_header = request.headers.get("Authorization")
+        bearer, _, token = auth_header.partition(" ")
+
         decoded = decode_token(token, allow_expired=False)
     except ExpiredSignatureError:
         decoded = decode_token(token, allow_expired=True)
