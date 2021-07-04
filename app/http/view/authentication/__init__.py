@@ -21,7 +21,7 @@ def _get_user_id():
     """
     - user_id = get_jwt_identity() 주석처리
         - jwt_required decorator 를 쓸 경우 expection이 나면 identity를 가져올 수 없는 문제가 있음.
-        - 다른 validation 경우는 튕겨내면 되기 때문에 문제가 안되나, ExpiredSignatureError의 경우 요청을 모두 처리하고 Signature has expired를 meta 정보에 응답으로 내려줘야함.
+        - 다른 validation 경우는 튕겨내면 되기 때문에 문제가 안되나, ExpiredSignatureError의 경우 요청을 모두 처리하고 토큰 갱신필요 여부를 응답 헤더에 내려줘야함.
         - 따라서 아래와 같이 ExpiredSignatureError의 경우 예외를 두어서 처리하도록 수정
     """
     auth_header = request.headers.get("Authorization")
