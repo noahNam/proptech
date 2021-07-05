@@ -10,7 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, backref
 
 from app import db
-from core.domains.map.entity.real_estate_entity import RealEstateEntity
+from core.domains.map.entity.map_entity import RealEstateEntity
 
 
 class RealEstateModel(db.Model):
@@ -35,8 +35,8 @@ class RealEstateModel(db.Model):
     is_available = Column(Boolean, nullable=False, default=True)
     coordinates = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
 
-    real_trades = relationship("RealTradeModel", backref=backref("real_estates"))
-    pre_sales = relationship("PreSaleModel", backref=backref("real_estates"))
+    real_trades = relationship("RealTradeModel", backref=backref("real_estates", cascade="all, delete"))
+    pre_sales = relationship("PreSaleModel", backref=backref("real_estates",  cascade="all, delete"))
 
     def __repr__(self):
         return (
@@ -52,8 +52,7 @@ class RealEstateModel(db.Model):
             f"{self.road_number}, "
             f"{self.land_number}, "
             f"{self.is_available}, "
-            f"{self.latitude}, "
-            f"{self.longitude})"
+            f"{self.coordinates})"
         )
 
     def to_entity(self) -> RealEstateEntity:
@@ -70,6 +69,5 @@ class RealEstateModel(db.Model):
             road_number=self.road_number,
             land_number=self.land_number,
             is_available=self.is_available,
-            latitude=self.latitude,
-            longitude=self.longitude
+            coordinates=self.coordinates
         )
