@@ -49,7 +49,7 @@ class RealTradeModel(db.Model):
         return (
             f"RealTrade({self.id}, "
             f"{self.real_estate_id}, "
-            f"{self.area}, "
+            f"{self.private_area}, "
             f"{self.supply_area}, "
             f"{self.contract_date}, "
             f"{self.deposit_price}, "
@@ -60,7 +60,7 @@ class RealTradeModel(db.Model):
             f"{self.building_type}, "
             f"{self.is_available}, "
             f"{self.created_at}, "
-            f"{self.updated_at})"
+            f"{self.updated_at}"
         )
 
     def to_entity(self) -> RealTradeEntity:

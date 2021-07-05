@@ -62,7 +62,6 @@ class PreSaleModel(db.Model):
             f"{self.rent_type}, "
             f"{self.trade_type}, "
             f"{self.construct_company}, "
-            f"{self.housing_type}, "
             f"{self.supply_price}, "
             f"{self.supply_area}, "
             f"{self.notes}, "
@@ -81,7 +80,6 @@ class PreSaleModel(db.Model):
             rent_type=self.rent_type,
             trade_type=self.trade_price,
             construct_company=self.construct_company,
-            housing_type=self.housing_type,
             supply_price=self.supply_price,
             supply_area=self.supply_area,
             notes=self.notes,
