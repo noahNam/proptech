@@ -62,24 +62,32 @@ def bounding_view():
             )
         )
     try:
-        examples = session.query(RealEstateModel, RealTradeModel, PreSaleModel,
-                                 func.ST_X(RealEstateModel.coordinates).label("longitude"),
-                                 func.ST_Y(RealEstateModel.coordinates).label("latitude")) \
-            .join(RealEstateModel.real_trades, isouter=True) \
-            .join(RealEstateModel.pre_sales, isouter=True) \
-            .add_entity(RealTradeModel)\
-            .add_entity(PreSaleModel)\
-            .filter(RealEstateModel.is_available == "True") \
+        query = (
+            session.query(RealEstateModel)
+            .join(RealEstateModel.real_trades, isouter=True)
+            .join(RealEstateModel.pre_sales, isouter=True)
+            .with_entities(RealEstateModel, RealTradeModel, PreSaleModel, func.ST_X(RealEstateModel.coordinates).label("longitude"), func.ST_Y(RealEstateModel.coordinates).label("latitude"))
+            .filter(RealEstateModel.is_available == "True")
             .filter(func.ST_Contains(func.ST_MakeEnvelope(start_x, end_y, end_x, start_y, 4326),
-                                     RealEstateModel.coordinates)).all()
+                                     RealEstateModel.coordinates))
+        )
+
+        results = query.all()
+
+        for result in results:
+            real_estate_model = result[0]
+            real_trade_model = result[1]
+            pre_sale_model = result[2]
+            longitude = result[3]
+            latitude = result[4]
+
+        print("query start")
+        RawQueryHelper.print_raw_query(query)
+        print(results)
 
     except Exception as e:
         print("-------------error----------")
         print(e)
-    print("query start")
-    # RawQueryHelper.print_raw_query(examples)
-    print(examples)
-
 
     return jsonify(start_x=dto.start_x, start_y=dto.start_y, end_x=dto.end_x, end_y=dto.end_y)
     # return BoundingPresenter().transform(MapBoundingUseCase().execute(dto=dto))
