@@ -14,7 +14,7 @@ from sqlalchemy import (
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
-from core.domains.map.entity.real_trade_entity import RealTradeEntity
+from core.domains.map.entity.map_entity import RealTradeEntity
 from core.domains.map.enum.map_enum import BuildTypeEnum, RealTradeTypeEnum
 
 

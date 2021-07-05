@@ -14,7 +14,7 @@ from sqlalchemy.orm import relationship, backref
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
-from core.domains.map.entity.pre_sale_entity import PreSaleEntity
+from core.domains.map.entity.map_entity import PreSaleEntity
 from core.domains.map.enum.map_enum import HousingCategoryEnum, RentTypeEnum, PreSaleTypeEnum
 
 
@@ -41,6 +41,7 @@ class PreSaleModel(db.Model):
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
     supply_price = Column(Integer, nullable=False)
+    supply_household = Column(Integer, nullable=False)
     notes = Column(String(50), nullable=True)
     is_available = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)

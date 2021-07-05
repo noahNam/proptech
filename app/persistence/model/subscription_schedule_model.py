@@ -9,7 +9,7 @@ from sqlalchemy import (
 
 from app import db
 from app.persistence.model.pre_sale_model import PreSaleModel
-from core.domains.map.entity.subscription_schedule_entity import SubscriptionScheduleEntity
+from core.domains.map.entity.map_entity import SubscriptionScheduleEntity
 
 
 class SubscriptionScheduleModel(db.Model):

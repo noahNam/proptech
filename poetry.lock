@@ -266,6 +266,21 @@ python-versions = "*"
 SQLAlchemy = ">=1.1"
 
 [[package]]
+name = "geojson-pydantic"
+version = "0.3.0"
+description = "Pydantic data models for the GeoJSON spec"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.dependencies]
+pydantic = "*"
+
+[package.extras]
+dev = ["pytest", "pytest-cov", "pre-commit"]
+test = ["pytest", "pytest-cov"]
+
+[[package]]
 name = "gevent"
 version = "20.12.1"
 description = "Coroutine-based network library"
@@ -855,7 +870,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "08f65bb06b4835a404d3528ea9aee87c13df7d7274111910984276836eb7f4fa"
+content-hash = "361c7499a1bc09605867bdbdaec6f802db0c64d82c63fc826347a3373e8fcf27"
 
 [metadata.files]
 alembic = [
@@ -980,6 +995,9 @@ flask-sqlalchemy = [
 geoalchemy2 = [
     {file = "GeoAlchemy2-0.9.1-py2.py3-none-any.whl", hash = "sha256:1984f7b189b1994edad7800154973ebd48a26094376a2c9cd7447133051faf60"},
     {file = "GeoAlchemy2-0.9.1.tar.gz", hash = "sha256:de0d0b1ff2f7f26ddff0a69d9a33940020707caedd442fa13b28affec842dafb"},
+]
+geojson-pydantic = [
+    {file = "geojson-pydantic-0.3.0.tar.gz", hash = "sha256:eeaa8f833e088649a1c996335ca88a93c357e7452aff06238a26a551b68fd793"},
 ]
 gevent = [
     {file = "gevent-20.12.1-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:0f9fa230c5878704b9e286ad5038bac3b70d293bf10e9efa8b2ae1d7d80e7e08"},
