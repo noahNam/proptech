@@ -1,0 +1,66 @@
+openapi: "3.0.2"
+tags:
+  - House
+security:
+  - userAuth: []
+parameters:
+  - name: house_id
+    in: path
+    required: true
+    schema:
+      type: integer
+      example: 1
+    description: type_= (1 == 분양, 2 == 매매) / is_like = (찜일 경우 == true, 취소일 경우 == false)
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - type_
+          - is_like
+        properties:
+          type_:
+            type: integer
+            example: 1
+          is_like:
+            type: boolean
+            example: True
+responses:
+  '200':
+    description:
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/only_result'
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'
