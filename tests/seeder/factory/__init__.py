@@ -4,6 +4,7 @@ from datetime import datetime
 import factory
 from faker import Factory as FakerFactory
 
+from app import InterestHouseModel
 from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
@@ -14,6 +15,7 @@ from app.persistence.model import (
 from app.persistence.model.user_model import UserModel
 
 # factory에 사용해야 하는 Model을 가져온다
+from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.notification.enum.notification_enum import NotificationTopicEnum, NotificationBadgeTypeEnum, \
     NotificationStatusEnum
 
@@ -127,3 +129,13 @@ class NotificationFactory(BaseFactory):
     is_pending = False
     status = NotificationStatusEnum.WAIT.value
     created_at = datetime.now().strptime("20210701", "%Y%m%d")
+
+
+class InterestHouseFactory(BaseFactory):
+    class Meta:
+        model = InterestHouseModel
+
+    user_id = 1
+    ref_id = 1
+    type = HouseTypeEnum.PUBLIC_SALES.value
+    is_like = True
