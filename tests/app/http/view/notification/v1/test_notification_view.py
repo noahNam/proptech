@@ -1,7 +1,6 @@
 import json
 from flask import url_for
 
-from app.persistence.model import NotificationModel
 from core.domains.notification.enum.notification_enum import NotificationHistoryCategoryEnum, NotificationBadgeTypeEnum
 
 
