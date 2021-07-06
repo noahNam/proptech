@@ -157,6 +157,9 @@ class ECSCompose:
                 "--force-deployment",
                 "--timeout",
                 "10",
+                "--force-deployment",
+                "--timeout",
+                "10",
             ]
 
     @property
