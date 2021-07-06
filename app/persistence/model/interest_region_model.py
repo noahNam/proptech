@@ -21,7 +21,7 @@ class InterestRegionModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False)
+    user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True)
     region_id = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp())
     updated_at = Column(DateTime, default=get_server_timestamp())

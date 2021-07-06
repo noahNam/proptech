@@ -9,6 +9,7 @@ from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
+from core.domains.user.entity.user_entity import UserEntity
 
 
 class UserModel(db.Model):
@@ -23,5 +24,18 @@ class UserModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp())
     updated_at = Column(DateTime, default=get_server_timestamp())
 
-    interest_regions = relationship("InterestRegionModel", backref=backref("users"))
-    devices = relationship("DeviceModel", backref=backref("users"))
+    interest_regions = relationship(
+        "InterestRegionModel", backref=backref("users"), uselist=False
+    )
+    devices = relationship("DeviceModel", backref=backref("users"), uselist=False)
+    user_profiles = relationship(
+        "UserProfileModel", backref=backref("users"), uselist=False
+    )
+
+    def to_entity(self) -> UserEntity:
+        return UserEntity(
+            id=self.id,
+            is_required_agree_terms=self.is_required_agree_terms,
+            is_active=self.is_active,
+            is_out=self.is_out,
+        )

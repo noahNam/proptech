@@ -1,6 +1,6 @@
-from typing import Optional, List
+from typing import Optional, List, Union
 
-from sqlalchemy import exc
+from sqlalchemy import exc, exists
 
 from app.extensions.utils.log_helper import logger_
 
@@ -10,17 +10,36 @@ from app.persistence.model import (
     InterestRegionModel,
     InterestRegionGroupModel,
     DeviceModel,
-    DeviceTokenModel, AppAgreeTermsModel,
+    DeviceTokenModel,
+    AppAgreeTermsModel,
+    UserProfileModel,
+    UserInfoModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
-from core.domains.user.dto.user_dto import CreateUserDto, CreateUserProfileImgDto, CreateAppAgreeTermsDto
+from core.domains.user.dto.user_dto import (
+    CreateUserDto,
+    CreateAppAgreeTermsDto,
+    UpsertUserInfoDto,
+    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, SidoCodeDto, SigugunCodeDto, UpsertUserInfoDetailDto,
+    GetUserInfoDetailDto,
+)
+from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity, \
+    UserInfoCodeValueEntity
+from core.domains.user.enum.user_info_enum import CodeEnum
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
 
 
 class UserRepository:
+    def get_user(self, user_id: int) -> Optional[UserEntity]:
+        user = session.query(UserModel).filter_by(id=user_id).first()
+        if not user:
+            return None
+
+        return user.to_entity()
+
     def create_user(self, dto: CreateUserDto) -> None:
         try:
             user = UserModel(
@@ -125,7 +144,9 @@ class UserRepository:
 
     def create_app_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
-            receipt_marketing_date = get_server_timestamp() if dto.receipt_marketing_yn else None
+            receipt_marketing_date = (
+                get_server_timestamp() if dto.receipt_marketing_yn else None
+            )
 
             user = AppAgreeTermsModel(
                 user_id=dto.user_id,
@@ -149,9 +170,186 @@ class UserRepository:
                 {"is_required_agree_terms": True}
             )
             session.commit()
-        except Exception as e:
+        except exc.IntegrityError as e:
             session.rollback()
             logger.error(
                 f"[UserRepository][update_user_required_agree_terms] user_id : {dto.user_id} error : {e}"
             )
             raise NotUniqueErrorException(type_="T005")
+
+    def get_user_profile_id(self, dto: UpsertUserInfoDto) -> Optional[int]:
+        user_profile = (
+            session.query(UserProfileModel.id).filter_by(user_id=dto.user_id).first()
+        )
+        if not user_profile:
+            return None
+
+        return user_profile.id
+
+    def is_user_info(self, dto: UpsertUserInfoDto) -> Optional[UserInfoEntity]:
+        return session.query(
+            exists()
+                .where(UserInfoModel.user_profile_id == dto.user_profile_id)
+                .where(UserInfoModel.code == dto.code)
+        ).scalar()
+
+    def create_user_nickname(self, dto: UpsertUserInfoDetailDto) -> int:
+        try:
+            user_profile = UserProfileModel(
+                user_id=dto.user_id, nickname=dto.value, last_update_code=dto.code
+            )
+
+            session.add(user_profile)
+            session.commit()
+
+            return user_profile.id
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][create_user_profiles] user_id : {dto.user_id} error : {e}"
+            )
+            raise NotUniqueErrorException(type_="T006")
+
+    def update_user_nickname(self, dto: UpsertUserInfoDetailDto):
+        try:
+            session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
+                {"nickname": dto.value, "last_update_code": dto.code}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_nickname] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
+
+    def create_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
+        try:
+            user_info = UserInfoModel(
+                user_profile_id=dto.user_profile_id, code=dto.code, value=dto.value
+            )
+            session.add(user_info)
+            session.commit()
+
+            return user_info.to_entity()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][create_user_info] user_id : {dto.user_id} error : {e}"
+            )
+            raise NotUniqueErrorException(type_="T007")
+
+    def update_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
+        try:
+            user_info_id = session.query(UserInfoModel).filter_by(
+                user_profile_id=dto.user_profile_id, code=dto.code
+            ).update({"value": dto.value})
+            session.commit()
+
+            return UserInfoEntity(
+                id=user_info_id,
+                user_profile_id=dto.user_profile_id,
+                code=dto.code,
+                user_value=dto.value
+            )
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_info] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
+
+    def update_last_code_to_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
+        try:
+            session.query(UserProfileModel).filter_by(user_id=dto.user_id).update(
+                {"last_update_code": dto.code}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_nickname] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
+
+    def get_user_info(
+            self, dto: GetUserInfoDetailDto
+    ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
+        user_info = (
+            session.query(UserInfoModel)
+                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
+                .first()
+        )
+
+        if not user_info:
+            return UserInfoEmptyEntity(code=dto.code)
+
+        return user_info.to_entity()
+
+    def get_user_multi_data_info(
+            self, dto: GetUserInfoDto, codes: list
+    ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
+        # 복수개의 유저 결과를 리턴할 때
+        user_info = (
+            session.query(UserInfoModel)
+                .filter(UserInfoModel.user_profile_id == dto.user_profile_id,
+                        UserInfoModel.code.in_(codes))
+                .all()
+        )
+
+        if not user_info:
+            return UserInfoEmptyEntity(code=dto.code)
+
+        user_values = []
+        for query in user_info:
+            user_values.append(query.value)
+
+        return UserInfoEntity(id=user_info[0].id, user_profile_id=dto.user_profile_id, code=dto.code,
+                              user_values=user_values)
+
+    def get_user_info_by_code(self, user_profile_id: int, code: int) -> Optional[UserInfoEntity]:
+        user_info = (
+            session.query(UserInfoModel)
+                .filter_by(user_profile_id=user_profile_id, code=code)
+                .first()
+        )
+        if not user_info:
+            return None
+
+        return user_info.to_entity()
+
+    def get_avg_monthly_income_workers(self) -> AvgMonthlyIncomeWokrerDto:
+        result = session.query(AvgMonthlyIncomeWokrerModel).filter_by(is_active=True).first()
+        return self._make_avg_monthly_income_worker_object(result)
+
+    def _make_avg_monthly_income_worker_object(self, result: AvgMonthlyIncomeWokrerModel) -> AvgMonthlyIncomeWokrerDto:
+        return AvgMonthlyIncomeWokrerDto(
+            three=result.three,
+            four=result.four,
+            five=result.five,
+            six=result.six,
+            seven=result.seven,
+            eight=result.eight
+        )
+
+    def get_sido_codes(self, dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
+        result = session.query(SidoCodeModel).all()
+        return self._make_sido_codes_object(result, dto)
+
+    def _make_sido_codes_object(self, result: List[SidoCodeModel], dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
+        code_list = []
+        name_list = []
+
+        for data in result:
+            if dto.code == CodeEnum.ADDRESS.value:
+                code_list.append(data.sido_code)
+                name_list.append(data.sido_name)
+            else:
+                code_list.append(data.sigugun_code)
+                name_list.append(data.sigugun_name)
+
+        user_info_code_value_entity = UserInfoCodeValueEntity()
+        user_info_code_value_entity.detail_code = code_list
+        user_info_code_value_entity.name = name_list
+
+        return user_info_code_value_entity

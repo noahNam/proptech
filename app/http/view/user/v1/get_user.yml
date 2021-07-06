@@ -1,0 +1,57 @@
+openapi: "3.0.2"
+tags:
+  - User
+security:
+  - userAuth: []
+responses:
+  '200':
+    description: is_active=활성화유저 / is_out=탈퇴유저 / is_required_agree_terms=필수약관미동의 유저
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    is_active:
+                      type: boolean
+                      example: True
+                    is_out:
+                      type: boolean
+                      example: False
+                    is_required_agree_terms:
+                      type: boolean
+                      example: True
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

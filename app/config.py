@@ -1,4 +1,6 @@
 import os
+import datetime
+from urllib.parse import quote as urlquote
 
 
 class Config:
@@ -11,6 +13,7 @@ class Config:
 
     # JWT
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or "hawaii"
+    # JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=60)
 
     # Redis
     REDIS_URL = os.environ.get("REDIS_URL") or "redis://localhost:6379"
@@ -19,8 +22,17 @@ class Config:
     SENS_SID = os.environ.get("SENS_SID") or "ncp:sms:kr:268333493425:test-apartalk"
     NCP_ACCESS_KEY = os.environ.get("NCP_ACCESS_KEY") or "g4yBBz9JRbfEsEiN7PM0"
     NCP_SECRET_KEY = (
-            os.environ.get("NCP_SECRET_KEY") or "p8InI44k4bp15jVod2xynDGGBSdZMuqlvLy8vuCM"
+        os.environ.get("NCP_SECRET_KEY") or "p8InI44k4bp15jVod2xynDGGBSdZMuqlvLy8vuCM"
     )
+
+    # AWS ENV
+    AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY") or "AKIATBBH6H6PNXVM54ND"
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY") or "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"
+    AWS_REGION_NAME = os.environ.get("AWS_REGION_NAME") or "ap-northeast-2"
+
+    # SQS
+    SQS_BASE = os.environ.get("SQS_BASE") or "https://sqs.ap-northeast-2.amazonaws.com/208389685150"
+    SQS_USER_DATA_SYNC_TO_LAKE = os.environ.get("SQS_USER_DATA_SYNC_TO_LAKE") or "USER_DATA_SYNC_TO_LAKE_QUEUE.fifo"
 
 
 class LocalConfig(Config):
@@ -31,6 +43,8 @@ class LocalConfig(Config):
     SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@localhost:5432/tanos"
     # Local environment configuration using Docker API service
     # SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@postgres:5432/tanos"
+    # Prod migrate
+    # SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://postgres:%s@localhost:5432/tanos" % urlquote("password")
 
 
 class TestConfig(Config):
