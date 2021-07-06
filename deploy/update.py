@@ -110,7 +110,7 @@ class ECSCompose:
         env = self.environment
         service_type = self.service_type
 
-        if env == "dev" or (env == "prod" and service_type == "cron"):
+        if env == "dev" and service_type == "api":
             return [
                 "ecs-cli",
                 "compose",
@@ -141,6 +141,22 @@ class ECSCompose:
                 "--ecs-params",
                 self.params,
                 "create",
+            ]
+        elif service_type == "cron":
+            return [
+                "ecs-cli",
+                "compose",
+                "--cluster",
+                self.cluster,
+                "--project-name",
+                self.service,
+                "--file",
+                self.compose_file_dir,
+                "--ecs-params",
+                self.params,
+                "--force-deployment",
+                "--timeout",
+                "10",
             ]
 
     @property

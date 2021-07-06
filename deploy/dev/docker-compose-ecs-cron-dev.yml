@@ -1,0 +1,16 @@
+version: "3"
+services:
+  dev-tanos-cron:
+    image: __ECR_ADDRESS__
+    ports:
+      - "5000:5000"
+    command: "flask start-worker"
+    logging:
+      driver: awslogs
+      options:
+        awslogs-group: toadhome/dev-tanos-cron-logs
+        awslogs-region: ap-northeast-2
+        awslogs-stream-prefix: toadhome/dev-tanos-cron-logs
+        awslogs-create-group: "true"
+    environment:
+      # environment
