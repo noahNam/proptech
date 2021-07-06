@@ -63,12 +63,9 @@ def jwt_required(fn):
     def wrapper(*args, **kwargs):
         try:
             verify_jwt_in_request()
-            return fn(*args, **kwargs)
-        except ExpiredSignatureError:
-            # 유효기간 만료 에러만 무시
-            return fn(*args, **kwargs)
-        except Exception as e:
-            raise TokenValidationErrorException
+        except Exception:
+            pass
+        return fn(*args, **kwargs)
 
     return wrapper
 
