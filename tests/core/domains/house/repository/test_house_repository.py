@@ -1,4 +1,4 @@
-from app import InterestHouseModel
+from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import InterestHouseDto
 from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
@@ -11,7 +11,7 @@ interest_house_dto = InterestHouseDto(
 )
 
 
-def test_create_like_house_repo_when_user_select_public_sales_then_success(session):
+def test_create_like_house_repo_when_like_public_sales_then_success(session):
     HouseRepository().create_interest_house(dto=interest_house_dto)
 
     filters = list()
@@ -27,7 +27,7 @@ def test_create_like_house_repo_when_user_select_public_sales_then_success(sessi
     assert result.type == interest_house_dto.type
 
 
-def test_update_is_like_house_repo_when_user_select_public_sales_then_success(session, interest_house_factory):
+def test_update_is_like_house_repo_when_unlike_public_sales_then_success(session, interest_house_factory):
     interest_house = interest_house_factory.build()
     session.add(interest_house)
     session.commit()
