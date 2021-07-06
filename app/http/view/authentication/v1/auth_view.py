@@ -1,9 +1,8 @@
 from flasgger import swag_from
 from flask import request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from app.http.view.authentication import current_user
+from app.http.view.authentication import current_user, jwt_required
 
-from app.extensions.utils.auth_helper import get_renew_token
+from app.extensions.utils.auth_helper import set_renew_token
 from app.http.requests.v1.auth_request import (
     MobileAuthSmsSendSchemeRequest,
     MobileAuthSmsConfirmSchemeRequest,
@@ -41,7 +40,7 @@ def token_refresh_view():
     auth_header = request.headers.get("Authorization")
     bearer, _, token = auth_header.partition(" ")
 
-    data = get_renew_token(token).json()
+    data = set_renew_token(token).json()
 
     return jsonify(
         access_token=data["data"]["token_info"]["access_token"], status="success"

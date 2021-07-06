@@ -1,0 +1,57 @@
+openapi: "3.0.2"
+tags:
+  - User
+security:
+  - userAuth: []
+requestBody:
+  required: true
+  description: codes는 integer type
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - codes
+        properties:
+          codes:
+            type: array
+            items:
+              type: integer
+              example: 1000, 1001
+responses:
+  '200':
+    description: code_values의 경우 값이 서버에서 내려주는 값이 없을 수 있다. (주관식의 경우)
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_info'
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

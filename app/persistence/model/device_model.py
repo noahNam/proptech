@@ -20,7 +20,7 @@ class DeviceModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
-    user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False)
+    user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True)
     uuid = Column(String(36), nullable=False)
     os = Column(String(3), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
@@ -29,4 +29,6 @@ class DeviceModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    device_tokens = relationship("DeviceTokenModel", backref=backref("devices"))
+    device_tokens = relationship(
+        "DeviceTokenModel", backref=backref("devices"), uselist=False
+    )

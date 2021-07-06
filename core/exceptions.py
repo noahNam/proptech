@@ -22,11 +22,6 @@ class ErrorFormat(Exception):
         self.type_ = type_
 
 
-class TokenNotFoundError(ErrorFormat):
-    code = HTTPStatus.FORBIDDEN
-    msg = "token_not_found"
-
-
 class NotFoundException(ErrorFormat):
     code = HTTPStatus.NOT_FOUND
     msg = "not_found_error"
@@ -52,6 +47,16 @@ class NotUniqueErrorException(ErrorFormat):
     msg = "not_unique_error"
 
 
+class IntegrityErrorException(ErrorFormat):
+    code = HTTPStatus.BAD_REQUEST
+    msg = "integrity_error"
+
+
 class RedisErrorException(ErrorFormat):
     code = HTTPStatus.INTERNAL_SERVER_ERROR
     msg = "redis_error"
+
+
+class TokenValidationErrorException(ErrorFormat):
+    code = HTTPStatus.UNAUTHORIZED
+    msg = "jwt_validation_error"

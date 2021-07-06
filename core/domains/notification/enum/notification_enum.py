@@ -2,9 +2,9 @@ from enum import Enum
 
 
 class NotificationStatusEnum(Enum):
-    SUCCESS = "success"
-    FAILURE = "failure"
-    WAIT = "wait"
+    WAIT = 0
+    SUCCESS = 1
+    FAILURE = 2
 
 
 class NotificationBadgeTypeEnum(Enum):
@@ -19,5 +19,12 @@ class DeviceTypeEnum(Enum):
     EMAIL = "email"
 
 
-class NotificationCategoryEnum(Enum):
-    APT01 = "apt01"
+class NotificationTopicEnum(Enum):
+    OFFICIAL = "apt001"
+    SUB_NEWS = "apt002"
+    SUB_SCHEDULE = "apt003"
+
+
+class NotificationHistoryCategoryEnum(Enum):
+    OFFICIAL = "official"
+    MY = "my"

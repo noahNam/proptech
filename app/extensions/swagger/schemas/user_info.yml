@@ -1,0 +1,29 @@
+user_info:
+  properties:
+    data:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 1005
+              code_values:
+                type: object
+                properties:
+                  detail_code:
+                    type: array
+                    items:
+                      type: integer
+                      example: 1,2,3
+                  name:
+                    type: array
+                    items:
+                      type: string
+                      example: 있어요, 없어요, 과거에 있었지만 현재는 처분했어요
+    user_value:
+      type: string
+      example: 2

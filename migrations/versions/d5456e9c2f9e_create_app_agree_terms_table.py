@@ -1,17 +1,16 @@
 """create app_agree_terms table
 
-Revision ID: 88efa8e1b8c5
-Revises: 80f2d6eebad0
-Create Date: 2021-06-16 10:40:14.915473
+Revision ID: d5456e9c2f9e
+Revises: f3dc1a88a135
+Create Date: 2021-06-28 15:36:30.141077
 
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '88efa8e1b8c5'
-down_revision = '80f2d6eebad0'
+revision = 'd5456e9c2f9e'
+down_revision = 'f3dc1a88a135'
 branch_labels = None
 depends_on = None
 

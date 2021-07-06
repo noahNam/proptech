@@ -1,5 +1,5 @@
-import random
 import uuid
+from datetime import datetime
 
 import factory
 from faker import Factory as FakerFactory
@@ -9,11 +9,14 @@ from app.persistence.model import (
     InterestRegionGroupModel,
     DeviceModel,
     DeviceTokenModel,
+    UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel
 )
 from app.persistence.model.user_model import UserModel
 
 # factory에 사용해야 하는 Model을 가져온다
-from core.domains.user.enum.user_enum import UserHomeOwnerType, UserInterestedHouseType
+from core.domains.house.enum.house_enum import HouseTypeEnum
+from core.domains.notification.enum.notification_enum import NotificationTopicEnum, NotificationBadgeTypeEnum, \
+    NotificationStatusEnum
 
 faker = FakerFactory.create(locale="ko_KR")
 
@@ -47,7 +50,16 @@ class DeviceFactory(BaseFactory):
     is_auth = True
     phone_number = "01012345678"
 
-    device_tokens = factory.List([factory.SubFactory(DeviceTokenFactory)])
+    # device_tokens = factory.List([factory.SubFactory(DeviceTokenFactory)])
+    device_tokens = factory.SubFactory(DeviceTokenFactory)
+
+
+class UserProfileFactory(BaseFactory):
+    class Meta:
+        model = UserProfileModel
+
+    nickname = "noah"
+    last_update_code = 1000
 
 
 class UserFactory(BaseFactory):
@@ -62,8 +74,11 @@ class UserFactory(BaseFactory):
     is_active = True
     is_out = False
 
-    interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])
-    devices = factory.List([factory.SubFactory(DeviceFactory)])
+    # interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])
+    # devices = factory.List([factory.SubFactory(DeviceFactory)])
+    interest_regions = factory.SubFactory(InterestRegionFactory)
+    devices = factory.SubFactory(DeviceFactory)
+    user_profiles = factory.SubFactory(UserProfileFactory)
 
 
 class InterestRegionGroupFactory(BaseFactory):
@@ -73,3 +88,53 @@ class InterestRegionGroupFactory(BaseFactory):
     level = 2
     name = faker.city()
     interest_count = 0
+
+
+class AvgMonthlyIncomeWorkerFactory(BaseFactory):
+    class Meta:
+        model = AvgMonthlyIncomeWokrerModel
+
+    year = "2020"
+    three = 6030160
+    four = 7094205
+    five = 7094205
+    six = 7393647
+    seven = 7778023
+    eight = 8162399
+    is_active = True
+
+
+class SidoCodeFactory(BaseFactory):
+    class Meta:
+        model = SidoCodeModel
+
+    sido_code = 11
+    sido_name = "서울특별시"
+    sigugun_code = 11010
+    sigugun_name = "종로구"
+
+
+class NotificationFactory(BaseFactory):
+    class Meta:
+        model = NotificationModel
+
+    user_id = 1
+    token = "device-token"
+    endpoint = "application-platform-endpoint"
+    topic = NotificationTopicEnum.SUB_NEWS.value
+    badge_type = NotificationBadgeTypeEnum.ALL.value
+    message = {}
+    is_read = False
+    is_pending = False
+    status = NotificationStatusEnum.WAIT.value
+    created_at = datetime.now().strptime("20210701", "%Y%m%d")
+
+
+class InterestHouseFactory(BaseFactory):
+    class Meta:
+        model = InterestHouseModel
+
+    user_id = 1
+    house_id = 1
+    type = HouseTypeEnum.PUBLIC_SALES.value
+    is_like = True
