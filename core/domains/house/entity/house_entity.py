@@ -20,7 +20,7 @@ class RealEstateEntity(BaseModel):
     coordinates: Point
 
 
-class RealTradeEntity(BaseModel):
+class PrivateSaleEntity(BaseModel):
     id: int
     real_estate_id: int
     area: float
@@ -37,7 +37,7 @@ class RealTradeEntity(BaseModel):
     updated_at: datetime
 
 
-class PreSaleEntity(BaseModel):
+class PublicSaleEntity(BaseModel):
     id: int
     real_estate_id: int
     name: str
@@ -46,19 +46,8 @@ class PreSaleEntity(BaseModel):
     rent_type: str
     trade_type: str
     construct_company: str
-    housing_type: str
-    supply_price: int
-    supply_area: float
     supply_household: int
-    notes: str
     is_available: bool
-    created_at: datetime
-    updated_at: datetime
-
-
-class SubscriptionScheduleEntity(BaseModel):
-    id: int
-    pre_sales_id: int
     offer_date: date
     subscription_start_date: date
     subscription_end_date: date
@@ -73,3 +62,39 @@ class SubscriptionScheduleEntity(BaseModel):
     contract_end_date: date
     move_in_year: int
     move_in_month: int
+    min_down_payment: int
+    max_down_payment: int
+    down_payment_ratio: int
+    reference_url: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class PublicSaleDetailEntity(BaseModel):
+    id: int
+    pre_sales_id: int
+    private_area: float
+    supply_area: float
+    supply_price: int
+
+
+class PublicSalePhotoEntity(BaseModel):
+    id: int
+    pre_sales_id: int
+    file_name: str
+    path: str
+    extension: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class AdministrativeDivisionEntity(BaseModel):
+    id: int
+    name: str
+    real_trade_price: int
+    real_rent_price: int
+    real_deposit_price: int
+    public_sale_price: int
+    coordinates: Point
+    created_at: datetime
+    updated_at: datetime

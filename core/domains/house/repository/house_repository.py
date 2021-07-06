@@ -2,7 +2,7 @@ from sqlalchemy import and_, func
 
 from app.extensions.database import session
 from app.persistence.model import RealEstateModel, RealTradeModel, PreSaleModel
-from core.domains.map.dto.map_dto import CoordinatesRangeDto
+from core.domains.house.dto.house_dto import CoordinatesRangeDto
 
 
 class MapRepository:

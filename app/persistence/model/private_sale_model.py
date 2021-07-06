@@ -14,12 +14,12 @@ from sqlalchemy import (
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
-from core.domains.map.entity.map_entity import RealTradeEntity
-from core.domains.map.enum.map_enum import BuildTypeEnum, RealTradeTypeEnum
+from core.domains.house.entity.house_entity import PrivateSaleEntity
+from core.domains.house.enum.house_enum import BuildTypeEnum, RealTradeTypeEnum
 
 
-class RealTradeModel(db.Model):
-    __tablename__ = "real_trades"
+class PrivateSaleModel(db.Model):
+    __tablename__ = "private_sales"
 
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"),
@@ -47,9 +47,9 @@ class RealTradeModel(db.Model):
 
     def __repr__(self):
         return (
-            f"RealTrade({self.id}, "
+            f"PrivateSale({self.id}, "
             f"{self.real_estate_id}, "
-            f"{self.area}, "
+            f"{self.private_area}, "
             f"{self.supply_area}, "
             f"{self.contract_date}, "
             f"{self.deposit_price}, "
@@ -60,11 +60,11 @@ class RealTradeModel(db.Model):
             f"{self.building_type}, "
             f"{self.is_available}, "
             f"{self.created_at}, "
-            f"{self.updated_at})"
+            f"{self.updated_at}"
         )
 
-    def to_entity(self) -> RealTradeEntity:
-        return RealTradeEntity(
+    def to_entity(self) -> PrivateSaleEntity:
+        return PrivateSaleEntity(
             id=self.id,
             real_estate_id=self.real_estate_id,
             area=self.area,

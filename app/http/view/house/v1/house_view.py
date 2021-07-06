@@ -13,24 +13,19 @@
 from http import HTTPStatus
 
 from flask import request, jsonify
-from flask_sqlalchemy import BaseQuery
 from sqlalchemy import func, select, or_, and_, exists
-from sqlalchemy.orm.strategy_options import joinedload, contains_eager, subqueryload
 
 from app.extensions.database import session
 from app.extensions.utils.query_helper import RawQueryHelper
-from app.http.requests.v1.map_request import GetCoordinatesRequest
+from app.http.requests.v1.house_request import GetCoordinatesRequest
 from app.http.responses import failure_response
-from app.http.responses.presenters.v1.map_presenter import BoundingPresenter
 from app.http.view import api
-from app.persistence.model import RealEstateModel, RealTradeModel, PreSaleModel, UserInfoModel
-from core.domains.map.dto.map_dto import RealEstateWithCoordinateDto
-from core.domains.map.use_case.v1.map_use_case import MapBoundingUseCase
+from app.persistence.model import RealEstateModel, UserInfoModel, PrivateSaleModel, PublicSaleModel
 from core.exceptions import InvalidRequestException
 from core.use_case_output import UseCaseFailureOutput, FailureType
 
 
-@api.route("/v1/map/bounding", methods=["GET"])
+@api.route("/v1/house/bounding", methods=["GET"])
 def bounding_view():
     try:
         start_x = float(request.args.get("start_x"))
@@ -62,24 +57,32 @@ def bounding_view():
             )
         )
     try:
-        examples = session.query(RealEstateModel, RealTradeModel, PreSaleModel,
-                                 func.ST_X(RealEstateModel.coordinates).label("longitude"),
-                                 func.ST_Y(RealEstateModel.coordinates).label("latitude")) \
-            .join(RealEstateModel.real_trades, isouter=True) \
-            .join(RealEstateModel.pre_sales, isouter=True) \
-            .add_entity(RealTradeModel)\
-            .add_entity(PreSaleModel)\
-            .filter(RealEstateModel.is_available == "True") \
+        query = (
+            session.query(RealEstateModel)
+            .join(RealEstateModel.real_trades, isouter=True)
+            .join(RealEstateModel.pre_sales, isouter=True)
+            .with_entities(RealEstateModel, PrivateSaleModel, PublicSaleModel, func.ST_X(RealEstateModel.coordinates).label("longitude"), func.ST_Y(RealEstateModel.coordinates).label("latitude"))
+            .filter(RealEstateModel.is_available == "True")
             .filter(func.ST_Contains(func.ST_MakeEnvelope(start_x, end_y, end_x, start_y, 4326),
-                                     RealEstateModel.coordinates)).all()
+                                     RealEstateModel.coordinates))
+        )
+
+        results = query.all()
+
+        for result in results:
+            real_estate_model = result[0]
+            real_trade_model = result[1]
+            pre_sale_model = result[2]
+            longitude = result[3]
+            latitude = result[4]
+
+        print("query start")
+        RawQueryHelper.print_raw_query(query)
+        print(results)
 
     except Exception as e:
         print("-------------error----------")
         print(e)
-    print("query start")
-    # RawQueryHelper.print_raw_query(examples)
-    print(examples)
-
 
     return jsonify(start_x=dto.start_x, start_y=dto.start_y, end_x=dto.end_x, end_y=dto.end_y)
     # return BoundingPresenter().transform(MapBoundingUseCase().execute(dto=dto))

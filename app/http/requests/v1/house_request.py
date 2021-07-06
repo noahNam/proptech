@@ -3,7 +3,7 @@ from typing import Tuple
 from pydantic import BaseModel, StrictFloat, validator, ValidationError, StrictInt
 
 from app.extensions.utils.log_helper import logger_
-from core.domains.map.dto.map_dto import CoordinatesRangeDto
+from core.domains.house.dto.house_dto import CoordinatesRangeDto
 from core.exceptions import InvalidRequestException
 
 logger = logger_.getLogger(__name__)
