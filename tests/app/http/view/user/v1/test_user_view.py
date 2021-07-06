@@ -108,7 +108,7 @@ def test_create_user_when_given_wrong_token_then_unauthorized_error(
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.get_json()["type"] == HTTPStatus.UNAUTHORIZED
-    assert response.get_json()["message"] == FailureType.UNAUTHORIZED_ERROR
+    assert response.get_json()["message"] == "jwt_validation_error"
 
 
 def test_create_user_to_verify_data_when_first_login_tehn_success(
@@ -203,7 +203,7 @@ def test_create_app_agree_terms_when_first_login_with_not_user_id_then_authoriza
     data = response.get_json()
     assert response.status_code == 401
     assert data["type"] == 401
-    assert data["message"] == "unauthorized_error"
+    assert data["message"] == "jwt_validation_error"
 
 
 def test_create_app_agree_terms_to_verify_data_when_first_login_then_success(
