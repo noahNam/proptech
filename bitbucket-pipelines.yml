@@ -102,16 +102,16 @@ pipelines:
             - chmod +x /usr/local/bin/ecs-cli
             - python deploy/update.py -e dev -s api
     '[dev] deploy-for-cron':
-      - step:
-          name: 'Run tests'
-          image: python:3.8.2
-          caches:
-            - pip
-          script:
-            - pip install poetry && poetry config virtualenvs.create false && poetry install
-            - FLASK_CONFIG=testing python -m pytest tests/ --ignore=tests/app/http
-          services:
-            - postgres
+#      - step:
+#          name: 'Run tests'
+#          image: python:3.8.2
+#          caches:
+#            - pip
+#          script:
+#            - pip install poetry && poetry config virtualenvs.create false && poetry install
+#            - FLASK_CONFIG=testing python -m pytest tests/ --ignore=tests/app/http
+#          services:
+#            - postgres
       - step:
           name: 'Build & Push to tanos-cron-dev'
           image: 'python:3.8.2'
@@ -138,16 +138,16 @@ pipelines:
             - chmod +x /usr/local/bin/ecs-cli
             - python deploy/update.py -e dev -s cron
     '[prod] deploy-for-cron':
-      - step:
-          name: 'Run tests'
-          image: python:3.8.2
-          caches:
-            - pip
-          script:
-            - pip install poetry && poetry config virtualenvs.create false && poetry install
-            - FLASK_CONFIG=testing python -m pytest tests/ --ignore=tests/app/http
-          services:
-            - postgres
+#      - step:
+#          name: 'Run tests'
+#          image: python:3.8.2
+#          caches:
+#            - pip
+#          script:
+#            - pip install poetry && poetry config virtualenvs.create false && poetry install
+#            - FLASK_CONFIG=testing python -m pytest tests/ --ignore=tests/app/http
+#          services:
+#            - postgres
       - step:
           name: 'Build & Push to tanos-cron-prod'
           image: 'python:3.8.2'
