@@ -11,7 +11,7 @@ api: Blueprint = Blueprint(name="api/tanos", import_name=__name__)
 from .authentication.v1.auth_view import *  # noqa isort:skip
 from .user.v1.user_view import *  # noqa isort:skip
 from .main import *  # noqa isort:skip
-from .map.v1.map_view import *  # noqa isort:skip
+from .house.v1.house_view import *  # noqa isort:skip
 
 
 @api.errorhandler(Exception)

@@ -10,7 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, backref
 
 from app import db
-from core.domains.map.entity.map_entity import RealEstateEntity
+from core.domains.house.entity.house_entity import RealEstateEntity
 
 
 class RealEstateModel(db.Model):
@@ -35,8 +35,8 @@ class RealEstateModel(db.Model):
     is_available = Column(Boolean, nullable=False, default=True)
     coordinates = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
 
-    real_trades = relationship("RealTradeModel", backref=backref("real_estates", cascade="all, delete"))
-    pre_sales = relationship("PreSaleModel", backref=backref("real_estates",  cascade="all, delete"))
+    private_sales = relationship("PrivateSaleModel", backref=backref("real_estates", cascade="all, delete"))
+    public_sales = relationship("PublicSaleModel", backref=backref("real_estates",  cascade="all, delete"))
 
     def __repr__(self):
         return (

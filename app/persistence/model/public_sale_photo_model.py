@@ -1,0 +1,56 @@
+from sqlalchemy import (
+    Column,
+    BigInteger,
+    Integer,
+    ForeignKey,
+    String,
+    DateTime,
+)
+
+from app import db
+from app.extensions.utils.time_helper import get_server_timestamp
+from app.persistence.model.public_sale_model import PublicSaleModel
+from core.domains.house.entity.house_entity import PublicSalePhotoEntity
+
+
+class PublicSalePhotoModel(db.Model):
+    __tablename__ = "public_sale_photos"
+
+    id = Column(
+        BigInteger().with_variant(Integer, "sqlite"),
+        primary_key=True,
+        nullable=False,
+        autoincrement=True,
+    )
+    pre_sales_id = Column(BigInteger,
+                          ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
+                          nullable=False,
+                          unique=True)
+
+    file_name = Column(String(20), nullable=False)
+    path = Column(String(100), nullable=False)
+    extension = Column(String(4), nullable=False)
+    created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+
+    def __repr__(self):
+        return (
+            f"PublicSalePhoto({self.id}', "
+            f"{self.pre_sales_id}, "
+            f"{self.file_name}, "
+            f"{self.path}, "
+            f"{self.extension}, "
+            f"{self.created_at}, "
+            f"{self.updated_at}) "
+        )
+
+    def to_entity(self) -> PublicSalePhotoEntity:
+        return PublicSalePhotoEntity(
+            id=self.id,
+            pre_sales_id=self.pre_sales_id,
+            private_area=self.private_area,
+            supply_area=self.supply_area,
+            supply_price=self.supply_price,
+            created_at=self.created_at,
+            updated_at=self.updated_at
+        )

@@ -8,6 +8,8 @@ from .user_profile_model import UserProfileModel
 from .user_info_model import UserInfoModel
 from .notification_model import NotificationModel
 from .real_estate_model import RealEstateModel
-from .real_trade_model import RealTradeModel
-from .pre_sale_model import PreSaleModel
-from .subscription_schedule_model import SubscriptionScheduleModel
+from .private_sale_model import PrivateSaleModel
+from .public_sale_model import PublicSaleModel
+from .public_sale_detail_model import PublicSaleDetailModel
+from .public_sale_photo_model import PublicSalePhotoModel
+from .administrative_division_model import AdministrativeDivisionModel
