@@ -10,9 +10,9 @@ parameters:
     schema:
       type: integer
       example: 1
-    description: type_= (1 == 분양, 2 == 매매) / is_like = (찜일 경우 == true, 취소일 경우 == false)
 requestBody:
   required: true
+  description: type_= (1 == 분양, 2 == 매매) / is_like = (찜일 경우 == true, 취소일 경우 == false)
   content:
     application/json:
       schema:
