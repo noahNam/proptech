@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
 
-class InterestHouseDto(BaseModel):
+class UpsertInterestHouseDto(BaseModel):
     user_id: int
-    ref_id: int
+    house_id: int
     type: int
     is_like: bool
