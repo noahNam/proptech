@@ -154,12 +154,7 @@ class ECSCompose:
                 self.compose_file_dir,
                 "--ecs-params",
                 self.params,
-                "--force-deployment",
-                "--timeout",
-                "10",
-                "--force-deployment",
-                "--timeout",
-                "10",
+                "create",
             ]
 
     @property
