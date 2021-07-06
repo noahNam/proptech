@@ -14,7 +14,7 @@ from app.extensions.swagger import swagger_config
 from app.http.view import api
 
 # alembic auto-generate detected
-# from app.persistence.model import *
+from app.persistence.model import *
 
 
 # event listener initialization
