@@ -135,6 +135,6 @@ class InterestHouseFactory(BaseFactory):
         model = InterestHouseModel
 
     user_id = 1
-    ref_id = 1
+    house_id = 1
     type = HouseTypeEnum.PUBLIC_SALES.value
     is_like = True
