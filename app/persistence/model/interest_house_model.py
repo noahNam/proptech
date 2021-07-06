@@ -3,7 +3,7 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     Boolean,
-    DateTime,
+    DateTime, SmallInteger,
 )
 
 from app import db
@@ -19,7 +19,8 @@ class InterestHouseModel(db.Model):
     )
     user_id = Column(BigInteger, nullable=False, index=True)
     ref_id = Column(BigInteger, nullable=False, index=True)
-    is_active = Column(Boolean, nullable=False, default=True)
+    type = Column(SmallInteger, nullable=False)
+    is_like = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
@@ -28,7 +29,7 @@ class InterestHouseModel(db.Model):
             id=self.id,
             user_id=self.user_id,
             ref_id=self.ref_id,
-            is_active=self.is_active,
+            is_like=self.is_like,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )

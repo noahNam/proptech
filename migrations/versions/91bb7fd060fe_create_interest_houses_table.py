@@ -20,7 +20,8 @@ def upgrade():
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), nullable=False),
                     sa.Column('user_id', sa.BigInteger(), nullable=False),
                     sa.Column('ref_id', sa.BigInteger(), nullable=False),
-                    sa.Column('is_active', sa.Boolean(), nullable=False),
+                    sa.Column('type', sa.SmallInteger(), nullable=False),
+                    sa.Column('is_like', sa.Boolean(), nullable=False),
                     sa.Column('created_at', sa.DateTime(), nullable=False),
                     sa.Column('updated_at', sa.DateTime(), nullable=False),
                     sa.PrimaryKeyConstraint('id')
