@@ -1,9 +1,9 @@
 from sqlalchemy import exc
 
-from app import InterestHouseModel
 from app.extensions.utils.log_helper import logger_
 
 from app.extensions.database import session
+from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import InterestHouseDto
 from core.exceptions import NotUniqueErrorException
 

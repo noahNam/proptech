@@ -43,7 +43,7 @@ def test_view_when_user_id_not_exists_then_check_auth_failure(
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.get_json()["type"] == HTTPStatus.UNAUTHORIZED
-    assert response.get_json()["message"] == FailureType.UNAUTHORIZED_ERROR
+    assert response.get_json()["message"] == "jwt_validation_error"
 
 
 @pytest.mark.skip(reason="local redis 실행 안할경우 편의상 skip")
