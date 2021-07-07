@@ -59,10 +59,9 @@ def test_get_user_repo_then_success(create_users):
 
 
 def test_create_user_profiles_when_first_login_then_success(
-        session, interest_region_factory
+        session
 ):
     UserRepository().create_user(dto=create_user_dto)
-    interest_region_factory.create_batch(size=1, user_id=create_user_dto.user_id)
 
     user = session.query(UserModel).first()
 

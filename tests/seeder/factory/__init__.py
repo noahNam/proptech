@@ -5,8 +5,6 @@ import factory
 from faker import Factory as FakerFactory
 
 from app.persistence.model import (
-    InterestRegionModel,
-    InterestRegionGroupModel,
     DeviceModel,
     DeviceTokenModel,
     UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel
@@ -24,13 +22,6 @@ faker = FakerFactory.create(locale="ko_KR")
 class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta(object):
         abstract = True
-
-
-class InterestRegionFactory(BaseFactory):
-    class Meta:
-        model = InterestRegionModel
-
-    region_id = factory.Sequence(lambda n: n + 1)
 
 
 class DeviceTokenFactory(BaseFactory):
@@ -74,20 +65,9 @@ class UserFactory(BaseFactory):
     is_active = True
     is_out = False
 
-    # interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])
     # devices = factory.List([factory.SubFactory(DeviceFactory)])
-    interest_regions = factory.SubFactory(InterestRegionFactory)
     devices = factory.SubFactory(DeviceFactory)
     user_profiles = factory.SubFactory(UserProfileFactory)
-
-
-class InterestRegionGroupFactory(BaseFactory):
-    class Meta:
-        model = InterestRegionGroupModel
-
-    level = 2
-    name = faker.city()
-    interest_count = 0
 
 
 class AvgMonthlyIncomeWorkerFactory(BaseFactory):

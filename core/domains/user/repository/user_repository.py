@@ -7,8 +7,6 @@ from app.extensions.utils.log_helper import logger_
 from app.extensions.database import session
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
-    InterestRegionModel,
-    InterestRegionGroupModel,
     DeviceModel,
     DeviceTokenModel,
     AppAgreeTermsModel,
@@ -56,47 +54,6 @@ class UserRepository:
             )
             session.rollback()
             raise NotUniqueErrorException(type_="T001")
-
-    def create_interest_regions(self, dto: CreateUserDto) -> None:
-        try:
-            interest_regions: List[
-                InterestRegionModel
-            ] = self._create_interest_region_objects(dto)
-            if interest_regions:
-                session.add_all(interest_regions)
-                session.commit()
-        except Exception as e:
-            session.rollback()
-            logger.error(
-                f"[UserRepository][create_interest_regions] user_id : {dto.user_id} error : {e}"
-            )
-
-    def update_interest_region_group_counts(self, dto: CreateUserDto) -> None:
-        try:
-            interest_regions: List[
-                InterestRegionModel
-            ] = self._create_interest_region_objects(dto)
-            for interest_region in interest_regions:
-                session.query(InterestRegionGroupModel).filter_by(
-                    id=interest_region.region_id
-                ).update(
-                    {"interest_count": InterestRegionGroupModel.interest_count + 1}
-                )
-                session.commit()
-
-        except Exception as e:
-            session.rollback()
-            logger.error(
-                f"[UserRepository][update_interest_region_group_counts] user_id : {dto.user_id} error : {e}"
-            )
-
-    def _create_interest_region_objects(
-            self, dto: CreateUserDto
-    ) -> List[InterestRegionModel]:
-        return [
-            InterestRegionModel(user_id=dto.user_id, region_id=region_id)
-            for region_id in dto.region_ids
-        ]
 
     def create_device(self, dto: CreateUserDto) -> Optional[int]:
         try:
@@ -336,7 +293,8 @@ class UserRepository:
         result = session.query(SidoCodeModel).all()
         return self._make_sido_codes_object(result, dto)
 
-    def _make_sido_codes_object(self, result: List[SidoCodeModel], dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
+    def _make_sido_codes_object(self, result: List[SidoCodeModel],
+                                dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
         code_list = []
         name_list = []
 
