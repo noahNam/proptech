@@ -9,7 +9,7 @@ from app.persistence.model import (
     DeviceModel,
     DeviceTokenModel,
     UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel,
-    ReceiptPushTypeModel
+    ReceivePushTypeModel
 )
 from app.persistence.model.user_model import UserModel
 
@@ -55,9 +55,9 @@ class UserProfileFactory(BaseFactory):
     last_update_code = 1000
 
 
-class ReceiptPushTypeFactory(BaseFactory):
+class ReceivePushTypeFactory(BaseFactory):
     class Meta:
-        model = ReceiptPushTypeModel
+        model = ReceivePushTypeModel
 
     is_official = True
     is_private = True
@@ -81,7 +81,7 @@ class UserFactory(BaseFactory):
     # devices = factory.List([factory.SubFactory(DeviceFactory)])
     devices = factory.SubFactory(DeviceFactory)
     user_profiles = factory.SubFactory(UserProfileFactory)
-    receipt_push_types = factory.SubFactory(ReceiptPushTypeFactory)
+    receive_push_types = factory.SubFactory(ReceivePushTypeFactory)
 
 
 class AvgMonthlyIncomeWorkerFactory(BaseFactory):

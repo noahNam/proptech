@@ -11,7 +11,7 @@ from app.persistence.model import (
     DeviceTokenModel,
     AppAgreeTermsModel,
     UserProfileModel,
-    UserInfoModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, ReceiptPushTypeModel
+    UserInfoModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, ReceivePushTypeModel
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
@@ -88,28 +88,28 @@ class UserRepository:
             session.rollback()
             raise NotUniqueErrorException(type_="T003")
 
-    def create_receipt_push_types(self, dto: CreateUserDto) -> None:
+    def create_receive_push_types(self, dto: CreateUserDto) -> None:
         try:
-            receipt_push_types = ReceiptPushTypeModel(user_id=dto.user_id)
-            session.add(receipt_push_types)
+            receive_push_types = ReceivePushTypeModel(user_id=dto.user_id)
+            session.add(receive_push_types)
             session.commit()
         except exc.IntegrityError as e:
             logger.error(
-                f"[UserRepository][create_receipt_push_types] user_id : {dto.user_id} error : {e}"
+                f"[UserRepository][create_receive_push_types] user_id : {dto.user_id} error : {e}"
             )
             session.rollback()
             raise NotUniqueErrorException(type_="T004")
 
-    def update_marketing_receipt_push_types(self, dto: CreateAppAgreeTermsDto) -> None:
+    def update_marketing_receive_push_types(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
-            session.query(ReceiptPushTypeModel).filter_by(user_id=dto.user_id).update(
+            session.query(ReceivePushTypeModel).filter_by(user_id=dto.user_id).update(
                 {"is_marketing": False}
             )
             session.commit()
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[UserRepository][update_marketing_receipt_push_types] user_id : {dto.user_id} error : {e}"
+                f"[UserRepository][update_marketing_receive_push_types] user_id : {dto.user_id} error : {e}"
             )
 
     def update_user_mobile_auth_info(self, dto: MobileAuthConfirmSmsDto) -> None:
@@ -126,16 +126,16 @@ class UserRepository:
 
     def create_app_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
-            receipt_marketing_date = (
-                get_server_timestamp() if dto.receipt_marketing_yn else None
+            receive_marketing_date = (
+                get_server_timestamp() if dto.receive_marketing_yn else None
             )
 
             user = AppAgreeTermsModel(
                 user_id=dto.user_id,
                 private_user_info_yn=dto.private_user_info_yn,
                 required_terms_yn=dto.required_terms_yn,
-                receipt_marketing_yn=dto.receipt_marketing_yn,
-                receipt_marketing_date=receipt_marketing_date,
+                receive_marketing_yn=dto.receive_marketing_yn,
+                receive_marketing_date=receive_marketing_date,
             )
             session.add(user)
             session.commit()

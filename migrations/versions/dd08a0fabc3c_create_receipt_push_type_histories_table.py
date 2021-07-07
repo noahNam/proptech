@@ -1,4 +1,4 @@
-"""create receipt_push_type_histories table
+"""create receive_push_type_histories table
 
 Revision ID: dd08a0fabc3c
 Revises: 5b9c5f3e68d4
@@ -16,7 +16,7 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table('receipt_push_type_histories',
+    op.create_table('receive_push_type_histories',
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), autoincrement=True,
                               nullable=False),
                     sa.Column('user_id', sa.BigInteger(), nullable=False),
@@ -28,4 +28,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table('receipt_push_type_histories')
+    op.drop_table('receive_push_type_histories')

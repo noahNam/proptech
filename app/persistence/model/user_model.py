@@ -29,8 +29,8 @@ class UserModel(db.Model):
     user_profiles = relationship(
         "UserProfileModel", backref=backref("users"), uselist=False
     )
-    receipt_push_types = relationship(
-        "ReceiptPushTypeModel", backref=backref("users"), uselist=False
+    receive_push_types = relationship(
+        "ReceivePushTypeModel", backref=backref("users"), uselist=False
     )
 
     def to_entity(self) -> UserEntity:

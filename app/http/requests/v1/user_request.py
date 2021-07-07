@@ -32,7 +32,7 @@ class CreateAppAgreeTermsSchema(BaseModel):
     user_id: StrictInt
     private_user_info_yn: bool
     required_terms_yn: bool
-    receipt_marketing_yn: bool
+    receive_marketing_yn: bool
 
 
 class UpsertUserInfoSchema(BaseModel):
@@ -102,12 +102,12 @@ class CreateUserRequestSchema:
 
 class CreateAppAgreeTermsRequestSchema:
     def __init__(
-            self, user_id, receipt_marketing_yn,
+            self, user_id, receive_marketing_yn,
     ):
         self.user_id = int(user_id) if user_id else None
         self.private_user_info_yn = True
         self.required_terms_yn = True
-        self.receipt_marketing_yn = receipt_marketing_yn
+        self.receive_marketing_yn = receive_marketing_yn
 
     def validate_request_and_make_dto(self):
         try:
@@ -115,7 +115,7 @@ class CreateAppAgreeTermsRequestSchema:
                 user_id=self.user_id,
                 private_user_info_yn=self.private_user_info_yn,
                 required_terms_yn=self.required_terms_yn,
-                receipt_marketing_yn=self.receipt_marketing_yn,
+                receive_marketing_yn=self.receive_marketing_yn,
             ).dict()
             return CreateAppAgreeTermsDto(**schema)
         except ValidationError as e:

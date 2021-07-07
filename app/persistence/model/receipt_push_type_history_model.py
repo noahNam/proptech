@@ -9,8 +9,8 @@ from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 
 
-class ReceiptPushTypeHistoryModel(db.Model):
-    __tablename__ = "receipt_push_type_histories"
+class ReceivePushTypeHistoryModel(db.Model):
+    __tablename__ = "receive_push_type_histories"
 
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"),

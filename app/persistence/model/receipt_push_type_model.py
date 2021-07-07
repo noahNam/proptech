@@ -11,8 +11,8 @@ from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.user_model import UserModel
 
 
-class ReceiptPushTypeModel(db.Model):
-    __tablename__ = "receipt_push_types"
+class ReceivePushTypeModel(db.Model):
+    __tablename__ = "receive_push_types"
 
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"),
