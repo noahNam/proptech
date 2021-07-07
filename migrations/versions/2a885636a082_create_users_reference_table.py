@@ -41,7 +41,7 @@ def upgrade():
                     sa.UniqueConstraint('user_id')
                     )
 
-    op.create_table('receipt_push_types',
+    op.create_table('receive_push_types',
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), autoincrement=True,
                               nullable=False),
                     sa.Column('user_id', sa.BigInteger(), nullable=False),
@@ -92,6 +92,6 @@ def downgrade():
     op.drop_table('user_infos')
     op.drop_table('device_tokens')
     op.drop_table('user_profiles')
-    op.drop_table('receipt_push_types')
+    op.drop_table('receive_push_types')
     op.drop_table('devices')
     op.drop_table('users')

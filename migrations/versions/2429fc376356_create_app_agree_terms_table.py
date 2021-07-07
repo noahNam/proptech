@@ -22,8 +22,8 @@ def upgrade():
                     sa.Column('user_id', sa.BigInteger(), nullable=False),
                     sa.Column('private_user_info_yn', sa.Boolean(), nullable=False),
                     sa.Column('required_terms_yn', sa.Boolean(), nullable=False),
-                    sa.Column('receipt_marketing_yn', sa.Boolean(), nullable=False),
-                    sa.Column('receipt_marketing_date', sa.DateTime(), nullable=True),
+                    sa.Column('receive_marketing_yn', sa.Boolean(), nullable=False),
+                    sa.Column('receive_marketing_date', sa.DateTime(), nullable=True),
                     sa.Column('created_at', sa.DateTime(), nullable=False),
                     sa.Column('updated_at', sa.DateTime(), nullable=False),
                     sa.PrimaryKeyConstraint('id')

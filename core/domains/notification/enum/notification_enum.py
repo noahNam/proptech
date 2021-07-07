@@ -19,6 +19,12 @@ class DeviceTypeEnum(Enum):
     EMAIL = "email"
 
 
+class NotificationPushTypeEnum(Enum):
+    OFFICIAL = "official"
+    PRIVATE = "private"
+    MARKETING = "marketing"
+
+
 class NotificationTopicEnum(Enum):
     OFFICIAL = "apt001"
     SUB_NEWS = "apt002"
