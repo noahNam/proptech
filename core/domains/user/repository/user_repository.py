@@ -11,7 +11,7 @@ from app.persistence.model import (
     DeviceTokenModel,
     AppAgreeTermsModel,
     UserProfileModel,
-    UserInfoModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel
+    UserInfoModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, ReceiptPushTypeModel
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
@@ -43,6 +43,7 @@ class UserRepository:
             user = UserModel(
                 id=dto.user_id,
                 is_required_agree_terms=dto.is_required_agree_terms,
+                join_date=get_server_timestamp().strftime("%y%m%d"),
                 is_active=dto.is_active,
                 is_out=dto.is_out,
             )
@@ -87,6 +88,30 @@ class UserRepository:
             session.rollback()
             raise NotUniqueErrorException(type_="T003")
 
+    def create_receipt_push_types(self, dto: CreateUserDto) -> None:
+        try:
+            receipt_push_types = ReceiptPushTypeModel(user_id=dto.user_id)
+            session.add(receipt_push_types)
+            session.commit()
+        except exc.IntegrityError as e:
+            logger.error(
+                f"[UserRepository][create_receipt_push_types] user_id : {dto.user_id} error : {e}"
+            )
+            session.rollback()
+            raise NotUniqueErrorException(type_="T004")
+
+    def update_marketing_receipt_push_types(self, dto: CreateAppAgreeTermsDto) -> None:
+        try:
+            session.query(ReceiptPushTypeModel).filter_by(user_id=dto.user_id).update(
+                {"is_marketing": False}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_marketing_receipt_push_types] user_id : {dto.user_id} error : {e}"
+            )
+
     def update_user_mobile_auth_info(self, dto: MobileAuthConfirmSmsDto) -> None:
         try:
             session.query(DeviceModel).filter_by(user_id=dto.user_id).update(
@@ -119,7 +144,7 @@ class UserRepository:
                 f"[UserRepository][create_app_agree_terms] user_id : {dto.user_id} error : {e}"
             )
             session.rollback()
-            raise NotUniqueErrorException(type_="T004")
+            raise NotUniqueErrorException(type_="T005")
 
     def update_user_required_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
@@ -132,7 +157,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_user_required_agree_terms] user_id : {dto.user_id} error : {e}"
             )
-            raise NotUniqueErrorException(type_="T005")
+            raise NotUniqueErrorException(type_="T006")
 
     def get_user_profile_id(self, dto: UpsertUserInfoDto) -> Optional[int]:
         user_profile = (
@@ -165,7 +190,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][create_user_profiles] user_id : {dto.user_id} error : {e}"
             )
-            raise NotUniqueErrorException(type_="T006")
+            raise NotUniqueErrorException(type_="T007")
 
     def update_user_nickname(self, dto: UpsertUserInfoDetailDto):
         try:
@@ -194,7 +219,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][create_user_info] user_id : {dto.user_id} error : {e}"
             )
-            raise NotUniqueErrorException(type_="T007")
+            raise NotUniqueErrorException(type_="T008")
 
     def update_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
         try:

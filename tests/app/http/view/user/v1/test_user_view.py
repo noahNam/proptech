@@ -11,7 +11,7 @@ from app.persistence.model import (
     UserModel,
     AppAgreeTermsModel,
     UserProfileModel,
-    UserInfoModel,
+    UserInfoModel, ReceiptPushTypeModel,
 )
 from core.domains.user.dto.user_dto import UpsertUserInfoDetailDto
 from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, CodeEnum, MonthlyIncomeEnum
@@ -174,10 +174,13 @@ def test_create_app_agree_terms_when_first_login_with_not_receipt_marketing_then
             headers=headers,
         )
 
+    receipt_push_types = session.query(ReceiptPushTypeModel).filter_by(user_id=user_id).first()
+
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert data["result"] == "success"
     assert isinstance(data["result"], str)
+    assert receipt_push_types.is_marketing is False
 
 
 def test_create_app_agree_terms_when_first_login_with_not_user_id_then_authorization_error(

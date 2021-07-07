@@ -4,6 +4,7 @@ from datetime import datetime
 import factory
 from faker import Factory as FakerFactory
 
+from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     DeviceModel,
     DeviceTokenModel,
@@ -73,6 +74,7 @@ class UserFactory(BaseFactory):
         model = UserModel
 
     is_required_agree_terms = True
+    join_date = get_server_timestamp().strftime("%y%m%d")
     is_active = True
     is_out = False
 
