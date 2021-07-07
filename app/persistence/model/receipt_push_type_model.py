@@ -3,8 +3,7 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     ForeignKey,
-    SmallInteger,
-    DateTime,
+    DateTime, Boolean,
 )
 
 from app import db
@@ -12,8 +11,8 @@ from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.user_model import UserModel
 
 
-class InterestRegionModel(db.Model):
-    __tablename__ = "interest_regions"
+class ReceiptPushTypeModel(db.Model):
+    __tablename__ = "receipt_push_types"
 
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"),
@@ -22,6 +21,7 @@ class InterestRegionModel(db.Model):
         autoincrement=True,
     )
     user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True)
-    region_id = Column(SmallInteger, nullable=True)
-    created_at = Column(DateTime, default=get_server_timestamp())
+    is_official = Column(Boolean, nullable=False, default=True)
+    is_private = Column(Boolean, nullable=False, default=True)
+    is_marketing = Column(Boolean, nullable=False, default=True)
     updated_at = Column(DateTime, default=get_server_timestamp())

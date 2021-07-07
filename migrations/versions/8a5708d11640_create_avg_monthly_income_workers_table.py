@@ -1,16 +1,16 @@
-"""create avg_monthly_income_workers table
+"""create avg_monthly_income_worker table
 
-Revision ID: 55c0b80a9d4c
-Revises: adb1abcd2216
-Create Date: 2021-07-01 23:22:51.569990
+Revision ID: 8a5708d11640
+Revises: 2429fc376356
+Create Date: 2021-07-07 19:42:41.489960
 
 """
 from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '55c0b80a9d4c'
-down_revision = 'adb1abcd2216'
+revision = '8a5708d11640'
+down_revision = '2429fc376356'
 branch_labels = None
 depends_on = None
 
