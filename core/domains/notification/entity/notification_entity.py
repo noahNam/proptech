@@ -26,3 +26,11 @@ class NotificationHistoryEntity(BaseModel):
     content: str
     data: dict
 
+
+class ReceivePushTypeEntity(BaseModel):
+    id: str
+    user_id: int
+    is_official: bool
+    is_private: bool
+    is_marketing: bool
+    updated_at: datetime

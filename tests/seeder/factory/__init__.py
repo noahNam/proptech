@@ -4,12 +4,12 @@ from datetime import datetime
 import factory
 from faker import Factory as FakerFactory
 
+from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
-    InterestRegionModel,
-    InterestRegionGroupModel,
     DeviceModel,
     DeviceTokenModel,
-    UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel
+    UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel,
+    ReceivePushTypeModel
 )
 from app.persistence.model.user_model import UserModel
 
@@ -24,13 +24,6 @@ faker = FakerFactory.create(locale="ko_KR")
 class BaseFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta(object):
         abstract = True
-
-
-class InterestRegionFactory(BaseFactory):
-    class Meta:
-        model = InterestRegionModel
-
-    region_id = factory.Sequence(lambda n: n + 1)
 
 
 class DeviceTokenFactory(BaseFactory):
@@ -62,6 +55,16 @@ class UserProfileFactory(BaseFactory):
     last_update_code = 1000
 
 
+class ReceivePushTypeFactory(BaseFactory):
+    class Meta:
+        model = ReceivePushTypeModel
+
+    is_official = True
+    is_private = True
+    is_marketing = True
+    updated_at = datetime.now().strptime("20210701", "%Y%m%d")
+
+
 class UserFactory(BaseFactory):
     """
     Define user factory
@@ -71,23 +74,14 @@ class UserFactory(BaseFactory):
         model = UserModel
 
     is_required_agree_terms = True
+    join_date = get_server_timestamp().strftime("%y%m%d")
     is_active = True
     is_out = False
 
-    # interest_regions = factory.List([factory.SubFactory(InterestRegionFactory)])
     # devices = factory.List([factory.SubFactory(DeviceFactory)])
-    interest_regions = factory.SubFactory(InterestRegionFactory)
     devices = factory.SubFactory(DeviceFactory)
     user_profiles = factory.SubFactory(UserProfileFactory)
-
-
-class InterestRegionGroupFactory(BaseFactory):
-    class Meta:
-        model = InterestRegionGroupModel
-
-    level = 2
-    name = faker.city()
-    interest_count = 0
+    receive_push_types = factory.SubFactory(ReceivePushTypeFactory)
 
 
 class AvgMonthlyIncomeWorkerFactory(BaseFactory):
@@ -127,7 +121,7 @@ class NotificationFactory(BaseFactory):
     is_read = False
     is_pending = False
     status = NotificationStatusEnum.WAIT.value
-    created_at = datetime.now().strptime("20210701", "%Y%m%d")
+    created_at = get_server_timestamp()
 
 
 class InterestHouseFactory(BaseFactory):

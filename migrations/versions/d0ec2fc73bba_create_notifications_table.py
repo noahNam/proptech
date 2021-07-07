@@ -1,8 +1,8 @@
 """create notifications table
 
-Revision ID: 345108bbb3a0
-Revises: a7e863bcd3be
-Create Date: 2021-07-01 23:24:54.062512
+Revision ID: d0ec2fc73bba
+Revises: dd08a0fabc3c
+Create Date: 2021-07-07 19:45:00.024474
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '345108bbb3a0'
-down_revision = 'a7e863bcd3be'
+revision = 'd0ec2fc73bba'
+down_revision = 'dd08a0fabc3c'
 branch_labels = None
 depends_on = None
 
