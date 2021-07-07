@@ -5,7 +5,8 @@ import inject
 
 from app.extensions.utils.message_converter import MessageConverter
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.notification.dto.notification_dto import GetNotificationDto, UpdateNotificationDto, GetBadgeDto
+from core.domains.notification.dto.notification_dto import GetNotificationDto, UpdateNotificationDto, GetBadgeDto, \
+    UpdateReceiveNotificationSettingDto
 from core.domains.notification.entity.notification_entity import NotificationEntity, NotificationHistoryEntity
 from core.domains.notification.enum.notification_enum import NotificationHistoryCategoryEnum, NotificationTopicEnum
 from core.domains.notification.repository.notification_repository import NotificationRepository
@@ -92,3 +93,28 @@ class GetBadgeUseCase(NotificationBaseUseCase):
         result: bool = self._notification_repo.get_badge(dto=dto)
         return UseCaseSuccessOutput(value=result)
 
+
+class GetReceiveNotificationSettingUseCase(NotificationBaseUseCase):
+    def execute(self, user_id: int) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not user_id:
+            return UseCaseFailureOutput(
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+            )
+
+        # todo. get receive notification settings
+
+        return UseCaseSuccessOutput()
+
+
+class UpdateReceiveNotificationSettingUseCase(NotificationBaseUseCase):
+    def execute(self, dto: UpdateReceiveNotificationSettingDto) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+            )
+
+        # todo. update receive notification settings
+
+        # todo. insert receive_push_type_histories
+
+        return UseCaseSuccessOutput()

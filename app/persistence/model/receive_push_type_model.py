@@ -9,6 +9,7 @@ from sqlalchemy import (
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.user_model import UserModel
+from core.domains.notification.entity.notification_entity import ReceivePushTypeEntity
 
 
 class ReceivePushTypeModel(db.Model):
@@ -25,3 +26,13 @@ class ReceivePushTypeModel(db.Model):
     is_private = Column(Boolean, nullable=False, default=True)
     is_marketing = Column(Boolean, nullable=False, default=True)
     updated_at = Column(DateTime, default=get_server_timestamp())
+
+    def to_entity(self) -> ReceivePushTypeEntity:
+        return ReceivePushTypeEntity(
+            id=self.id,
+            user_id=self.user_id,
+            is_official=self.is_official,
+            is_private=self.is_private,
+            is_marketing=self.is_marketing,
+            updated_at=self.updated_at,
+        )
