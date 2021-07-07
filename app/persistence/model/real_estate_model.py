@@ -10,6 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, backref
 
 from app import db
+from app.extensions.utils.geometry_helper import input_coordinates_from_lat_lon, make_geometry_point_of_pydantic
 from core.domains.house.entity.house_entity import RealEstateEntity
 
 
@@ -36,7 +37,7 @@ class RealEstateModel(db.Model):
     coordinates = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
 
     private_sales = relationship("PrivateSaleModel", backref=backref("real_estates", cascade="all, delete"))
-    public_sales = relationship("PublicSaleModel", backref=backref("real_estates",  cascade="all, delete"))
+    public_sales = relationship("PublicSaleModel", backref=backref("real_estates", cascade="all, delete"))
 
     def __repr__(self):
         return (
@@ -55,7 +56,7 @@ class RealEstateModel(db.Model):
             f"{self.coordinates})"
         )
 
-    def to_entity(self) -> RealEstateEntity:
+    def to_entity(self, lat, lon) -> RealEstateEntity:
         return RealEstateEntity(
             id=self.id,
             name=self.name,
@@ -69,5 +70,5 @@ class RealEstateModel(db.Model):
             road_number=self.road_number,
             land_number=self.land_number,
             is_available=self.is_available,
-            coordinates=self.coordinates
+            coordinates=make_geometry_point_of_pydantic(lat=lat, lon=lon)
         )

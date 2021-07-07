@@ -5,7 +5,7 @@ from geojson_pydantic import Point
 from pydantic import BaseModel
 
 from core.domains.house.entity.house_entity import PublicSaleDetailEntity, PublicSalePhotoEntity, \
-    PrivateSaleEntity
+    PrivateSaleEntity, RealEstateEntity
 
 
 class CoordinatesRangeDto(BaseModel):
@@ -52,24 +52,30 @@ class PublicSaleDto(BaseModel):
     created_at: datetime
     updated_at: datetime
     public_sale_details: List[PublicSaleDetailEntity] = None
-    public_sale_photos: PublicSalePhotoEntity = None
+    public_sale_photos: PublicSalePhotoEntity = set()
 
 
-class BoundingRealEstateDto(BaseModel):
-    id: int
-    name: str
-    road_address: str
-    jibun_address: str
-    si_do: str
-    si_gun_gu: str
-    dong_myun: str
-    ri: str
-    road_name: str
-    road_number: str
-    land_number: str
-    is_available: bool
-    coordinates: Point
+class BoundingPrivateSalesDto(BaseModel):
+    real_estates: RealEstateEntity = set()
+    latitude: float = set()
+    longitude: float = set()
+    private_sales: List[PrivateSaleEntity] = None
+
+
+class BoundingPublicSalesDto(BaseModel):
+    real_estates: RealEstateEntity = set()
+    latitude: float = set()
+    longitude: float = set()
+    public_sales: List[PublicSaleDto] = set()
+
+
+class BoundingDataDto(BaseModel):
+    real_estates: RealEstateEntity = None
     latitude: float
     longitude: float
-    private_sales: List[PrivateSaleEntity] = None
-    public_sales: List[PublicSaleDto] = None
+    # private_sales: Optional[List[PrivateSaleEntity]] = None
+    # public_sales: Optional[List[PublicSaleDto]] = set()
+
+
+class BoundingOuterDto(BaseModel):
+    data: List[BoundingDataDto]

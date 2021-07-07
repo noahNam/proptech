@@ -38,3 +38,15 @@ class PreSaleTypeEnum(Enum):
     """
     PRE_SALE = "분양"
     PRE_SUBSCRIPTION = "사전청약"
+
+
+class DivisionLevelEnum(Enum):
+    """
+        사용 모델 : 행정구역 테이블
+        Level_1 : 광역시, 특별시, 도
+        Level_2 : 시, 군, 구
+        Level_3 : 읍, 면, 동, 리
+    """
+    LEVEL_1 = "1"
+    LEVEL_2 = "2"
+    LEVEL_3 = "3"

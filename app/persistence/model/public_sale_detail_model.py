@@ -20,10 +20,10 @@ class PublicSaleDetailModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    pre_sales_id = Column(BigInteger,
-                          ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
-                          nullable=False,
-                          unique=True)
+    public_sales_id = Column(BigInteger,
+                             ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
+                             nullable=False,
+                             unique=True)
 
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
@@ -32,7 +32,7 @@ class PublicSaleDetailModel(db.Model):
     def __repr__(self):
         return (
             f"PublicSaleDetail({self.id}, "
-            f"{self.pre_sales_id}, "
+            f"{self.public_sales_id}, "
             f"{self.private_area}, "
             f"{self.supply_area}, "
             f"{self.supply_price}) "
@@ -41,7 +41,7 @@ class PublicSaleDetailModel(db.Model):
     def to_entity(self) -> PublicSaleDetailEntity:
         return PublicSaleDetailEntity(
             id=self.id,
-            pre_sales_id=self.pre_sales_id,
+            public_sales_id=self.public_sales_id,
             private_area=self.private_area,
             supply_area=self.supply_area,
             supply_price=self.supply_price,

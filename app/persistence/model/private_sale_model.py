@@ -67,7 +67,7 @@ class PrivateSaleModel(db.Model):
         return PrivateSaleEntity(
             id=self.id,
             real_estate_id=self.real_estate_id,
-            area=self.area,
+            private_area=self.private_area,
             supply_area=self.supply_area,
             contract_date=self.contract_date,
             deposit_price=self.deposit_price,
