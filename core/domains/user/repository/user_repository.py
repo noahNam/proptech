@@ -7,13 +7,11 @@ from app.extensions.utils.log_helper import logger_
 from app.extensions.database import session
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
-    InterestRegionModel,
-    InterestRegionGroupModel,
     DeviceModel,
     DeviceTokenModel,
     AppAgreeTermsModel,
     UserProfileModel,
-    UserInfoModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel
+    UserInfoModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, ReceivePushTypeModel
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
@@ -45,6 +43,7 @@ class UserRepository:
             user = UserModel(
                 id=dto.user_id,
                 is_required_agree_terms=dto.is_required_agree_terms,
+                join_date=get_server_timestamp().strftime("%y%m%d"),
                 is_active=dto.is_active,
                 is_out=dto.is_out,
             )
@@ -56,47 +55,6 @@ class UserRepository:
             )
             session.rollback()
             raise NotUniqueErrorException(type_="T001")
-
-    def create_interest_regions(self, dto: CreateUserDto) -> None:
-        try:
-            interest_regions: List[
-                InterestRegionModel
-            ] = self._create_interest_region_objects(dto)
-            if interest_regions:
-                session.add_all(interest_regions)
-                session.commit()
-        except Exception as e:
-            session.rollback()
-            logger.error(
-                f"[UserRepository][create_interest_regions] user_id : {dto.user_id} error : {e}"
-            )
-
-    def update_interest_region_group_counts(self, dto: CreateUserDto) -> None:
-        try:
-            interest_regions: List[
-                InterestRegionModel
-            ] = self._create_interest_region_objects(dto)
-            for interest_region in interest_regions:
-                session.query(InterestRegionGroupModel).filter_by(
-                    id=interest_region.region_id
-                ).update(
-                    {"interest_count": InterestRegionGroupModel.interest_count + 1}
-                )
-                session.commit()
-
-        except Exception as e:
-            session.rollback()
-            logger.error(
-                f"[UserRepository][update_interest_region_group_counts] user_id : {dto.user_id} error : {e}"
-            )
-
-    def _create_interest_region_objects(
-            self, dto: CreateUserDto
-    ) -> List[InterestRegionModel]:
-        return [
-            InterestRegionModel(user_id=dto.user_id, region_id=region_id)
-            for region_id in dto.region_ids
-        ]
 
     def create_device(self, dto: CreateUserDto) -> Optional[int]:
         try:
@@ -130,6 +88,30 @@ class UserRepository:
             session.rollback()
             raise NotUniqueErrorException(type_="T003")
 
+    def create_receive_push_types(self, dto: CreateUserDto) -> None:
+        try:
+            receive_push_types = ReceivePushTypeModel(user_id=dto.user_id)
+            session.add(receive_push_types)
+            session.commit()
+        except exc.IntegrityError as e:
+            logger.error(
+                f"[UserRepository][create_receive_push_types] user_id : {dto.user_id} error : {e}"
+            )
+            session.rollback()
+            raise NotUniqueErrorException(type_="T004")
+
+    def update_marketing_receive_push_types(self, dto: CreateAppAgreeTermsDto) -> None:
+        try:
+            session.query(ReceivePushTypeModel).filter_by(user_id=dto.user_id).update(
+                {"is_marketing": False}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_marketing_receive_push_types] user_id : {dto.user_id} error : {e}"
+            )
+
     def update_user_mobile_auth_info(self, dto: MobileAuthConfirmSmsDto) -> None:
         try:
             session.query(DeviceModel).filter_by(user_id=dto.user_id).update(
@@ -144,16 +126,16 @@ class UserRepository:
 
     def create_app_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
-            receipt_marketing_date = (
-                get_server_timestamp() if dto.receipt_marketing_yn else None
+            receive_marketing_date = (
+                get_server_timestamp() if dto.receive_marketing_yn else None
             )
 
             user = AppAgreeTermsModel(
                 user_id=dto.user_id,
                 private_user_info_yn=dto.private_user_info_yn,
                 required_terms_yn=dto.required_terms_yn,
-                receipt_marketing_yn=dto.receipt_marketing_yn,
-                receipt_marketing_date=receipt_marketing_date,
+                receive_marketing_yn=dto.receive_marketing_yn,
+                receive_marketing_date=receive_marketing_date,
             )
             session.add(user)
             session.commit()
@@ -162,7 +144,7 @@ class UserRepository:
                 f"[UserRepository][create_app_agree_terms] user_id : {dto.user_id} error : {e}"
             )
             session.rollback()
-            raise NotUniqueErrorException(type_="T004")
+            raise NotUniqueErrorException(type_="T005")
 
     def update_user_required_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
@@ -175,7 +157,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_user_required_agree_terms] user_id : {dto.user_id} error : {e}"
             )
-            raise NotUniqueErrorException(type_="T005")
+            raise NotUniqueErrorException(type_="T006")
 
     def get_user_profile_id(self, dto: UpsertUserInfoDto) -> Optional[int]:
         user_profile = (
@@ -208,7 +190,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][create_user_profiles] user_id : {dto.user_id} error : {e}"
             )
-            raise NotUniqueErrorException(type_="T006")
+            raise NotUniqueErrorException(type_="T007")
 
     def update_user_nickname(self, dto: UpsertUserInfoDetailDto):
         try:
@@ -237,7 +219,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][create_user_info] user_id : {dto.user_id} error : {e}"
             )
-            raise NotUniqueErrorException(type_="T007")
+            raise NotUniqueErrorException(type_="T008")
 
     def update_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
         try:
@@ -336,7 +318,8 @@ class UserRepository:
         result = session.query(SidoCodeModel).all()
         return self._make_sido_codes_object(result, dto)
 
-    def _make_sido_codes_object(self, result: List[SidoCodeModel], dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
+    def _make_sido_codes_object(self, result: List[SidoCodeModel],
+                                dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
         code_list = []
         name_list = []
 

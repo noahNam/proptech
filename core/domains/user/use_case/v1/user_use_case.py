@@ -110,6 +110,8 @@ class CreateUserUseCase(UserBaseUseCase):
         device_id = self._user_repo.create_device(dto=dto)
         self._user_repo.create_device_token(dto=dto, device_id=device_id)
 
+        self._user_repo.create_receive_push_types(dto=dto)
+
         # 프로필 이미지 등록은 사용 X -> 다만 추후 사용 가능성 있기 때문에 주석으로 남겨둠
         # if dto.file:
         #     create_user_profile_img_dto = self._get_file_split_object(dto=dto)
@@ -141,6 +143,9 @@ class CreateAppAgreeTermsUseCase(UserBaseUseCase):
 
         self._user_repo.create_app_agree_terms(dto=dto)
         self._user_repo.update_user_required_agree_terms(dto=dto)
+
+        if not dto.receive_marketing_yn:
+            self._user_repo.update_marketing_receive_push_types(dto=dto)
 
         return UseCaseSuccessOutput()
 

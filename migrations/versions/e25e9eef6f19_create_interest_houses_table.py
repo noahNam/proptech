@@ -1,16 +1,16 @@
 """create interest_houses table
 
-Revision ID: 968005edf931
-Revises: 345108bbb3a0
-Create Date: 2021-07-06 13:14:08.874065
+Revision ID: e25e9eef6f19
+Revises: d0ec2fc73bba
+Create Date: 2021-07-07 20:00:10.303138
 
 """
 from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '968005edf931'
-down_revision = '345108bbb3a0'
+revision = 'e25e9eef6f19'
+down_revision = 'd0ec2fc73bba'
 branch_labels = None
 depends_on = None
 

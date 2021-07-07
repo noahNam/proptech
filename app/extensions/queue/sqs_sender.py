@@ -91,7 +91,7 @@ class SqsMessageSender:
                 return False
 
             entries = [
-                {'Id': msg['MessageId'], 'ReceiptHandle': msg['ReceiptHandle']}
+                {'Id': msg['MessageId'], 'ReceiveHandle': msg['ReceiveHandle']}
                 for msg in resp['Messages']
             ]
 

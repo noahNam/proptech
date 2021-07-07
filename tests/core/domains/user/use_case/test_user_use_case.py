@@ -56,8 +56,13 @@ def test_create_user_use_case_when_first_login_then_success(session, create_user
 
     result = CreateUserUseCase().execute(dto=dto)
 
+    user = session.query(UserModel).filter_by(id=dto.user_id).first()
+
     assert result.type == "success"
     assert isinstance(result, UseCaseSuccessOutput)
+    assert user.receive_push_types.is_official is True
+    assert user.receive_push_types.is_private is True
+    assert user.receive_push_types.is_marketing is True
 
 
 def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_error(
@@ -81,7 +86,7 @@ def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_e
         CreateUserUseCase().execute(dto=dto)
 
 
-def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_success(
+def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_success(
         session, create_users, interest_region_group_factory
 ):
     user = create_users[0]
@@ -103,7 +108,7 @@ def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_s
         CreateUserUseCase().execute(dto=dto)
 
 
-def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_success(
+def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_success(
         session,
 ):
     create_user_dto = CreateUserDto(
@@ -122,7 +127,7 @@ def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_s
         user_id=1,
         private_user_info_yn=True,
         required_terms_yn=True,
-        receipt_marketing_yn=True,
+        receive_marketing_yn=True,
     )
 
     UserRepository().create_user(dto=create_user_dto)
@@ -144,8 +149,8 @@ def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_s
     assert (
             app_agree_term.required_terms_yn == create_app_agree_term_dto.required_terms_yn
     )
-    assert app_agree_term.receipt_marketing_yn is True
-    assert app_agree_term.receipt_marketing_date is not None
+    assert app_agree_term.receive_marketing_yn is True
+    assert app_agree_term.receive_marketing_date is not None
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
