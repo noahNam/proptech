@@ -46,7 +46,6 @@ def test_get_user_view_then_success(
 def test_get_user_view_then_user_is_not_found(
         client, session, test_request_context, make_header, make_authorization
 ):
-    user_id = 1
     authorization = make_authorization(user_id=1)
     headers = make_header(
         authorization=authorization,
