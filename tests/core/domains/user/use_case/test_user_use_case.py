@@ -56,8 +56,13 @@ def test_create_user_use_case_when_first_login_then_success(session, create_user
 
     result = CreateUserUseCase().execute(dto=dto)
 
+    user = session.query(UserModel).filter_by(id=dto.user_id).first()
+
     assert result.type == "success"
     assert isinstance(result, UseCaseSuccessOutput)
+    assert user.receipt_push_types.is_official is True
+    assert user.receipt_push_types.is_private is True
+    assert user.receipt_push_types.is_marketing is True
 
 
 def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_error(
