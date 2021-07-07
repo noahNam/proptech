@@ -1,8 +1,8 @@
 """create_map_tables
 
-Revision ID: 3f73cfa2a08e
+Revision ID: b8eb70082c9f
 Revises: 407554a1fdaf
-Create Date: 2021-07-06 17:13:10.326029
+Create Date: 2021-07-06 18:49:13.569164
 
 """
 import geoalchemy2
@@ -10,7 +10,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '3f73cfa2a08e'
+revision = 'b8eb70082c9f'
 down_revision = '407554a1fdaf'
 branch_labels = None
 depends_on = None
@@ -26,6 +26,7 @@ def upgrade():
                     sa.Column('real_rent_price', sa.Integer(), nullable=False),
                     sa.Column('real_deposit_price', sa.Integer(), nullable=False),
                     sa.Column('public_sale_price', sa.Integer(), nullable=False),
+                    sa.Column('level', sa.Enum('1', '2', '3', name='divisionlevelenum'), nullable=False),
                     sa.Column('coordinates',
                               geoalchemy2.types.Geometry(geometry_type='POINT', srid=4326, from_text='ST_GeomFromEWKT',
                                                          name='geometry'), nullable=True),
@@ -109,26 +110,26 @@ def upgrade():
     op.create_table('public_sale_details',
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), autoincrement=True,
                               nullable=False),
-                    sa.Column('pre_sales_id', sa.BigInteger(), nullable=False),
+                    sa.Column('public_sales_id', sa.BigInteger(), nullable=False),
                     sa.Column('private_area', sa.Float(), nullable=False),
                     sa.Column('supply_area', sa.Float(), nullable=False),
                     sa.Column('supply_price', sa.Integer(), nullable=False),
-                    sa.ForeignKeyConstraint(['pre_sales_id'], ['public_sales.id'], ondelete='CASCADE'),
+                    sa.ForeignKeyConstraint(['public_sales_id'], ['public_sales.id'], ondelete='CASCADE'),
                     sa.PrimaryKeyConstraint('id'),
-                    sa.UniqueConstraint('pre_sales_id')
+                    sa.UniqueConstraint('public_sales_id')
                     )
     op.create_table('public_sale_photos',
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), autoincrement=True,
                               nullable=False),
-                    sa.Column('pre_sales_id', sa.BigInteger(), nullable=False),
+                    sa.Column('public_sales_id', sa.BigInteger(), nullable=False),
                     sa.Column('file_name', sa.String(length=20), nullable=False),
                     sa.Column('path', sa.String(length=100), nullable=False),
                     sa.Column('extension', sa.String(length=4), nullable=False),
                     sa.Column('created_at', sa.DateTime(), nullable=False),
                     sa.Column('updated_at', sa.DateTime(), nullable=False),
-                    sa.ForeignKeyConstraint(['pre_sales_id'], ['public_sales.id'], ondelete='CASCADE'),
+                    sa.ForeignKeyConstraint(['public_sales_id'], ['public_sales.id'], ondelete='CASCADE'),
                     sa.PrimaryKeyConstraint('id'),
-                    sa.UniqueConstraint('pre_sales_id')
+                    sa.UniqueConstraint('public_sales_id')
                     )
     # op.drop_table('spatial_ref_sys')
     # ### end Alembic commands ###

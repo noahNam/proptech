@@ -65,7 +65,7 @@ class PublicSaleModel(db.Model):
     public_sale_photos = relationship("PublicSalePhotoModel",
                                       backref=backref("public_sales"),
                                       uselist=False)
-    public_sale_details = relationship("PuvlicSaleDetailModel",
+    public_sale_details = relationship("PublicSaleDetailModel",
                                        backref=backref("public_sales",
                                                        cascade="all, delete"))
 

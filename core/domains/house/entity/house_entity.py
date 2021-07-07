@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from enum import Enum
 
 from geojson_pydantic import Point
 from pydantic import BaseModel
@@ -17,21 +18,23 @@ class RealEstateEntity(BaseModel):
     road_number: str
     land_number: str
     is_available: bool
-    coordinates: Point
+    # coordinates: Point
+    latitude: float
+    longitude: float
 
 
 class PrivateSaleEntity(BaseModel):
     id: int
     real_estate_id: int
-    area: float
+    private_area: float
     supply_area: float
     contract_date: date
     deposit_price: int
     rent_price: int
     trade_price: int
     floor: int
-    trade_type: str
-    building_type: str
+    trade_type: Enum
+    building_type: Enum
     is_available: bool
     created_at: datetime
     updated_at: datetime
@@ -42,9 +45,9 @@ class PublicSaleEntity(BaseModel):
     real_estate_id: int
     name: str
     region: str
-    housing_category: str
-    rent_type: str
-    trade_type: str
+    housing_category: Enum
+    rent_type: Enum
+    trade_type: Enum
     construct_company: str
     supply_household: int
     is_available: bool
@@ -95,6 +98,7 @@ class AdministrativeDivisionEntity(BaseModel):
     real_rent_price: int
     real_deposit_price: int
     public_sale_price: int
+    level: Enum
     coordinates: Point
     created_at: datetime
     updated_at: datetime

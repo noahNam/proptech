@@ -5,11 +5,13 @@ from sqlalchemy import (
     Integer,
     String,
     DateTime,
+    Enum,
 )
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.house.entity.house_entity import AdministrativeDivisionEntity
+from core.domains.house.enum.house_enum import DivisionLevelEnum
 
 
 class AdministrativeDivisionModel(db.Model):
@@ -27,6 +29,8 @@ class AdministrativeDivisionModel(db.Model):
     real_rent_price = Column(Integer, nullable=False)
     real_deposit_price = Column(Integer, nullable=False)
     public_sale_price = Column(Integer, nullable=False)
+    level = Column(Enum(DivisionLevelEnum, values_callable=lambda obj: [e.value for e in obj]),
+                   nullable=False)
     coordinates = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
@@ -39,6 +43,7 @@ class AdministrativeDivisionModel(db.Model):
             f"{self.real_rent_price}, "
             f"{self.real_deposit_price}, "
             f"{self.public_sale_price}, "
+            f"{self.level}, "
             f"{self.coordinates}, "
             f"{self.created_at}, "
             f"{self.updated_at}) "
@@ -52,6 +57,7 @@ class AdministrativeDivisionModel(db.Model):
             real_rent_price=self.real_rent_price,
             real_deposit_price=self.real_deposit_price,
             public_sale_price=self.public_sale_price,
+            level=self.level,
             coordinates=self.coordinates,
             created_at=self.created_at,
             updated_at=self.updated_at

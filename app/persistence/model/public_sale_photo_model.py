@@ -22,10 +22,10 @@ class PublicSalePhotoModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    pre_sales_id = Column(BigInteger,
-                          ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
-                          nullable=False,
-                          unique=True)
+    public_sales_id = Column(BigInteger,
+                             ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
+                             nullable=False,
+                             unique=True)
 
     file_name = Column(String(20), nullable=False)
     path = Column(String(100), nullable=False)
@@ -35,8 +35,8 @@ class PublicSalePhotoModel(db.Model):
 
     def __repr__(self):
         return (
-            f"PublicSalePhoto({self.id}', "
-            f"{self.pre_sales_id}, "
+            f"PublicSalePhoto({self.id}, "
+            f"{self.public_sales_id}, "
             f"{self.file_name}, "
             f"{self.path}, "
             f"{self.extension}, "
@@ -47,7 +47,7 @@ class PublicSalePhotoModel(db.Model):
     def to_entity(self) -> PublicSalePhotoEntity:
         return PublicSalePhotoEntity(
             id=self.id,
-            pre_sales_id=self.pre_sales_id,
+            public_sales_id=self.public_sales_id,
             private_area=self.private_area,
             supply_area=self.supply_area,
             supply_price=self.supply_price,
