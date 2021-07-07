@@ -1,13 +1,15 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, time
 
 import factory
 from faker import Factory as FakerFactory
 
+from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     DeviceModel,
     DeviceTokenModel,
-    UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel
+    UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel,
+    ReceiptPushTypeModel
 )
 from app.persistence.model.user_model import UserModel
 
@@ -53,6 +55,18 @@ class UserProfileFactory(BaseFactory):
     last_update_code = 1000
 
 
+class ReceiptPushTypeFactory(BaseFactory):
+    class Meta:
+        model = ReceiptPushTypeModel
+
+    is_official = True
+    is_private = True
+    is_marketing = True
+
+    string = "20/01/2020"
+    updated_at = time.mktime(datetime.datetime.strptime(string, "%Y/%m/%d").timetuple())
+
+
 class UserFactory(BaseFactory):
     """
     Define user factory
@@ -68,6 +82,7 @@ class UserFactory(BaseFactory):
     # devices = factory.List([factory.SubFactory(DeviceFactory)])
     devices = factory.SubFactory(DeviceFactory)
     user_profiles = factory.SubFactory(UserProfileFactory)
+    receipt_push_types = factory.SubFactory(ReceiptPushTypeFactory)
 
 
 class AvgMonthlyIncomeWorkerFactory(BaseFactory):
