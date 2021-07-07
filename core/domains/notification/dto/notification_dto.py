@@ -23,3 +23,9 @@ class UpdateNotificationDto(BaseModel):
 class GetBadgeDto(BaseModel):
     user_id: int
     badge_type: str = None
+
+
+class UpdateReceiveNotificationSettingDto(BaseModel):
+    user_id: int
+    push_type: str
+    is_active: bool

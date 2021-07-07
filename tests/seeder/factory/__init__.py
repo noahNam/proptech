@@ -121,7 +121,7 @@ class NotificationFactory(BaseFactory):
     is_read = False
     is_pending = False
     status = NotificationStatusEnum.WAIT.value
-    created_at = datetime.now().strptime("20210701", "%Y%m%d")
+    created_at = get_server_timestamp()
 
 
 class InterestHouseFactory(BaseFactory):
