@@ -3,6 +3,7 @@ import uuid
 from http import HTTPStatus
 from unittest.mock import patch
 
+import pytest
 from flask import url_for
 
 from app.persistence.model import (
@@ -738,3 +739,26 @@ def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_
     assert data["result"][0]['user_value'] == dict_.get("values")[0]
     assert data["result"][1]['user_value'] == dict_.get("values")[1]
     assert data["result"][2]['user_value'] == dict_.get("values")[2]
+
+
+@pytest.mark.skip(reason="local에서 환경변수 미설정 시 에러나므로 skip")
+def test_get_user_provider_view_when_call_captian_api_then_success(
+        client, session, test_request_context, make_header, make_authorization
+):
+    user_id = 1
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_user_provider_view"),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data['provider'] in ["kakao", "google"]
