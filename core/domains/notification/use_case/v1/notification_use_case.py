@@ -102,9 +102,15 @@ class GetReceiveNotificationSettingUseCase(NotificationBaseUseCase):
                 type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
-        receive_push_types: ReceivePushTypeEntity = self._notification_repo.get_receive_notification_settings(user_id=user_id)
+        receive_push_types: ReceivePushTypeEntity = self._notification_repo.get_receive_notification_settings(
+            user_id=user_id)
+        result_dict = self._make_response_object(receive_push_types=receive_push_types)
 
-        return UseCaseSuccessOutput(value=receive_push_types)
+        return UseCaseSuccessOutput(value=result_dict)
+
+    def _make_response_object(self, receive_push_types: ReceivePushTypeEntity) -> dict:
+        return dict(official=receive_push_types.is_official, private=receive_push_types.is_private,
+                    marketing=receive_push_types.is_marketing)
 
 
 class UpdateReceiveNotificationSettingUseCase(NotificationBaseUseCase):
