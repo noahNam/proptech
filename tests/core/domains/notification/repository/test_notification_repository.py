@@ -50,45 +50,45 @@ def test_get_notification_repo_when_my_category_history_then_none(create_users, 
     assert notifications == []
 
 
-# def test_get_receive_notification_settings_then_success(create_users):
-#     result = NotificationRepository().get_receive_notification_settings(user_id=create_users[0].id)
-#
-#     assert isinstance(result, ReceivePushTypeEntity)
-#     assert result.is_official is True
-#     assert result.is_private is True
-#     assert result.is_marketing is True
-#
-#
-# def test_update_receive_notification_settings_then_success(create_users):
-#     dto = UpdateReceiveNotificationSettingDto(
-#         user_id=create_users[0].id,
-#         push_type="official",
-#         is_active=False
-#     )
-#     NotificationRepository().update_receive_notification_setting(dto=dto)
-#     result = NotificationRepository().get_receive_notification_settings(user_id=dto.user_id)
-#
-#     assert isinstance(result, ReceivePushTypeEntity)
-#     assert result.is_official is False
-#
-#
-# def test_create_receive_notification_history_when_change_push_status_then_success(session, create_users):
-#     dto = UpdateReceiveNotificationSettingDto(
-#         user_id=create_users[0].id,
-#         push_type="official",
-#         is_active=False
-#     )
-#     NotificationRepository().create_receive_push_type_history(dto=dto)
-#     result = session.query(ReceivePushTypeHistoryModel).filter_by(user_id=dto.user_id).all()
-#
-#     assert len(result) == 1
-#     assert result[0].push_type == dto.push_type
-#     assert result[0].is_active is False
-#
-#     dto.is_active = True
-#     NotificationRepository().create_receive_push_type_history(dto=dto)
-#     result = session.query(ReceivePushTypeHistoryModel).filter_by(user_id=dto.user_id).all()
-#
-#     assert len(result) == 2
-#     assert result[1].push_type == dto.push_type
-#     assert result[1].is_active is True
+def test_get_receive_notification_settings_then_success(create_users):
+    result = NotificationRepository().get_receive_notification_settings(user_id=create_users[0].id)
+
+    assert isinstance(result, ReceivePushTypeEntity)
+    assert result.is_official is True
+    assert result.is_private is True
+    assert result.is_marketing is True
+
+
+def test_update_receive_notification_settings_then_success(create_users):
+    dto = UpdateReceiveNotificationSettingDto(
+        user_id=create_users[0].id,
+        push_type="official",
+        is_active=False
+    )
+    NotificationRepository().update_receive_notification_setting(dto=dto)
+    result = NotificationRepository().get_receive_notification_settings(user_id=dto.user_id)
+
+    assert isinstance(result, ReceivePushTypeEntity)
+    assert result.is_official is False
+
+
+def test_create_receive_notification_history_when_change_push_status_then_success(session, create_users):
+    dto = UpdateReceiveNotificationSettingDto(
+        user_id=create_users[0].id,
+        push_type="official",
+        is_active=False
+    )
+    NotificationRepository().create_receive_push_type_history(dto=dto)
+    result = session.query(ReceivePushTypeHistoryModel).filter_by(user_id=dto.user_id).all()
+
+    assert len(result) == 1
+    assert result[0].push_type == dto.push_type
+    assert result[0].is_active is False
+
+    dto.is_active = True
+    NotificationRepository().create_receive_push_type_history(dto=dto)
+    result = session.query(ReceivePushTypeHistoryModel).filter_by(user_id=dto.user_id).all()
+
+    assert len(result) == 2
+    assert result[1].push_type == dto.push_type
+    assert result[1].is_active is True

@@ -7,7 +7,8 @@ from app.extensions.utils.message_converter import MessageConverter
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.notification.dto.notification_dto import GetNotificationDto, UpdateNotificationDto, GetBadgeDto, \
     UpdateReceiveNotificationSettingDto
-from core.domains.notification.entity.notification_entity import NotificationEntity, NotificationHistoryEntity
+from core.domains.notification.entity.notification_entity import NotificationEntity, NotificationHistoryEntity, \
+    ReceivePushTypeEntity
 from core.domains.notification.enum.notification_enum import NotificationHistoryCategoryEnum, NotificationTopicEnum
 from core.domains.notification.repository.notification_repository import NotificationRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -101,9 +102,9 @@ class GetReceiveNotificationSettingUseCase(NotificationBaseUseCase):
                 type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
-        # todo. get receive notification settings
+        receive_push_types: ReceivePushTypeEntity = self._notification_repo.get_receive_notification_settings(user_id=user_id)
 
-        return UseCaseSuccessOutput()
+        return UseCaseSuccessOutput(value=receive_push_types)
 
 
 class UpdateReceiveNotificationSettingUseCase(NotificationBaseUseCase):
@@ -113,8 +114,7 @@ class UpdateReceiveNotificationSettingUseCase(NotificationBaseUseCase):
                 type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
-        # todo. update receive notification settings
-
-        # todo. insert receive_push_type_histories
+        self._notification_repo.update_receive_notification_setting(dto=dto)
+        self._notification_repo.create_receive_push_type_history(dto=dto)
 
         return UseCaseSuccessOutput()
