@@ -50,7 +50,7 @@ def update_notification_view(notification_id):
 @api.route("/v1/notifications/receive", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_badge.yml", methods=["GET"])
+@swag_from("get_receive_notification_settings.yml", methods=["GET"])
 def get_receive_notification_settings_view():
     GetReceiveNotificationSettingRequestSchema(
         user_id=current_user.id,
@@ -63,7 +63,7 @@ def get_receive_notification_settings_view():
 @api.route("/v1/notifications/receive", methods=["PATCH"])
 @jwt_required
 @auth_required
-@swag_from("update_notification.yml", methods=["PATCH"])
+@swag_from("update_receive_notification_setting.yml", methods=["PATCH"])
 def update_receive_notification_setting_view():
     dto = UpdateReceiveNotificationSettingRequestSchema(
         **request.get_json(), user_id=current_user.id,
