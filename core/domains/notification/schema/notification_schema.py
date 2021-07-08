@@ -11,3 +11,11 @@ class GetBadgeResponseSchema(BaseModel):
 
 class UpdateNotificationResponseSchema(BaseModel):
     result: StrictStr
+
+
+class GetReceiveNotificationSettingResponseSchema(BaseModel):
+    receive_push_types: dict
+
+
+class UpdateReceiveNotificationSettingResponseSchema(BaseModel):
+    result: StrictStr
