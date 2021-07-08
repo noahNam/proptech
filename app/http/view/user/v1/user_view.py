@@ -91,7 +91,7 @@ def get_user_info_view():
 @api.route("/v1/users/provider", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_user_info.yml", methods=["GET"])
+@swag_from("get_user_provider.yml", methods=["GET"])
 def get_user_provider_view():
     auth_header = request.headers.get("Authorization")
 
