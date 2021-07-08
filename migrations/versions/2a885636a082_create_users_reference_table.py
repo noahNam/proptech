@@ -19,6 +19,7 @@ def upgrade():
     op.create_table('users',
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), nullable=False),
                     sa.Column('is_required_agree_terms', sa.Boolean(), nullable=False),
+                    sa.Column('join_date', sa.String(length=8), nullable=False),
                     sa.Column('is_active', sa.Boolean(), nullable=False),
                     sa.Column('is_out', sa.Boolean(), nullable=False),
                     sa.Column('created_at', sa.DateTime(), nullable=True),

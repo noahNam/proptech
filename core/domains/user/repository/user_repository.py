@@ -43,7 +43,7 @@ class UserRepository:
             user = UserModel(
                 id=dto.user_id,
                 is_required_agree_terms=dto.is_required_agree_terms,
-                join_date=get_server_timestamp().strftime("%y%m%d"),
+                join_date=get_server_timestamp().strftime("%Y%m%d"),
                 is_active=dto.is_active,
                 is_out=dto.is_out,
             )
