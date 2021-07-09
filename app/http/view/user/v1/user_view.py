@@ -14,7 +14,7 @@ from app.http.responses.presenters.v1.user_presenter import (
     CreateUserPresenter,
     CreateAppAgreeTermsPresenter,
     UpsertUserInfoPresenter,
-    GetUserInfoPresenter, GetUserPresenter,
+    GetUserInfoPresenter, GetUserPresenter, PatchUserOutPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.user.enum.user_enum import UserProviderCallEnum
@@ -22,7 +22,7 @@ from core.domains.user.use_case.v1.user_use_case import (
     CreateUserUseCase,
     CreateAppAgreeTermsUseCase,
     UpsertUserInfoUseCase,
-    GetUserInfoUseCase, GetUserUseCase,
+    GetUserInfoUseCase, GetUserUseCase, UserOutUseCase,
 )
 
 
@@ -109,3 +109,14 @@ def get_user_provider_view():
 
     data = response.json()
     return jsonify(data), HTTPStatus.OK
+
+
+@api.route("/v1/users/out", methods=["PATCH"])
+@jwt_required
+@auth_required
+def patch_user_out_view():
+    dto = GetUserRequestSchema(
+        user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return PatchUserOutPresenter().transform(UserOutUseCase().execute(dto=dto))

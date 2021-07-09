@@ -762,3 +762,25 @@ def test_get_user_provider_view_when_call_captian_api_then_success(
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert data['provider'] in ["kakao", "google"]
+
+
+def test_patch_user_out_view_then_success(
+        client, session, test_request_context, make_header, make_authorization, create_users
+):
+    user_id = create_users[0].id
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.patch(
+            url_for("api/tanos.patch_user_out_view"),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"] == "success"

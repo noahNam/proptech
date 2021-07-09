@@ -328,13 +328,13 @@ class GetUserInfoUseCase(UserBaseUseCase):
 
 class UserOutUseCase(UserBaseUseCase):
     def execute(
-            self, user_id: int
+            self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        if not user_id:
+        if not dto.user_id:
             return UseCaseFailureOutput(
                 type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
 
-        self._user_repo.update_user_status_to_out(user_id=user_id)
+        self._user_repo.update_user_status_to_out(user_id=dto.user_id)
 
         return UseCaseSuccessOutput()
