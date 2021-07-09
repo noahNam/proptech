@@ -32,13 +32,10 @@ class BoundingUseCase:
 
         # Make Entity
         results = list()
-        try:
-            for query in queryset:
-                results.append(query.to_bounding_entity())
-                # 검증용으로 dict 변환
-                # results.append(query.to_bounding_entity().dict())
-        except Exception as e:
-            pass
+        for query in queryset:
+            # results.append(query.to_bounding_entity())
+            # 검증용으로 dict 변환
+            results.append(query.to_bounding_entity().dict())
 
         print("*" * 30)
         print(results)
