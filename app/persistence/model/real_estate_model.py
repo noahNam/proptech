@@ -5,12 +5,13 @@ from sqlalchemy import (
     Integer,
     String,
     Float,
-    Boolean,
+    Boolean, func,
 )
 from sqlalchemy.orm import relationship, backref
+# from geoalchemy2.shape import to_shape
 
 from app import db
-from core.domains.house.entity.house_entity import RealEstateEntity
+from core.domains.house.entity.house_entity import RealEstateEntity, BoundingRealEstateEntity
 
 
 class RealEstateModel(db.Model):
@@ -36,7 +37,8 @@ class RealEstateModel(db.Model):
     coordinates = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
 
     private_sales = relationship("PrivateSaleModel", backref=backref("real_estates", cascade="all, delete"))
-    public_sales = relationship("PublicSaleModel", backref=backref("real_estates", cascade="all, delete"))
+    public_sales = relationship("PublicSaleModel", backref=backref("real_estates", cascade="all, delete"),
+                                uselist=False)
 
     def __repr__(self):
         return (
@@ -70,6 +72,28 @@ class RealEstateModel(db.Model):
             land_number=self.land_number,
             is_available=self.is_available,
             # coordinates=make_geometry_point_of_pydantic(lat=lat, lon=lon)
+            # todo. 쿼리에서 따로 넣어주는데 해당 entitiy에서 가지고 있어야 하는지?
             latitude=lat,
             longitude=lon
+        )
+
+    def to_bounding_entity(self) -> BoundingRealEstateEntity:
+        return BoundingRealEstateEntity(
+            id=self.id,
+            name=self.name,
+            road_address=self.road_address,
+            jibun_address=self.jibun_address,
+            si_do=self.si_do,
+            si_gun_gu=self.si_gun_gu,
+            dong_myun=self.dong_myun,
+            ri=self.ri,
+            road_name=self.road_name,
+            road_number=self.road_number,
+            land_number=self.land_number,
+            is_available=self.is_available,
+            latitude=func.ST_Y(self.coordinates).label("latitude"),
+            longitude=func.ST_X(self.coordinates).label("longitude"),
+            private_sales=[private_sale.to_entity() for private_sale in
+                           self.private_sales] if self.private_sales else None,
+            public_sales=self.public_sales.to_entity() if self.public_sales else None
         )

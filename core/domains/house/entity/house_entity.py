@@ -2,7 +2,6 @@ from datetime import date, datetime
 from enum import Enum
 from typing import List
 
-from geojson_pydantic import Point
 from pydantic import BaseModel
 
 
@@ -25,19 +24,20 @@ class RealEstateEntity(BaseModel):
     longitude: float
 
 
-class PrivateSaleEntity(BaseModel):
+class PublicSaleDetailEntity(BaseModel):
     id: int
-    real_estate_id: int
+    public_sales_id: int
     private_area: float
     supply_area: float
-    contract_date: date
-    deposit_price: int
-    rent_price: int
-    trade_price: int
-    floor: int
-    trade_type: Enum
-    building_type: Enum
-    is_available: bool
+    supply_price: int
+
+
+class PublicSalePhotoEntity(BaseModel):
+    id: int
+    public_sales_id: int
+    file_name: str
+    path: str
+    extension: str
     created_at: datetime
     updated_at: datetime
 
@@ -73,22 +73,23 @@ class PublicSaleEntity(BaseModel):
     reference_url: str
     created_at: datetime
     updated_at: datetime
+    public_sale_photos: PublicSalePhotoEntity = None
+    public_sale_details: List[PublicSaleDetailEntity] = None
 
 
-class PublicSaleDetailEntity(BaseModel):
+class PrivateSaleEntity(BaseModel):
     id: int
-    public_sales_id: int
+    real_estate_id: int
     private_area: float
     supply_area: float
-    supply_price: int
-
-
-class PublicSalePhotoEntity(BaseModel):
-    id: int
-    public_sales_id: int
-    file_name: str
-    path: str
-    extension: str
+    contract_date: date
+    deposit_price: int
+    rent_price: int
+    trade_price: int
+    floor: int
+    trade_type: Enum
+    building_type: Enum
+    is_available: bool
     created_at: datetime
     updated_at: datetime
 
@@ -109,18 +110,20 @@ class AdministrativeDivisionEntity(BaseModel):
     updated_at: datetime
 
 
-class RealEstateWithPrivateSaleEntity(BaseModel):
-    real_estate: RealEstateEntity
+class BoundingRealEstateEntity(BaseModel):
+    id: int
+    name: str
+    road_address: str
+    jibun_address: str
+    si_do: str
+    si_gun_gu: str
+    dong_myun: str
+    ri: str
+    road_name: str
+    road_number: str
+    land_number: str
+    is_available: bool
+    latitude = float
+    longitude = float
     private_sales: List[PrivateSaleEntity] = None
-
-
-class RealEstateWithPublicSaleEntity(BaseModel):
-    real_estate: RealEstateEntity
-    public_sale: PublicSaleEntity
-    public_sale_photo: PublicSalePhotoEntity
-    public_sale_details: List[PublicSaleDetailEntity] = None
-
-
-class BoundingEntity(BaseModel):
-    private_estates: List[RealEstateWithPrivateSaleEntity] = None
-    public_estates: List[RealEstateWithPublicSaleEntity] = None
+    public_sales: PublicSaleEntity = None
