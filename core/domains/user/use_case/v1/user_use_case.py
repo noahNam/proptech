@@ -324,3 +324,17 @@ class GetUserInfoUseCase(UserBaseUseCase):
             user_info_code_value_entity.name = bind_code.COND_NM.value
 
             user_info.code_values = user_info_code_value_entity
+
+
+class UserOutUseCase(UserBaseUseCase):
+    def execute(
+            self, user_id: int
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not user_id:
+            return UseCaseFailureOutput(
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+            )
+
+        self._user_repo.update_user_status_to_out(user_id=user_id)
+
+        return UseCaseSuccessOutput()
