@@ -24,7 +24,7 @@ from core.domains.user.use_case.v1.user_use_case import (
     CreateUserUseCase,
     CreateAppAgreeTermsUseCase,
     UpsertUserInfoUseCase,
-    GetUserInfoUseCase, GetUserUseCase,
+    GetUserInfoUseCase, GetUserUseCase, UserOutUseCase,
 )
 from core.exceptions import NotUniqueErrorException
 from core.use_case_output import UseCaseSuccessOutput
@@ -373,3 +373,10 @@ def test_get_user_info_when_monthly_income_then_success(_send_sqs_message, sessi
     assert len(result.value) == 1
     assert len(result.value[0].code_values.detail_code) == len(result.value[0].code_values.name)
     assert len(result.value[0].code_values.detail_code) == len(result.value[0].code_values.name)
+
+
+def test_patch_user_out_info_when_user_request_then_success(session, create_users):
+    get_user_dto = GetUserDto(user_id=1)
+    result = UserOutUseCase().execute(dto=get_user_dto)
+
+    assert isinstance(result, UseCaseSuccessOutput)

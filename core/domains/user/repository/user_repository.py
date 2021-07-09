@@ -336,3 +336,15 @@ class UserRepository:
         user_info_code_value_entity.name = name_list
 
         return user_info_code_value_entity
+
+    def update_user_status_to_out(self, user_id: int) -> None:
+        try:
+            session.query(UserModel).filter_by(id=user_id).update(
+                {"is_out": True}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_status_to_out] user_id : {user_id} error : {e}"
+            )
