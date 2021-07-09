@@ -17,7 +17,7 @@ class BoundingPresenter:
             value = output.value
             value_to_json = value.get_json()
             try:
-                schema = BoundingResponseSchema(result=value_to_json())
+                schema = BoundingResponseSchema(result=value.get_json)
             except ValidationError as e:
                 logger.error(f"[BoundingPresenter][transform] value : {value} error : {e}")
                 return failure_response(

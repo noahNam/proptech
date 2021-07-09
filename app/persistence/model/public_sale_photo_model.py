@@ -48,9 +48,9 @@ class PublicSalePhotoModel(db.Model):
         return PublicSalePhotoEntity(
             id=self.id,
             public_sales_id=self.public_sales_id,
-            private_area=self.private_area,
-            supply_area=self.supply_area,
-            supply_price=self.supply_price,
+            file_name=self.file_name,
+            path=self.path,
+            extension=self.extension,
             created_at=self.created_at,
             updated_at=self.updated_at
         )
