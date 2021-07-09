@@ -3,14 +3,17 @@ from typing import Union, List
 
 import inject
 
+from app.extensions.utils.event_observer import send_message, get_event_object
 from app.extensions.utils.message_converter import MessageConverter
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.notification.dto.notification_dto import GetNotificationDto, UpdateNotificationDto, GetBadgeDto, \
     UpdateReceiveNotificationSettingDto
 from core.domains.notification.entity.notification_entity import NotificationEntity, NotificationHistoryEntity, \
     ReceivePushTypeEntity
-from core.domains.notification.enum.notification_enum import NotificationHistoryCategoryEnum, NotificationTopicEnum
+from core.domains.notification.enum.notification_enum import NotificationHistoryCategoryEnum, NotificationTopicEnum, \
+    NotificationPushTypeEnum
 from core.domains.notification.repository.notification_repository import NotificationRepository
+from core.domains.user.enum import UserTopicEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
@@ -123,4 +126,12 @@ class UpdateReceiveNotificationSettingUseCase(NotificationBaseUseCase):
         self._notification_repo.update_receive_notification_setting(dto=dto)
         self._notification_repo.create_receive_push_type_history(dto=dto)
 
+        # 마케팅 약관동의 업데이트
+        if dto.push_type == NotificationPushTypeEnum.MARKETING.value:
+            self._update_app_agree_terms_to_receive_marketing(dto=dto)
+
         return UseCaseSuccessOutput()
+
+    def _update_app_agree_terms_to_receive_marketing(self, dto: UpdateReceiveNotificationSettingDto) -> None:
+        send_message(topic_name=UserTopicEnum.UPDATE_APP_AGREE_TERMS_TO_RECEIVE_MARKETING, dto=dto)
+        return get_event_object(topic_name=UserTopicEnum.UPDATE_APP_AGREE_TERMS_TO_RECEIVE_MARKETING)

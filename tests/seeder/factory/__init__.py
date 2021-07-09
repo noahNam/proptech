@@ -9,7 +9,7 @@ from app.persistence.model import (
     DeviceModel,
     DeviceTokenModel,
     UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel,
-    ReceivePushTypeModel
+    ReceivePushTypeModel, AppAgreeTermsModel
 )
 from app.persistence.model.user_model import UserModel
 
@@ -132,3 +132,14 @@ class InterestHouseFactory(BaseFactory):
     house_id = 1
     type = HouseTypeEnum.PUBLIC_SALES.value
     is_like = True
+
+
+class AppAgreeTermsFactory(BaseFactory):
+    class Meta:
+        model = AppAgreeTermsModel
+
+    user_id = 1
+    private_user_info_yn = True
+    required_terms_yn = True
+    receive_marketing_yn = True
+    receive_marketing_date = get_server_timestamp()

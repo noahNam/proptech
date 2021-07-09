@@ -15,6 +15,7 @@ from app.persistence.model import (
 )
 from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
+from core.domains.notification.dto.notification_dto import UpdateReceiveNotificationSettingDto
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
@@ -347,4 +348,16 @@ class UserRepository:
             session.rollback()
             logger.error(
                 f"[UserRepository][update_user_status_to_out] user_id : {user_id} error : {e}"
+            )
+
+    def update_app_agree_terms_to_receive_marketing(self, dto: UpdateReceiveNotificationSettingDto) -> None:
+        try:
+            session.query(AppAgreeTermsModel).filter_by(user_id=dto.user_id).update(
+                {"receive_marketing_yn": dto.is_active, "receive_marketing_date": get_server_timestamp()}
+            )
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_app_agree_terms_to_receive_marketing] user_id : {dto.user_id} error : {e}"
             )
