@@ -377,6 +377,6 @@ def test_get_user_info_when_monthly_income_then_success(_send_sqs_message, sessi
 
 def test_patch_user_out_info_when_user_request_then_success(session, create_users):
     get_user_dto = GetUserDto(user_id=1)
-    result = UserOutUseCase().execute(user_id=get_user_dto.user_id)
+    result = UserOutUseCase().execute(dto=get_user_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
