@@ -10,7 +10,7 @@ from tests.seeder.factory import (
     UserFactory,
     UserProfileFactory,
     AvgMonthlyIncomeWorkerFactory,
-    SidoCodeFactory, NotificationFactory, InterestHouseFactory
+    SidoCodeFactory, NotificationFactory, InterestHouseFactory, AppAgreeTermsFactory
 )
 
 MODEL_FACTORIES = [
@@ -19,7 +19,8 @@ MODEL_FACTORIES = [
     AvgMonthlyIncomeWorkerFactory,
     SidoCodeFactory,
     NotificationFactory,
-    InterestHouseFactory
+    InterestHouseFactory,
+    AppAgreeTermsFactory
 ]
 
 faker = Faker()

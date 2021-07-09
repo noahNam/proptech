@@ -1,4 +1,4 @@
-from app.persistence.model import ReceivePushTypeHistoryModel
+from app.persistence.model import ReceivePushTypeHistoryModel, AppAgreeTermsModel
 from core.domains.notification.dto.notification_dto import GetNotificationDto, UpdateNotificationDto, GetBadgeDto, \
     UpdateReceiveNotificationSettingDto
 from core.domains.notification.entity.notification_entity import NotificationHistoryEntity
@@ -106,3 +106,26 @@ def test_update_receive_notification_settings_use_case_when_user_change_push_typ
     assert len(history_result) == 1
     assert history_result[0].push_type == dto.push_type
     assert history_result[0].is_active is False
+
+
+def test_update_receive_notification_settings_to_receive_marketing_push_then_marketing_yn_is_false(session,
+                                                                                                   create_users,
+                                                                                                   app_agree_terms_factory):
+    app_agree_terms = app_agree_terms_factory.build()
+    session.add(app_agree_terms)
+    session.commit()
+
+    dto = UpdateReceiveNotificationSettingDto(
+        user_id=create_users[0].id,
+        push_type="marketing",
+        is_active=False
+    )
+    UpdateReceiveNotificationSettingUseCase().execute(dto=dto)
+
+    result = GetReceiveNotificationSettingUseCase().execute(user_id=create_users[0].id)
+    app_agree_terms_result = session.query(AppAgreeTermsModel).filter_by(user_id=dto.user_id).first()
+
+    assert isinstance(result, UseCaseSuccessOutput)
+    assert result.value['marketing'] is False
+
+    assert app_agree_terms_result.receive_marketing_yn == dto.is_active
