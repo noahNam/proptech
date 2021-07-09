@@ -4,11 +4,9 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    Float,
-    Boolean, func,
+    Boolean,
 )
-from sqlalchemy.orm import relationship, backref
-# from geoalchemy2.shape import to_shape
+from sqlalchemy.orm import relationship, backref, column_property
 
 from app import db
 from core.domains.house.entity.house_entity import RealEstateEntity, BoundingRealEstateEntity
@@ -35,6 +33,9 @@ class RealEstateModel(db.Model):
     land_number = Column(String(10), nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
     coordinates = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
+
+    latitude = column_property(coordinates.ST_X())
+    longitude = column_property(coordinates.ST_Y())
 
     private_sales = relationship("PrivateSaleModel", backref=backref("real_estates", cascade="all, delete"))
     public_sales = relationship("PublicSaleModel", backref=backref("real_estates", cascade="all, delete"),
@@ -91,8 +92,8 @@ class RealEstateModel(db.Model):
             road_number=self.road_number,
             land_number=self.land_number,
             is_available=self.is_available,
-            latitude=func.ST_Y(self.coordinates).label("latitude"),
-            longitude=func.ST_X(self.coordinates).label("longitude"),
+            latitude=self.latitude,
+            longitude=self.longitude,
             private_sales=[private_sale.to_entity() for private_sale in
                            self.private_sales] if self.private_sales else None,
             public_sales=self.public_sales.to_entity() if self.public_sales else None

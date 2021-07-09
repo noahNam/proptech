@@ -123,7 +123,7 @@ class BoundingRealEstateEntity(BaseModel):
     road_number: str
     land_number: str
     is_available: bool
-    latitude = float
-    longitude = float
+    latitude: float
+    longitude: float
     private_sales: List[PrivateSaleEntity] = None
     public_sales: PublicSaleEntity = None
