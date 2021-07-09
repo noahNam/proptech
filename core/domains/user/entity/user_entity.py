@@ -3,10 +3,10 @@ from pydantic import BaseModel
 
 class UserEntity(BaseModel):
     id: int
-    is_required_agree_terms: int
+    is_required_agree_terms: bool
     join_date: str
-    is_active: int
-    is_out: int
+    is_active: bool
+    is_out: bool
 
 
 class UserInfoCodeValueEntity(BaseModel):

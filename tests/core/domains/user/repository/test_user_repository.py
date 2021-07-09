@@ -345,3 +345,10 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
 
         assert isinstance(user_info, UserInfoEntity)
         assert len(user_info.code_values.detail_code) == len(user_info.code_values.name)
+
+
+def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(session, create_users):
+    UserRepository().update_user_status_to_out(user_id=create_users[0].id)
+    user = UserRepository().get_user(user_id=create_users[0].id)
+
+    assert user.is_out is True
