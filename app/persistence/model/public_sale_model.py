@@ -69,40 +69,6 @@ class PublicSaleModel(db.Model):
                                        backref=backref("public_sales",
                                                        cascade="all, delete"))
 
-    def __repr__(self):
-        return (
-            f"PublicSale({self.id}, "
-            f"{self.real_estate_id}, "
-            f"{self.name}, "
-            f"{self.region}, "
-            f"{self.housing_category}, "
-            f"{self.rent_type}, "
-            f"{self.trade_type}, "
-            f"{self.construct_company}, "
-            f"{self.supply_household}, "
-            f"{self.is_available}, "
-            f"{self.offer_date}, "
-            f"{self.subscription_start_date}, "
-            f"{self.subscription_end_date}, "
-            f"{self.special_supply_date}, "
-            f"{self.special_supply_etc_date}, "
-            f"{self.first_supply_date}, "
-            f"{self.first_supply_etc_date}, "
-            f"{self.second_supply_date}, "
-            f"{self.second_supply_etc_date}, "
-            f"{self.notice_winner_date}, "
-            f"{self.contract_start_date}, "
-            f"{self.contract_end_date}, "
-            f"{self.move_in_year}, "
-            f"{self.move_in_month}, "
-            f"{self.min_down_payment}, "
-            f"{self.max_down_payment}, "
-            f"{self.down_payment_ratio}, "
-            f"{self.reference_url}, "
-            f"{self.created_at}, "
-            f"{self.updated_at})"
-        )
-
     def to_entity(self) -> PublicSaleEntity:
         return PublicSaleEntity(
             id=self.id,
@@ -134,5 +100,7 @@ class PublicSaleModel(db.Model):
             down_payment_ratio=self.down_payment_ratio,
             reference_url=self.reference_url,
             created_at=self.created_at,
-            updated_at=self.updated_at
+            updated_at=self.updated_at,
+            public_sale_photos=self.public_sale_photos.to_entity() if self.public_sale_photos else None,
+            public_sale_details=[public_sale_detail.to_entity() for public_sale_detail in self.public_sale_details] if self.public_sale_details else None
         )
