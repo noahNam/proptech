@@ -27,3 +27,7 @@ class UpsertUserInfoResponseSchema(BaseModel):
 
 class GetUserInfoResponseSchema(BaseModel):
     result: list
+
+
+class PatchUserOutResponseSchema(BaseModel):
+    result: StrictStr
