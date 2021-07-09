@@ -111,7 +111,7 @@ class PublicSaleModel(db.Model):
             region=self.region,
             housing_category=self.housing_category,
             rent_type=self.rent_type,
-            trade_type=self.trade_price,
+            trade_type=self.trade_type,
             construct_company=self.construct_company,
             supply_household=self.supply_household,
             is_available=self.is_available,

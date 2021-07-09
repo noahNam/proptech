@@ -49,7 +49,7 @@ class AdministrativeDivisionModel(db.Model):
             f"{self.updated_at}) "
         )
 
-    def to_entity(self) -> AdministrativeDivisionEntity:
+    def to_entity(self, lat, lon) -> AdministrativeDivisionEntity:
         return AdministrativeDivisionEntity(
             id=self.id,
             name=self.name,
@@ -58,7 +58,9 @@ class AdministrativeDivisionModel(db.Model):
             real_deposit_price=self.real_deposit_price,
             public_sale_price=self.public_sale_price,
             level=self.level,
-            coordinates=self.coordinates,
+            # coordinates=self.coordinates,
+            latitude=lat,
+            longitude=lon,
             created_at=self.created_at,
             updated_at=self.updated_at
         )

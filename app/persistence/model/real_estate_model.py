@@ -70,5 +70,7 @@ class RealEstateModel(db.Model):
             road_number=self.road_number,
             land_number=self.land_number,
             is_available=self.is_available,
-            coordinates=make_geometry_point_of_pydantic(lat=lat, lon=lon)
+            # coordinates=make_geometry_point_of_pydantic(lat=lat, lon=lon)
+            latitude=lat,
+            longitude=lon
         )

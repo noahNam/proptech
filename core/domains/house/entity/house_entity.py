@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from enum import Enum
+from typing import List
 
 from geojson_pydantic import Point
 from pydantic import BaseModel
@@ -19,6 +20,7 @@ class RealEstateEntity(BaseModel):
     land_number: str
     is_available: bool
     # coordinates: Point
+    # to_entity(): coordinates 대신 아래 위경도 값 사용
     latitude: float
     longitude: float
 
@@ -75,7 +77,7 @@ class PublicSaleEntity(BaseModel):
 
 class PublicSaleDetailEntity(BaseModel):
     id: int
-    pre_sales_id: int
+    public_sales_id: int
     private_area: float
     supply_area: float
     supply_price: int
@@ -83,7 +85,7 @@ class PublicSaleDetailEntity(BaseModel):
 
 class PublicSalePhotoEntity(BaseModel):
     id: int
-    pre_sales_id: int
+    public_sales_id: int
     file_name: str
     path: str
     extension: str
@@ -99,6 +101,26 @@ class AdministrativeDivisionEntity(BaseModel):
     real_deposit_price: int
     public_sale_price: int
     level: Enum
-    coordinates: Point
+    # coordinates: Point
+    # to_entity(): coordinates 대신 아래 위경도 값 사용
+    latitude: float
+    longitude: float
     created_at: datetime
     updated_at: datetime
+
+
+class RealEstateWithPrivateSaleEntity(BaseModel):
+    real_estate: RealEstateEntity
+    private_sales: List[PrivateSaleEntity] = None
+
+
+class RealEstateWithPublicSaleEntity(BaseModel):
+    real_estate: RealEstateEntity
+    public_sale: PublicSaleEntity
+    public_sale_photo: PublicSalePhotoEntity
+    public_sale_details: List[PublicSaleDetailEntity] = None
+
+
+class BoundingEntity(BaseModel):
+    private_estates = List[RealEstateWithPrivateSaleEntity] = None
+    public_estates = List[RealEstateWithPublicSaleEntity] = None

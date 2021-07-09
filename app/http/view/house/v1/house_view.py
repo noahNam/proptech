@@ -14,17 +14,17 @@ from datetime import date, timedelta, datetime
 from http import HTTPStatus
 
 from flask import request, jsonify
-from sqlalchemy import func, select, or_, and_, exists, funcfilter
+from sqlalchemy import func, or_, and_
 
 from app.extensions.database import session
-from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_month_from_today
 from app.http.requests.v1.house_request import GetCoordinatesRequest
 from app.http.responses import failure_response
+from app.http.responses.presenters.v1.house_presenter import BoundingPresenter
 from app.http.view import api
-from app.persistence.model import RealEstateModel, UserInfoModel, PrivateSaleModel, PublicSaleModel, \
+from app.persistence.model import RealEstateModel, PrivateSaleModel, PublicSaleModel, \
     PublicSalePhotoModel, PublicSaleDetailModel
-from core.domains.house.dto.house_dto import BoundingDataDto, BoundingOuterDto
+from core.domains.house.use_case.v1.house_use_case import BoundingUseCase
 from core.exceptions import InvalidRequestException
 from core.use_case_output import UseCaseFailureOutput, FailureType
 
@@ -60,60 +60,6 @@ def bounding_view():
                 message=f"Invalid Parameter input, Only South_Korea boundary coordinates Available",
             )
         )
-    query = (
-        # PrivateSale : 오늘 날짜 기준 1달 이내 불러오기 완료
-        # PublicSale(분양모델)인 경우만 해당 세부 테이블 불러오기 완료
-        # 각 경우의 수 별로 사용 가능한 것만 필터링 완료
-        # PrivateSale : 불러온 1달 이내 자료에서 평균값 -> 전세의 경우 rent_type=전세인 항목만 골라서 평균 (미완료)
-        # PublicSale : 불러온 자료 내 Detail 테이블 평균 -> (미완료)
-        # Query list -> pydantic 모델화 (validation 문제로 변경 힘듬)
-        # 추가되어야할 column : 취득세 최소 - 최대, 행정구역 - short_name
-        session.query(RealEstateModel)
-            .join(RealEstateModel.private_sales, isouter=True)
-            .join(RealEstateModel.public_sales, isouter=True)
-            .join(PublicSaleModel.public_sale_details, isouter=True)
-            .join(PublicSaleModel.public_sale_photos, isouter=True)
-            .with_entities(RealEstateModel,
-                           func.ST_Y(RealEstateModel.coordinates).label("latitude"),
-                           func.ST_X(RealEstateModel.coordinates).label("longitude"),
-                           PrivateSaleModel,
-                           PublicSaleModel,
-                           PublicSaleDetailModel,
-                           PublicSalePhotoModel)
-            .filter(or_(and_(RealEstateModel.is_available == "True",
-                             PrivateSaleModel.is_available == "True",
-                             PrivateSaleModel.contract_date >= get_month_from_today(),
-                             PrivateSaleModel.contract_date <= date.today()),
-                        and_(RealEstateModel.is_available == "True",
-                             PublicSaleModel.is_available == "True"),
-                        and_(RealEstateModel.is_available == "True",
-                             PrivateSaleModel.is_available == "True",
-                             PublicSaleModel.is_available == "True",
-                             PrivateSaleModel.contract_date >= get_month_from_today(),
-                             PrivateSaleModel.contract_date <= date.today())))
-            .filter(func.ST_Contains(func.ST_MakeEnvelope(start_x, end_y, end_x, start_y, 4326),
-                                     RealEstateModel.coordinates))
 
-    )
-
-    real_estates_list = []
-
-    coords = []
-    private_sales_list = []
-    public_sales_list = []
-    public_sales_detail_list = []
-    public_sales_photo_list = []
-    try:
-
-        results = query.all()
-
-        for result in results:
-            # parsing 필요
-            print(result)
-
-    except Exception as e:
-        print("-------------error----------")
-        print(e)
-
-    return jsonify(start_x=dto.start_x, start_y=dto.start_y, end_x=dto.end_x, end_y=dto.end_y)
-    # return BoundingPresenter().transform(MapBoundingUseCase().execute(dto=dto))
+    return BoundingPresenter().transform(BoundingUseCase().execute(dto=dto))
+    # return jsonify(start_x=dto.start_x, start_y=dto.start_y, end_x=dto.end_x, end_y=dto.end_y)
