@@ -10,7 +10,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, backref
 
 from app import db
-from app.extensions.utils.geometry_helper import input_coordinates_from_lat_lon, make_geometry_point_of_pydantic
 from core.domains.house.entity.house_entity import RealEstateEntity
 
 

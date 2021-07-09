@@ -122,5 +122,5 @@ class RealEstateWithPublicSaleEntity(BaseModel):
 
 
 class BoundingEntity(BaseModel):
-    private_estates = List[RealEstateWithPrivateSaleEntity] = None
-    public_estates = List[RealEstateWithPublicSaleEntity] = None
+    private_estates: List[RealEstateWithPrivateSaleEntity] = None
+    public_estates: List[RealEstateWithPublicSaleEntity] = None
