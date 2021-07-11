@@ -12,3 +12,5 @@ from .sido_codes import SidoCodeModel
 from .receive_push_type_history_model import ReceivePushTypeHistoryModel
 from .notification_model import NotificationModel
 from .interest_house_model import InterestHouseModel
+from .post_model import PostModel
+from .article_model import ArticleModel
