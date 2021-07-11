@@ -31,8 +31,8 @@ class PostModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    user = relationship("UserModel", backref="posts", uselist=False)
-    post_article = relationship("PostModel", backref="posts", uselist=False)
+    user = relationship("UserModel", backref="post", uselist=False)
+    article = relationship("ArticleModel", backref="post", uselist=False)
 
     def to_entity(self) -> PostEntity:
         return PostEntity(
