@@ -11,12 +11,15 @@ from app.persistence.model import (
     UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel,
     ReceivePushTypeModel, AppAgreeTermsModel
 )
+from app.persistence.model.article_model import ArticleModel
+from app.persistence.model.post_model import PostModel
 from app.persistence.model.user_model import UserModel
 
 # factory에 사용해야 하는 Model을 가져온다
 from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.notification.enum.notification_enum import NotificationTopicEnum, NotificationBadgeTypeEnum, \
     NotificationStatusEnum
+from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
 
 faker = FakerFactory.create(locale="ko_KR")
 
@@ -143,3 +146,30 @@ class AppAgreeTermsFactory(BaseFactory):
     required_terms_yn = True
     receive_marketing_yn = True
     receive_marketing_date = get_server_timestamp()
+
+
+class PostFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        model = PostModel
+
+    user_id = 1
+    title = "떡볶이 나눠 먹어요"
+    type = PostTypeEnum.ARTICLE.value
+    is_deleted = False
+    read_count = 0
+    category_id = PostCategoryEnum.NOTICE.value
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+    @factory.post_generation
+    def Article(obj, create, extracted, **kwargs):
+        if extracted:
+            ArticleFactory(post=obj, **kwargs)
+
+
+class ArticleFactory(factory.alchemy.SQLAlchemyModelFactory):
+    class Meta:
+        model = ArticleModel
+
+    post_id = 1
+    body = factory.Sequence(lambda n: "body_게시글 입니다:) {}".format(n+1))
