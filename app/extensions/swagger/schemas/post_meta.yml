@@ -1,0 +1,9 @@
+post_meta:
+  type: object
+  properties:
+    cursor:
+      type: object
+      properties:
+        last_post_id:
+          type: integer
+          example: 10

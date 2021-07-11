@@ -14,7 +14,6 @@ class UpsertInterestHousePresenter:
             try:
                 schema = UpdateNotificationResponseSchema(result=output.type)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",

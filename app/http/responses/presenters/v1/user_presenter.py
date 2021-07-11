@@ -21,7 +21,6 @@ class GetUserPresenter:
                 if user:
                     schema = GetUserResponseSchema(user=output.value)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -45,7 +44,6 @@ class CreateUserPresenter:
             try:
                 schema = CreateUserResponseSchema(result=output.type)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -69,7 +67,6 @@ class CreateAppAgreeTermsPresenter:
             try:
                 schema = CreateAppAgreeTermsResponseSchema(result=output.type)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -93,7 +90,6 @@ class UpsertUserInfoPresenter:
             try:
                 schema = UpsertUserInfoResponseSchema(result=output.type)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -117,7 +113,6 @@ class GetUserInfoPresenter:
             try:
                 schema = GetUserInfoResponseSchema(result=output.value)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -141,7 +136,6 @@ class PatchUserOutPresenter:
             try:
                 schema = PatchUserOutResponseSchema(result=output.type)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
