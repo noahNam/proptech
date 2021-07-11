@@ -2,7 +2,8 @@ from datetime import date, datetime
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+from pydantic.json import isoformat
 
 
 class RealEstateEntity(BaseModel):
@@ -76,6 +77,12 @@ class PublicSaleEntity(BaseModel):
     public_sale_photos: PublicSalePhotoEntity = None
     public_sale_details: List[PublicSaleDetailEntity] = None
 
+    class Config:
+        use_enum_values = True
+        json_encoders = {
+            date: isoformat
+        }
+
 
 class PrivateSaleEntity(BaseModel):
     id: int
@@ -93,6 +100,9 @@ class PrivateSaleEntity(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    class Config:
+        use_enum_values = True
+
 
 class AdministrativeDivisionEntity(BaseModel):
     id: int
@@ -108,6 +118,9 @@ class AdministrativeDivisionEntity(BaseModel):
     longitude: float
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        use_enum_values = True
 
 
 class BoundingRealEstateEntity(BaseModel):
@@ -127,3 +140,6 @@ class BoundingRealEstateEntity(BaseModel):
     longitude: float
     private_sales: List[PrivateSaleEntity] = None
     public_sales: PublicSaleEntity = None
+
+    class Config:
+        use_enum_values = True

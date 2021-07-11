@@ -1,10 +1,11 @@
 from http import HTTPStatus
-from typing import Union
+from typing import Union, List
 
 from pydantic import ValidationError
 
 from app.extensions.utils.log_helper import logger_
 from app.http.responses import failure_response, success_response
+from core.domains.house.entity.house_entity import BoundingRealEstateEntity
 from core.domains.house.schema.house_schema import BoundingResponseSchema
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -14,12 +15,11 @@ logger = logger_.getLogger(__name__)
 class BoundingPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
-            value = output.value
-            value_to_json = value.get_json()
+            value_list: List[BoundingRealEstateEntity] = output.value
             try:
-                schema = BoundingResponseSchema(result=value.get_json)
+                schema = BoundingResponseSchema(result=value_list)
             except ValidationError as e:
-                logger.error(f"[BoundingPresenter][transform] value : {value} error : {e}")
+                logger.error(f"[BoundingPresenter][transform] value : {value_list} error : {e}")
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
