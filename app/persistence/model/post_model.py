@@ -45,8 +45,8 @@ class PostModel(db.Model):
             read_count=self.read_count,
             last_admin_action=self.last_admin_action,
             last_admin_action_at=self.last_admin_action_at,
-            created_at=self.created_at,
-            updated_at=self.updated_at,
+            created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
+            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S"),
             user=self.user.to_entity() if self.user else None,
             category_id=self.category_id
         )

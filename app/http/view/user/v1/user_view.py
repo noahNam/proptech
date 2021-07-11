@@ -114,6 +114,7 @@ def get_user_provider_view():
 @api.route("/v1/users/out", methods=["PATCH"])
 @jwt_required
 @auth_required
+@swag_from("patch_user_out.yml", methods=["PATCH"])
 def patch_user_out_view():
     dto = GetUserRequestSchema(
         user_id=current_user.id,
