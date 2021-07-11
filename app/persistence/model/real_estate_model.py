@@ -72,8 +72,7 @@ class RealEstateModel(db.Model):
             road_number=self.road_number,
             land_number=self.land_number,
             is_available=self.is_available,
-            # coordinates=make_geometry_point_of_pydantic(lat=lat, lon=lon)
-            # todo. 쿼리에서 따로 넣어주는데 해당 entitiy에서 가지고 있어야 하는지?
+            # 쿼리로부터 좌표 얻기
             latitude=lat,
             longitude=lon
         )

@@ -20,23 +20,9 @@ class BoundingUseCase:
             return UseCaseFailureOutput(
                 type="map_coordinates", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
-        # queryset2 = self._map_repo.get_queryset_by_coordinates_range_dto2(dto=dto)
         queryset = self._map_repo.get_queryset_by_coordinates_range_dto(dto=dto)
-        self._make_object_bounding_entity_from_queryset(queryset=queryset)
+        bounding_entities = self._map_repo.make_object_bounding_entity_from_queryset(queryset=queryset)
 
-        UseCaseSuccessOutput(value=None)
-
-    def _make_object_bounding_entity_from_queryset(self, queryset: list):
-        if not queryset:
-            return None
-
-        # Make Entity
-        results = list()
-        for query in queryset:
-            # results.append(query.to_bounding_entity())
-            # 검증용으로 dict 변환
-            results.append(query.to_bounding_entity().dict())
-
-        print("*" * 30)
-        print(results)
-        print("*" * 30)
+        if not bounding_entities:
+            return UseCaseSuccessOutput(value="null")
+        return UseCaseSuccessOutput(value=bounding_entities)
