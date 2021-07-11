@@ -28,6 +28,7 @@ class PublicSaleDetailModel(db.Model):
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
     supply_price = Column(Integer, nullable=False)
+    acquisition_tax = Column(Integer, nullable=False)
 
     def __repr__(self):
         return (
@@ -35,7 +36,8 @@ class PublicSaleDetailModel(db.Model):
             f"{self.public_sales_id}, "
             f"{self.private_area}, "
             f"{self.supply_area}, "
-            f"{self.supply_price}) "
+            f"{self.supply_price}), "
+            f"{self.acquisition_tax}) "
         )
 
     def to_entity(self) -> PublicSaleDetailEntity:
@@ -45,4 +47,5 @@ class PublicSaleDetailModel(db.Model):
             private_area=self.private_area,
             supply_area=self.supply_area,
             supply_price=self.supply_price,
+            acquisition_tax=self.acquisition_tax
         )

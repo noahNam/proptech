@@ -1,8 +1,8 @@
-"""create_map_tables
+"""create_house_tables
 
-Revision ID: b8eb70082c9f
+Revision ID: df3b68261af8
 Revises: 407554a1fdaf
-Create Date: 2021-07-06 18:49:13.569164
+Create Date: 2021-07-12 03:46:17.826056
 
 """
 import geoalchemy2
@@ -10,7 +10,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = 'b8eb70082c9f'
+revision = 'df3b68261af8'
 down_revision = '407554a1fdaf'
 branch_labels = None
 depends_on = None
@@ -22,6 +22,7 @@ def upgrade():
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), autoincrement=True,
                               nullable=False),
                     sa.Column('name', sa.String(length=100), nullable=False),
+                    sa.Column('short_name', sa.String(length=30), nullable=False),
                     sa.Column('real_trade_price', sa.Integer(), nullable=False),
                     sa.Column('real_rent_price', sa.Integer(), nullable=False),
                     sa.Column('real_deposit_price', sa.Integer(), nullable=False),
@@ -59,7 +60,7 @@ def upgrade():
                     sa.Column('real_estate_id', sa.BigInteger(), nullable=False),
                     sa.Column('private_area', sa.Float(), nullable=False),
                     sa.Column('supply_area', sa.Float(), nullable=False),
-                    sa.Column('contract_date', sa.Date(), nullable=False),
+                    sa.Column('contract_date', sa.DateTime(), nullable=False),
                     sa.Column('deposit_price', sa.Integer(), nullable=False),
                     sa.Column('rent_price', sa.Integer(), nullable=False),
                     sa.Column('trade_price', sa.Integer(), nullable=False),
@@ -85,17 +86,17 @@ def upgrade():
                     sa.Column('supply_household', sa.Integer(), nullable=False),
                     sa.Column('is_available', sa.Boolean(), nullable=False),
                     sa.Column('offer_date', sa.Date(), nullable=False),
-                    sa.Column('subscription_start_date', sa.Date(), nullable=False),
-                    sa.Column('subscription_end_date', sa.Date(), nullable=False),
-                    sa.Column('special_supply_date', sa.Date(), nullable=False),
-                    sa.Column('special_supply_etc_date', sa.Date(), nullable=False),
-                    sa.Column('first_supply_date', sa.Date(), nullable=False),
-                    sa.Column('first_supply_etc_date', sa.Date(), nullable=False),
-                    sa.Column('second_supply_date', sa.Date(), nullable=False),
-                    sa.Column('second_supply_etc_date', sa.Date(), nullable=False),
-                    sa.Column('notice_winner_date', sa.Date(), nullable=False),
-                    sa.Column('contract_start_date', sa.Date(), nullable=False),
-                    sa.Column('contract_end_date', sa.Date(), nullable=False),
+                    sa.Column('subscription_start_date', sa.DateTime(), nullable=False),
+                    sa.Column('subscription_end_date', sa.DateTime(), nullable=False),
+                    sa.Column('special_supply_date', sa.DateTime(), nullable=False),
+                    sa.Column('special_supply_etc_date', sa.DateTime(), nullable=False),
+                    sa.Column('first_supply_date', sa.DateTime(), nullable=False),
+                    sa.Column('first_supply_etc_date', sa.DateTime(), nullable=False),
+                    sa.Column('second_supply_date', sa.DateTime(), nullable=False),
+                    sa.Column('second_supply_etc_date', sa.DateTime(), nullable=False),
+                    sa.Column('notice_winner_date', sa.DateTime(), nullable=False),
+                    sa.Column('contract_start_date', sa.DateTime(), nullable=False),
+                    sa.Column('contract_end_date', sa.DateTime(), nullable=False),
                     sa.Column('move_in_year', sa.SmallInteger(), nullable=False),
                     sa.Column('move_in_month', sa.SmallInteger(), nullable=False),
                     sa.Column('min_down_payment', sa.Integer(), nullable=False),
@@ -114,6 +115,7 @@ def upgrade():
                     sa.Column('private_area', sa.Float(), nullable=False),
                     sa.Column('supply_area', sa.Float(), nullable=False),
                     sa.Column('supply_price', sa.Integer(), nullable=False),
+                    sa.Column('acquisition_tax', sa.Integer(), nullable=False),
                     sa.ForeignKeyConstraint(['public_sales_id'], ['public_sales.id'], ondelete='CASCADE'),
                     sa.PrimaryKeyConstraint('id'),
                     sa.UniqueConstraint('public_sales_id')
@@ -123,7 +125,7 @@ def upgrade():
                               nullable=False),
                     sa.Column('public_sales_id', sa.BigInteger(), nullable=False),
                     sa.Column('file_name', sa.String(length=20), nullable=False),
-                    sa.Column('path', sa.String(length=100), nullable=False),
+                    sa.Column('path', sa.String(length=150), nullable=False),
                     sa.Column('extension', sa.String(length=4), nullable=False),
                     sa.Column('created_at', sa.DateTime(), nullable=False),
                     sa.Column('updated_at', sa.DateTime(), nullable=False),
