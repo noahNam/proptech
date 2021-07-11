@@ -13,7 +13,7 @@ class PostEntity(BaseModel):
     read_count: int
     last_admin_action: str = None
     last_admin_action_at: datetime = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: str
+    updated_at: str
     user: UserEntity
     category_id: int

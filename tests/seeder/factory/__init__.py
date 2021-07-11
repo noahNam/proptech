@@ -158,6 +158,8 @@ class PostFactory(factory.alchemy.SQLAlchemyModelFactory):
     is_deleted = False
     read_count = 0
     category_id = PostCategoryEnum.NOTICE.value
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
 
     @factory.post_generation
     def Article(obj, create, extracted, **kwargs):

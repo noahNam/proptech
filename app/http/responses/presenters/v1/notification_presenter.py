@@ -22,7 +22,6 @@ class GetNotificationPresenter:
             try:
                 schema = GetNotificationResponseSchema(messages=output.value)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -46,7 +45,6 @@ class GetBadgePresenter:
             try:
                 schema = GetBadgeResponseSchema(result=output.value)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -70,7 +68,6 @@ class UpdateNotificationPresenter:
             try:
                 schema = UpdateNotificationResponseSchema(result=output.type)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -94,7 +91,6 @@ class GetReceiveNotificationSettingPresenter:
             try:
                 schema = GetReceiveNotificationSettingResponseSchema(receive_push_types=output.value)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -118,7 +114,6 @@ class UpdateReceiveNotificationSettingPresenter:
             try:
                 schema = UpdateReceiveNotificationSettingResponseSchema(result=output.type)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
