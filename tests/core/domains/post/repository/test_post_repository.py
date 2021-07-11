@@ -47,6 +47,35 @@ def test_get_post_list_then_return_post_list(session, create_users, post_factory
     assert len(post_list_faq) == 1
 
 
+def test_get_post_list_when_load_more_post_then_return_post_list(session, create_users, post_factory):
+    post_list = []
+    for index in range(15):
+        post_list.append(post_factory(
+            Article=True,
+            user_id=create_users[0].id,
+            category_id=PostCategoryEnum.NOTICE.value
+        ))
+
+    session.add_all(post_list)
+    session.commit()
+
+    post_result_1 = PostRepository().get_post_list_include_article(
+        dto=get_post_list_dto
+    )
+
+    get_post_list_dto2 = GetPostListDto(
+        post_category=PostCategoryEnum.NOTICE.value,
+        previous_post_id=6
+    )
+
+    post_result_2 = PostRepository().get_post_list_include_article(
+        dto=get_post_list_dto2
+    )
+
+    assert len(post_result_1) == 10
+    assert len(post_result_2) == 5
+
+
 def test_update_read_count_when_read_post_then_read_count_puls_one(session, create_users, post_factory):
     post = post_factory(
         Article=True,
@@ -58,8 +87,13 @@ def test_update_read_count_when_read_post_then_read_count_puls_one(session, crea
     session.commit()
 
     PostRepository().update_read_count(post_id=post.id)
+
+    dto = GetPostListDto(
+        post_category=PostCategoryEnum.NOTICE.value,
+        previous_post_id=None
+    )
     post_list = PostRepository().get_post_list_include_article(
-        dto=get_post_list_dto
+        dto=dto
     )
 
     assert post_list[0].read_count == 1
