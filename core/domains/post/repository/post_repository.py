@@ -51,6 +51,8 @@ class PostRepository:
             session.query(PostModel).filter_by(id=post_id).update(
                 {"read_count": PostModel.read_count + 1}
             )
+            session.commit()
+
         except Exception as e:
             logger.error(
                 f"[PostRepository][update_read_count] post_id : {post_id} error : {e}"

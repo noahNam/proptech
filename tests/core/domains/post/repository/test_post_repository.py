@@ -2,13 +2,11 @@ from core.domains.post.dto.post_dto import GetPostListDto
 from core.domains.post.enum.post_enum import PostCategoryEnum
 from core.domains.post.repository.post_repository import PostRepository
 
-get_post_list_dto = GetPostListDto(
-    post_category=PostCategoryEnum.NOTICE.value,
-    previous_post_id=None
-)
 
-
-def test_get_post_list_then_return_post_list(session, create_users, post_factory):
+def test_get_post_list_repo_then_return_post_list(session, create_users, post_factory):
+    """
+    user_id가 FK로 걸려있고, 추후에
+    """
     post1 = post_factory(
         Article=True,
         user_id=create_users[0].id,
@@ -34,6 +32,12 @@ def test_get_post_list_then_return_post_list(session, create_users, post_factory
     session.add_all([post1, post2, post3, post4])
     session.commit()
 
+    get_post_list_dto = GetPostListDto(
+        user_id=create_users[0].id,
+        post_category=PostCategoryEnum.NOTICE.value,
+        previous_post_id=None
+    )
+
     post_list_notice = PostRepository().get_post_list_include_article(
         dto=get_post_list_dto
     )
@@ -47,7 +51,7 @@ def test_get_post_list_then_return_post_list(session, create_users, post_factory
     assert len(post_list_faq) == 1
 
 
-def test_get_post_list_when_load_more_post_then_return_post_list(session, create_users, post_factory):
+def test_get_post_list_repo_when_load_more_post_then_return_post_list(session, create_users, post_factory):
     post_list = []
     for index in range(15):
         post_list.append(post_factory(
@@ -59,11 +63,18 @@ def test_get_post_list_when_load_more_post_then_return_post_list(session, create
     session.add_all(post_list)
     session.commit()
 
+    get_post_list_dto = GetPostListDto(
+        user_id=create_users[0].id,
+        post_category=PostCategoryEnum.NOTICE.value,
+        previous_post_id=None
+    )
+
     post_result_1 = PostRepository().get_post_list_include_article(
         dto=get_post_list_dto
     )
 
     get_post_list_dto2 = GetPostListDto(
+        user_id=create_users[0].id,
         post_category=PostCategoryEnum.NOTICE.value,
         previous_post_id=6
     )
@@ -76,7 +87,7 @@ def test_get_post_list_when_load_more_post_then_return_post_list(session, create
     assert len(post_result_2) == 5
 
 
-def test_update_read_count_when_read_post_then_read_count_puls_one(session, create_users, post_factory):
+def test_update_read_count_repo_when_read_post_then_read_count_plus_one(session, create_users, post_factory):
     post = post_factory(
         Article=True,
         user_id=create_users[0].id,
@@ -89,6 +100,7 @@ def test_update_read_count_when_read_post_then_read_count_puls_one(session, crea
     PostRepository().update_read_count(post_id=post.id)
 
     dto = GetPostListDto(
+        user_id=create_users[0].id,
         post_category=PostCategoryEnum.NOTICE.value,
         previous_post_id=None
     )
