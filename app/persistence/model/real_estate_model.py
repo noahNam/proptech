@@ -34,8 +34,8 @@ class RealEstateModel(db.Model):
     is_available = Column(Boolean, nullable=False, default=True)
     coordinates = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
 
-    latitude = column_property(coordinates.ST_X())
-    longitude = column_property(coordinates.ST_Y())
+    latitude = column_property(coordinates.ST_Y())
+    longitude = column_property(coordinates.ST_X())
 
     private_sales = relationship("PrivateSaleModel", backref=backref("real_estates", cascade="all, delete"))
     public_sales = relationship("PublicSaleModel", backref=backref("real_estates", cascade="all, delete"),

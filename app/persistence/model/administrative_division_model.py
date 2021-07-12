@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
 )
+from sqlalchemy.orm import column_property
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -36,6 +37,9 @@ class AdministrativeDivisionModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
+    latitude = column_property(coordinates.ST_Y())
+    longitude = column_property(coordinates.ST_X())
+
     def __repr__(self):
         return (
             f"AdministrativeDivision({self.id}', "
@@ -51,7 +55,7 @@ class AdministrativeDivisionModel(db.Model):
             f"{self.updated_at}) "
         )
 
-    def to_entity(self, lat, lon) -> AdministrativeDivisionEntity:
+    def to_entity(self) -> AdministrativeDivisionEntity:
         return AdministrativeDivisionEntity(
             id=self.id,
             name=self.name,
@@ -61,9 +65,8 @@ class AdministrativeDivisionModel(db.Model):
             real_deposit_price=self.real_deposit_price,
             public_sale_price=self.public_sale_price,
             level=self.level,
-            # coordinates=self.coordinates,
-            latitude=lat,
-            longitude=lon,
-            created_at=self.created_at,
-            updated_at=self.updated_at
+            latitude=self.latitude,
+            longitude=self.longitude,
+            created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
+            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S")
         )

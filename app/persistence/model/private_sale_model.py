@@ -77,6 +77,6 @@ class PrivateSaleModel(db.Model):
             trade_type=self.trade_type,
             building_type=self.building_type,
             is_available=self.is_available,
-            created_at=self.created_at,
-            updated_at=self.updated_at
+            created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
+            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S")
         )
