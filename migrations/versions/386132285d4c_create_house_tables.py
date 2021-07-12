@@ -1,8 +1,8 @@
 """create_house_tables
 
-Revision ID: df3b68261af8
+Revision ID: 386132285d4c
 Revises: 407554a1fdaf
-Create Date: 2021-07-12 03:46:17.826056
+Create Date: 2021-07-12 12:22:27.112068
 
 """
 import geoalchemy2
@@ -10,7 +10,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = 'df3b68261af8'
+revision = '386132285d4c'
 down_revision = '407554a1fdaf'
 branch_labels = None
 depends_on = None
@@ -85,7 +85,7 @@ def upgrade():
                     sa.Column('construct_company', sa.String(length=30), nullable=True),
                     sa.Column('supply_household', sa.Integer(), nullable=False),
                     sa.Column('is_available', sa.Boolean(), nullable=False),
-                    sa.Column('offer_date', sa.Date(), nullable=False),
+                    sa.Column('offer_date', sa.DateTime(), nullable=False),
                     sa.Column('subscription_start_date', sa.DateTime(), nullable=False),
                     sa.Column('subscription_end_date', sa.DateTime(), nullable=False),
                     sa.Column('special_supply_date', sa.DateTime(), nullable=False),
@@ -117,8 +117,7 @@ def upgrade():
                     sa.Column('supply_price', sa.Integer(), nullable=False),
                     sa.Column('acquisition_tax', sa.Integer(), nullable=False),
                     sa.ForeignKeyConstraint(['public_sales_id'], ['public_sales.id'], ondelete='CASCADE'),
-                    sa.PrimaryKeyConstraint('id'),
-                    sa.UniqueConstraint('public_sales_id')
+                    sa.PrimaryKeyConstraint('id')
                     )
     op.create_table('public_sale_photos',
                     sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), autoincrement=True,
