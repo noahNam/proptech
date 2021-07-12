@@ -34,17 +34,6 @@ class PublicSalePhotoModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    def __repr__(self):
-        return (
-            f"PublicSalePhoto({self.id}, "
-            f"{self.public_sales_id}, "
-            f"{self.file_name}, "
-            f"{self.path}, "
-            f"{self.extension}, "
-            f"{self.created_at}, "
-            f"{self.updated_at}) "
-        )
-
     def to_entity(self) -> PublicSalePhotoEntity:
         return PublicSalePhotoEntity(
             id=self.id,

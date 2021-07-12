@@ -45,7 +45,7 @@ class UpsertInterestHouseRequestSchema:
 
 class GetCoordinatesRequestSchema(BaseModel):
     """
-        위도: Y (37.xxx),
+        위도: Y (37.xxx),  <-- 주의: X Y 바뀐 형태
         경도: X (127.xxx),
         <Points>
         start(x,y)-----------
@@ -57,6 +57,19 @@ class GetCoordinatesRequestSchema(BaseModel):
 
         x_points : (start_x, end_x)
         y_points : (start_y, end_y)
+
+        @validator
+        - check_longitudes_range
+        --> 두 점의 각 경도 값의 범위를 체크합니다.
+            (기준: 125.0666666 - 우리나라 서해 끝 섬, 131.8722222 - 동쪽 끝 독도 사이
+                and start_x 값이 end_x 값보다 작아야 합니다.)
+        - check_latitudes_range
+        --> 두 점의 각 위도 값의 범위를 체크합니다.
+            (기준: 33.1 - 제주도 제일 아래 지역 최남단, 38.45 - 북한 제외 최북단
+                and end_y 값이 start_y 값보다 작아야 합니다.)
+        - check_level
+        --> 네이버지도에서 지원하는 zoom_level 값의 범위를 체크합니다.
+            (기준: 6 - 가장 축소했을 때 level, 21 - 가장 확대했을 때 level
     """
     x_points: Tuple[StrictFloat, StrictFloat] = ()
     y_points: Tuple[StrictFloat, StrictFloat] = ()

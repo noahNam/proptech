@@ -17,14 +17,6 @@ class CoordinatesRangeDto(BaseModel):
     level: int
 
 
-class RealEstateDto(BaseModel):
-    real_estate: RealEstateEntity
-    private_sales: List[PrivateSaleEntity] = None
-
-    class Config:
-        orm_mode = True
-
-
 class UpsertInterestHouseDto(BaseModel):
     user_id: int
     house_id: int

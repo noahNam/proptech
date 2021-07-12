@@ -50,8 +50,7 @@ class BoundingUseCase(HouseBaseUseCase):
             return UseCaseFailureOutput(
                 type="map_coordinates", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
-        queryset = self._house_repo.get_queryset_by_coordinates_range_dto(dto=dto)
-        bounding_entities = self._house_repo.make_object_bounding_entity_from_queryset(queryset=queryset)
+        bounding_entities = self._house_repo.get_queryset_by_coordinates_range_dto(dto=dto)
 
         if not bounding_entities:
             return UseCaseSuccessOutput(value="null")

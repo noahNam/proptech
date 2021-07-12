@@ -28,16 +28,6 @@ class PublicSaleDetailModel(db.Model):
     supply_price = Column(Integer, nullable=False)
     acquisition_tax = Column(Integer, nullable=False)
 
-    def __repr__(self):
-        return (
-            f"PublicSaleDetail({self.id}, "
-            f"{self.public_sales_id}, "
-            f"{self.private_area}, "
-            f"{self.supply_area}, "
-            f"{self.supply_price}), "
-            f"{self.acquisition_tax}) "
-        )
-
     def to_entity(self) -> PublicSaleDetailEntity:
         return PublicSaleDetailEntity(
             id=self.id,
