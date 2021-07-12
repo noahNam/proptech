@@ -32,7 +32,7 @@ class RealEstateModel(db.Model):
     road_number = Column(String(10), nullable=True)
     land_number = Column(String(10), nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
-    coordinates = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
+    coordinates = Column(Geometry(geometry_type="POINT", srid=4326).with_variant(String, "sqlite"), nullable=True)
 
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())
