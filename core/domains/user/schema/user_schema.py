@@ -9,12 +9,6 @@ class GetUserBaseSchema(BaseModel):
     is_out: bool
 
 
-class GetUserInfoBaseSchema(BaseModel):
-    code: StrictInt
-    user_value: StrictStr = None
-    code_values: UserInfoCodeValueEntity = None
-
-
 class GetUserResponseSchema(BaseModel):
     user: GetUserBaseSchema
 
@@ -32,4 +26,8 @@ class UpsertUserInfoResponseSchema(BaseModel):
 
 
 class GetUserInfoResponseSchema(BaseModel):
-    result: GetUserInfoBaseSchema
+    result: list
+
+
+class PatchUserOutResponseSchema(BaseModel):
+    result: StrictStr

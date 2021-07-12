@@ -11,8 +11,7 @@ from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import NotificationModel
 from core.domains.notification.dto.notification_dto import PushMessageDto
 from core.domains.notification.enum.notification_enum import (
-    NotificationCategoryEnum,
-    NotificationBadgeTypeEnum,
+    NotificationBadgeTypeEnum, NotificationTopicEnum, NotificationStatusEnum,
 )
 
 logger = logging.getLogger(__name__)
@@ -22,14 +21,13 @@ APPLICATION_ARN = "arn:aws:sns:ap-northeast-2:208389685150:app/GCM/test-app"
 ENDPOINT = "cSKbASjPSAKH4zOu7eSJRb:APA91bED6HJa4snK8MWQ7Y90XTEtSV044Larhy-_rx0J0N4fqV3lTIHmzFYu_jV9xm7-MLQbSVtfYgHnJlQfKa_kgM4I9CK_3_a5IQMKYsPtXrJoXAsV8GmcCDr352bXMp6exgibcANc"
 
 message_dto = PushMessageDto(
-    token="device-token",
-    category=NotificationCategoryEnum.APT01.value,
-    badge_type=NotificationBadgeTypeEnum.ALL.value,
     title="모집공고가 새로 등록 되었습니다.",
-    body="판교봇들마을3단지 모집공고가 게시되었습니다.",
+    content="판교봇들마을3단지 모집공고가 게시되었습니다.",
+    created_at=str(get_server_timestamp().replace(microsecond=0)),
+    badge_type=NotificationBadgeTypeEnum.ALL.value,
     data={
         "user_id": 1,
-        "created_at": str(get_server_timestamp().replace(microsecond=0)),
+        "topic": NotificationTopicEnum.SUB_NEWS.value,
     },
 )
 
@@ -44,10 +42,12 @@ def test_push_message_via_SNS(session):
         user_id=1,
         token="user-token",
         endpoint=ENDPOINT,
-        category="APT01",
-        data=message_dict,
+        topic=NotificationTopicEnum.SUB_NEWS.value,
+        badge_type=NotificationBadgeTypeEnum.ALL.value,
+        message=message_dict,
         is_read=False,
         is_pending=False,
+        status=NotificationStatusEnum.WAIT.value
     )
     session.add(notification)
     session.commit()
