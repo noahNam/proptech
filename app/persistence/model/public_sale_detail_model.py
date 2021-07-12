@@ -22,9 +22,7 @@ class PublicSaleDetailModel(db.Model):
     )
     public_sales_id = Column(BigInteger,
                              ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
-                             nullable=False,
-                             unique=True)
-
+                             nullable=False)
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
     supply_price = Column(Integer, nullable=False)

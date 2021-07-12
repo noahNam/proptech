@@ -40,7 +40,7 @@ class PublicSaleModel(db.Model):
     construct_company = Column(String(30), nullable=True)
     supply_household = Column(Integer, nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
-    offer_date = Column(Date, nullable=False)
+    offer_date = Column(DateTime, nullable=False)
     subscription_start_date = Column(DateTime, nullable=False)
     subscription_end_date = Column(DateTime, nullable=False)
     special_supply_date = Column(DateTime, nullable=False)
