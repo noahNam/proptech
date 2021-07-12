@@ -3,9 +3,10 @@ from pydantic import BaseModel
 
 class UserEntity(BaseModel):
     id: int
-    is_required_agree_terms: int
-    is_active: int
-    is_out: int
+    is_required_agree_terms: bool
+    join_date: str
+    is_active: bool
+    is_out: bool
 
 
 class UserInfoCodeValueEntity(BaseModel):
@@ -14,15 +15,12 @@ class UserInfoCodeValueEntity(BaseModel):
 
 
 class UserInfoEntity(BaseModel):
-    id: int
-    user_profile_id: int
     code: int
-    user_value: str = None
     code_values: UserInfoCodeValueEntity = None
+    user_value: str = None
 
 
 class UserInfoEmptyEntity(BaseModel):
-    user_profile_id: int = None
     code: int
-    user_value: str = None
     code_values: UserInfoCodeValueEntity = None
+    user_value: str = None

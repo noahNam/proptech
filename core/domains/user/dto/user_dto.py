@@ -33,10 +33,17 @@ class CreateAppAgreeTermsDto(BaseModel):
     user_id: int
     private_user_info_yn: bool
     required_terms_yn: bool
-    receipt_marketing_yn: bool
+    receive_marketing_yn: bool
 
 
 class UpsertUserInfoDto(BaseModel):
+    user_id: int
+    user_profile_id: int = None
+    codes: list
+    values: list = []
+
+
+class UpsertUserInfoDetailDto(BaseModel):
     user_id: int
     user_profile_id: int = None
     code: int
@@ -44,6 +51,12 @@ class UpsertUserInfoDto(BaseModel):
 
 
 class GetUserInfoDto(BaseModel):
+    user_id: int
+    user_profile_id: int = None
+    codes: list
+
+
+class GetUserInfoDetailDto(BaseModel):
     user_id: int
     user_profile_id: int = None
     code: int
@@ -57,3 +70,22 @@ class SendUserInfoToLakeDto(BaseModel):
 
     def to_dict(self):
         return self.dict()
+
+
+class AvgMonthlyIncomeWokrerDto(BaseModel):
+    three: int
+    four: int
+    five: int
+    six: int
+    seven: int
+    eight: int
+
+
+class SidoCodeDto(BaseModel):
+    sido_code: list
+    sido_name: list
+
+
+class SigugunCodeDto(BaseModel):
+    sigugun_code: list
+    sigugun_name: list
