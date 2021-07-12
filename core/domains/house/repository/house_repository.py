@@ -1,17 +1,9 @@
 from sqlalchemy import and_, func, or_
-
-from app.extensions.database import session
-from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
-from app.persistence.model import RealEstateModel, PrivateSaleModel, PublicSaleModel, PublicSaleDetailModel, \
-    PublicSalePhotoModel
-from core.domains.house.dto.house_dto import CoordinatesRangeDto, RealEstateDto
-from typing import Optional
-
+from app.persistence.model import RealEstateModel, PrivateSaleModel, PublicSaleModel
+from core.domains.house.dto.house_dto import CoordinatesRangeDto
 from sqlalchemy import exc
-
 from app.extensions.utils.log_helper import logger_
-
 from app.extensions.database import session
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
@@ -58,6 +50,16 @@ class HouseRepository:
                 f"[HouseRepository][update_is_like_house] house_id : {dto.house_id} error : {e}"
             )
 
+    def _make_object_bounding_entity_from_queryset(self, queryset: list):
+        if not queryset:
+            return None
+
+        # Make Entity
+        results = list()
+        for query in queryset:
+            results.append(query.to_bounding_entity())
+        return results
+
     def get_queryset_by_coordinates_range_dto(self, dto: CoordinatesRangeDto):
         query = (
             session.query(RealEstateModel)
@@ -81,14 +83,4 @@ class HouseRepository:
 
         )
         queryset = query.all()
-        return queryset
-
-    def make_object_bounding_entity_from_queryset(self, queryset: list):
-        if not queryset:
-            return None
-
-        # Make Entity
-        results = list()
-        for query in queryset:
-            results.append(query.to_bounding_entity())
-        return results
+        return self._make_object_bounding_entity_from_queryset(queryset=queryset)

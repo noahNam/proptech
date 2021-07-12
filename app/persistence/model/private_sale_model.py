@@ -45,24 +45,6 @@ class PrivateSaleModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    def __repr__(self):
-        return (
-            f"PrivateSale({self.id}, "
-            f"{self.real_estate_id}, "
-            f"{self.private_area}, "
-            f"{self.supply_area}, "
-            f"{self.contract_date}, "
-            f"{self.deposit_price}, "
-            f"{self.rent_price}, "
-            f"{self.trade_price}, "
-            f"{self.floor}, "
-            f"{self.trade_type}, "
-            f"{self.building_type}, "
-            f"{self.is_available}, "
-            f"{self.created_at}, "
-            f"{self.updated_at}"
-        )
-
     def to_entity(self) -> PrivateSaleEntity:
         return PrivateSaleEntity(
             id=self.id,

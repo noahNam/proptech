@@ -6,4 +6,4 @@ from core.domains.house.entity.house_entity import BoundingRealEstateEntity
 
 
 class BoundingResponseSchema(BaseModel):
-    result: List[BoundingRealEstateEntity]
+    houses: List[BoundingRealEstateEntity]

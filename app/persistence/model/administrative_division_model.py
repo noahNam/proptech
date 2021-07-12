@@ -40,21 +40,6 @@ class AdministrativeDivisionModel(db.Model):
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())
 
-    def __repr__(self):
-        return (
-            f"AdministrativeDivision({self.id}', "
-            f"{self.name}, "
-            f"{self.short_name}, "
-            f"{self.real_trade_price}, "
-            f"{self.real_rent_price}, "
-            f"{self.real_deposit_price}, "
-            f"{self.public_sale_price}, "
-            f"{self.level}, "
-            f"{self.coordinates}, "
-            f"{self.created_at}, "
-            f"{self.updated_at}) "
-        )
-
     def to_entity(self) -> AdministrativeDivisionEntity:
         return AdministrativeDivisionEntity(
             id=self.id,

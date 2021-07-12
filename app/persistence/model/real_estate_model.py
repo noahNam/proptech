@@ -41,23 +41,6 @@ class RealEstateModel(db.Model):
     public_sales = relationship("PublicSaleModel", backref=backref("real_estates", cascade="all, delete"),
                                 uselist=False)
 
-    def __repr__(self):
-        return (
-            f"RealEstate({self.id}, "
-            f"{self.name}, "
-            f"{self.road_address}, "
-            f"{self.jibun_address}, "
-            f"{self.si_do}, "
-            f"{self.si_gun_gu}, "
-            f"{self.dong_myun}, "
-            f"{self.ri}, "
-            f"{self.road_name}, "
-            f"{self.road_number}, "
-            f"{self.land_number}, "
-            f"{self.is_available}, "
-            f"{self.coordinates})"
-        )
-
     def to_entity(self, lat, lon) -> RealEstateEntity:
         return RealEstateEntity(
             id=self.id,

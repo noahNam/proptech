@@ -10,14 +10,7 @@
 #     return CreateAppAgreeTermsPresenter().transform(
 #         CreateAppAgreeTermsUseCase().execute(dto=dto)
 #     )
-from datetime import date, timedelta, datetime
 from http import HTTPStatus
-
-from flask import request, jsonify
-from sqlalchemy import func, or_, and_
-
-from app.extensions.database import session
-from app.extensions.utils.time_helper import get_month_from_today
 from app.http.requests.v1.house_request import GetCoordinatesRequest
 from app.http.responses import failure_response
 from app.http.responses.presenters.v1.house_presenter import BoundingPresenter
@@ -48,11 +41,11 @@ def upsert_interest_house_view(house_id):
 @api.route("/v1/house/bounding", methods=["GET"])
 def bounding_view():
     try:
-        start_x = float(request.args.get("start_x"))
-        start_y = float(request.args.get("start_y"))
-        end_x = float(request.args.get("end_x"))
-        end_y = float(request.args.get("end_y"))
-        level = int(request.args.get("level"))
+        start_x = request.args.get("start_x")
+        start_y = request.args.get("start_y")
+        end_x = request.args.get("end_x")
+        end_y = request.args.get("end_y")
+        level = request.args.get("level")
 
     except Exception as e:
         return failure_response(
@@ -64,11 +57,11 @@ def bounding_view():
         )
 
     try:
-        dto = GetCoordinatesRequest(start_x=start_x,
-                                    start_y=start_y,
-                                    end_x=end_x,
-                                    end_y=end_y,
-                                    level=level).validate_request_and_make_dto()
+        dto = GetCoordinatesRequest(start_x=float(start_x),
+                                    start_y=float(start_y),
+                                    end_x=float(end_x),
+                                    end_y=float(end_y),
+                                    level=int(level)).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
             UseCaseFailureOutput(
@@ -78,4 +71,3 @@ def bounding_view():
         )
 
     return BoundingPresenter().transform(BoundingUseCase().execute(dto=dto))
-    # return jsonify(start_x=dto.start_x, start_y=dto.start_y, end_x=dto.end_x, end_y=dto.end_y)

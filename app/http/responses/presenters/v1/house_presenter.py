@@ -39,7 +39,7 @@ class BoundingPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             value_list: List[BoundingRealEstateEntity] = output.value
             try:
-                schema = BoundingResponseSchema(result=value_list)
+                schema = BoundingResponseSchema(houses=value_list)
             except ValidationError as e:
                 logger.error(f"[BoundingPresenter][transform] value : {value_list} error : {e}")
                 return failure_response(
