@@ -6,4 +6,4 @@ def get_server_timestamp():
 
 
 def get_month_from_today():
-    return date.today() - timedelta(days=30)
+    return datetime.now() - timedelta(days=30)

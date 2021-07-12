@@ -5,19 +5,24 @@ security:
   - userAuth: []
 requestBody:
   required: true
+  description: codes는 integer / values는 string
   content:
     application/json:
       schema:
         type: object
         required:
-          - code
+          - codes
         properties:
-          code:
-            type: integer
-            example: 1000
-          value:
-            type: string
-            example: noah
+          codes:
+            type: array
+            items:
+              type: integer
+              example: 1002, 1003
+          values:
+            type: array
+            items:
+              type: string
+              example: 11, 11010
 responses:
   '200':
     description: A upsert_user_info object

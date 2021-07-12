@@ -25,6 +25,7 @@ class AdministrativeDivisionModel(db.Model):
     )
 
     name = Column(String(100), nullable=False)
+    short_name = Column(String(30), nullable=False)
     real_trade_price = Column(Integer, nullable=False)
     real_rent_price = Column(Integer, nullable=False)
     real_deposit_price = Column(Integer, nullable=False)
@@ -39,6 +40,7 @@ class AdministrativeDivisionModel(db.Model):
         return (
             f"AdministrativeDivision({self.id}', "
             f"{self.name}, "
+            f"{self.short_name}, "
             f"{self.real_trade_price}, "
             f"{self.real_rent_price}, "
             f"{self.real_deposit_price}, "
@@ -53,6 +55,7 @@ class AdministrativeDivisionModel(db.Model):
         return AdministrativeDivisionEntity(
             id=self.id,
             name=self.name,
+            short_name=self.short_name,
             real_trade_price=self.real_trade_price,
             real_rent_price=self.real_rent_price,
             real_deposit_price=self.real_deposit_price,

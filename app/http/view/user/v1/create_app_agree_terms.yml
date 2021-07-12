@@ -10,9 +10,9 @@ requestBody:
       schema:
         type: object
         required:
-          - receipt_marketing_yn
+          - receive_marketing_yn
         properties:
-          receipt_marketing_yn:
+          receive_marketing_yn:
             type: string
             example: True or False
 responses:

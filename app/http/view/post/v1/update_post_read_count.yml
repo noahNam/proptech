@@ -1,0 +1,48 @@
+openapi: "3.0.2"
+tags:
+  - Post
+security:
+  - userAuth: []
+parameters:
+  - in: path
+    name: post_id
+    required: true
+    schema:
+      type: integer
+responses:
+  '200':
+    description: update post read count +1
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/only_result'
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

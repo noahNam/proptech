@@ -8,6 +8,7 @@ from sqlalchemy import (
 )
 
 from app import db
+from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.public_sale_model import PublicSaleModel
 from core.domains.house.entity.house_entity import PublicSalePhotoEntity
@@ -28,7 +29,7 @@ class PublicSalePhotoModel(db.Model):
                              unique=True)
 
     file_name = Column(String(20), nullable=False)
-    path = Column(String(100), nullable=False)
+    path = Column(String(150), nullable=False)
     extension = Column(String(4), nullable=False)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
@@ -49,7 +50,7 @@ class PublicSalePhotoModel(db.Model):
             id=self.id,
             public_sales_id=self.public_sales_id,
             file_name=self.file_name,
-            path=self.path,
+            path=S3Helper.get_s3_url() + "/" + self.path,
             extension=self.extension,
             created_at=self.created_at,
             updated_at=self.updated_at

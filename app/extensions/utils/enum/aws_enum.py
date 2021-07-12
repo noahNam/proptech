@@ -11,3 +11,7 @@ class S3BucketEnum(Enum):
 
 class S3PathEnum(Enum):
     PROFILE_IMGS = "profile_imgs/"
+
+
+class S3RegionEnum(Enum):
+    TOADHOME_REGION = "ap-northeast-2"

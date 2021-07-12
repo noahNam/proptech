@@ -1,6 +1,11 @@
 from enum import Enum
 
 
+class HouseTypeEnum(Enum):
+    PUBLIC_SALES = 1
+    PRIVATE_SALES = 2
+
+
 class RealTradeTypeEnum(Enum):
     TRADING = "매매"
     LONG_TERM_RENT = "전세"
