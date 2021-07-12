@@ -2,7 +2,18 @@ from datetime import date, datetime
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+from pydantic.json import isoformat
+
+
+class InterestHouseEntity(BaseModel):
+    id: int
+    user_id: int
+    house_id: int
+    type: int
+    is_like: bool
+    created_at: datetime
+    updated_at: datetime
 
 
 class RealEstateEntity(BaseModel):
@@ -30,6 +41,7 @@ class PublicSaleDetailEntity(BaseModel):
     private_area: float
     supply_area: float
     supply_price: int
+    acquisition_tax: int
 
 
 class PublicSalePhotoEntity(BaseModel):
@@ -53,18 +65,18 @@ class PublicSaleEntity(BaseModel):
     construct_company: str
     supply_household: int
     is_available: bool
-    offer_date: date
-    subscription_start_date: date
-    subscription_end_date: date
-    special_supply_date: date
-    special_supply_etc_date: date
-    first_supply_date: date
-    first_supply_etc_date: date
-    second_supply_date: date
-    second_supply_etc_date: date
-    notice_winner_date: date
-    contract_start_date: date
-    contract_end_date: date
+    offer_date: datetime
+    subscription_start_date: datetime
+    subscription_end_date: datetime
+    special_supply_date: datetime
+    special_supply_etc_date: datetime
+    first_supply_date: datetime
+    first_supply_etc_date: datetime
+    second_supply_date: datetime
+    second_supply_etc_date: datetime
+    notice_winner_date: datetime
+    contract_start_date: datetime
+    contract_end_date: datetime
     move_in_year: int
     move_in_month: int
     min_down_payment: int
@@ -76,13 +88,19 @@ class PublicSaleEntity(BaseModel):
     public_sale_photos: PublicSalePhotoEntity = None
     public_sale_details: List[PublicSaleDetailEntity] = None
 
+    class Config:
+        use_enum_values = True
+        json_encoders = {
+            date: isoformat
+        }
+
 
 class PrivateSaleEntity(BaseModel):
     id: int
     real_estate_id: int
     private_area: float
     supply_area: float
-    contract_date: date
+    contract_date: datetime
     deposit_price: int
     rent_price: int
     trade_price: int
@@ -93,10 +111,14 @@ class PrivateSaleEntity(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    class Config:
+        use_enum_values = True
+
 
 class AdministrativeDivisionEntity(BaseModel):
     id: int
     name: str
+    short_name: str
     real_trade_price: int
     real_rent_price: int
     real_deposit_price: int
@@ -108,6 +130,9 @@ class AdministrativeDivisionEntity(BaseModel):
     longitude: float
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        use_enum_values = True
 
 
 class BoundingRealEstateEntity(BaseModel):
@@ -127,3 +152,6 @@ class BoundingRealEstateEntity(BaseModel):
     longitude: float
     private_sales: List[PrivateSaleEntity] = None
     public_sales: PublicSaleEntity = None
+
+    class Config:
+        use_enum_values = True

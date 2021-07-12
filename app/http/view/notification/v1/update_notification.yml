@@ -1,0 +1,49 @@
+openapi: "3.0.2"
+tags:
+  - Notification
+security:
+  - userAuth: []
+parameters:
+  - name: notification_id
+    in: path
+    required: true
+    schema:
+      type: integer
+      example: 1
+responses:
+  '200':
+    description: badge를 보여줘야할 경우 True 아니면 False
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/only_result'
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

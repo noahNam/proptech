@@ -32,18 +32,18 @@ class CreateAppAgreeTermsSchema(BaseModel):
     user_id: StrictInt
     private_user_info_yn: bool
     required_terms_yn: bool
-    receipt_marketing_yn: bool
+    receive_marketing_yn: bool
 
 
 class UpsertUserInfoSchema(BaseModel):
     user_id: StrictInt
-    code: int
-    value: str
+    codes: list
+    values: list = []
 
 
 class GetUserInfoSchema(BaseModel):
     user_id: StrictInt
-    code: int
+    codes: list
 
 
 class GetUserRequestSchema:
@@ -102,12 +102,12 @@ class CreateUserRequestSchema:
 
 class CreateAppAgreeTermsRequestSchema:
     def __init__(
-            self, user_id, receipt_marketing_yn,
+            self, user_id, receive_marketing_yn,
     ):
         self.user_id = int(user_id) if user_id else None
         self.private_user_info_yn = True
         self.required_terms_yn = True
-        self.receipt_marketing_yn = receipt_marketing_yn
+        self.receive_marketing_yn = receive_marketing_yn
 
     def validate_request_and_make_dto(self):
         try:
@@ -115,7 +115,7 @@ class CreateAppAgreeTermsRequestSchema:
                 user_id=self.user_id,
                 private_user_info_yn=self.private_user_info_yn,
                 required_terms_yn=self.required_terms_yn,
-                receipt_marketing_yn=self.receipt_marketing_yn,
+                receive_marketing_yn=self.receive_marketing_yn,
             ).dict()
             return CreateAppAgreeTermsDto(**schema)
         except ValidationError as e:
@@ -127,16 +127,16 @@ class CreateAppAgreeTermsRequestSchema:
 
 class UpsertUserInfoRequestSchema:
     def __init__(
-            self, user_id, code, value,
+            self, user_id, codes, values,
     ):
         self.user_id = int(user_id) if user_id else None
-        self.code = code
-        self.value = value
+        self.codes = codes
+        self.values = values
 
     def validate_request_and_make_dto(self):
         try:
             schema = UpsertUserInfoSchema(
-                user_id=self.user_id, code=self.code, value=self.value,
+                user_id=self.user_id, codes=self.codes, values=self.values,
             ).dict()
             return UpsertUserInfoDto(**schema)
         except ValidationError as e:
@@ -148,14 +148,14 @@ class UpsertUserInfoRequestSchema:
 
 class GetUserInfoRequestSchema:
     def __init__(
-            self, user_id, code,
+            self, user_id, codes,
     ):
         self.user_id = int(user_id) if user_id else None
-        self.code = code
+        self.codes = codes
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserInfoSchema(user_id=self.user_id, code=self.code, ).dict()
+            schema = GetUserInfoSchema(user_id=self.user_id, codes=self.codes, ).dict()
             return GetUserInfoDto(**schema)
         except ValidationError as e:
             logger.error(

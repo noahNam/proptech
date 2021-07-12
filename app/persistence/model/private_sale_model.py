@@ -32,7 +32,7 @@ class PrivateSaleModel(db.Model):
                             nullable=False)
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
-    contract_date = Column(Date, nullable=False)
+    contract_date = Column(DateTime, nullable=False)
     deposit_price = Column(Integer, nullable=False)
     rent_price = Column(Integer, nullable=False)
     trade_price = Column(Integer, nullable=False)
