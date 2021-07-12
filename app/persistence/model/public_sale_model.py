@@ -99,8 +99,8 @@ class PublicSaleModel(db.Model):
             max_down_payment=self.max_down_payment,
             down_payment_ratio=self.down_payment_ratio,
             reference_url=self.reference_url,
-            created_at=self.created_at,
-            updated_at=self.updated_at,
+            created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
+            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S"),
             public_sale_photos=self.public_sale_photos.to_entity() if self.public_sale_photos else None,
             public_sale_details=[public_sale_detail.to_entity() for public_sale_detail in self.public_sale_details] if self.public_sale_details else None
         )
