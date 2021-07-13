@@ -1,15 +1,20 @@
 from datetime import timedelta
 from typing import Optional, List
 
+from sqlalchemy import literal, String
+from sqlalchemy.orm import joinedload
+
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
 
 from app.extensions.database import session
-from app.persistence.model import NotificationModel, ReceivePushTypeHistoryModel
+from app.persistence.model import NotificationModel, ReceivePushTypeHistoryModel, PublicSaleModel, InterestHouseModel
 from app.persistence.model.receive_push_type_model import ReceivePushTypeModel
+from core.domains.house.entity.house_entity import PublicSalePushEntity, InterestHouseEntity
 from core.domains.notification.dto.notification_dto import GetBadgeDto, GetNotificationDto, UpdateNotificationDto, \
     UpdateReceiveNotificationSettingDto
 from core.domains.notification.entity.notification_entity import NotificationEntity, ReceivePushTypeEntity
+from core.domains.user.entity.user_entity import UserEntity
 
 logger = logger_.getLogger(__name__)
 
@@ -96,3 +101,66 @@ class NotificationRepository:
                 f"[NotificationRepository][create_receive_push_type_history] user_id : {dto.user_id} error : {e}"
             )
             raise Exception
+
+    def get_push_target_of_public_sales(self, today: str) -> List[Optional[PublicSalePushEntity]]:
+        default_filters = list()
+        default_filters.append(PublicSaleModel.is_available == True)
+
+        # 모집공고일
+        query_cond1 = session.query(PublicSaleModel, literal("offer_date", String).label("message_type")).filter(
+            *default_filters, PublicSaleModel.offer_date == today)
+
+        # 특별공급일
+        query_cond2 = session.query(PublicSaleModel,
+                                    literal("special_supply_date", String).label("message_type")).filter(
+            *default_filters, PublicSaleModel.special_supply_date == today)
+
+        # 1순위
+        query_cond3 = session.query(PublicSaleModel, literal("first_supply_date", String).label("message_type")).filter(
+            *default_filters, PublicSaleModel.first_supply_date == today)
+
+        # 2순위
+        query_cond4 = session.query(PublicSaleModel,
+                                    literal("second_supply_date", String).label("message_type")).filter(
+            *default_filters, PublicSaleModel.second_supply_date == today)
+
+        # 당첨자발표일
+        query_cond5 = session.query(PublicSaleModel,
+                                    literal("notice_winner_date", String).label("message_type")).filter(
+            *default_filters, PublicSaleModel.notice_winner_date == today)
+
+        query = query_cond1.union_all(query_cond2, query_cond3, query_cond4, query_cond5)
+        public_sales = query.all()
+
+        # public_sale[0] = PublicSaleModel
+        # public_sale[1] = message_type
+        return [public_sale[0].to_push_entity(public_sale[1]) for public_sale in
+                public_sales]
+
+    def get_push_target_of_users(self, house_id: int, type_: int) -> List[Optional[UserEntity]]:
+        filters = list()
+        filters.append(InterestHouseModel.house_id == house_id)
+        filters.append(InterestHouseModel.type == type_)
+        filters.append(InterestHouseModel.is_like == True)
+
+        query = session.query(InterestHouseModel).options(
+            joinedload(InterestHouseModel.users, innerjoin=True)).filter(*filters)
+        interest_houses = query.all()
+        target_user_list = [interest_house.users.to_entity() for interest_house in interest_houses]
+        return target_user_list
+
+    def create_notifications(self, notification_list: List[dict]) -> None:
+        try:
+            session.bulk_insert_mappings(
+                NotificationModel,
+                [
+                    notification
+                    for notification in notification_list
+                ]
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[NotificationRepository][create_notifications] error : {e}"
+            )
