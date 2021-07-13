@@ -15,7 +15,3 @@ def get_worker(topic: str):
 def start_worker(topic):
     us = get_worker(topic)
     us.execute()
-
-
-if __name__ == "__main__":
-    start_worker(topic="tanos.pre_prcs_interest_house_data.v1")
