@@ -34,7 +34,7 @@ def test_upsert_interest_house_view_when_like_public_sales_then_insert_success(
 
 
 def test_upsert_interest_house_view_when_unlike_public_sales_then_update_is_like_equals_false(
-        client, session, test_request_context, make_header, make_authorization, create_users, interest_house_factory
+        client, session, test_request_context, make_header, make_authorization, interest_house_factory
 ):
     interest_house = interest_house_factory.build()
     session.add(interest_house)
