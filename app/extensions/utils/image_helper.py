@@ -1,7 +1,9 @@
+import os
+
 import boto3
 from botocore.exceptions import ClientError
 from flask import current_app
-from app.extensions.utils.enum.aws_enum import AwsServiceEnum
+from app.extensions.utils.enum.aws_enum import AwsServiceEnum, S3BucketEnum, S3RegionEnum
 from app.extensions.utils.log_helper import logger_
 
 logger = logger_.getLogger(__name__)
@@ -37,3 +39,7 @@ class S3Helper:
             result_flag = True
 
         return result_flag
+
+    @classmethod
+    def get_s3_url(cls):
+        return f"https://{S3BucketEnum.TOADHOME_BUCKET_NAME.value}.s3.{S3RegionEnum.TOADHOME_BUCKET_REGION.value}.amazonaws.com"
