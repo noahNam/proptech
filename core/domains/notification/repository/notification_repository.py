@@ -137,7 +137,7 @@ class NotificationRepository:
         return [public_sale[0].to_push_entity(public_sale[1]) for public_sale in
                 public_sales]
 
-    def get_push_target_of_users(self, house_id: int, type_: int) -> List[Optional[UserEntity]]:
+    def get_users_of_push_target(self, house_id: int, type_: int) -> List[Optional[UserEntity]]:
         filters = list()
         filters.append(InterestHouseModel.house_id == house_id)
         filters.append(InterestHouseModel.type == type_)
@@ -146,7 +146,14 @@ class NotificationRepository:
         query = session.query(InterestHouseModel).options(
             joinedload(InterestHouseModel.users, innerjoin=True)).filter(*filters)
         interest_houses = query.all()
-        target_user_list = [interest_house.users.to_entity() for interest_house in interest_houses]
+
+        return self._make_push_target_user_list(interest_houses=interest_houses)
+
+    def _make_push_target_user_list(self, interest_houses: List[InterestHouseModel]) -> List[Optional[UserEntity]]:
+        target_user_list = list()
+        for interest_house in interest_houses:
+            if interest_house.users.receive_push_type.is_private:
+                target_user_list.append(interest_house.users.to_entity())
         return target_user_list
 
     def create_notifications(self, notification_list: List[dict]) -> None:

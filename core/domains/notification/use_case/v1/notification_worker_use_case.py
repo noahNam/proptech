@@ -1,5 +1,5 @@
 import os
-from typing import  List
+from typing import List
 
 import inject
 
@@ -52,7 +52,7 @@ class PrePrcsNotificationUseCase:
             logger.error(f"🚀\tcreate_notifications Error - {e}")
             return
 
-        logger.info(f"🚀\tPrePrcsNotification Success")
+        logger.info(f"🚀\tPrePrcsNotification Success -  {len(target_public_sales)} / {len(notification_list)}")
 
     def _convert_message_for_public_sales(self, target_public_sales: List[PublicSalePushEntity]) -> List[dict]:
         notification_list = list()
@@ -81,7 +81,7 @@ class PrePrcsNotificationUseCase:
             topic = message_format_dict.get(target_public_sale.message_type)[2]
 
             # Push 타겟을 찜한 유저를 조회
-            target_user_list: List[UserEntity] = self._notification_repo.get_push_target_of_users(
+            target_user_list: List[UserEntity] = self._notification_repo.get_users_of_push_target(
                 house_id=target_public_sale.id, type_=HouseTypeEnum.PUBLIC_SALES.value)
 
             for target_user in target_user_list:
