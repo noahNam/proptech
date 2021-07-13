@@ -1,20 +1,7 @@
-# @api.route("/v1/users/terms", methods=["POST"])
-# @jwt_required
-# @auth_required
-# @swag_from("create_app_agree_terms.yml", methods=["POST"])
-# def create_app_agree_terms_view():
-#     dto = CreateAppAgreeTermsRequestSchema(
-#         **request.get_json(), user_id=current_user.id,
-#     ).validate_request_and_make_dto()
-#
-#     return CreateAppAgreeTermsPresenter().transform(
-#         CreateAppAgreeTermsUseCase().execute(dto=dto)
-#     )
 from http import HTTPStatus
 from app.http.requests.v1.house_request import GetCoordinatesRequest
 from app.http.responses import failure_response
 from app.http.responses.presenters.v1.house_presenter import BoundingPresenter
-from app.http.view import api
 from core.domains.house.use_case.v1.house_use_case import BoundingUseCase
 from core.exceptions import InvalidRequestException
 from core.use_case_output import UseCaseFailureOutput, FailureType
