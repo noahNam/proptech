@@ -8,7 +8,7 @@ from sqlalchemy import (
     SmallInteger,
     Boolean,
     Enum,
-    Date,
+    String,
 )
 
 from app import db
@@ -32,7 +32,7 @@ class PrivateSaleModel(db.Model):
                             nullable=False)
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
-    contract_date = Column(DateTime, nullable=False)
+    contract_date = Column(String(8), nullable=True)
     deposit_price = Column(Integer, nullable=False)
     rent_price = Column(Integer, nullable=False)
     trade_price = Column(Integer, nullable=False)
