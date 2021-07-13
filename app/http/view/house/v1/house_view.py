@@ -13,7 +13,7 @@
 from http import HTTPStatus
 from app.http.requests.v1.house_request import GetCoordinatesRequest
 from app.http.responses import failure_response
-from app.http.responses.presenters.v1.house_presenter import BoundingPresenter
+from app.http.responses.presenters.v1.house_presenter import BoundingPresenter, BoundingAdministrativePresenter
 from app.http.view import api
 from core.domains.house.use_case.v1.house_use_case import BoundingUseCase
 from core.exceptions import InvalidRequestException
@@ -69,5 +69,7 @@ def bounding_view():
                 message=f"Invalid Parameter input, Only South_Korea boundary coordinates Available",
             )
         )
-
+    if dto.level < 15:
+        # level 15 이하 : 행정구역 스키마 Presenter 변경
+        return BoundingAdministrativePresenter().transform(BoundingUseCase().execute(dto=dto))
     return BoundingPresenter().transform(BoundingUseCase().execute(dto=dto))

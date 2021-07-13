@@ -46,11 +46,26 @@ class BoundingUseCase(HouseBaseUseCase):
     def execute(
             self, dto: CoordinatesRangeDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        if not (dto.start_x and dto.start_y and dto.end_x and dto.end_y):
+        """
+            <dto.level condition>
+                level 15 이상 : 매물 쿼리
+                level 14 이하 : 행정구역별 평균 가격 쿼리
+                level 값 조절시 bounding_view()의 presenter 선택 조건 고려해야 합니다.
+        """
+        if not (dto.start_x and dto.start_y and dto.end_x and dto.end_y and dto.level):
             return UseCaseFailureOutput(
                 type="map_coordinates", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
-        bounding_entities = self._house_repo.get_queryset_by_coordinates_range_dto(dto=dto)
+        # dto.level range check
+        if dto.level < 5 or dto.level > 22:
+            return UseCaseFailureOutput(
+                type="level", message=FailureType.INVALID_REQUEST_ERROR, code=HTTPStatus.BAD_REQUEST
+            )
+        # dto.level condition
+        if dto.level > 14:
+            bounding_entities = self._house_repo.get_queryset_by_coordinates_range_dto(dto=dto)
+        else:
+            bounding_entities = self._house_repo.get_administrative_queryset_by_coordinates_range_dto(dto=dto)
 
         if not bounding_entities:
             return UseCaseSuccessOutput(value="null")

@@ -1,8 +1,10 @@
 from typing import Optional
 
 from sqlalchemy import and_, func, or_
+
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
-from app.persistence.model import RealEstateModel, PrivateSaleModel, PublicSaleModel
+from app.persistence.model import RealEstateModel, PrivateSaleModel, PublicSaleModel, AdministrativeDivisionModel
 from core.domains.house.dto.house_dto import CoordinatesRangeDto
 from sqlalchemy import exc
 from app.extensions.utils.log_helper import logger_
@@ -63,26 +65,64 @@ class HouseRepository:
         return results
 
     def get_queryset_by_coordinates_range_dto(self, dto: CoordinatesRangeDto) -> Optional[list]:
+        filters = list()
+        filters.append(func.ST_Contains(func.ST_MakeEnvelope(dto.start_x, dto.end_y, dto.end_x, dto.start_y, 4326),
+                                        RealEstateModel.coordinates))
+        filters.append(or_(and_(RealEstateModel.is_available == "True",
+                                PrivateSaleModel.is_available == "True",
+                                func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") >= get_month_from_today(),
+                                func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") <= get_server_timestamp()),
+                           and_(RealEstateModel.is_available == "True",
+                                PublicSaleModel.is_available == "True"),
+                           and_(RealEstateModel.is_available == "True",
+                                PrivateSaleModel.is_available == "True",
+                                PublicSaleModel.is_available == "True",
+                                func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") >= get_month_from_today(),
+                                func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") <= get_server_timestamp())))
+
         query = (
             session.query(RealEstateModel)
                 .join(RealEstateModel.private_sales, isouter=True)
                 .join(RealEstateModel.public_sales, isouter=True)
                 .join(PublicSaleModel.public_sale_details, isouter=True)
                 .join(PublicSaleModel.public_sale_photos, isouter=True)
-                .filter(or_(and_(RealEstateModel.is_available == "True",
-                                 PrivateSaleModel.is_available == "True",
-                                 PrivateSaleModel.contract_date >= get_month_from_today(),
-                                 PrivateSaleModel.contract_date <= get_server_timestamp()),
-                            and_(RealEstateModel.is_available == "True",
-                                 PublicSaleModel.is_available == "True"),
-                            and_(RealEstateModel.is_available == "True",
-                                 PrivateSaleModel.is_available == "True",
-                                 PublicSaleModel.is_available == "True",
-                                 PrivateSaleModel.contract_date >= get_month_from_today(),
-                                 PrivateSaleModel.contract_date <= get_server_timestamp())))
-                .filter(func.ST_Contains(func.ST_MakeEnvelope(dto.start_x, dto.end_y, dto.end_x, dto.start_y, 4326),
-                                         RealEstateModel.coordinates))
+                .filter(*filters)
 
         )
+
         queryset = query.all()
         return self._make_object_bounding_entity_from_queryset(queryset=queryset)
+
+    def _make_bounding_administrative_entity_from_queryset(self, queryset: Optional[list]) -> Optional[list]:
+        if not queryset:
+            return None
+
+        # Make Entity
+        results = list()
+        for query in queryset:
+            results.append(query.to_entity())
+        return results
+
+    def get_administrative_queryset_by_coordinates_range_dto(self, dto: CoordinatesRangeDto) -> Optional[list]:
+        """
+             dto.level: 6 ~ 14
+             <filter condition>
+                11 이상 -> 읍, 면, 동, 리 (AdministrativeDivisionModel.level -> "3")
+                9 ~ 11 -> 시, 군, 구 (AdministrativeDivisionModel.level -> "2")
+                8 이하 -> 시, 도 (AdministrativeDivisionModel.level -> "1")
+        """
+        filters = list()
+        filters.append(func.ST_Contains(func.ST_MakeEnvelope(dto.start_x, dto.end_y, dto.end_x, dto.start_y, 4326),
+                                        AdministrativeDivisionModel.coordinates))
+
+        if dto.level > 11:
+            filters.append(AdministrativeDivisionModel.level == "3")
+        elif 8 < dto.level < 12:
+            filters.append(AdministrativeDivisionModel.level == "2")
+        else:
+            filters.append(AdministrativeDivisionModel.level == "1")
+
+        query = session.query(AdministrativeDivisionModel).filter(*filters)
+        queryset = query.all()
+
+        return self._make_bounding_administrative_entity_from_queryset(queryset=queryset)
