@@ -1,8 +1,8 @@
 """create_house_tables
 
-Revision ID: 51bdfb23acec
+Revision ID: 65261925d8fa
 Revises: 50659369a256
-Create Date: 2021-07-13 11:00:12.538263
+Create Date: 2021-07-13 13:02:17.205904
 
 """
 import geoalchemy2
@@ -10,7 +10,7 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
-revision = '51bdfb23acec'
+revision = '65261925d8fa'
 down_revision = '50659369a256'
 branch_labels = None
 depends_on = None
@@ -62,7 +62,7 @@ def upgrade():
                     sa.Column('real_estate_id', sa.BigInteger(), nullable=False),
                     sa.Column('private_area', sa.Float(), nullable=False),
                     sa.Column('supply_area', sa.Float(), nullable=False),
-                    sa.Column('contract_date', sa.DateTime(), nullable=False),
+                    sa.Column('contract_date', sa.String(length=8), nullable=True),
                     sa.Column('deposit_price', sa.Integer(), nullable=False),
                     sa.Column('rent_price', sa.Integer(), nullable=False),
                     sa.Column('trade_price', sa.Integer(), nullable=False),
@@ -87,20 +87,20 @@ def upgrade():
                     sa.Column('construct_company', sa.String(length=30), nullable=True),
                     sa.Column('supply_household', sa.Integer(), nullable=False),
                     sa.Column('is_available', sa.Boolean(), nullable=False),
-                    sa.Column('offer_date', sa.DateTime(), nullable=False),
-                    sa.Column('subscription_start_date', sa.DateTime(), nullable=False),
-                    sa.Column('subscription_end_date', sa.DateTime(), nullable=False),
-                    sa.Column('special_supply_date', sa.DateTime(), nullable=False),
-                    sa.Column('special_supply_etc_date', sa.DateTime(), nullable=False),
-                    sa.Column('first_supply_date', sa.DateTime(), nullable=False),
-                    sa.Column('first_supply_etc_date', sa.DateTime(), nullable=False),
-                    sa.Column('second_supply_date', sa.DateTime(), nullable=False),
-                    sa.Column('second_supply_etc_date', sa.DateTime(), nullable=False),
-                    sa.Column('notice_winner_date', sa.DateTime(), nullable=False),
-                    sa.Column('contract_start_date', sa.DateTime(), nullable=False),
-                    sa.Column('contract_end_date', sa.DateTime(), nullable=False),
-                    sa.Column('move_in_year', sa.SmallInteger(), nullable=False),
-                    sa.Column('move_in_month', sa.SmallInteger(), nullable=False),
+                    sa.Column('offer_date', sa.String(length=8), nullable=True),
+                    sa.Column('subscription_start_date', sa.String(length=8), nullable=True),
+                    sa.Column('subscription_end_date', sa.String(length=8), nullable=True),
+                    sa.Column('special_supply_date', sa.String(length=8), nullable=True),
+                    sa.Column('special_supply_etc_date', sa.String(length=8), nullable=True),
+                    sa.Column('first_supply_date', sa.String(length=8), nullable=True),
+                    sa.Column('first_supply_etc_date', sa.String(length=8), nullable=True),
+                    sa.Column('second_supply_date', sa.String(length=8), nullable=True),
+                    sa.Column('second_supply_etc_date', sa.String(length=8), nullable=True),
+                    sa.Column('notice_winner_date', sa.String(length=8), nullable=True),
+                    sa.Column('contract_start_date', sa.String(length=8), nullable=True),
+                    sa.Column('contract_end_date', sa.String(length=8), nullable=True),
+                    sa.Column('move_in_year', sa.SmallInteger(), nullable=True),
+                    sa.Column('move_in_month', sa.SmallInteger(), nullable=True),
                     sa.Column('min_down_payment', sa.Integer(), nullable=False),
                     sa.Column('max_down_payment', sa.Integer(), nullable=False),
                     sa.Column('down_payment_ratio', sa.Integer(), nullable=False),

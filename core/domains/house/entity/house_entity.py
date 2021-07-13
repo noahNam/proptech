@@ -1,9 +1,8 @@
-from datetime import date, datetime
+from datetime import datetime
 from enum import Enum
 from typing import List
 
-from pydantic import BaseModel, validator
-from pydantic.json import isoformat
+from pydantic import BaseModel
 
 
 class InterestHouseEntity(BaseModel):
@@ -65,18 +64,18 @@ class PublicSaleEntity(BaseModel):
     construct_company: str
     supply_household: int
     is_available: bool
-    offer_date: datetime
-    subscription_start_date: datetime
-    subscription_end_date: datetime
-    special_supply_date: datetime
-    special_supply_etc_date: datetime
-    first_supply_date: datetime
-    first_supply_etc_date: datetime
-    second_supply_date: datetime
-    second_supply_etc_date: datetime
-    notice_winner_date: datetime
-    contract_start_date: datetime
-    contract_end_date: datetime
+    offer_date: str
+    subscription_start_date: str
+    subscription_end_date: str
+    special_supply_date: str
+    special_supply_etc_date: str
+    first_supply_date: str
+    first_supply_etc_date: str
+    second_supply_date: str
+    second_supply_etc_date: str
+    notice_winner_date: str
+    contract_start_date: str
+    contract_end_date: str
     move_in_year: int
     move_in_month: int
     min_down_payment: int
@@ -90,9 +89,6 @@ class PublicSaleEntity(BaseModel):
 
     class Config:
         use_enum_values = True
-        json_encoders = {
-            date: isoformat
-        }
 
 
 class PrivateSaleEntity(BaseModel):
@@ -100,7 +96,7 @@ class PrivateSaleEntity(BaseModel):
     real_estate_id: int
     private_area: float
     supply_area: float
-    contract_date: datetime
+    contract_date: str
     deposit_price: int
     rent_price: int
     trade_price: int
