@@ -2,6 +2,9 @@ from enum import Enum
 
 
 class HouseTypeEnum(Enum):
+    """
+        사용모델 : InterestHouseModel
+    """
     PUBLIC_SALES = 1
     PRIVATE_SALES = 2
 
