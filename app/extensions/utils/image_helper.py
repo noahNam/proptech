@@ -42,4 +42,4 @@ class S3Helper:
 
     @classmethod
     def get_s3_url(cls):
-        return f"https://{S3BucketEnum.TANOS_S3_BUCKET.value}.s3.{S3RegionEnum.TANOS_S3_REGION.value}.amazonaws.com"
+        return f"https://{S3BucketEnum.TOADHOME_BUCKET_NAME.value}.s3.{S3RegionEnum.TOADHOME_BUCKET_REGION.value}.amazonaws.com"
