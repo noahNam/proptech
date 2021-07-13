@@ -3,6 +3,7 @@ from typing import Union
 
 import inject
 
+from core.domains.house.dto.house_dto import CoordinatesRangeDto
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.repository.house_repository import HouseRepository
@@ -39,3 +40,18 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
             self._house_repo.create_interest_house(dto=dto)
 
         return UseCaseSuccessOutput()
+
+
+class BoundingUseCase(HouseBaseUseCase):
+    def execute(
+            self, dto: CoordinatesRangeDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not (dto.start_x and dto.start_y and dto.end_x and dto.end_y):
+            return UseCaseFailureOutput(
+                type="map_coordinates", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+            )
+        bounding_entities = self._house_repo.get_queryset_by_coordinates_range_dto(dto=dto)
+
+        if not bounding_entities:
+            return UseCaseSuccessOutput(value="null")
+        return UseCaseSuccessOutput(value=bounding_entities)

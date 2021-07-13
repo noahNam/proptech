@@ -23,6 +23,8 @@ requests = "^2.25.1"
 redis = "^3.5.3"
 newrelic = "*"
 sentry-sdk = "^1.1.0"
+GeoAlchemy2 = "^0.9.1"
+geojson-pydantic = "^0.3.0"
 supervisor = "^4.1.0"
 
 [tool.poetry.dev-dependencies]
