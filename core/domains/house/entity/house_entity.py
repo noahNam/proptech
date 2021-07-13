@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -61,27 +61,27 @@ class PublicSaleEntity(BaseModel):
     housing_category: Enum
     rent_type: Enum
     trade_type: Enum
-    construct_company: str
+    construct_company: Optional[str]
     supply_household: int
     is_available: bool
-    offer_date: str
-    subscription_start_date: str
-    subscription_end_date: str
-    special_supply_date: str
-    special_supply_etc_date: str
-    first_supply_date: str
-    first_supply_etc_date: str
-    second_supply_date: str
-    second_supply_etc_date: str
-    notice_winner_date: str
-    contract_start_date: str
-    contract_end_date: str
+    offer_date: Optional[str]
+    subscription_start_date: Optional[str]
+    subscription_end_date: Optional[str]
+    special_supply_date: Optional[str]
+    special_supply_etc_date: Optional[str]
+    first_supply_date: Optional[str]
+    first_supply_etc_date: Optional[str]
+    second_supply_date: Optional[str]
+    second_supply_etc_date: Optional[str]
+    notice_winner_date: Optional[str]
+    contract_start_date: Optional[str]
+    contract_end_date: Optional[str]
     move_in_year: int
     move_in_month: int
     min_down_payment: int
     max_down_payment: int
     down_payment_ratio: int
-    reference_url: str
+    reference_url: Optional[str]
     created_at: datetime
     updated_at: datetime
     public_sale_photos: PublicSalePhotoEntity = None
@@ -96,7 +96,7 @@ class PrivateSaleEntity(BaseModel):
     real_estate_id: int
     private_area: float
     supply_area: float
-    contract_date: str
+    contract_date: Optional[str]
     deposit_price: int
     rent_price: int
     trade_price: int
