@@ -46,8 +46,8 @@ class DeviceFactory(BaseFactory):
     is_auth = True
     phone_number = "01012345678"
 
-    # device_tokens = factory.List([factory.SubFactory(DeviceTokenFactory)])
-    device_tokens = factory.SubFactory(DeviceTokenFactory)
+    # device_token = factory.List([factory.SubFactory(DeviceTokenFactory)])
+    device_token = factory.SubFactory(DeviceTokenFactory)
 
 
 class UserProfileFactory(BaseFactory):
@@ -68,6 +68,16 @@ class ReceivePushTypeFactory(BaseFactory):
     updated_at = datetime.now().strptime("20210701", "%Y%m%d")
 
 
+class InterestHouseFactory(BaseFactory):
+    class Meta:
+        model = InterestHouseModel
+
+    user_id = 1
+    house_id = 1
+    type = HouseTypeEnum.PUBLIC_SALES.value
+    is_like = True
+
+
 class UserFactory(BaseFactory):
     """
     Define user factory
@@ -82,9 +92,10 @@ class UserFactory(BaseFactory):
     is_out = False
 
     # devices = factory.List([factory.SubFactory(DeviceFactory)])
-    devices = factory.SubFactory(DeviceFactory)
-    user_profiles = factory.SubFactory(UserProfileFactory)
-    receive_push_types = factory.SubFactory(ReceivePushTypeFactory)
+    device = factory.SubFactory(DeviceFactory)
+    user_profile = factory.SubFactory(UserProfileFactory)
+    receive_push_type = factory.SubFactory(ReceivePushTypeFactory)
+    interest_houses = factory.List([factory.SubFactory(InterestHouseFactory)])
 
 
 class AvgMonthlyIncomeWorkerFactory(BaseFactory):
@@ -127,16 +138,6 @@ class NotificationFactory(BaseFactory):
     created_at = get_server_timestamp()
 
 
-class InterestHouseFactory(BaseFactory):
-    class Meta:
-        model = InterestHouseModel
-
-    user_id = 1
-    house_id = 1
-    type = HouseTypeEnum.PUBLIC_SALES.value
-    is_like = True
-
-
 class AppAgreeTermsFactory(BaseFactory):
     class Meta:
         model = AppAgreeTermsModel
@@ -172,4 +173,4 @@ class ArticleFactory(factory.alchemy.SQLAlchemyModelFactory):
         model = ArticleModel
 
     post_id = 1
-    body = factory.Sequence(lambda n: "body_게시글 입니다:) {}".format(n+1))
+    body = factory.Sequence(lambda n: "body_게시글 입니다:) {}".format(n + 1))

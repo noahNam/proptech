@@ -13,6 +13,7 @@ from sqlalchemy.orm import relationship, backref
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import UserModel
+from core.domains.user.entity.user_entity import UserProfileEntity
 
 
 class UserProfileModel(db.Model):
@@ -28,3 +29,13 @@ class UserProfileModel(db.Model):
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
     user_infos = relationship("UserInfoModel", backref=backref("user_profiles"))
+
+    def to_entity(self) -> UserProfileEntity:
+        return UserProfileEntity(
+            id=self.id,
+            user_id=self.user_id,
+            nickname=self.nickname,
+            last_update_code=self.last_update_code,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+        )
