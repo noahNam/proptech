@@ -91,6 +91,13 @@ class PublicSaleEntity(BaseModel):
         use_enum_values = True
 
 
+class PublicSalePushEntity(BaseModel):
+    id: int
+    name: str
+    region: str
+    message_type: str = None
+
+
 class PrivateSaleEntity(BaseModel):
     id: int
     real_estate_id: int
