@@ -60,7 +60,8 @@ class RealEstateModel(db.Model):
             longitude=lon
         )
 
-    def to_bounding_entity(self, avg_trade, avg_deposit, avg_rent, avg_supply) -> BoundingRealEstateEntity:
+    def to_bounding_entity(self, avg_trade, avg_deposit, avg_rent, avg_supply, avg_private_pyoung, avg_public_pyoung) \
+            -> BoundingRealEstateEntity:
         return BoundingRealEstateEntity(
             id=self.id,
             name=self.name,
@@ -80,6 +81,8 @@ class RealEstateModel(db.Model):
             avg_deposit_price=avg_deposit,
             avg_rent_price=avg_rent,
             avg_supply_price=avg_supply,
+            avg_private_pyoung_number=avg_private_pyoung,
+            avg_public_pyoung_number=avg_public_pyoung,
             private_sales=[private_sale.to_entity() for private_sale in
                            self.private_sales] if self.private_sales else None,
             public_sales=self.public_sales.to_entity() if self.public_sales else None
