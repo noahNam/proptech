@@ -60,9 +60,9 @@ def test_create_user_use_case_when_first_login_then_success(session, create_user
 
     assert result.type == "success"
     assert isinstance(result, UseCaseSuccessOutput)
-    assert user.receive_push_types.is_official is True
-    assert user.receive_push_types.is_private is True
-    assert user.receive_push_types.is_marketing is True
+    assert user.receive_push_type.is_official is True
+    assert user.receive_push_type.is_private is True
+    assert user.receive_push_type.is_marketing is True
 
 
 def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_error(
