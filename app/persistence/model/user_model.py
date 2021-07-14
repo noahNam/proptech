@@ -25,13 +25,14 @@ class UserModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp())
     updated_at = Column(DateTime, default=get_server_timestamp())
 
-    devices = relationship("DeviceModel", backref=backref("users"), uselist=False)
-    user_profiles = relationship(
+    device = relationship("DeviceModel", backref=backref("users"), uselist=False)
+    user_profile = relationship(
         "UserProfileModel", backref=backref("users"), uselist=False
     )
-    receive_push_types = relationship(
+    receive_push_type = relationship(
         "ReceivePushTypeModel", backref=backref("users"), uselist=False
     )
+    interest_houses = relationship("InterestHouseModel", back_populates="users", uselist=True)
 
     def to_entity(self) -> UserEntity:
         return UserEntity(
@@ -40,4 +41,9 @@ class UserModel(db.Model):
             join_date=self.join_date,
             is_active=self.is_active,
             is_out=self.is_out,
+            device=self.device.to_entity(),
+            user_profile=self.user_profile.to_entity() if self.user_profile else None,
+            receive_push_type=self.receive_push_type.to_entity(),
+            interest_houses=[interest_house.to_entity() for interest_house in
+                             self.interest_houses] if self.interest_houses else None,
         )

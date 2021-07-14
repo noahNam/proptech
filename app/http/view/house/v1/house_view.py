@@ -1,15 +1,3 @@
-# @api.route("/v1/users/terms", methods=["POST"])
-# @jwt_required
-# @auth_required
-# @swag_from("create_app_agree_terms.yml", methods=["POST"])
-# def create_app_agree_terms_view():
-#     dto = CreateAppAgreeTermsRequestSchema(
-#         **request.get_json(), user_id=current_user.id,
-#     ).validate_request_and_make_dto()
-#
-#     return CreateAppAgreeTermsPresenter().transform(
-#         CreateAppAgreeTermsUseCase().execute(dto=dto)
-#     )
 from http import HTTPStatus
 from app.http.requests.v1.house_request import GetCoordinatesRequest
 from app.http.responses import failure_response

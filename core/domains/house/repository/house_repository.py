@@ -1,10 +1,13 @@
 from typing import Optional
-
 from sqlalchemy import and_, func, or_
-
-from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
-from app.persistence.model import RealEstateModel, PrivateSaleModel, PublicSaleModel, AdministrativeDivisionModel
+from app.persistence.model import (
+    RealEstateModel,
+    PrivateSaleModel,
+    PublicSaleModel,
+    AdministrativeDivisionModel,
+    PublicSaleDetailModel
+)
 from core.domains.house.dto.house_dto import CoordinatesRangeDto
 from sqlalchemy import exc
 from app.extensions.utils.log_helper import logger_
@@ -61,7 +64,10 @@ class HouseRepository:
         # Make Entity
         results = list()
         for query in queryset:
-            results.append(query.to_bounding_entity())
+            results.append(query[0].to_bounding_entity(avg_trade=query[1],
+                                                       avg_deposit=query[2],
+                                                       avg_rent=query[3],
+                                                       avg_supply=query[4]))
         return results
 
     def get_queryset_by_coordinates_range_dto(self, dto: CoordinatesRangeDto) -> Optional[list]:
@@ -81,16 +87,24 @@ class HouseRepository:
                                 func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") <= get_server_timestamp())))
 
         query = (
-            session.query(RealEstateModel)
+            session.query(RealEstateModel,
+                          func.avg(PrivateSaleModel.trade_price).label("avg_trade_price"),
+                          func.avg(PrivateSaleModel.deposit_price)
+                              .filter(PrivateSaleModel.trade_type == "전세").label("avg_deposit_price"),
+                          func.avg(PrivateSaleModel.rent_price).label("avg_rent_price"),
+                          func.avg(PublicSaleDetailModel.supply_price).label("avg_supply_price"),
+                          )
                 .join(RealEstateModel.private_sales, isouter=True)
                 .join(RealEstateModel.public_sales, isouter=True)
                 .join(PublicSaleModel.public_sale_details, isouter=True)
                 .join(PublicSaleModel.public_sale_photos, isouter=True)
                 .filter(*filters)
+                .group_by(RealEstateModel.id)
 
         )
 
         queryset = query.all()
+
         return self._make_object_bounding_entity_from_queryset(queryset=queryset)
 
     def _make_bounding_administrative_entity_from_queryset(self, queryset: Optional[list]) -> Optional[list]:
