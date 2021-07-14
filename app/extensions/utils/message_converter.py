@@ -20,11 +20,11 @@ class MessageConverter:
     @staticmethod
     def to_dict(dto: PushMessageDto):
         content = {
-            "message": {
+            "data": {
                 # "uuid": str(uuid.uuid4()),
                 # "token": dto.token,
                 "title": dto.title,
-                "content": dto.content,
+                "body": dto.content,
                 "created_at": dto.created_at,
                 "badge_type": dto.badge_type,
                 "data": dto.data,
