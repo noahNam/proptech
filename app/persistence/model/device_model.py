@@ -12,6 +12,7 @@ from sqlalchemy.orm import relationship, backref
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import UserModel
+from core.domains.user.entity.user_entity import DeviceEntity
 
 
 class DeviceModel(db.Model):
@@ -29,6 +30,20 @@ class DeviceModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    device_tokens = relationship(
+    device_token = relationship(
         "DeviceTokenModel", backref=backref("devices"), uselist=False
     )
+
+    def to_entity(self) -> DeviceEntity:
+        return DeviceEntity(
+            id=self.id,
+            user_id=self.user_id,
+            uuid=self.uuid,
+            os=self.os,
+            is_active=self.is_active,
+            is_auth=self.is_auth,
+            phone_number=self.phone_number,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+            device_token=self.device_token.to_entity() if self.device_token else None,
+        )

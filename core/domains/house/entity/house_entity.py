@@ -91,6 +91,13 @@ class PublicSaleEntity(BaseModel):
         use_enum_values = True
 
 
+class PublicSalePushEntity(BaseModel):
+    id: int
+    name: str
+    region: str
+    message_type: str = None
+
+
 class PrivateSaleEntity(BaseModel):
     id: int
     real_estate_id: int
@@ -146,6 +153,10 @@ class BoundingRealEstateEntity(BaseModel):
     is_available: bool
     latitude: float
     longitude: float
+    avg_trade_price: Optional[float]
+    avg_deposit_price: Optional[float]
+    avg_rent_price: Optional[float]
+    avg_supply_price: Optional[float]
     private_sales: List[PrivateSaleEntity] = None
     public_sales: PublicSaleEntity = None
 
