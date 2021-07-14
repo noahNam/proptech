@@ -100,7 +100,7 @@ class PrePrcsNotificationUseCase:
                 notification_dict = dict(
                     user_id=target_user.id,
                     token=target_user.device.device_token.token,
-                    endpoint="ENDPOINT",
+                    endpoint=target_user.device.endpoint,
                     topic=topic,
                     badge_type=NotificationBadgeTypeEnum.ALL.value,
                     message=message_dict,
