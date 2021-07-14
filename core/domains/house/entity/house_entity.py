@@ -157,6 +157,8 @@ class BoundingRealEstateEntity(BaseModel):
     avg_deposit_price: Optional[float]
     avg_rent_price: Optional[float]
     avg_supply_price: Optional[float]
+    avg_private_pyoung_number: Optional[float]
+    avg_public_pyoung_number: Optional[float]
     private_sales: List[PrivateSaleEntity] = None
     public_sales: PublicSaleEntity = None
 

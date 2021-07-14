@@ -68,7 +68,12 @@ class HouseRepository:
             results.append(query[0].to_bounding_entity(avg_trade=query[1],
                                                        avg_deposit=query[2],
                                                        avg_rent=query[3],
-                                                       avg_supply=query[4]))
+                                                       avg_supply=query[4],
+                                                       avg_private_pyoung=self._convert_supply_area_to_pyoung_number(
+                                                           query[5]),
+                                                       avg_public_pyoung=self._convert_supply_area_to_pyoung_number(
+                                                           query[6])))
+
         return results
 
     def get_queryset_by_coordinates_range_dto(self, dto: CoordinatesRangeDto) -> Optional[list]:
@@ -91,9 +96,11 @@ class HouseRepository:
             session.query(RealEstateModel,
                           func.avg(PrivateSaleModel.trade_price).label("avg_trade_price"),
                           func.avg(PrivateSaleModel.deposit_price)
-                              .filter(PrivateSaleModel.trade_type == "전세").label("avg_deposit_price"),
+                          .filter(PrivateSaleModel.trade_type == "전세").label("avg_deposit_price"),
                           func.avg(PrivateSaleModel.rent_price).label("avg_rent_price"),
                           func.avg(PublicSaleDetailModel.supply_price).label("avg_supply_price"),
+                          func.avg(PrivateSaleModel.supply_area).label("avg_private_supply_area"),
+                          func.avg(PublicSaleDetailModel.supply_area).label("avg_public_supply_area")
                           )
                 .join(RealEstateModel.private_sales, isouter=True)
                 .join(RealEstateModel.public_sales, isouter=True)
@@ -141,3 +148,9 @@ class HouseRepository:
         queryset = query.all()
 
         return self._make_bounding_administrative_entity_from_queryset(queryset=queryset)
+
+    def _convert_supply_area_to_pyoung_number(self, supply_area: Optional[float]) -> Optional[int]:
+        if supply_area:
+            return round(supply_area / 3.3058)
+        else:
+            return None
