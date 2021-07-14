@@ -6,6 +6,7 @@ import inject
 from core.domains.house.dto.house_dto import CoordinatesRangeDto
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
+from core.domains.house.enum.house_enum import BoundingLevelEnum
 from core.domains.house.repository.house_repository import HouseRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -45,12 +46,13 @@ class BoundingUseCase(HouseBaseUseCase):
                 type="map_coordinates", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
         # dto.level range check
-        if dto.level < 5 or dto.level > 22:
+        if dto.level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value \
+                or dto.level > BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value:
             return UseCaseFailureOutput(
                 type="level", message=FailureType.INVALID_REQUEST_ERROR, code=HTTPStatus.BAD_REQUEST
             )
         # dto.level condition
-        if dto.level > 14:
+        if dto.level >= BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
             bounding_entities = self._house_repo.get_queryset_by_coordinates_range_dto(dto=dto)
         else:
             bounding_entities = self._house_repo.get_administrative_queryset_by_coordinates_range_dto(dto=dto)

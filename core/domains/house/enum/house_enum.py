@@ -10,6 +10,9 @@ class HouseTypeEnum(Enum):
 
 
 class RealTradeTypeEnum(Enum):
+    """
+        사용 모델 : 실거래가 테이블
+    """
     TRADING = "매매"
     LONG_TERM_RENT = "전세"
     MONTHLY_RENT = "월세"
@@ -58,3 +61,17 @@ class DivisionLevelEnum(Enum):
     LEVEL_1 = "1"
     LEVEL_2 = "2"
     LEVEL_3 = "3"
+
+
+class BoundingLevelEnum(Enum):
+    """
+        사용처 : bounding_view(),
+               BoundingUseCase,
+               HouseRepository - get_administrative_queryset_by_coordinates_range_dto()
+        목적: bounding level 조건에 따라 쿼리 필터 조정
+    """
+    SELECT_QUERYSET_FLAG_LEVEL = 15
+    MIN_SI_GUN_GU_LEVEL = 9
+    MAX_SI_GUN_GU_LEVEL = 11
+    MAX_NAVER_MAP_API_ZOOM_LEVEL = 22
+    MIN_NAVER_MAP_API_ZOOM_LEVEL = 6

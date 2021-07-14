@@ -14,6 +14,7 @@ from app.extensions.utils.log_helper import logger_
 from app.extensions.database import session
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
+from core.domains.house.enum.house_enum import BoundingLevelEnum
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -129,9 +130,9 @@ class HouseRepository:
         filters.append(func.ST_Contains(func.ST_MakeEnvelope(dto.start_x, dto.end_y, dto.end_x, dto.start_y, 4326),
                                         AdministrativeDivisionModel.coordinates))
 
-        if dto.level > 11:
+        if dto.level > BoundingLevelEnum.MAX_SI_GUN_GU_LEVEL.value:
             filters.append(AdministrativeDivisionModel.level == "3")
-        elif 8 < dto.level < 12:
+        elif BoundingLevelEnum.MIN_SI_GUN_GU_LEVEL.value <= dto.level <= BoundingLevelEnum.MAX_SI_GUN_GU_LEVEL.value:
             filters.append(AdministrativeDivisionModel.level == "2")
         else:
             filters.append(AdministrativeDivisionModel.level == "1")
