@@ -38,6 +38,7 @@ class DeviceEntity(BaseModel):
     is_active: bool
     is_auth: bool
     phone_number: str = None
+    endpoint: str = ""
     created_at: datetime
     updated_at: datetime
     device_token: DeviceTokenEntity = None

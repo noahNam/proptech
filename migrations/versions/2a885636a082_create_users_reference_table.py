@@ -35,6 +35,7 @@ def upgrade():
                     sa.Column('is_active', sa.Boolean(), nullable=False),
                     sa.Column('is_auth', sa.Boolean(), nullable=False),
                     sa.Column('phone_number', sa.String(length=11), nullable=True),
+                    sa.Column('endpoint', sa.String(length=100), nullable=True),
                     sa.Column('created_at', sa.DateTime(), nullable=False),
                     sa.Column('updated_at', sa.DateTime(), nullable=False),
                     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
