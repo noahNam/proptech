@@ -129,7 +129,7 @@ class HouseRepository:
         """
              dto.level: 6 ~ 14
              <filter condition>
-                11 이상 -> 읍, 면, 동, 리 (AdministrativeDivisionModel.level -> "3")
+                12 ~ 14 -> 읍, 면, 동, 리 (AdministrativeDivisionModel.level -> "3")
                 9 ~ 11 -> 시, 군, 구 (AdministrativeDivisionModel.level -> "2")
                 8 이하 -> 시, 도 (AdministrativeDivisionModel.level -> "1")
         """
@@ -150,6 +150,9 @@ class HouseRepository:
         return self._make_bounding_administrative_entity_from_queryset(queryset=queryset)
 
     def _convert_supply_area_to_pyoung_number(self, supply_area: Optional[float]) -> Optional[int]:
+        """
+            1평 = 3.3058 (제곱미터)
+        """
         if supply_area:
             return round(supply_area / 3.3058)
         else:

@@ -34,6 +34,16 @@ class RealEstateEntity(BaseModel):
     longitude: float
 
 
+class PublicSaleDetailPhotoEntity(BaseModel):
+    id: int
+    public_sale_details_id: int
+    file_name: str
+    path: str
+    extension: str
+    created_at: datetime
+    updated_at: datetime
+
+
 class PublicSaleDetailEntity(BaseModel):
     id: int
     public_sales_id: int
@@ -41,6 +51,7 @@ class PublicSaleDetailEntity(BaseModel):
     supply_area: float
     supply_price: int
     acquisition_tax: int
+    public_sale_detail_photos: PublicSaleDetailPhotoEntity = None
 
 
 class PublicSalePhotoEntity(BaseModel):

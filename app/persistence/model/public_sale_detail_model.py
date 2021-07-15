@@ -5,6 +5,7 @@ from sqlalchemy import (
     ForeignKey,
     Float,
 )
+from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.persistence.model.public_sale_model import PublicSaleModel
@@ -28,6 +29,11 @@ class PublicSaleDetailModel(db.Model):
     supply_price = Column(Integer, nullable=False)
     acquisition_tax = Column(Integer, nullable=False)
 
+    # 1:1 relationship
+    public_sale_detail_photos = relationship("PublicSaleDetailPhotoModel",
+                                             backref=backref("public_sale_details"),
+                                             uselist=False)
+
     def to_entity(self) -> PublicSaleDetailEntity:
         return PublicSaleDetailEntity(
             id=self.id,
@@ -35,5 +41,6 @@ class PublicSaleDetailModel(db.Model):
             private_area=self.private_area,
             supply_area=self.supply_area,
             supply_price=self.supply_price,
-            acquisition_tax=self.acquisition_tax
+            acquisition_tax=self.acquisition_tax,
+            public_sale_detail_photos=self.public_sale_detail_photos.to_entity() if self.public_sale_detail_photos else None
         )
