@@ -22,3 +22,8 @@ class UpsertInterestHouseDto(BaseModel):
     house_id: int
     type: int
     is_like: bool
+
+
+class GetHousePublicDetailDto(BaseModel):
+    user_id: int
+    house_id: int

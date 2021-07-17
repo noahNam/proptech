@@ -3,7 +3,7 @@ from typing import Union
 
 import inject
 
-from core.domains.house.dto.house_dto import CoordinatesRangeDto
+from core.domains.house.dto.house_dto import CoordinatesRangeDto, GetHousePublicDetailDto
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.enum.house_enum import BoundingLevelEnum
@@ -32,9 +32,7 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
 
 
 class BoundingUseCase(HouseBaseUseCase):
-    def execute(
-            self, dto: CoordinatesRangeDto
-    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+    def execute(self, dto: CoordinatesRangeDto) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
             <dto.level condition>
                 level 15 이상 : 매물 쿼리
@@ -53,10 +51,25 @@ class BoundingUseCase(HouseBaseUseCase):
             )
         # dto.level condition
         if dto.level >= BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
-            bounding_entities = self._house_repo.get_queryset_by_coordinates_range_dto(dto=dto)
+            bounding_entities = self._house_repo.get_bounding_queryset_by_coordinates_range_dto(dto=dto)
         else:
             bounding_entities = self._house_repo.get_administrative_queryset_by_coordinates_range_dto(dto=dto)
 
         if not bounding_entities:
             return UseCaseSuccessOutput(value="null")
         return UseCaseSuccessOutput(value=bounding_entities)
+
+
+class GetHousePublicDetailUseCase(HouseBaseUseCase):
+    def execute(self, dto: GetHousePublicDetailDto) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not self._house_repo.has_public_sale_house(dto=dto):
+            return UseCaseFailureOutput(
+                type="house_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+            )
+        # 사용자가 해당 house에 찜하기 되어있는지 여부
+        is_like = self._house_repo.is_user_liked_house(self._house_repo.get_interest_house(dto=dto))
+        # get HousePublicDetailEntity
+        entities = self._house_repo \
+            .get_house_public_detail_queryset_by_get_house_public_detail_dto(dto=dto, degrees=1, is_like=is_like)
+
+        return UseCaseSuccessOutput(value=entities)

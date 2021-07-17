@@ -1,14 +1,15 @@
 from http import HTTPStatus
-from app.http.requests.v1.house_request import GetCoordinatesRequest
+from app.http.requests.v1.house_request import GetCoordinatesRequest, GetHousePublicDetailRequest
 from app.http.responses import failure_response
-from app.http.responses.presenters.v1.house_presenter import BoundingPresenter, BoundingAdministrativePresenter
+from app.http.responses.presenters.v1.house_presenter import BoundingPresenter, BoundingAdministrativePresenter, \
+    GetHousePublicDetailPresenter
 from app.http.view import api
 from core.domains.house.enum.house_enum import BoundingLevelEnum
-from core.domains.house.use_case.v1.house_use_case import BoundingUseCase
+from core.domains.house.use_case.v1.house_use_case import BoundingUseCase, GetHousePublicDetailUseCase
 from core.exceptions import InvalidRequestException
 from core.use_case_output import UseCaseFailureOutput, FailureType
 from flasgger import swag_from
-from flask import request
+from flask import request, jsonify
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses.presenters.v1.house_presenter import UpsertInterestHousePresenter
 from app.http.view import auth_required, api, current_user, jwt_required
@@ -27,7 +28,7 @@ def upsert_interest_house_view(house_id):
     return UpsertInterestHousePresenter().transform(UpsertInterestHouseUseCase().execute(dto=dto))
 
 
-@api.route("/v1/house/bounding", methods=["GET"])
+@api.route("/v1/houses/bounding", methods=["GET"])
 def bounding_view():
     try:
         start_x = request.args.get("start_x")
@@ -62,3 +63,14 @@ def bounding_view():
         # level 14 이하 : 행정구역 Presenter 변경
         return BoundingAdministrativePresenter().transform(BoundingUseCase().execute(dto=dto))
     return BoundingPresenter().transform(BoundingUseCase().execute(dto=dto))
+
+
+@api.route("/v1/houses/public/<int:house_id>", methods=["GET"])
+@jwt_required
+@auth_required
+def house_public_detail_view(house_id: int):
+    dto = GetHousePublicDetailRequest(house_id=house_id,
+                                      user_id=current_user.id).validate_request_and_make_dto()
+
+    return GetHousePublicDetailPresenter().transform(GetHousePublicDetailUseCase().execute(dto=dto))
+
