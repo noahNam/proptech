@@ -2,7 +2,11 @@ from typing import List
 
 from pydantic import BaseModel
 
-from core.domains.house.entity.house_entity import BoundingRealEstateEntity, AdministrativeDivisionEntity
+from core.domains.house.entity.house_entity import (
+    BoundingRealEstateEntity,
+    AdministrativeDivisionEntity,
+    HousePublicDetailEntity
+)
 
 
 class BoundingResponseSchema(BaseModel):
@@ -11,3 +15,7 @@ class BoundingResponseSchema(BaseModel):
 
 class BoundingAdministrativeResponseSchema(BaseModel):
     houses: List[AdministrativeDivisionEntity]
+
+
+class GetHousePublicDetailResponseSchema(BaseModel):
+    house: HousePublicDetailEntity

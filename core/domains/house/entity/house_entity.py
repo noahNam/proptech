@@ -175,3 +175,57 @@ class BoundingRealEstateEntity(BaseModel):
 
     class Config:
         use_enum_values = True
+
+
+class RealEstateWithPrivateSaleEntity(BaseModel):
+    id: int
+    name: str
+    road_address: str
+    jibun_address: str
+    si_do: str
+    si_gun_gu: str
+    dong_myun: str
+    ri: str
+    road_name: str
+    road_number: str
+    land_number: str
+    is_available: bool
+    latitude: float
+    longitude: float
+    avg_trade_price: Optional[float]
+    avg_private_pyoung_number: Optional[float]
+    private_sales: List[PrivateSaleEntity] = None
+
+    class Config:
+        use_enum_values = True
+
+
+class HousePublicDetailEntity(BaseModel):
+    id: int
+    name: str
+    road_address: str
+    jibun_address: str
+    si_do: str
+    si_gun_gu: str
+    dong_myun: str
+    ri: str
+    road_name: str
+    road_number: str
+    land_number: str
+    is_available: bool
+    latitude: float
+    longitude: float
+    is_like: bool
+    min_pyoung_number: Optional[float]
+    max_pyoung_number: Optional[float]
+    min_supply_area: Optional[float]
+    max_supply_area: Optional[float]
+    avg_supply_price: Optional[float]
+    supply_price_per_pyoung: Optional[float]
+    min_acquisition_tax: int
+    max_acquisition_tax: int
+    public_sales: PublicSaleEntity = None
+    near_houses: List[RealEstateWithPrivateSaleEntity] = None
+
+    class Config:
+        use_enum_values = True

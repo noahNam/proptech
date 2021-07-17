@@ -3,7 +3,7 @@ from typing import Tuple
 from pydantic import BaseModel, StrictFloat, validator, ValidationError, StrictInt
 
 from app.extensions.utils.log_helper import logger_
-from core.domains.house.dto.house_dto import CoordinatesRangeDto
+from core.domains.house.dto.house_dto import CoordinatesRangeDto, GetHousePublicDetailDto
 from pydantic import BaseModel, StrictInt, ValidationError
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.exceptions import InvalidRequestException
@@ -148,3 +148,26 @@ class GetCoordinatesRequest:
         except ValidationError as e:
             logger.error(
                 f"[GetCoordinatesRequestSchema][validate_request_and_make_dto] error : {e}")
+
+
+class GetHousePublicDetailRequestSchema(BaseModel):
+    user_id: StrictInt
+    house_id: StrictInt
+
+
+class GetHousePublicDetailRequest:
+    def __init__(self, user_id, house_id):
+        self.user_id = int(user_id) if user_id else None
+        self.house_id = house_id
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetHousePublicDetailRequestSchema(
+                user_id=self.user_id,
+                house_id=self.house_id).dict()
+            return GetHousePublicDetailDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetHousePublicDetailRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
