@@ -175,6 +175,7 @@ class HouseRepository:
         filters = list()
         filters.append(InterestHouseModel.user_id == dto.user_id)
         filters.append(InterestHouseModel.house_id == dto.house_id)
+        filters.append(InterestHouseModel.type == 1)
 
         interest_house = session.query(InterestHouseModel).filter(*filters).first()
 
