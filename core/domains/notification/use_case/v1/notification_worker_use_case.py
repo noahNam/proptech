@@ -2,6 +2,7 @@ import os
 from typing import List
 
 import inject
+import sentry_sdk
 
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.message_converter import MessageConverter
@@ -34,6 +35,7 @@ class PrePrcsNotificationUseCase:
             logger.info(f"🚀\tget_push_target_of_public_sales length - {len(target_public_sales)}")
         except Exception as e:
             logger.error(f"🚀\tget_push_target_of_public_sales Error - {e}")
+            sentry_sdk.capture_exception(e)
             return
 
         try:
@@ -42,6 +44,7 @@ class PrePrcsNotificationUseCase:
                     target_public_sales=target_public_sales)
         except Exception as e:
             logger.error(f"🚀\t_convert_message_for_public_sales Error - {e}")
+            sentry_sdk.capture_exception(e)
             return
 
         # notifications 테이블에 insert 한다.
@@ -50,6 +53,7 @@ class PrePrcsNotificationUseCase:
                 self._notification_repo.create_notifications(notification_list=notification_list)
         except Exception as e:
             logger.error(f"🚀\tcreate_notifications Error - {e}")
+            sentry_sdk.capture_exception(e)
             return
 
         logger.info(f"🚀\tPrePrcsNotification Success -  {len(target_public_sales)} / {len(notification_list)}")
