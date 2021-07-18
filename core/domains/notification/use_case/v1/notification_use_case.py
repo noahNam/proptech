@@ -64,7 +64,7 @@ class GetNotificationUseCase(NotificationBaseUseCase):
                 diff_min=diff_min,
                 is_read=notification.is_read,
                 title=message['title'],
-                content=message['content'],
+                content=message['body'],
                 data=dict(
                     id=notification.id,
                     user_id=notification.user_id,
