@@ -20,7 +20,7 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, SidoCodeDto, SigugunCodeDto, UpsertUserInfoDetailDto,
+    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto,
     GetUserInfoDetailDto,
 )
 from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity, \
@@ -105,7 +105,7 @@ class UserRepository:
     def update_marketing_receive_push_types(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
             session.query(ReceivePushTypeModel).filter_by(user_id=dto.user_id).update(
-                {"is_marketing": False}
+                {"is_marketing": False, "updated_at": get_server_timestamp()}
             )
             session.commit()
         except Exception as e:
@@ -117,7 +117,7 @@ class UserRepository:
     def update_user_mobile_auth_info(self, dto: MobileAuthConfirmSmsDto) -> None:
         try:
             session.query(DeviceModel).filter_by(user_id=dto.user_id).update(
-                {"phone_number": dto.phone_number, "is_auth": True}
+                {"phone_number": dto.phone_number, "is_auth": True, "updated_at": get_server_timestamp()}
             )
             session.commit()
         except Exception as e:
@@ -151,7 +151,7 @@ class UserRepository:
     def update_user_required_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
             session.query(UserModel).filter_by(id=dto.user_id).update(
-                {"is_required_agree_terms": True}
+                {"is_required_agree_terms": True, "updated_at": get_server_timestamp()}
             )
             session.commit()
         except exc.IntegrityError as e:
@@ -197,7 +197,7 @@ class UserRepository:
     def update_user_nickname(self, dto: UpsertUserInfoDetailDto):
         try:
             session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
-                {"nickname": dto.value, "last_update_code": dto.code}
+                {"nickname": dto.value, "last_update_code": dto.code, "updated_at": get_server_timestamp()}
             )
             session.commit()
         except Exception as e:
@@ -227,7 +227,7 @@ class UserRepository:
         try:
             user_info_id = session.query(UserInfoModel).filter_by(
                 user_profile_id=dto.user_profile_id, code=dto.code
-            ).update({"value": dto.value})
+            ).update({"value": dto.value, "updated_at": get_server_timestamp()})
             session.commit()
 
             return UserInfoEntity(
@@ -246,7 +246,7 @@ class UserRepository:
     def update_last_code_to_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
             session.query(UserProfileModel).filter_by(user_id=dto.user_id).update(
-                {"last_update_code": dto.code}
+                {"last_update_code": dto.code, "updated_at": get_server_timestamp()}
             )
             session.commit()
         except Exception as e:
@@ -342,7 +342,7 @@ class UserRepository:
     def update_user_status_to_out(self, user_id: int) -> None:
         try:
             session.query(UserModel).filter_by(id=user_id).update(
-                {"is_out": True}
+                {"is_out": True, "updated_at": get_server_timestamp()}
             )
             session.commit()
         except Exception as e:
@@ -354,7 +354,7 @@ class UserRepository:
     def update_app_agree_terms_to_receive_marketing(self, dto: UpdateReceiveNotificationSettingDto) -> None:
         try:
             session.query(AppAgreeTermsModel).filter_by(user_id=dto.user_id).update(
-                {"receive_marketing_yn": dto.is_active, "receive_marketing_date": get_server_timestamp()}
+                {"receive_marketing_yn": dto.is_active, "receive_marketing_date": get_server_timestamp(), "updated_at": get_server_timestamp()}
             )
             session.commit()
         except exc.IntegrityError as e:

@@ -41,7 +41,7 @@ class HouseRepository:
 
         try:
             interest_house = session.query(InterestHouseModel).filter(*filters).update(
-                {"is_like": dto.is_like}
+                {"is_like": dto.is_like, "updated_at": get_server_timestamp()}
             )
             session.commit()
 
