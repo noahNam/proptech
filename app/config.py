@@ -22,7 +22,7 @@ class Config:
     SENS_SID = os.environ.get("SENS_SID") or ""
     NCP_ACCESS_KEY = os.environ.get("NCP_ACCESS_KEY") or ""
     NCP_SECRET_KEY = (
-        os.environ.get("NCP_SECRET_KEY") or ""
+            os.environ.get("NCP_SECRET_KEY") or ""
     )
 
     # AWS ENV
@@ -41,8 +41,6 @@ class LocalConfig(Config):
     SQLALCHEMY_ECHO = True
     DEBUG = True
 
-    SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:skarlgur117@test-tanos-rds" \
-                              ".cluster-cmib56uiilha.ap-northeast-2.rds.amazonaws.com:5432/tanos"
     # Local environment configuration using Docker API service
     # SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@postgres:5432/tanos"
     # Prod migrate

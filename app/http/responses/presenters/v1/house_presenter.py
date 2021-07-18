@@ -1,20 +1,15 @@
 from http import HTTPStatus
-from typing import Union, List
-from app.extensions.utils.log_helper import logger_
-from core.domains.house.entity.house_entity import BoundingRealEstateEntity, AdministrativeDivisionEntity, \
-    HousePublicDetailEntity
+from typing import Union
 
 from core.domains.house.schema.house_schema import (
     BoundingResponseSchema,
     BoundingAdministrativeResponseSchema,
-    GetHousePublicDetailResponseSchema
+    GetHousePublicDetailResponseSchema, GetCalenderInfoResponseSchema
 )
 from pydantic import ValidationError
 from app.http.responses import failure_response, success_response
 from core.domains.notification.schema.notification_schema import UpdateNotificationResponseSchema
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
-
-logger = logger_.getLogger(__name__)
 
 
 class UpsertInterestHousePresenter:
@@ -43,11 +38,9 @@ class UpsertInterestHousePresenter:
 class BoundingPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
-            value_list: List[BoundingRealEstateEntity] = output.value
             try:
-                schema = BoundingResponseSchema(houses=value_list)
+                schema = BoundingResponseSchema(houses=output.value)
             except ValidationError as e:
-                logger.error(f"[BoundingPresenter][transform] value : {value_list} error : {e}")
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -68,11 +61,9 @@ class BoundingPresenter:
 class BoundingAdministrativePresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
-            value_list: List[AdministrativeDivisionEntity] = output.value
             try:
-                schema = BoundingAdministrativeResponseSchema(houses=value_list)
+                schema = BoundingAdministrativeResponseSchema(houses=output.value)
             except ValidationError as e:
-                logger.error(f"[BoundingAdministrativePresenter][transform] value : {value_list} error : {e}")
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -93,11 +84,32 @@ class BoundingAdministrativePresenter:
 class GetHousePublicDetailPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
-            value: HousePublicDetailEntity = output.value
             try:
-                schema = GetHousePublicDetailResponseSchema(house=value)
+                schema = GetHousePublicDetailResponseSchema(house=output.value)
             except ValidationError as e:
-                logger.error(f"[GetHousePublicDetailPresenter][transform] value : {value} error : {e}")
+                return failure_response(
+                    UseCaseFailureOutput(
+                        type="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            result = {
+                "data": schema.dict(),
+                "meta": output.meta,
+            }
+            return success_response(result=result)
+        elif isinstance(output, UseCaseFailureOutput):
+            return failure_response(output=output, status_code=output.code)
+
+
+class GetCalenderInfoPresenter:
+    def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
+        if isinstance(output, UseCaseSuccessOutput):
+            try:
+                schema = GetCalenderInfoResponseSchema(houses=output.value)
+            except ValidationError as e:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",

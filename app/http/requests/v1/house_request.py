@@ -3,9 +3,10 @@ from typing import Tuple
 from pydantic import BaseModel, StrictFloat, validator, ValidationError, StrictInt
 
 from app.extensions.utils.log_helper import logger_
-from core.domains.house.dto.house_dto import CoordinatesRangeDto, GetHousePublicDetailDto
+from core.domains.house.dto.house_dto import CoordinatesRangeDto, GetHousePublicDetailDto, GetCalenderInfoDto
 from pydantic import BaseModel, StrictInt, ValidationError
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
+from core.domains.house.enum.house_enum import CalenderYearThreshHold
 from core.exceptions import InvalidRequestException
 
 logger = logger_.getLogger(__name__)
@@ -76,7 +77,7 @@ class GetCoordinatesRequestSchema(BaseModel):
     level: StrictInt = None
 
     @validator("x_points")
-    def check_longitudes_range(cls, x_points):
+    def check_longitudes_range(cls, x_points) -> Tuple:
         if not x_points or len(x_points) != 2:
             raise ValidationError("x_points is None or has only one element (start_x, end_x)")
 
@@ -97,7 +98,7 @@ class GetCoordinatesRequestSchema(BaseModel):
         return x_points
 
     @validator("y_points")
-    def check_latitudes_range(cls, y_points):
+    def check_latitudes_range(cls, y_points) -> Tuple:
         if not y_points or len(y_points) != 2:
             raise ValidationError("x_points is None or has only one element (start_x, end_x)")
 
@@ -118,7 +119,7 @@ class GetCoordinatesRequestSchema(BaseModel):
         return y_points
 
     @validator("level")
-    def check_level(cls, level):
+    def check_level(cls, level) -> int:
         if level < 6 or 21 < level:
             raise ValidationError("Out of range: level value")
         return level
@@ -169,5 +170,50 @@ class GetHousePublicDetailRequest:
         except ValidationError as e:
             logger.error(
                 f"[GetHousePublicDetailRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetCalenderInfoRequestSchema(BaseModel):
+    year: str
+    month: str
+    user_id: StrictInt
+
+    @validator("year")
+    def check_year(cls, year) -> str:
+        year_to_int = int(year)
+        if year_to_int < CalenderYearThreshHold.MIN_YEAR.value or year_to_int > CalenderYearThreshHold.MAX_YEAR.value:
+            raise ValidationError("Out of range: year is currently support 2017 ~ 2030")
+        return year
+
+    @validator("month")
+    def check_month(cls, month) -> str:
+        """
+            return schema : 01, 02 ... 09, 10, 11, 12
+        """
+        month_to_int = int(month)
+        if month_to_int < 1 or month_to_int > 12:
+            raise ValidationError("Out of range: month (1 ~ 12) required")
+        if 0 < month_to_int < 10:
+            month = "0" + month
+        return month
+
+
+class GetCalenderInfoRequest:
+    def __init__(self, year, month, user_id):
+        self.year = year
+        self.month = month
+        self.user_id = int(user_id) if user_id else None
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetCalenderInfoRequestSchema(
+                year=self.year,
+                month=self.month,
+                user_id=self.user_id).dict()
+            return GetCalenderInfoDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetCalenderInfoRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

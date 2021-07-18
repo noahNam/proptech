@@ -1,21 +1,26 @@
-from typing import List
+from typing import List, Union
 
 from pydantic import BaseModel
 
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
-    HousePublicDetailEntity
+    HousePublicDetailEntity,
+    CalenderInfoEntity
 )
 
 
 class BoundingResponseSchema(BaseModel):
-    houses: List[BoundingRealEstateEntity]
+    houses: Union[List[BoundingRealEstateEntity], str]
 
 
 class BoundingAdministrativeResponseSchema(BaseModel):
-    houses: List[AdministrativeDivisionEntity]
+    houses: Union[List[AdministrativeDivisionEntity], str]
 
 
 class GetHousePublicDetailResponseSchema(BaseModel):
     house: HousePublicDetailEntity
+
+
+class GetCalenderInfoResponseSchema(BaseModel):
+    houses: Union[List[CalenderInfoEntity], str]

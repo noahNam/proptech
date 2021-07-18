@@ -75,3 +75,13 @@ class BoundingLevelEnum(Enum):
     MAX_SI_GUN_GU_LEVEL = 11
     MAX_NAVER_MAP_API_ZOOM_LEVEL = 22
     MIN_NAVER_MAP_API_ZOOM_LEVEL = 6
+
+
+class CalenderYearThreshHold(Enum):
+    """
+        사용처 : house_calender_list_view(),
+               GetCalenderInfoReqestSchema
+        목적 : 파라미터 year 값의 범위 제한
+    """
+    MIN_YEAR = 2017
+    MAX_YEAR = 2030
