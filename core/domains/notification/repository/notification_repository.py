@@ -10,7 +10,7 @@ from app.extensions.utils.time_helper import get_server_timestamp
 from app.extensions.database import session
 from app.persistence.model import NotificationModel, ReceivePushTypeHistoryModel, PublicSaleModel, InterestHouseModel
 from app.persistence.model.receive_push_type_model import ReceivePushTypeModel
-from core.domains.house.entity.house_entity import PublicSalePushEntity, InterestHouseEntity
+from core.domains.house.entity.house_entity import PublicSalePushEntity
 from core.domains.notification.dto.notification_dto import GetBadgeDto, GetNotificationDto, UpdateNotificationDto, \
     UpdateReceiveNotificationSettingDto
 from core.domains.notification.entity.notification_entity import NotificationEntity, ReceivePushTypeEntity
@@ -53,7 +53,7 @@ class NotificationRepository:
             session.query(NotificationModel).filter_by(
                 id=dto.notification_id
             ).update(
-                {"is_read": True}
+                {"is_read": True, "updated_at": get_server_timestamp()}
             )
             session.commit()
         except Exception as e:
@@ -73,6 +73,7 @@ class NotificationRepository:
         try:
             filters = dict()
             filters["is_" + dto.push_type] = dto.is_active
+            filters["updated_at"] = get_server_timestamp()
 
             session.query(ReceivePushTypeModel).filter_by(user_id=dto.user_id).update(
                 filters

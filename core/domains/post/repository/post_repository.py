@@ -1,6 +1,7 @@
 from typing import List, Union
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.post_model import PostModel
 from core.domains.post.dto.post_dto import GetPostListDto
 from core.domains.post.entity.post_entity import PostEntity
@@ -49,7 +50,7 @@ class PostRepository:
     def update_read_count(self, post_id: int) -> None:
         try:
             session.query(PostModel).filter_by(id=post_id).update(
-                {"read_count": PostModel.read_count + 1}
+                {"read_count": PostModel.read_count + 1, "updated_at": get_server_timestamp()}
             )
             session.commit()
 
