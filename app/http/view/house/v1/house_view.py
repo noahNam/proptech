@@ -1,19 +1,32 @@
 from http import HTTPStatus
-from app.http.requests.v1.house_request import GetCoordinatesRequest, GetHousePublicDetailRequest
+
+from flasgger import swag_from
+from flask import request
+
+from app.http.requests.v1.house_request import (
+    GetCoordinatesRequest,
+    GetHousePublicDetailRequest,
+    GetCalenderInfoRequest
+)
+from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
-from app.http.responses.presenters.v1.house_presenter import BoundingPresenter, BoundingAdministrativePresenter, \
-    GetHousePublicDetailPresenter
-from app.http.view import api
-from core.domains.house.enum.house_enum import BoundingLevelEnum
-from core.domains.house.use_case.v1.house_use_case import BoundingUseCase, GetHousePublicDetailUseCase
+from app.http.responses.presenters.v1.house_presenter import (
+    BoundingPresenter,
+    BoundingAdministrativePresenter,
+    GetHousePublicDetailPresenter,
+    GetCalenderInfoPresenter,
+    UpsertInterestHousePresenter
+)
+from app.http.view import auth_required, api, current_user, jwt_required
+from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
+from core.domains.house.use_case.v1.house_use_case import (
+    BoundingUseCase,
+    GetHousePublicDetailUseCase,
+    GetCalenderInfoUseCase
+)
+from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
 from core.use_case_output import UseCaseFailureOutput, FailureType
-from flasgger import swag_from
-from flask import request, jsonify
-from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
-from app.http.responses.presenters.v1.house_presenter import UpsertInterestHousePresenter
-from app.http.view import auth_required, api, current_user, jwt_required
-from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 
 
 @api.route("/v1/houses/<int:house_id>/like", methods=["POST"])
@@ -74,3 +87,34 @@ def house_public_detail_view(house_id: int):
 
     return GetHousePublicDetailPresenter().transform(GetHousePublicDetailUseCase().execute(dto=dto))
 
+
+@api.route("/v1/houses/calender", methods=["GET"])
+@jwt_required
+@auth_required
+def house_calender_list_view():
+    try:
+        year = request.args.get("year")
+        month = request.args.get("month")
+        user_id = current_user.id
+
+    except Exception as e:
+        return failure_response(
+            UseCaseFailureOutput(
+                type=FailureType.INVALID_REQUEST_ERROR,
+                message=f"Not enough or Wrong type Parameter, Error: {e} ",
+            ),
+            status_code=HTTPStatus.BAD_REQUEST,
+        )
+
+    try:
+        dto = GetCalenderInfoRequest(year=year, month=month, user_id=user_id).validate_request_and_make_dto()
+    except InvalidRequestException:
+        return failure_response(
+            UseCaseFailureOutput(
+                type=FailureType.INVALID_REQUEST_ERROR,
+                message=f"Invalid Parameter input, "
+                        f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
+                        f"month: 1 ~ 12 required",
+            )
+        )
+    return GetCalenderInfoPresenter().transform(GetCalenderInfoUseCase().execute(dto=dto))

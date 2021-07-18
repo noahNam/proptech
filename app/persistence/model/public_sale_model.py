@@ -13,7 +13,7 @@ from sqlalchemy.orm import relationship, backref
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
-from core.domains.house.entity.house_entity import PublicSaleEntity, PublicSalePushEntity
+from core.domains.house.entity.house_entity import PublicSaleEntity, PublicSalePushEntity, PublicSaleCalenderEntity
 from core.domains.house.enum.house_enum import HousingCategoryEnum, RentTypeEnum, PreSaleTypeEnum
 
 
@@ -111,4 +111,25 @@ class PublicSaleModel(db.Model):
             name=self.name,
             region=self.region,
             message_type=message_type,
+        )
+
+    def to_calender_entity(self) -> PublicSaleCalenderEntity:
+        return PublicSaleCalenderEntity(
+            id=self.id,
+            real_estate_id=self.real_estate_id,
+            name=self.name,
+            offer_date=self.offer_date,
+            subscription_start_date=self.subscription_start_date,
+            subscription_end_date=self.subscription_end_date,
+            special_supply_date=self.special_supply_date,
+            special_supply_etc_date=self.special_supply_etc_date,
+            first_supply_date=self.first_supply_date,
+            first_supply_etc_date=self.first_supply_etc_date,
+            second_supply_date=self.second_supply_date,
+            second_supply_etc_date=self.second_supply_etc_date,
+            notice_winner_date=self.notice_winner_date,
+            contract_start_date=self.contract_start_date,
+            contract_end_date=self.contract_end_date,
+            move_in_year=self.move_in_year,
+            move_in_month=self.move_in_month,
         )

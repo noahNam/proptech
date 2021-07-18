@@ -1,20 +1,31 @@
-from typing import Optional
-from sqlalchemy import and_, func, or_
+from typing import Optional, List
+
+from sqlalchemy import and_, func, or_, exc
+
+from app.extensions.database import session
+from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
     PrivateSaleModel,
     PublicSaleModel,
     AdministrativeDivisionModel,
-    PublicSaleDetailModel
+    PublicSaleDetailModel,
+    InterestHouseModel
 )
-from core.domains.house.dto.house_dto import CoordinatesRangeDto, GetHousePublicDetailDto
-from sqlalchemy import exc
-from app.extensions.utils.log_helper import logger_
-from app.extensions.database import session
-from app.persistence.model import InterestHouseModel
-from core.domains.house.dto.house_dto import UpsertInterestHouseDto
-from core.domains.house.entity.house_entity import HousePublicDetailEntity
+from core.domains.house.dto.house_dto import (
+    CoordinatesRangeDto,
+    GetHousePublicDetailDto,
+    GetCalenderInfoDto,
+    UpsertInterestHouseDto
+)
+from core.domains.house.entity.house_entity import (
+    HousePublicDetailEntity,
+    RealEstateWithPrivateSaleEntity,
+    AdministrativeDivisionEntity,
+    BoundingRealEstateEntity,
+    CalenderInfoEntity
+)
 from core.domains.house.enum.house_enum import BoundingLevelEnum, BuildTypeEnum, RealTradeTypeEnum
 from core.exceptions import NotUniqueErrorException
 
@@ -59,7 +70,8 @@ class HouseRepository:
                 f"[HouseRepository][update_is_like_house] house_id : {dto.house_id} error : {e}"
             )
 
-    def _make_object_bounding_entity_from_queryset(self, queryset: Optional[list]) -> Optional[list]:
+    def _make_object_bounding_entity_from_queryset(self, queryset: Optional[list]) \
+            -> Optional[List[BoundingRealEstateEntity]]:
         if not queryset:
             return None
 
@@ -77,7 +89,7 @@ class HouseRepository:
 
         return results
 
-    def get_bounding_queryset_by_coordinates_range_dto(self, dto: CoordinatesRangeDto) -> Optional[list]:
+    def get_bounding_by_coordinates_range_dto(self, dto: CoordinatesRangeDto) -> Optional[list]:
         filters = list()
         filters.append(func.ST_Contains(func.ST_MakeEnvelope(dto.start_x, dto.end_y, dto.end_x, dto.start_y, 4326),
                                         RealEstateModel.coordinates))
@@ -116,7 +128,8 @@ class HouseRepository:
 
         return self._make_object_bounding_entity_from_queryset(queryset=queryset)
 
-    def _make_bounding_administrative_entity_from_queryset(self, queryset: Optional[list]) -> Optional[list]:
+    def _make_bounding_administrative_entity_from_queryset(self, queryset: Optional[list]) \
+            -> Optional[List[AdministrativeDivisionEntity]]:
         if not queryset:
             return None
 
@@ -126,7 +139,7 @@ class HouseRepository:
             results.append(query.to_entity())
         return results
 
-    def get_administrative_queryset_by_coordinates_range_dto(self, dto: CoordinatesRangeDto) -> Optional[list]:
+    def get_administrative_by_coordinates_range_dto(self, dto: CoordinatesRangeDto) -> Optional[list]:
         """
              dto.level: 6 ~ 14
              <filter condition>
@@ -176,6 +189,10 @@ class HouseRepository:
         filters.append(InterestHouseModel.user_id == dto.user_id)
         filters.append(InterestHouseModel.house_id == dto.house_id)
         filters.append(InterestHouseModel.type == 1)
+        filters.append(and_(RealEstateModel.id == dto.house_id,
+                            RealEstateModel.is_available == "True",
+                            PublicSaleModel.real_estate_id == dto.house_id,
+                            PublicSaleModel.is_available == "True"))
 
         interest_house = session.query(InterestHouseModel).filter(*filters).first()
 
@@ -210,7 +227,8 @@ class HouseRepository:
         )
         return query.first()
 
-    def _make_house_with_private_entities_from_queryset(self, queryset: Optional[list]) -> Optional[list]:
+    def _make_house_with_private_entities_from_queryset(self, queryset: Optional[list]) \
+            -> Optional[List[RealEstateWithPrivateSaleEntity]]:
         if not queryset:
             return None
 
@@ -248,9 +266,9 @@ class HouseRepository:
             near_houses=house_with_private_entities
         )
 
-    def get_house_public_detail_queryset_by_get_house_public_detail_dto(self, dto: GetHousePublicDetailDto,
-                                                                        degrees: float,
-                                                                        is_like: bool) -> HousePublicDetailEntity:
+    def get_house_public_detail_by_get_house_public_detail_dto(self, dto: GetHousePublicDetailDto,
+                                                               degrees: float,
+                                                               is_like: bool) -> HousePublicDetailEntity:
         """
             <주변 실거래가 매물 List 가져오기>
             Postgis func- ST_DWithin(A_Geometry, B_Geometry, degrees) -> bool
@@ -297,3 +315,51 @@ class HouseRepository:
             house_with_private_entities=house_with_private_entities,
             is_like=is_like
         )
+
+    def _make_calender_info_entity_from_queryset(self, queryset: Optional[list], user_id: int) \
+            -> Optional[List[CalenderInfoEntity]]:
+        """
+            <최종 Entity 구성>
+            : 분양 매물 + 상세 queryset + is_like -> CalenderInfoEntity
+        """
+        if not queryset:
+            return None
+
+        result = list()
+        for query in queryset:
+            dto = GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
+
+            # 사용자가 해당 분양 매물에 대해 찜하기 했는지 여부
+            is_like = self.is_user_liked_house(self.get_interest_house(dto=dto))
+            result.append(query.to_calender_info_entity(is_like=is_like))
+
+        return result
+
+    def get_calender_info_by_get_calender_info_dto(self, dto: GetCalenderInfoDto) -> Optional[list]:
+        year_month = dto.year + dto.month
+        filters = list()
+        filters.append(and_(RealEstateModel.is_available == "True",
+                            PublicSaleModel.is_available == "True"))
+        filters.append(or_(PublicSaleModel.offer_date.startswith(year_month),
+                           PublicSaleModel.subscription_start_date.startswith(year_month),
+                           PublicSaleModel.subscription_end_date.startswith(year_month),
+                           PublicSaleModel.special_supply_date.startswith(year_month),
+                           PublicSaleModel.special_supply_etc_date.startswith(year_month),
+                           PublicSaleModel.first_supply_date.startswith(year_month),
+                           PublicSaleModel.first_supply_etc_date.startswith(year_month),
+                           PublicSaleModel.second_supply_date.startswith(year_month),
+                           PublicSaleModel.second_supply_etc_date.startswith(year_month),
+                           PublicSaleModel.notice_winner_date.startswith(year_month),
+                           PublicSaleModel.contract_start_date.startswith(year_month),
+                           PublicSaleModel.contract_end_date.startswith(year_month))
+                       )
+
+        query = (
+            session.query(RealEstateModel)
+                .join(RealEstateModel.public_sales)
+                .filter(*filters)
+        )
+
+        queryset = query.all()
+
+        return self._make_calender_info_entity_from_queryset(queryset=queryset, user_id=dto.user_id)

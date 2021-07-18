@@ -27,3 +27,9 @@ class UpsertInterestHouseDto(BaseModel):
 class GetHousePublicDetailDto(BaseModel):
     user_id: int
     house_id: int
+
+
+class GetCalenderInfoDto(BaseModel):
+    year: str
+    month: str
+    user_id: int

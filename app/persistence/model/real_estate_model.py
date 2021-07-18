@@ -14,7 +14,7 @@ from app import db
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     RealEstateWithPrivateSaleEntity,
-    HousePublicDetailEntity
+    HousePublicDetailEntity, CalenderInfoEntity
 )
 
 
@@ -145,4 +145,14 @@ class RealEstateModel(db.Model):
             max_acquisition_tax=max_acquisition_tax,
             public_sales=self.public_sales.to_entity() if self.public_sales else None,
             near_houses=near_houses
+        )
+
+    def to_calender_info_entity(self, is_like: bool) -> CalenderInfoEntity:
+        return CalenderInfoEntity(
+            is_like=is_like,
+            id=self.id,
+            name=self.name,
+            road_address=self.road_address,
+            jibun_address=self.jibun_address,
+            public_sale=self.public_sales.to_calender_entity() if self.public_sales else None,
         )

@@ -229,3 +229,32 @@ class HousePublicDetailEntity(BaseModel):
 
     class Config:
         use_enum_values = True
+
+
+class PublicSaleCalenderEntity(BaseModel):
+    id: int
+    real_estate_id: int
+    name: str
+    offer_date: Optional[str]
+    subscription_start_date: Optional[str]
+    subscription_end_date: Optional[str]
+    special_supply_date: Optional[str]
+    special_supply_etc_date: Optional[str]
+    first_supply_date: Optional[str]
+    first_supply_etc_date: Optional[str]
+    second_supply_date: Optional[str]
+    second_supply_etc_date: Optional[str]
+    notice_winner_date: Optional[str]
+    contract_start_date: Optional[str]
+    contract_end_date: Optional[str]
+    move_in_year: int
+    move_in_month: int
+
+
+class CalenderInfoEntity(BaseModel):
+    is_like: bool
+    id: int
+    name: str
+    road_address: str
+    jibun_address: str
+    public_sale: PublicSaleCalenderEntity = None
