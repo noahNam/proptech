@@ -65,6 +65,7 @@ class UserRepository:
                 os=dto.os,
                 is_active=dto.is_active_device,
                 is_auth=dto.is_auth,
+                endpoint="",
             )
             session.add(device)
             session.commit()

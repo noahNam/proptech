@@ -27,6 +27,7 @@ class DeviceModel(db.Model):
     is_active = Column(Boolean, nullable=False, default=True)
     is_auth = Column(Boolean, nullable=False, default=False)
     phone_number = Column(String(11), nullable=True)
+    endpoint = Column(String(100), nullable=True, default="")
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
@@ -43,6 +44,7 @@ class DeviceModel(db.Model):
             is_active=self.is_active,
             is_auth=self.is_auth,
             phone_number=self.phone_number,
+            endpoint=self.endpoint,
             created_at=self.created_at,
             updated_at=self.updated_at,
             device_token=self.device_token.to_entity() if self.device_token else None,
