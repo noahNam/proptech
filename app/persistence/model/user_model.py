@@ -3,7 +3,7 @@ from sqlalchemy import (
     BigInteger,
     Boolean,
     DateTime,
-    Integer,
+    Integer, String,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -19,23 +19,31 @@ class UserModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     is_required_agree_terms = Column(Boolean, nullable=False, default=False)
+    join_date = Column(String(8), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     is_out = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime, default=get_server_timestamp())
     updated_at = Column(DateTime, default=get_server_timestamp())
 
-    interest_regions = relationship(
-        "InterestRegionModel", backref=backref("users"), uselist=False
-    )
-    devices = relationship("DeviceModel", backref=backref("users"), uselist=False)
-    user_profiles = relationship(
+    device = relationship("DeviceModel", backref=backref("users"), uselist=False)
+    user_profile = relationship(
         "UserProfileModel", backref=backref("users"), uselist=False
     )
+    receive_push_type = relationship(
+        "ReceivePushTypeModel", backref=backref("users"), uselist=False
+    )
+    interest_houses = relationship("InterestHouseModel", back_populates="users", uselist=True)
 
     def to_entity(self) -> UserEntity:
         return UserEntity(
             id=self.id,
             is_required_agree_terms=self.is_required_agree_terms,
+            join_date=self.join_date,
             is_active=self.is_active,
             is_out=self.is_out,
+            device=self.device.to_entity(),
+            user_profile=self.user_profile.to_entity() if self.user_profile else None,
+            receive_push_type=self.receive_push_type.to_entity(),
+            interest_houses=[interest_house.to_entity() for interest_house in
+                             self.interest_houses] if self.interest_houses else None,
         )

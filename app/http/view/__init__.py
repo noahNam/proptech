@@ -1,6 +1,4 @@
-import jwt
 import sentry_sdk
-from http import HTTPStatus
 
 from flask import Blueprint
 from flask_jwt_extended.exceptions import NoAuthorizationError
@@ -14,7 +12,9 @@ from .authentication.v1.auth_view import *  # noqa isort:skip
 from .user.v1.user_view import *  # noqa isort:skip
 from .notification.v1.notification_view import *  # noqa isort:skip
 from .house.v1.house_view import *  # noqa isort:skip
+from .post.v1.post_view import *  # noqa isort:skip
 from .main import *  # noqa isort:skip
+from .house.v1.house_view import *  # noqa isort:skip
 
 
 @api.errorhandler(Exception)

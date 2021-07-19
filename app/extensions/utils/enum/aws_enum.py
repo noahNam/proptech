@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 
@@ -6,8 +7,12 @@ class AwsServiceEnum(Enum):
 
 
 class S3BucketEnum(Enum):
-    TOADHOME_BUCKET = "test-apartalk-bucket"
+    TOADHOME_BUCKET_NAME = os.environ.get("TOADHOME_BUCKET_NAME")
 
 
 class S3PathEnum(Enum):
     PROFILE_IMGS = "profile_imgs/"
+
+
+class S3RegionEnum(Enum):
+    TOADHOME_BUCKET_REGION = os.environ.get("TOADHOME_BUCKET_REGION")

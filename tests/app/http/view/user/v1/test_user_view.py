@@ -3,6 +3,7 @@ import uuid
 from http import HTTPStatus
 from unittest.mock import patch
 
+import pytest
 from flask import url_for
 
 from app.persistence.model import (
@@ -11,7 +12,7 @@ from app.persistence.model import (
     UserModel,
     AppAgreeTermsModel,
     UserProfileModel,
-    UserInfoModel,
+    UserInfoModel, ReceivePushTypeModel,
 )
 from core.domains.user.dto.user_dto import UpsertUserInfoDetailDto
 from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, CodeEnum, MonthlyIncomeEnum
@@ -46,7 +47,6 @@ def test_get_user_view_then_success(
 def test_get_user_view_then_user_is_not_found(
         client, session, test_request_context, make_header, make_authorization
 ):
-    user_id = 1
     authorization = make_authorization(user_id=1)
     headers = make_header(
         authorization=authorization,
@@ -108,7 +108,7 @@ def test_create_user_when_given_wrong_token_then_unauthorized_error(
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     assert response.get_json()["type"] == HTTPStatus.UNAUTHORIZED
-    assert response.get_json()["message"] == "jwt_validation_error"
+    assert response.get_json()["message"] == "unauthorized_error"
 
 
 def test_create_user_to_verify_data_when_first_login_tehn_success(
@@ -156,7 +156,7 @@ def test_create_user_to_verify_data_when_first_login_tehn_success(
     assert device_token.token == dict_["token"]
 
 
-def test_create_app_agree_terms_when_first_login_with_not_receipt_marketing_then_success(
+def test_create_app_agree_terms_when_first_login_with_not_receive_marketing_then_success(
         client, session, test_request_context, make_header, make_authorization, create_users
 ):
     user_id = 1
@@ -166,7 +166,7 @@ def test_create_app_agree_terms_when_first_login_with_not_receipt_marketing_then
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(receipt_marketing_yn=False, )
+    dict_ = dict(receive_marketing_yn=False, )
 
     with test_request_context:
         response = client.post(
@@ -175,10 +175,13 @@ def test_create_app_agree_terms_when_first_login_with_not_receipt_marketing_then
             headers=headers,
         )
 
+    receive_push_types = session.query(ReceivePushTypeModel).filter_by(user_id=user_id).first()
+
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert data["result"] == "success"
     assert isinstance(data["result"], str)
+    assert receive_push_types.is_marketing is False
 
 
 def test_create_app_agree_terms_when_first_login_with_not_user_id_then_authorization_error(
@@ -191,7 +194,7 @@ def test_create_app_agree_terms_when_first_login_with_not_user_id_then_authoriza
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(receipt_marketing_yn=False, )
+    dict_ = dict(receive_marketing_yn=False, )
 
     with test_request_context:
         response = client.post(
@@ -203,7 +206,7 @@ def test_create_app_agree_terms_when_first_login_with_not_user_id_then_authoriza
     data = response.get_json()
     assert response.status_code == 401
     assert data["type"] == 401
-    assert data["message"] == "jwt_validation_error"
+    assert data["message"] == "unauthorized_error"
 
 
 def test_create_app_agree_terms_to_verify_data_when_first_login_then_success(
@@ -220,7 +223,7 @@ def test_create_app_agree_terms_to_verify_data_when_first_login_then_success(
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(receipt_marketing_yn=False, )
+    dict_ = dict(receive_marketing_yn=False, )
 
     with test_request_context:
         response = client.post(
@@ -244,8 +247,8 @@ def test_create_app_agree_terms_to_verify_data_when_first_login_then_success(
     assert app_agree_terms.user_id == user_id
     assert app_agree_terms.private_user_info_yn is True
     assert app_agree_terms.required_terms_yn is True
-    assert app_agree_terms.receipt_marketing_yn is False
-    assert app_agree_terms.receipt_marketing_date is None
+    assert app_agree_terms.receive_marketing_yn is False
+    assert app_agree_terms.receive_marketing_date is None
 
 
 @patch("core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message", return_value=True)
@@ -736,3 +739,48 @@ def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_
     assert data["result"][0]['user_value'] == dict_.get("values")[0]
     assert data["result"][1]['user_value'] == dict_.get("values")[1]
     assert data["result"][2]['user_value'] == dict_.get("values")[2]
+
+
+@pytest.mark.skip(reason="local에서 환경변수 미설정 시 에러나므로 skip")
+def test_get_user_provider_view_when_call_captian_api_then_success(
+        client, session, test_request_context, make_header, make_authorization
+):
+    user_id = 1
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_user_provider_view"),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data['provider'] in ["kakao", "google"]
+
+
+def test_patch_user_out_view_then_success(
+        client, session, test_request_context, make_header, make_authorization, create_users
+):
+    user_id = create_users[0].id
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.patch(
+            url_for("api/tanos.patch_user_out_view"),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"] == "success"

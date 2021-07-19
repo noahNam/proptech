@@ -62,7 +62,6 @@ class AuthSmsConfirmPresenter:
             try:
                 schema = AuthenticationResponseSchema(result=output.value)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",

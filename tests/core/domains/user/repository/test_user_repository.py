@@ -37,7 +37,7 @@ create_app_agree_term_dto = CreateAppAgreeTermsDto(
     user_id=1,
     private_user_info_yn=True,
     required_terms_yn=True,
-    receipt_marketing_yn=False,
+    receive_marketing_yn=False,
 )
 
 upsert_user_info_detail_dto = UpsertUserInfoDto(
@@ -59,10 +59,9 @@ def test_get_user_repo_then_success(create_users):
 
 
 def test_create_user_profiles_when_first_login_then_success(
-        session, interest_region_factory
+        session
 ):
     UserRepository().create_user(dto=create_user_dto)
-    interest_region_factory.create_batch(size=1, user_id=create_user_dto.user_id)
 
     user = session.query(UserModel).first()
 
@@ -81,7 +80,7 @@ def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_uniqu
         UserRepository().create_user(dto=create_user_dto)
 
 
-def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_success(
+def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_success(
         session,
 ):
     UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
@@ -90,22 +89,22 @@ def test_agree_terms_repo_when_app_first_start_with_not_receipt_marketing_then_s
     assert result.user_id == create_app_agree_term_dto.user_id
     assert result.private_user_info_yn == create_app_agree_term_dto.private_user_info_yn
     assert result.required_terms_yn == create_app_agree_term_dto.required_terms_yn
-    assert result.receipt_marketing_yn == create_app_agree_term_dto.receipt_marketing_yn
-    assert result.receipt_marketing_date is None
+    assert result.receive_marketing_yn == create_app_agree_term_dto.receive_marketing_yn
+    assert result.receive_marketing_date is None
 
 
-def test_agree_terms_repo_when_app_first_start_with_receipt_marketing_then_success(
+def test_agree_terms_repo_when_app_first_start_with_receive_marketing_then_success(
         session,
 ):
-    create_app_agree_term_dto.receipt_marketing_yn = True
+    create_app_agree_term_dto.receive_marketing_yn = True
     UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
 
     result = session.query(AppAgreeTermsModel).filter_by(user_id=1).first()
     assert result.user_id == create_app_agree_term_dto.user_id
     assert result.private_user_info_yn == create_app_agree_term_dto.private_user_info_yn
     assert result.required_terms_yn == create_app_agree_term_dto.required_terms_yn
-    assert result.receipt_marketing_yn is True
-    assert result.receipt_marketing_date is not None
+    assert result.receive_marketing_yn is True
+    assert result.receive_marketing_date is not None
 
 
 def test_update_user_required_agree_terms_when_app_first_start_then_success(session):
@@ -346,3 +345,10 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
 
         assert isinstance(user_info, UserInfoEntity)
         assert len(user_info.code_values.detail_code) == len(user_info.code_values.name)
+
+
+def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(session, create_users):
+    UserRepository().update_user_status_to_out(user_id=create_users[0].id)
+    user = UserRepository().get_user(user_id=create_users[0].id)
+
+    assert user.is_out is True

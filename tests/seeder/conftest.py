@@ -8,22 +8,21 @@ from core.domains.notification.dto.notification_dto import PushMessageDto
 from core.domains.notification.enum.notification_enum import NotificationBadgeTypeEnum, NotificationTopicEnum
 from tests.seeder.factory import (
     UserFactory,
-    InterestRegionFactory,
-    InterestRegionGroupFactory,
     UserProfileFactory,
     AvgMonthlyIncomeWorkerFactory,
-    SidoCodeFactory, NotificationFactory, InterestHouseFactory
+    SidoCodeFactory, NotificationFactory, InterestHouseFactory, AppAgreeTermsFactory, PostFactory, ArticleFactory
 )
 
 MODEL_FACTORIES = [
     UserFactory,
-    InterestRegionFactory,
-    InterestRegionGroupFactory,
     UserProfileFactory,
     AvgMonthlyIncomeWorkerFactory,
     SidoCodeFactory,
     NotificationFactory,
-    InterestHouseFactory
+    InterestHouseFactory,
+    AppAgreeTermsFactory,
+    PostFactory,
+    ArticleFactory
 ]
 
 faker = Faker()

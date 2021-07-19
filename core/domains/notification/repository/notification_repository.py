@@ -1,13 +1,20 @@
 from datetime import timedelta
 from typing import Optional, List
 
+from sqlalchemy import literal, String
+from sqlalchemy.orm import joinedload
+
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
 
 from app.extensions.database import session
-from app.persistence.model import NotificationModel
-from core.domains.notification.dto.notification_dto import GetBadgeDto, GetNotificationDto, UpdateNotificationDto
-from core.domains.notification.entity.notification_entity import NotificationEntity
+from app.persistence.model import NotificationModel, ReceivePushTypeHistoryModel, PublicSaleModel, InterestHouseModel
+from app.persistence.model.receive_push_type_model import ReceivePushTypeModel
+from core.domains.house.entity.house_entity import PublicSalePushEntity
+from core.domains.notification.dto.notification_dto import GetBadgeDto, GetNotificationDto, UpdateNotificationDto, \
+    UpdateReceiveNotificationSettingDto
+from core.domains.notification.entity.notification_entity import NotificationEntity, ReceivePushTypeEntity
+from core.domains.user.entity.user_entity import UserEntity
 
 logger = logger_.getLogger(__name__)
 
@@ -46,11 +53,122 @@ class NotificationRepository:
             session.query(NotificationModel).filter_by(
                 id=dto.notification_id
             ).update(
-                {"is_read": True}
+                {"is_read": True, "updated_at": get_server_timestamp()}
             )
             session.commit()
         except Exception as e:
             session.rollback()
             logger.error(
                 f"[NotificationRepository][update_notification_is_read] notification_id : {dto.notification_id} error : {e}"
+            )
+
+    def get_receive_notification_settings(self, user_id: int) -> ReceivePushTypeEntity:
+        filters = list()
+        filters.append(ReceivePushTypeModel.user_id == user_id)
+
+        receive_push_types = session.query(ReceivePushTypeModel).filter(*filters).first()
+        return receive_push_types.to_entity()
+
+    def update_receive_notification_setting(self, dto: UpdateReceiveNotificationSettingDto) -> None:
+        try:
+            filters = dict()
+            filters["is_" + dto.push_type] = dto.is_active
+            filters["updated_at"] = get_server_timestamp()
+
+            session.query(ReceivePushTypeModel).filter_by(user_id=dto.user_id).update(
+                filters
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[NotificationRepository][update_receive_notification_settings] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
+
+    def create_receive_push_type_history(self, dto: UpdateReceiveNotificationSettingDto) -> None:
+        try:
+            receive_push_type_history = ReceivePushTypeHistoryModel(
+                user_id=dto.user_id,
+                push_type=dto.push_type,
+                is_active=dto.is_active
+            )
+
+            session.add(receive_push_type_history)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[NotificationRepository][create_receive_push_type_history] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
+
+    def get_push_target_of_public_sales(self, today: str) -> List[Optional[PublicSalePushEntity]]:
+        default_filters = list()
+        default_filters.append(PublicSaleModel.is_available == True)
+
+        # 모집공고일
+        query_cond1 = session.query(PublicSaleModel, literal("offer_date", String).label("message_type")).filter(
+            *default_filters, PublicSaleModel.offer_date == today)
+
+        # 특별공급일
+        query_cond2 = session.query(PublicSaleModel,
+                                    literal("special_supply_date", String).label("message_type")).filter(
+            *default_filters, PublicSaleModel.special_supply_date == today)
+
+        # 1순위
+        query_cond3 = session.query(PublicSaleModel, literal("first_supply_date", String).label("message_type")).filter(
+            *default_filters, PublicSaleModel.first_supply_date == today)
+
+        # 2순위
+        query_cond4 = session.query(PublicSaleModel,
+                                    literal("second_supply_date", String).label("message_type")).filter(
+            *default_filters, PublicSaleModel.second_supply_date == today)
+
+        # 당첨자발표일
+        query_cond5 = session.query(PublicSaleModel,
+                                    literal("notice_winner_date", String).label("message_type")).filter(
+            *default_filters, PublicSaleModel.notice_winner_date == today)
+
+        query = query_cond1.union_all(query_cond2, query_cond3, query_cond4, query_cond5)
+        public_sales = query.all()
+
+        # public_sale[0] = PublicSaleModel
+        # public_sale[1] = message_type
+        return [public_sale[0].to_push_entity(public_sale[1]) for public_sale in
+                public_sales]
+
+    def get_users_of_push_target(self, house_id: int, type_: int) -> List[Optional[UserEntity]]:
+        filters = list()
+        filters.append(InterestHouseModel.house_id == house_id)
+        filters.append(InterestHouseModel.type == type_)
+        filters.append(InterestHouseModel.is_like == True)
+
+        query = session.query(InterestHouseModel).options(
+            joinedload(InterestHouseModel.users, innerjoin=True)).filter(*filters)
+        interest_houses = query.all()
+
+        return self._make_push_target_user_list(interest_houses=interest_houses)
+
+    def _make_push_target_user_list(self, interest_houses: List[InterestHouseModel]) -> List[Optional[UserEntity]]:
+        target_user_list = list()
+        for interest_house in interest_houses:
+            if interest_house.users.receive_push_type.is_private:
+                target_user_list.append(interest_house.users.to_entity())
+        return target_user_list
+
+    def create_notifications(self, notification_list: List[dict]) -> None:
+        try:
+            session.bulk_insert_mappings(
+                NotificationModel,
+                [
+                    notification
+                    for notification in notification_list
+                ]
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[NotificationRepository][create_notifications] error : {e}"
             )
