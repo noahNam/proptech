@@ -1,0 +1,57 @@
+openapi: "3.0.2"
+tags:
+  - Notification
+security:
+  - userAuth: []
+responses:
+  '200':
+    description: official = 서비스 안내, private = 맞춤 메세지, marketing = 마케팅 정보 수신
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                receive_push_types:
+                  type: object
+                  properties:
+                    official:
+                      type: bool
+                      example: True
+                    private:
+                      type: bool
+                      example: True
+                    marketing:
+                      type: bool
+                      example: True
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

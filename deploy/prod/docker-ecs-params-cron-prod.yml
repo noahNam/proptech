@@ -1,0 +1,20 @@
+version: 1
+task_definition:
+  task_execution_role: ecsTaskExecutionRole
+  ecs_network_mode: awsvpc
+  task_size:
+    cpu_limit: 256
+    mem_limit: 0.5GB
+  services:
+    prod-tanos-cron:
+      cpu_shares: 200
+      mem_limit: 0.4GB
+run_params:
+  network_configuration:
+    awsvpc_configuration:
+      subnets:
+        - "subnet-0a54154b0e29a1ceb"
+        - "subnet-08380a16443dd2eab"
+      security_groups:
+        - "sg-0cdc3572ba24ae0dc"
+      assign_public_ip: DISABLED

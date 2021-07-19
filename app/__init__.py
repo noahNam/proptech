@@ -6,6 +6,7 @@ from flasgger import Swagger
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
+from app.commands import init_commands
 from app.config import config
 from app.extensions import jwt, sms, redis
 from app.extensions.database import db, migrate
@@ -14,7 +15,7 @@ from app.extensions.swagger import swagger_config
 from app.http.view import api
 
 # alembic auto-generate detected
-# from app.persistence.model import *
+from app.persistence.model import *
 
 
 # event listener initialization
@@ -75,6 +76,7 @@ def create_app(
         init_provider(app)
         init_extensions(app)
         init_sentry(app)
+        init_commands()
 
     print("\n💌💌💌Flask Config is '{}'".format(config_name))
 

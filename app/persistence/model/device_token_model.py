@@ -8,6 +8,7 @@ from sqlalchemy import (
 
 from app import db
 from app.persistence.model.device_model import DeviceModel
+from core.domains.user.entity.user_entity import DeviceTokenEntity
 
 
 class DeviceTokenModel(db.Model):
@@ -20,3 +21,10 @@ class DeviceTokenModel(db.Model):
         BigInteger, ForeignKey(DeviceModel.id), nullable=False, unique=True
     )
     token = Column(String(163), nullable=False)
+
+    def to_entity(self) -> DeviceTokenEntity:
+        return DeviceTokenEntity(
+            id=self.id,
+            device_id=self.device_id,
+            token=self.token,
+        )
