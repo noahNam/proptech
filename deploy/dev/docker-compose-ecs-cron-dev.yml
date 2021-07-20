@@ -12,5 +12,5 @@ services:
         awslogs-region: ap-northeast-2
         awslogs-stream-prefix: toadhome/dev-tanos-cron-logs
         awslogs-create-group: "true"
-    environment:제
+    environment:
       # environment
