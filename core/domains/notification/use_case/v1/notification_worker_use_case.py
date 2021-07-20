@@ -39,9 +39,12 @@ class PrePrcsNotificationUseCase:
             return
 
         try:
-            if target_public_sales:
-                notification_list: List[dict] = self._convert_message_for_public_sales(
-                    target_public_sales=target_public_sales)
+            if not target_public_sales:
+                logger.info(f"🚀\tPrePrcsNotification Success - nothing target_public_sales")
+                return
+
+            notification_list: List[dict] = self._convert_message_for_public_sales(
+                target_public_sales=target_public_sales)
         except Exception as e:
             logger.error(f"🚀\t_convert_message_for_public_sales Error - {e}")
             sentry_sdk.capture_exception(e)
@@ -49,8 +52,11 @@ class PrePrcsNotificationUseCase:
 
         # notifications 테이블에 insert 한다.
         try:
-            if notification_list:
-                self._notification_repo.create_notifications(notification_list=notification_list)
+            if not notification_list:
+                logger.info(f"🚀\tPrePrcsNotification Success - nothing notification_list")
+                return
+
+            self._notification_repo.create_notifications(notification_list=notification_list)
         except Exception as e:
             logger.error(f"🚀\tcreate_notifications Error - {e}")
             sentry_sdk.capture_exception(e)
