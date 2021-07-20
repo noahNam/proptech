@@ -3,6 +3,8 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from pytest_factoryboy import register
+from sqlalchemy import event
+from sqlalchemy.event import listen
 from sqlalchemy.orm import scoped_session
 from app import create_app
 from app.extensions import SmsClient, RedisClient
@@ -109,3 +111,29 @@ def redis(app: Flask):
 
     _redis.flushall()
     _redis.disconnect()
+
+
+def load_spatialite(dbapi_connection, connection_rec):
+    dbapi_connection.enable_load_extension(True)
+    dbapi_connection.load_extension("/usr/local/lib/mod_spatialite.dylib")
+    # dbapi_connection.execute("SELECT load_extension('mod_spatialite');")
+
+
+@pytest.fixture(scope="function")
+def gis_session(db: SQLAlchemy) -> scoped_session:
+    listen(db.engine, 'connect', load_spatialite)
+    connection = db.engine.connect()
+    transaction = connection.begin()
+
+    options = dict(bind=connection, binds={})
+    session = db.create_scoped_session(options=options)
+
+    db.session = session
+
+    set_factories_session(session)
+
+    yield db.session
+
+    transaction.rollback()
+    connection.close()
+    session.remove()

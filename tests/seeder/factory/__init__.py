@@ -1,9 +1,11 @@
+import random
 import uuid
 from datetime import datetime
 
 import factory
 from faker import Factory as FakerFactory
 
+from app import PrivateSaleModel
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     DeviceModel,
@@ -14,9 +16,10 @@ from app.persistence.model import (
 from app.persistence.model.article_model import ArticleModel
 from app.persistence.model.post_model import PostModel
 from app.persistence.model.user_model import UserModel
+from app.persistence.model.real_estate_model import RealEstateModel
 
 # factory에 사용해야 하는 Model을 가져온다
-from core.domains.house.enum.house_enum import HouseTypeEnum
+from core.domains.house.enum.house_enum import HouseTypeEnum, RealTradeTypeEnum, BuildTypeEnum
 from core.domains.notification.enum.notification_enum import NotificationTopicEnum, NotificationBadgeTypeEnum, \
     NotificationStatusEnum
 from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
@@ -174,3 +177,43 @@ class ArticleFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     post_id = 1
     body = factory.Sequence(lambda n: "body_게시글 입니다:) {}".format(n + 1))
+
+
+class PrivateSaleFactory(BaseFactory):
+    class Meta:
+        model = PrivateSaleModel
+
+    real_estate_id = factory.Sequence(lambda n: n + 1)
+    private_area = random.uniform(40, 90)
+    supply_area = random.uniform(50, 130)
+    contract_date = "20210701"
+    deposit_price = 0
+    rent_price = 0
+    trade_price = random.randint(10000, 50000)
+    floor = random.randint(1, 20)
+    trade_type = RealTradeTypeEnum.TRADING.value
+    building_type = BuildTypeEnum.APARTMENT.value
+    is_available = True
+
+
+class RealEstateFactory(BaseFactory):
+    class Meta:
+        model = RealEstateModel
+
+    name = faker.building_name()
+    road_address = faker.road_address()
+    jibun_address = faker.land_address()
+    si_do = faker.province()
+    si_gun_gu = faker.city() + faker.borough()
+    dong_myun = "XX동"
+    ri = "-"
+    road_name = faker.road()
+    road_number = faker.road_number() + faker.road_suffix()
+    land_number = faker.land_number()
+    is_available = True
+    coordinates = f"SRID=4326;POINT({random.uniform(125.0666666, 131.8722222)} {random.uniform(33.1, 38.45)})"
+
+
+class RealEstateWithPrivateSaleFactory(RealEstateFactory):
+    private_sales = factory.List([factory.SubFactory(PrivateSaleFactory)])
+    public_sales = None
