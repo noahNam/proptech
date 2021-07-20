@@ -4,8 +4,7 @@ services:
     image: __ECR_ADDRESS__
     ports:
       - "5000:5000"
-    entrypoint: /usr/local/bin/poetry
-    command: "newrelic-admin run-program supervisord"
+    command: "newrelic-admin run supervisord"
     logging:
       driver: awslogs
       options:
