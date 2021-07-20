@@ -1,3 +1,5 @@
+from itertools import cycle
+
 import pytest
 from datetime import date, timedelta, datetime
 from faker import Faker
@@ -10,7 +12,15 @@ from tests.seeder.factory import (
     UserFactory,
     UserProfileFactory,
     AvgMonthlyIncomeWorkerFactory,
-    SidoCodeFactory, NotificationFactory, InterestHouseFactory, AppAgreeTermsFactory, PostFactory, ArticleFactory
+    SidoCodeFactory,
+    NotificationFactory,
+    InterestHouseFactory,
+    AppAgreeTermsFactory,
+    PostFactory,
+    ArticleFactory,
+    PrivateSaleFactory,
+    RealEstateWithPrivateSaleFactory,
+    RealEstateFactory
 )
 
 MODEL_FACTORIES = [
@@ -22,7 +32,10 @@ MODEL_FACTORIES = [
     InterestHouseFactory,
     AppAgreeTermsFactory,
     PostFactory,
-    ArticleFactory
+    ArticleFactory,
+    PrivateSaleFactory,
+    RealEstateWithPrivateSaleFactory,
+    RealEstateFactory
 ]
 
 faker = Faker()
@@ -117,6 +130,17 @@ def create_notifications(session, notification_factory):
     session.commit()
 
     return notifications
+
+
+@pytest.fixture
+def create_real_estate_with_private_sales(session,
+                                          real_estate_with_private_sale_factory):
+    private_sales = cycle(PrivateSaleFactory() for _ in range(3))
+    real_estate_with_private_sales = real_estate_with_private_sale_factory.build_batch(size=3)
+    session.add_all(real_estate_with_private_sales)
+    session.commit()
+
+    return real_estate_with_private_sales
 
 
 def make_random_today_date(between_days: int = 1, year_ago: int = 2):
