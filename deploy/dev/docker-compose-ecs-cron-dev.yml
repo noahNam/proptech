@@ -4,7 +4,7 @@ services:
     image: __ECR_ADDRESS__
     ports:
       - "5000:5000"
-    command: "newrelic-admin run supervisord"
+    command: "newrelic-admin run-program supervisord"
     logging:
       driver: awslogs
       options:
