@@ -4,7 +4,7 @@ services:
     image: __ECR_ADDRESS__
     ports:
       - "5000:5000"
-    command: "newrelic-admin run-program supervisord"
+    command: "run supervisord"
     logging:
       driver: awslogs
       options:
@@ -12,5 +12,5 @@ services:
         awslogs-region: ap-northeast-2
         awslogs-stream-prefix: toadhome/dev-tanos-cron-logs
         awslogs-create-group: "true"
-    environment:
+    environment:제
       # environment
