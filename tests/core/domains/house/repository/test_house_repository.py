@@ -56,6 +56,6 @@ def test_update_is_like_house_repo_when_unlike_public_sales_then_success(session
     assert result.type == upsert_interest_house_dto.type
 
 
-# def test_get_bounding_by_coordinates_range_dto(session, real_estate_with_private_sale_factory):
+# def test_get_bounding_by_coordinates_range_dto(gis_session, real_estate_with_private_sale_factory):
 #     result = HouseRepository().get_bounding_by_coordinates_range_dto(dto=coordinates_dto)
 #     print(result)

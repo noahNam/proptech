@@ -42,6 +42,9 @@ def upsert_interest_house_view(house_id):
 
 
 @api.route("/v1/houses/bounding", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("bounding_view.yml", methods=["GET"])
 def bounding_view():
     try:
         start_x = request.args.get("start_x")

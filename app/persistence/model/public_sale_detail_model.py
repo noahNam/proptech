@@ -4,6 +4,7 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     Float,
+    String,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -28,6 +29,7 @@ class PublicSaleDetailModel(db.Model):
     supply_area = Column(Float, nullable=False)
     supply_price = Column(Integer, nullable=False)
     acquisition_tax = Column(Integer, nullable=False)
+    area_type = Column(String(5), nullable=False)
 
     # 1:1 relationship
     public_sale_detail_photos = relationship("PublicSaleDetailPhotoModel",
@@ -42,5 +44,6 @@ class PublicSaleDetailModel(db.Model):
             supply_area=self.supply_area,
             supply_price=self.supply_price,
             acquisition_tax=self.acquisition_tax,
+            area_type=self.area_type,
             public_sale_detail_photos=self.public_sale_detail_photos.to_entity() if self.public_sale_detail_photos else None
         )
