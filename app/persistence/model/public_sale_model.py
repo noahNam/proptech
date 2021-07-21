@@ -57,6 +57,7 @@ class PublicSaleModel(db.Model):
     max_down_payment = Column(Integer, nullable=False)
     down_payment_ratio = Column(Integer, nullable=False)
     reference_url = Column(String(50), nullable=True)
+    offer_notice_url = Column(String(100), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
@@ -98,6 +99,7 @@ class PublicSaleModel(db.Model):
             max_down_payment=self.max_down_payment,
             down_payment_ratio=self.down_payment_ratio,
             reference_url=self.reference_url,
+            offer_notice_url=self.offer_notice_url,
             created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
             updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S"),
             public_sale_photos=self.public_sale_photos.to_entity() if self.public_sale_photos else None,

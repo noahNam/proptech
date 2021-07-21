@@ -63,3 +63,11 @@ class UserEntity(BaseModel):
     user_profile: UserProfileEntity = None
     receive_push_type: ReceivePushTypeEntity
     interest_houses: List[InterestHouseEntity] = None
+
+
+class RecentlyViewEntity(BaseModel):
+    id: int
+    user_id: int
+    house_id: int
+    type: int
+    created_at: datetime
