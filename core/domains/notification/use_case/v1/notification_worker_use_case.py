@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import List
 
 import inject
@@ -36,31 +37,31 @@ class PrePrcsNotificationUseCase:
         except Exception as e:
             logger.error(f"🚀\tget_push_target_of_public_sales Error - {e}")
             sentry_sdk.capture_exception(e)
-            return
+            sys.exit(0)
 
         try:
             if not target_public_sales:
                 logger.info(f"🚀\tPrePrcsNotification Success - nothing target_public_sales")
-                return
+                sys.exit(0)
 
             notification_list: List[dict] = self._convert_message_for_public_sales(
                 target_public_sales=target_public_sales)
         except Exception as e:
             logger.error(f"🚀\t_convert_message_for_public_sales Error - {e}")
             sentry_sdk.capture_exception(e)
-            return
+            sys.exit(0)
 
         # notifications 테이블에 insert 한다.
         try:
             if not notification_list:
                 logger.info(f"🚀\tPrePrcsNotification Success - nothing notification_list")
-                return
+                sys.exit(0)
 
             self._notification_repo.create_notifications(notification_list=notification_list)
         except Exception as e:
             logger.error(f"🚀\tcreate_notifications Error - {e}")
             sentry_sdk.capture_exception(e)
-            return
+            sys.exit(0)
 
         logger.info(f"🚀\tPrePrcsNotification Success -  {len(target_public_sales)} / {len(notification_list)}")
 
