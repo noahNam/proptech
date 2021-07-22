@@ -1,8 +1,4 @@
-from typing import Optional, List
-
 from pydantic import BaseModel
-
-from core.domains.house.entity.house_entity import PrivateSaleEntity, RealEstateEntity
 
 
 class CoordinatesRangeDto(BaseModel):

@@ -15,25 +15,6 @@ class InterestHouseEntity(BaseModel):
     updated_at: datetime
 
 
-class RealEstateEntity(BaseModel):
-    id: int
-    name: str
-    road_address: str
-    jibun_address: str
-    si_do: str
-    si_gun_gu: str
-    dong_myun: str
-    ri: str
-    road_name: str
-    road_number: str
-    land_number: str
-    is_available: bool
-    # coordinates: Point
-    # to_entity(): coordinates 대신 아래 위경도 값 사용
-    latitude: float
-    longitude: float
-
-
 class PublicSaleDetailPhotoEntity(BaseModel):
     id: int
     public_sale_details_id: int
@@ -109,9 +90,9 @@ class PublicSalePushEntity(BaseModel):
     message_type: str = None
 
 
-class PrivateSaleEntity(BaseModel):
+class PrivateSaleDetailEntity(BaseModel):
     id: int
-    real_estate_id: int
+    private_sales_id: int
     private_area: float
     supply_area: float
     contract_date: Optional[str]
@@ -120,10 +101,21 @@ class PrivateSaleEntity(BaseModel):
     trade_price: int
     floor: int
     trade_type: Enum
-    building_type: Enum
     is_available: bool
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        use_enum_values = True
+
+
+class PrivateSaleEntity(BaseModel):
+    id: int
+    real_estate_id: int
+    building_type: Enum
+    created_at: datetime
+    updated_at: datetime
+    private_sale_details: List[PrivateSaleDetailEntity] = None
 
     class Config:
         use_enum_values = True
@@ -170,7 +162,7 @@ class BoundingRealEstateEntity(BaseModel):
     avg_supply_price: Optional[float]
     avg_private_pyoung_number: Optional[float]
     avg_public_pyoung_number: Optional[float]
-    private_sales: List[PrivateSaleEntity] = None
+    private_sales: PrivateSaleEntity = None
     public_sales: PublicSaleEntity = None
 
     class Config:
@@ -194,7 +186,7 @@ class RealEstateWithPrivateSaleEntity(BaseModel):
     longitude: float
     avg_trade_price: Optional[float]
     avg_private_pyoung_number: Optional[float]
-    private_sales: List[PrivateSaleEntity] = None
+    private_sales: PrivateSaleEntity = None
 
     class Config:
         use_enum_values = True

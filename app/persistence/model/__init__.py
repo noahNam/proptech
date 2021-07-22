@@ -20,3 +20,5 @@ from .interest_house_model import InterestHouseModel
 from .post_model import PostModel
 from .article_model import ArticleModel
 from .public_sale_detail_photo_model import PublicSaleDetailPhotoModel
+from .recently_view_model import RecentlyViewModel
+from .private_sale_detail_model import PrivateSaleDetailModel
