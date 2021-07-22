@@ -3,7 +3,7 @@ from enum import Enum
 
 class HouseTypeEnum(Enum):
     """
-        사용모델 : InterestHouseModel
+        사용모델 : InterestHouseModel, RecentlyViewModel
     """
     PUBLIC_SALES = 1
     PRIVATE_SALES = 2

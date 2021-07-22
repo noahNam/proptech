@@ -27,7 +27,8 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     CalenderInfoEntity
 )
-from core.domains.house.enum.house_enum import BoundingLevelEnum, BuildTypeEnum, RealTradeTypeEnum
+from core.domains.house.enum.house_enum import BoundingLevelEnum, BuildTypeEnum, RealTradeTypeEnum, HouseTypeEnum, \
+    DivisionLevelEnum
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -157,11 +158,11 @@ class HouseRepository:
                                         AdministrativeDivisionModel.coordinates))
 
         if dto.level > BoundingLevelEnum.MAX_SI_GUN_GU_LEVEL.value:
-            filters.append(AdministrativeDivisionModel.level == "3")
+            filters.append(AdministrativeDivisionModel.level == DivisionLevelEnum.LEVEL_3.value)
         elif BoundingLevelEnum.MIN_SI_GUN_GU_LEVEL.value <= dto.level <= BoundingLevelEnum.MAX_SI_GUN_GU_LEVEL.value:
-            filters.append(AdministrativeDivisionModel.level == "2")
+            filters.append(AdministrativeDivisionModel.level == DivisionLevelEnum.LEVEL_2.value)
         else:
-            filters.append(AdministrativeDivisionModel.level == "1")
+            filters.append(AdministrativeDivisionModel.level == DivisionLevelEnum.LEVEL_1.value)
 
         query = session.query(AdministrativeDivisionModel).filter(*filters)
         queryset = query.all()
@@ -202,7 +203,7 @@ class HouseRepository:
         filters = list()
         filters.append(InterestHouseModel.user_id == dto.user_id)
         filters.append(InterestHouseModel.house_id == dto.house_id)
-        filters.append(InterestHouseModel.type == 1)
+        filters.append(InterestHouseModel.type == HouseTypeEnum.PUBLIC_SALES.value)
 
         interest_house = session.query(InterestHouseModel).filter(*filters).first()
 
