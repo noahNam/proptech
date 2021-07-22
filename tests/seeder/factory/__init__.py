@@ -20,7 +20,8 @@ from app.persistence.model import (
     PostModel,
     PrivateSaleModel,
     RealEstateModel,
-    UserModel
+    UserModel,
+    PrivateSaleDetailModel, PublicSaleModel
 )
 # factory에 사용해야 하는 Model을 가져온다
 from core.domains.house.enum.house_enum import HouseTypeEnum, RealTradeTypeEnum, BuildTypeEnum
@@ -183,11 +184,11 @@ class ArticleFactory(factory.alchemy.SQLAlchemyModelFactory):
     body = factory.Sequence(lambda n: "body_게시글 입니다:) {}".format(n + 1))
 
 
-class PrivateSaleFactory(BaseFactory):
+class PrivateSaleDetailFactory(BaseFactory):
     class Meta:
-        model = PrivateSaleModel
+        model = PrivateSaleDetailModel
 
-    real_estate_id = factory.Sequence(lambda n: n + 1)
+    private_sales_id = factory.Sequence(lambda n: n + 1)
     private_area = random.uniform(40, 90)
     supply_area = random.uniform(50, 130)
     contract_date = "20210701"
@@ -196,8 +197,34 @@ class PrivateSaleFactory(BaseFactory):
     trade_price = random.randint(10000, 50000)
     floor = random.randint(1, 20)
     trade_type = RealTradeTypeEnum.TRADING.value
-    building_type = BuildTypeEnum.APARTMENT.value
     is_available = True
+
+
+class PrivateSaleFactory(BaseFactory):
+    class Meta:
+        model = PrivateSaleModel
+
+    real_estate_id = factory.Sequence(lambda n: n + 1)
+    name = factory.Sequence(lambda n: f"아파트_{n}")
+    building_type = BuildTypeEnum.APARTMENT.value
+    private_sale_details = factory.List([factory.SubFactory(PrivateSaleDetailFactory)])
+
+
+class PublicSaleDetailPhotoFactory(BaseFactory):
+    pass
+
+
+class PublicSaleDetailFactory(BaseFactory):
+    pass
+
+
+class PublicSalePhotoFactory(BaseFactory):
+    pass
+
+
+class PublicSaleFactory(BaseFactory):
+    class Meta:
+        model = PublicSaleModel
 
 
 class RealEstateFactory(BaseFactory):
@@ -216,8 +243,5 @@ class RealEstateFactory(BaseFactory):
     land_number = faker.land_number()
     is_available = True
     coordinates = f"SRID=4326;POINT({random.uniform(125.0666666, 131.8722222)} {random.uniform(33.1, 38.45)})"
-
-
-class RealEstateWithPrivateSaleFactory(RealEstateFactory):
-    private_sales = factory.List([factory.SubFactory(PrivateSaleFactory)])
+    private_sales = factory.SubFactory(PrivateSaleFactory)
     public_sales = None
