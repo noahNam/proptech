@@ -149,6 +149,7 @@ class GetCoordinatesRequest:
         except ValidationError as e:
             logger.error(
                 f"[GetCoordinatesRequestSchema][validate_request_and_make_dto] error : {e}")
+            raise InvalidRequestException(message=e.errors())
 
 
 class GetHousePublicDetailRequestSchema(BaseModel):

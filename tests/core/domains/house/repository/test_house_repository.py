@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto, CoordinatesRangeDto
 from core.domains.house.enum.house_enum import HouseTypeEnum
@@ -56,6 +58,29 @@ def test_update_is_like_house_repo_when_unlike_public_sales_then_success(session
     assert result.type == upsert_interest_house_dto.type
 
 
-# def test_get_bounding_by_coordinates_range_dto(gis_session, real_estate_with_private_sale_factory):
-#     result = HouseRepository().get_bounding_by_coordinates_range_dto(dto=coordinates_dto)
-#     print(result)
+def test_get_bounding_by_coordinates_range_dto(session, create_real_estate_with_bounding):
+    """
+        get_bounding_by_coordinates_range_dto -> return mocking
+    """
+    with patch(
+            "core.domains.house.repository.house_repository.HouseRepository.get_bounding_by_coordinates_range_dto"
+    ) as mock_get_bounding:
+        mock_get_bounding.return_value = create_real_estate_with_bounding
+        result = HouseRepository().get_bounding_by_coordinates_range_dto(dto=coordinates_dto)
+
+    assert result == mock_get_bounding.return_value
+    assert mock_get_bounding.called is True
+
+
+def test_get_administrative_by_coordinates_range_dto(session, create_real_estate_with_bounding):
+    """
+        get_administrative_by_coordinates_range_dto -> return mocking
+    """
+    with patch(
+            "core.domains.house.repository.house_repository.HouseRepository.get_administrative_by_coordinates_range_dto"
+    ) as mock_get_bounding:
+        mock_get_bounding.return_value = create_real_estate_with_bounding
+        result = HouseRepository().get_administrative_by_coordinates_range_dto(dto=coordinates_dto)
+
+    assert result == mock_get_bounding.return_value
+    assert mock_get_bounding.called is True

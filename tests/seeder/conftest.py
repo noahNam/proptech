@@ -18,8 +18,8 @@ from tests.seeder.factory import (
     AppAgreeTermsFactory,
     PostFactory,
     ArticleFactory,
+    PrivateSaleDetailFactory,
     PrivateSaleFactory,
-    RealEstateWithPrivateSaleFactory,
     RealEstateFactory
 )
 
@@ -33,8 +33,8 @@ MODEL_FACTORIES = [
     AppAgreeTermsFactory,
     PostFactory,
     ArticleFactory,
+    PrivateSaleDetailFactory,
     PrivateSaleFactory,
-    RealEstateWithPrivateSaleFactory,
     RealEstateFactory
 ]
 
@@ -133,14 +133,12 @@ def create_notifications(session, notification_factory):
 
 
 @pytest.fixture
-def create_real_estate_with_private_sales(session,
-                                          real_estate_with_private_sale_factory):
-    private_sales = cycle(PrivateSaleFactory() for _ in range(3))
-    real_estate_with_private_sales = real_estate_with_private_sale_factory.build_batch(size=3)
-    session.add_all(real_estate_with_private_sales)
+def create_real_estate_with_bounding(session, real_estate_factory):
+    real_estates = real_estate_factory.build_batch(size=2)
+    session.add_all(real_estates)
     session.commit()
 
-    return real_estate_with_private_sales
+    return real_estates
 
 
 def make_random_today_date(between_days: int = 1, year_ago: int = 2):
