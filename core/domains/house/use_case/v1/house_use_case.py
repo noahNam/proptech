@@ -62,12 +62,12 @@ class BoundingUseCase(HouseBaseUseCase):
 
 class GetHousePublicDetailUseCase(HouseBaseUseCase):
     def execute(self, dto: GetHousePublicDetailDto) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        if not self._house_repo.has_public_sale_house(dto=dto):
+        if not self._house_repo.is_enable_public_sale_house(dto=dto):
             return UseCaseFailureOutput(
                 type="house_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
             )
         # 사용자가 해당 house에 찜하기 되어있는지 여부
-        is_like = self._house_repo.is_user_liked_house(self._house_repo.get_interest_house(dto=dto))
+        is_like = self._house_repo.is_user_liked_house(self._house_repo.get_public_interest_house(dto=dto))
 
         # get HousePublicDetailEntity (degrees 조절 필요)
         entities = self._house_repo \

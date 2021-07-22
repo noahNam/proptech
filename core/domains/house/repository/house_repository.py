@@ -177,10 +177,19 @@ class HouseRepository:
         else:
             return None
 
-    def has_public_sale_house(self, dto: GetHousePublicDetailDto) -> bool:
-        house = session.query(RealEstateModel).filter_by(id=dto.house_id).first()
+    def _is_enable_real_estate(self, real_estate_id: int) -> bool:
+        real_estate = session.query(RealEstateModel).filter_by(id=real_estate_id).first()
 
-        if not house or not house.public_sales:
+        if not real_estate or real_estate.is_available == "False":
+            return False
+        return True
+
+    def is_enable_public_sale_house(self, dto: GetHousePublicDetailDto) -> bool:
+        house = session.query(PublicSaleModel).filter_by(id=dto.house_id).first()
+
+        if not house or house.is_available == "False":
+            return False
+        elif not self._is_enable_real_estate(house.real_estate_id):
             return False
         return True
 
@@ -189,15 +198,11 @@ class HouseRepository:
             return False
         return interest_house.is_like
 
-    def get_interest_house(self, dto: GetHousePublicDetailDto) -> Optional[InterestHouseModel]:
+    def get_public_interest_house(self, dto: GetHousePublicDetailDto) -> Optional[InterestHouseModel]:
         filters = list()
         filters.append(InterestHouseModel.user_id == dto.user_id)
         filters.append(InterestHouseModel.house_id == dto.house_id)
         filters.append(InterestHouseModel.type == 1)
-        filters.append(and_(RealEstateModel.id == dto.house_id,
-                            RealEstateModel.is_available == "True",
-                            PublicSaleModel.real_estate_id == dto.house_id,
-                            PublicSaleModel.is_available == "True"))
 
         interest_house = session.query(InterestHouseModel).filter(*filters).first()
 
@@ -206,12 +211,8 @@ class HouseRepository:
         return interest_house
 
     def _get_house_with_public_sales_by_id(self, house_id: int) -> list:
-        """
-            상세페이지로 보여줄 RealEstate 분양 매물
-            - house_id -> has_public_sale_house()로부터 분양 매물인지 검증 받은 id 값
-        """
         filters = list()
-        filters.append(RealEstateModel.id == house_id)
+        filters.append(PublicSaleModel.id == house_id)
         filters.append(and_(RealEstateModel.is_available == "True",
                             PublicSaleModel.is_available == "True"))
         query = (
