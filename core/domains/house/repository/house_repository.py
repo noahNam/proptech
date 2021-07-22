@@ -91,34 +91,6 @@ class HouseRepository:
         return self._make_object_bounding_entity_from_queryset(queryset=queryset)
 
     def get_interest_house_list(self, user_id: int) -> None:
-        # public_sales_query = (
-        #     session.query(InterestHouseModel.id, InterestHouseModel.type,
-        #                   PublicSaleModel.name,
-        #                   RealEstateModel.road_name, PublicSaleModel.subscription_start_date,
-        #                   PublicSaleModel.subscription_end_date)
-        #         .join(PublicSaleModel,
-        #               (InterestHouseModel.house_id == PublicSaleModel.id) &
-        #               (InterestHouseModel.type == HouseTypeEnum.PUBLIC_SALES.value) &
-        #               (InterestHouseModel.user_id == user_id) &
-        #               (InterestHouseModel.is_like == True)
-        #               )
-        #         .join(PublicSaleModel.real_estates)
-        # )
-        #
-        # private_sales_query = (
-        #     session.query(InterestHouseModel.id, InterestHouseModel.type,
-        #                   RealEstateModel.name,
-        #                   RealEstateModel.road_name, literal("", String).label("subscription_start_date"),
-        #                   literal("", String).label("subscription_end_date"))
-        #         .join(PrivateSaleModel,
-        #               (InterestHouseModel.house_id == PrivateSaleModel.id) &
-        #               (InterestHouseModel.type == HouseTypeEnum.PRIVATE_SALES.value) &
-        #               (InterestHouseModel.user_id == user_id) &
-        #               (InterestHouseModel.is_like == True)
-        #               )
-        #         .join(PrivateSaleModel.real_estates)
-        # )
-
         public_sales_query = (
             session.query(InterestHouseModel.id, InterestHouseModel.type,
                           PublicSaleModel.name,
@@ -148,8 +120,6 @@ class HouseRepository:
         )
 
         query = public_sales_query.union_all(private_sales_query)
-        # RawQueryHelper.print_raw_query(public_sales_query)
-        # RawQueryHelper.print_raw_query(private_sales_query)
         RawQueryHelper.print_raw_query(query)
         queryset = query.all()
 
