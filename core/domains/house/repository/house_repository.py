@@ -11,7 +11,8 @@ from app.persistence.model import (
     PublicSaleModel,
     AdministrativeDivisionModel,
     PublicSaleDetailModel,
-    InterestHouseModel
+    InterestHouseModel,
+    PrivateSaleDetailModel
 )
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
@@ -94,25 +95,29 @@ class HouseRepository:
         filters.append(func.ST_Contains(func.ST_MakeEnvelope(dto.start_x, dto.end_y, dto.end_x, dto.start_y, 4326),
                                         RealEstateModel.coordinates))
         filters.append(or_(and_(RealEstateModel.is_available == "True",
-                                PrivateSaleModel.is_available == "True",
-                                func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") >= get_month_from_today(),
-                                func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") <= get_server_timestamp()),
+                                PrivateSaleDetailModel.is_available == "True",
+                                func.to_date(PrivateSaleDetailModel.contract_date,
+                                             "YYYYMMDD") >= get_month_from_today(),
+                                func.to_date(PrivateSaleDetailModel.contract_date,
+                                             "YYYYMMDD") <= get_server_timestamp()),
                            and_(RealEstateModel.is_available == "True",
                                 PublicSaleModel.is_available == "True"),
                            and_(RealEstateModel.is_available == "True",
-                                PrivateSaleModel.is_available == "True",
+                                PrivateSaleDetailModel.is_available == "True",
                                 PublicSaleModel.is_available == "True",
-                                func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") >= get_month_from_today(),
-                                func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") <= get_server_timestamp())))
+                                func.to_date(PrivateSaleDetailModel.contract_date,
+                                             "YYYYMMDD") >= get_month_from_today(),
+                                func.to_date(PrivateSaleDetailModel.contract_date,
+                                             "YYYYMMDD") <= get_server_timestamp())))
 
         query = (
             session.query(RealEstateModel,
-                          func.avg(PrivateSaleModel.trade_price).label("avg_trade_price"),
-                          func.avg(PrivateSaleModel.deposit_price)
-                          .filter(PrivateSaleModel.trade_type == "전세").label("avg_deposit_price"),
-                          func.avg(PrivateSaleModel.rent_price).label("avg_rent_price"),
+                          func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
+                          func.avg(PrivateSaleDetailModel.deposit_price)
+                          .filter(PrivateSaleDetailModel.trade_type == "전세").label("avg_deposit_price"),
+                          func.avg(PrivateSaleDetailModel.rent_price).label("avg_rent_price"),
                           func.avg(PublicSaleDetailModel.supply_price).label("avg_supply_price"),
-                          func.avg(PrivateSaleModel.supply_area).label("avg_private_supply_area"),
+                          func.avg(PrivateSaleDetailModel.supply_area).label("avg_private_supply_area"),
                           func.avg(PublicSaleDetailModel.supply_area).label("avg_public_supply_area")
                           )
                 .join(RealEstateModel.private_sales, isouter=True)
@@ -289,17 +294,17 @@ class HouseRepository:
                                        RealEstateModel.coordinates,
                                        degrees))
         filters.append(and_(RealEstateModel.is_available == "True",
-                            PrivateSaleModel.is_available == "True",
-                            PrivateSaleModel.trade_type == RealTradeTypeEnum.TRADING.value,
+                            PrivateSaleDetailModel.is_available == "True",
+                            PrivateSaleDetailModel.trade_type == RealTradeTypeEnum.TRADING.value,
                             PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value,
-                            func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") >= get_month_from_today(),
-                            func.to_date(PrivateSaleModel.contract_date, "YYYYMMDD") <= get_server_timestamp()))
+                            func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD") >= get_month_from_today(),
+                            func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD") <= get_server_timestamp()))
 
         query = (
             session.query(
                 RealEstateModel,
-                func.avg(PrivateSaleModel.trade_price).label("avg_trade_price"),
-                func.avg(PrivateSaleModel.supply_area).label("avg_private_supply_area"),
+                func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
+                func.avg(PrivateSaleDetailModel.supply_area).label("avg_private_supply_area"),
             )
                 .join(RealEstateModel.private_sales)
                 .filter(*filters)

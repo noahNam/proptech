@@ -47,7 +47,7 @@ class PrivateSaleDetailModel(db.Model):
     def to_entity(self) -> PrivateSaleDetailEntity:
         return PrivateSaleDetailEntity(
             id=self.id,
-            real_estate_id=self.real_estate_id,
+            private_sales_id=self.private_sales_id,
             private_area=self.private_area,
             supply_area=self.supply_area,
             contract_date=self.contract_date,
@@ -55,7 +55,7 @@ class PrivateSaleDetailModel(db.Model):
             rent_price=self.rent_price,
             trade_price=self.trade_price,
             floor=self.floor,
-            building_type=self.building_type,
+            trade_type=self.trade_type,
             is_available=self.is_available,
             created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
             updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S")

@@ -102,8 +102,7 @@ class RealEstateModel(db.Model):
             longitude=self.longitude,
             avg_trade_price=avg_trade,
             avg_private_pyoung_number=avg_private_pyoung,
-            private_sales=[private_sale.to_entity() for private_sale in
-                           self.private_sales] if self.private_sales else None
+            private_sales=self.private_sales.to_entity() if self.private_sales else None
         )
 
     def to_house_with_public_detail_entity(self,
