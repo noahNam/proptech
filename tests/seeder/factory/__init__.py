@@ -5,19 +5,23 @@ from datetime import datetime
 import factory
 from faker import Factory as FakerFactory
 
-from app import PrivateSaleModel
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     DeviceModel,
     DeviceTokenModel,
-    UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel,
-    ReceivePushTypeModel, AppAgreeTermsModel
+    UserProfileModel,
+    AvgMonthlyIncomeWokrerModel,
+    SidoCodeModel,
+    NotificationModel,
+    InterestHouseModel,
+    ReceivePushTypeModel,
+    AppAgreeTermsModel,
+    ArticleModel,
+    PostModel,
+    PrivateSaleModel,
+    RealEstateModel,
+    UserModel
 )
-from app.persistence.model.article_model import ArticleModel
-from app.persistence.model.post_model import PostModel
-from app.persistence.model.user_model import UserModel
-from app.persistence.model.real_estate_model import RealEstateModel
-
 # factory에 사용해야 하는 Model을 가져온다
 from core.domains.house.enum.house_enum import HouseTypeEnum, RealTradeTypeEnum, BuildTypeEnum
 from core.domains.notification.enum.notification_enum import NotificationTopicEnum, NotificationBadgeTypeEnum, \
