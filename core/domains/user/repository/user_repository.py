@@ -369,7 +369,7 @@ class UserRepository:
                 f"[UserRepository][update_app_agree_terms_to_receive_marketing] user_id : {dto.user_id} error : {e}"
             )
 
-    def create_recently_view(self, dto: RecentlyViewDto):
+    def create_recently_view(self, dto: RecentlyViewDto) -> None:
         try:
             view_info = RecentlyViewModel(
                 user_id=dto.user_id, house_id=dto.house_id, type=dto.type
@@ -377,13 +377,11 @@ class UserRepository:
             session.add(view_info)
             session.commit()
 
-            return view_info.to_entity()
         except Exception as e:
             session.rollback()
             logger.error(
                 f"[UserRepository][create_recently_view] user_id : {dto.user_id} house_id: {dto.house_id} error : {e}"
             )
-            raise Exception
 
     # def get_recently_view_list(self, dto: GetUserDto):
     #     """

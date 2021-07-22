@@ -3,11 +3,14 @@ from typing import Union
 
 import inject
 
+from app.extensions.utils.event_observer import send_message, get_event_object
 from core.domains.house.dto.house_dto import CoordinatesRangeDto, GetHousePublicDetailDto, GetCalenderInfoDto
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.enum.house_enum import BoundingLevelEnum
 from core.domains.house.repository.house_repository import HouseRepository
+from core.domains.user.dto.user_dto import RecentlyViewDto
+from core.domains.user.enum import UserTopicEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
@@ -73,7 +76,16 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         entities = self._house_repo \
             .get_house_public_detail_by_get_house_public_detail_dto(dto=dto, degrees=1, is_like=is_like)
 
+        recently_view_dto = RecentlyViewDto(user_id=dto.user_id, house_id=dto.house_id, type=1)
+
+        # User domain -> 최근 목록 리스트 생성 pypubsub 요청
+        self.__create_recently_view(dto=recently_view_dto)
+
         return UseCaseSuccessOutput(value=entities)
+
+    def __create_recently_view(self, dto: RecentlyViewDto) -> None:
+        send_message(topic_name=UserTopicEnum.CREATE_RECENTLY_VIEW, dto=dto)
+        return get_event_object(topic_name=UserTopicEnum.CREATE_RECENTLY_VIEW)
 
 
 class GetCalenderInfoUseCase(HouseBaseUseCase):

@@ -336,7 +336,7 @@ class HouseRepository:
             dto = GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
 
             # 사용자가 해당 분양 매물에 대해 찜하기 했는지 여부
-            is_like = self.is_user_liked_house(self.get_interest_house(dto=dto))
+            is_like = self.is_user_liked_house(self.get_public_interest_house(dto=dto))
             result.append(query.to_calender_info_entity(is_like=is_like))
 
         return result
