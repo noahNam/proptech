@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from app.persistence.model import InterestHouseModel
-from core.domains.house.dto.house_dto import UpsertInterestHouseDto, CoordinatesRangeDto
+from core.domains.house.dto.house_dto import UpsertInterestHouseDto, CoordinatesRangeDto, GetHousePublicDetailDto
 from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
 
@@ -84,3 +84,18 @@ def test_get_administrative_by_coordinates_range_dto(session, create_real_estate
 
     assert result == mock_get_bounding.return_value
     assert mock_get_bounding.called is True
+
+
+def test_get_public_interest_house(session, create_interest_house):
+    dto = GetHousePublicDetailDto(user_id=1, house_id=1)
+    result = HouseRepository().get_public_interest_house(dto=dto)
+
+    assert result.user_id == dto.user_id
+    assert result.house_id == dto.house_id
+    assert result.type == HouseTypeEnum.PUBLIC_SALES.value
+    assert result.is_like is True
+
+
+def test_is_user_liked_house(session, create_interest_house):
+    result = HouseRepository().is_user_liked_house(create_interest_house[0])
+    assert result is True

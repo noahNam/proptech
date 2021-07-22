@@ -5,6 +5,7 @@ import pytest
 
 from app.persistence.model import AppAgreeTermsModel, UserProfileModel, UserInfoModel, RecentlyViewModel
 from app.persistence.model.user_model import UserModel
+from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
@@ -49,7 +50,7 @@ upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
 )
 
 recently_view_dto = RecentlyViewDto(
-    user_id=1, house_id=1, type=1
+    user_id=1, house_id=1, type=HouseTypeEnum.PUBLIC_SALES.value
 )
 
 

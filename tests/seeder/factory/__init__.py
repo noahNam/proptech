@@ -21,7 +21,9 @@ from app.persistence.model import (
     PrivateSaleModel,
     RealEstateModel,
     UserModel,
-    PrivateSaleDetailModel, PublicSaleModel
+    PrivateSaleDetailModel,
+    PublicSaleModel,
+    RecentlyViewModel
 )
 # factory에 사용해야 하는 Model을 가져온다
 from core.domains.house.enum.house_enum import HouseTypeEnum, RealTradeTypeEnum, BuildTypeEnum
@@ -245,3 +247,13 @@ class RealEstateFactory(BaseFactory):
     coordinates = f"SRID=4326;POINT({random.uniform(125.0666666, 131.8722222)} {random.uniform(33.1, 38.45)})"
     private_sales = factory.SubFactory(PrivateSaleFactory)
     public_sales = None
+
+
+class RecentlyViewFactory(BaseFactory):
+    class Meta:
+        model = RecentlyViewModel
+
+    user_id = 1
+    house_id = 1
+    type = HouseTypeEnum.PUBLIC_SALES.value
+    created_at = get_server_timestamp()

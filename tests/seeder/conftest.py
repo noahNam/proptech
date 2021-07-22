@@ -20,7 +20,8 @@ from tests.seeder.factory import (
     ArticleFactory,
     PrivateSaleDetailFactory,
     PrivateSaleFactory,
-    RealEstateFactory
+    RealEstateFactory,
+    RecentlyViewFactory
 )
 
 MODEL_FACTORIES = [
@@ -35,7 +36,8 @@ MODEL_FACTORIES = [
     ArticleFactory,
     PrivateSaleDetailFactory,
     PrivateSaleFactory,
-    RealEstateFactory
+    RealEstateFactory,
+    RecentlyViewFactory
 ]
 
 faker = Faker()
@@ -139,6 +141,24 @@ def create_real_estate_with_bounding(session, real_estate_factory):
     session.commit()
 
     return real_estates
+
+
+@pytest.fixture
+def create_interest_house(session, interest_house_factory):
+    interest_house = interest_house_factory.build_batch(size=1)
+    session.add_all(interest_house)
+    session.commit()
+
+    return interest_house
+
+
+@pytest.fixture
+def create_recently_view(session, recently_view_factory):
+    recently_view = recently_view_factory.build_batch(size=2)
+    session.add_all(recently_view)
+    session.commit()
+
+    return recently_view
 
 
 def make_random_today_date(between_days: int = 1, year_ago: int = 2):

@@ -3,7 +3,9 @@ from unittest.mock import patch
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto, CoordinatesRangeDto
 from core.domains.house.enum.house_enum import HouseTypeEnum, BoundingLevelEnum
-from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase, BoundingUseCase
+from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase, BoundingUseCase, \
+    GetHousePublicDetailUseCase
+from core.domains.user.dto.user_dto import RecentlyViewDto
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 upsert_interest_house_dto = UpsertInterestHouseDto(
