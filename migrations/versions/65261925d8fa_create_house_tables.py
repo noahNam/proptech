@@ -137,9 +137,6 @@ def upgrade():
                     sa.UniqueConstraint('public_sales_id')
                     )
 
-    with open("./migrations/seeds/default_houses.sql") as fp:
-        op.execute(fp.read())
-
 
 def downgrade():
     op.drop_table('public_sale_photos')

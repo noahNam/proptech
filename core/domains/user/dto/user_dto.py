@@ -93,8 +93,6 @@ class SigugunCodeDto(BaseModel):
 
 
 class RecentlyViewDto(BaseModel):
-    id: int
     user_id: int
     house_id: int
     type: int
-    created_at: datetime

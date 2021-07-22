@@ -1,19 +1,25 @@
 from typing import Optional, List, Union
 
-from sqlalchemy import exc, exists
+from sqlalchemy import exc, exists, and_
 
 from app.extensions.utils.log_helper import logger_
 
 from app.extensions.database import session
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
+    RealEstateModel,
+    PublicSaleModel,
     DeviceModel,
     DeviceTokenModel,
     AppAgreeTermsModel,
     UserProfileModel,
-    UserInfoModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, ReceivePushTypeModel
+    UserInfoModel,
+    AvgMonthlyIncomeWokrerModel,
+    SidoCodeModel,
+    ReceivePushTypeModel,
+    UserModel,
+    RecentlyViewModel
 )
-from app.persistence.model import UserModel
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
 from core.domains.notification.dto.notification_dto import UpdateReceiveNotificationSettingDto
 from core.domains.user.dto.user_dto import (
@@ -21,7 +27,7 @@ from core.domains.user.dto.user_dto import (
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
     GetUserInfoDto, AvgMonthlyIncomeWokrerDto, SidoCodeDto, SigugunCodeDto, UpsertUserInfoDetailDto,
-    GetUserInfoDetailDto,
+    GetUserInfoDetailDto, RecentlyViewDto, GetUserDto,
 )
 from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity, \
     UserInfoCodeValueEntity
@@ -362,3 +368,35 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_app_agree_terms_to_receive_marketing] user_id : {dto.user_id} error : {e}"
             )
+
+    def create_recently_view(self, dto: RecentlyViewDto):
+        try:
+            view_info = RecentlyViewModel(
+                user_id=dto.user_id, house_id=dto.house_id, type=dto.type
+            )
+            session.add(view_info)
+            session.commit()
+
+            return view_info.to_entity()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][create_recently_view] user_id : {dto.user_id} house_id: {dto.house_id} error : {e}"
+            )
+            raise Exception
+
+    # def get_recently_view_list(self, dto: GetUserDto):
+    #     """
+    #         필터 조건 : 분양 매물중
+    #     """
+    #     filters = list()
+    #     filters.append(RecentlyViewModel.user_id == dto.user_id)
+    #     filters.append(RecentlyViewModel.type == 1)
+    #     filters.append(and_(RealEstateModel.id == RecentlyViewModel.house_id,
+    #                         RealEstateModel.is_available == "True",
+    #                         PublicSaleModel.real_estate_id == RecentlyViewModel.house_id,
+    #                         PublicSaleModel.is_available == "True"))
+    #
+    #     query = session.query(RecentlyViewModel).filter(*filters).order_by(RecentlyViewModel.created_at).limit(30)
+    #
+    #     queryset = query.all()

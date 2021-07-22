@@ -43,7 +43,8 @@ class RealEstateModel(db.Model):
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())
 
-    private_sales = relationship("PrivateSaleModel", backref=backref("real_estates", cascade="all, delete"))
+    private_sales = relationship("PrivateSaleModel", backref=backref("real_estates", cascade="all, delete"),
+                                 uselist=False)
     public_sales = relationship("PublicSaleModel", backref=backref("real_estates", cascade="all, delete"),
                                 uselist=False)
 
@@ -76,8 +77,7 @@ class RealEstateModel(db.Model):
             avg_supply_price=avg_supply,
             avg_private_pyoung_number=avg_private_pyoung,
             avg_public_pyoung_number=avg_public_pyoung,
-            private_sales=[private_sale.to_entity() for private_sale in
-                           self.private_sales] if self.private_sales else None,
+            private_sales=self.private_sales.to_entity() if self.private_sales else None,
             public_sales=self.public_sales.to_entity() if self.public_sales else None
         )
 

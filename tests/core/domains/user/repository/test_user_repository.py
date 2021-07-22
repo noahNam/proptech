@@ -3,13 +3,13 @@ from typing import List
 
 import pytest
 
-from app.persistence.model import AppAgreeTermsModel, UserProfileModel, UserInfoModel
+from app.persistence.model import AppAgreeTermsModel, UserProfileModel, UserInfoModel, RecentlyViewModel
 from app.persistence.model.user_model import UserModel
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto, GetUserInfoDetailDto,
+    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto, GetUserInfoDetailDto, RecentlyViewDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
@@ -46,6 +46,10 @@ upsert_user_info_detail_dto = UpsertUserInfoDto(
 
 upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
     user_id=1, user_profile_id=1, code=1005, value="1"
+)
+
+recently_view_dto = RecentlyViewDto(
+    user_id=1, house_id=1, type=1
 )
 
 
@@ -352,3 +356,12 @@ def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(sess
     user = UserRepository().get_user(user_id=create_users[0].id)
 
     assert user.is_out is True
+
+
+def test_create_recently_view_table(session):
+    UserRepository().create_recently_view(dto=recently_view_dto)
+    view_info = session.query(RecentlyViewModel).first()
+
+    assert view_info.user_id == recently_view_dto.user_id
+    assert view_info.house_id == recently_view_dto.house_id
+    assert view_info.type == recently_view_dto.type

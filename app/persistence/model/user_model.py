@@ -33,6 +33,7 @@ class UserModel(db.Model):
         "ReceivePushTypeModel", backref=backref("users"), uselist=False
     )
     interest_houses = relationship("InterestHouseModel", back_populates="users", uselist=True)
+    recently_views = relationship("RecentlyViewModel", back_populates="users")
 
     def to_entity(self) -> UserEntity:
         return UserEntity(

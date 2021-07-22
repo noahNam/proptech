@@ -2,20 +2,18 @@ from sqlalchemy import (
     Column,
     BigInteger,
     Integer,
-    Float,
     ForeignKey,
     DateTime,
-    SmallInteger,
-    Boolean,
     Enum,
     String,
 )
+from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
 from core.domains.house.entity.house_entity import PrivateSaleEntity
-from core.domains.house.enum.house_enum import BuildTypeEnum, RealTradeTypeEnum
+from core.domains.house.enum.house_enum import BuildTypeEnum
 
 
 class PrivateSaleModel(db.Model):
@@ -30,35 +28,22 @@ class PrivateSaleModel(db.Model):
     real_estate_id = Column(BigInteger,
                             ForeignKey(RealEstateModel.id, ondelete="CASCADE"),
                             nullable=False)
-    private_area = Column(Float, nullable=False)
-    supply_area = Column(Float, nullable=False)
-    contract_date = Column(String(8), nullable=True)
-    deposit_price = Column(Integer, nullable=False)
-    rent_price = Column(Integer, nullable=False)
-    trade_price = Column(Integer, nullable=False)
-    floor = Column(SmallInteger, nullable=False)
-    trade_type = Column(Enum(RealTradeTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
-                        nullable=False)
+    name = Column(String(50), nullable=True)
     building_type = Column(Enum(BuildTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
                            nullable=False)
-    is_available = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+
+    private_sale_details = relationship("PrivateSaleDetailModel",
+                                        backref=backref("private_sales", cascade="all, delete"))
 
     def to_entity(self) -> PrivateSaleEntity:
         return PrivateSaleEntity(
             id=self.id,
             real_estate_id=self.real_estate_id,
-            private_area=self.private_area,
-            supply_area=self.supply_area,
-            contract_date=self.contract_date,
-            deposit_price=self.deposit_price,
-            rent_price=self.rent_price,
-            trade_price=self.trade_price,
-            floor=self.floor,
-            trade_type=self.trade_type,
             building_type=self.building_type,
-            is_available=self.is_available,
+            private_sale_details=[private_sale_details.to_entity() for private_sale_details in
+                                  self.private_sale_details] if self.private_sale_details else None,
             created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
             updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S")
         )
