@@ -106,5 +106,5 @@ class AssetsTotalEnum(Enum):
 
 
 class SpecialCondEnum(Enum):
-    COND_CD = [1, 2, 3, 4]
-    COND_NM = ["공통", "국민주택", "민영주택", "없음"]
+    COND_CD = [1, 2, 3]
+    COND_NM = ["없음", "기관 추천 특별공급", "기타"]

@@ -1,7 +1,9 @@
 import os
+import sys
 from typing import List
 
 import inject
+import sentry_sdk
 
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.message_converter import MessageConverter
@@ -34,23 +36,32 @@ class PrePrcsNotificationUseCase:
             logger.info(f"🚀\tget_push_target_of_public_sales length - {len(target_public_sales)}")
         except Exception as e:
             logger.error(f"🚀\tget_push_target_of_public_sales Error - {e}")
-            return
+            sentry_sdk.capture_exception(e)
+            sys.exit(0)
 
         try:
-            if target_public_sales:
-                notification_list: List[dict] = self._convert_message_for_public_sales(
-                    target_public_sales=target_public_sales)
+            if not target_public_sales:
+                logger.info(f"🚀\tPrePrcsNotification Success - nothing target_public_sales")
+                sys.exit(0)
+
+            notification_list: List[dict] = self._convert_message_for_public_sales(
+                target_public_sales=target_public_sales)
         except Exception as e:
             logger.error(f"🚀\t_convert_message_for_public_sales Error - {e}")
-            return
+            sentry_sdk.capture_exception(e)
+            sys.exit(0)
 
         # notifications 테이블에 insert 한다.
         try:
-            if notification_list:
-                self._notification_repo.create_notifications(notification_list=notification_list)
+            if not notification_list:
+                logger.info(f"🚀\tPrePrcsNotification Success - nothing notification_list")
+                sys.exit(0)
+
+            self._notification_repo.create_notifications(notification_list=notification_list)
         except Exception as e:
             logger.error(f"🚀\tcreate_notifications Error - {e}")
-            return
+            sentry_sdk.capture_exception(e)
+            sys.exit(0)
 
         logger.info(f"🚀\tPrePrcsNotification Success -  {len(target_public_sales)} / {len(notification_list)}")
 
