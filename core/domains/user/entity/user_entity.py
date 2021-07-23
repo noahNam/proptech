@@ -63,3 +63,20 @@ class UserEntity(BaseModel):
     user_profile: UserProfileEntity = None
     receive_push_type: ReceivePushTypeEntity
     interest_houses: List[InterestHouseEntity] = None
+
+
+class PointTypeEntity(BaseModel):
+    id: int
+    name: str
+    division: str
+
+
+class PointEntity(BaseModel):
+    id: int
+    user_id: int
+    type: int
+    amount: int
+    sign: str
+    created_by: str
+    created_at: datetime
+    point_type: PointTypeEntity = None
