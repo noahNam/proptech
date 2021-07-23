@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from app.persistence.model import UserModel
+from app.persistence.model import UserModel, PointTypeModel
 from core.domains.user.entity.user_entity import PointEntity
 
 
@@ -21,7 +21,7 @@ class PointModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False)
-    type = Column(SmallInteger, nullable=False)
+    type = Column(SmallInteger, ForeignKey(PointTypeModel.id), nullable=False)
     amount = Column(Integer, nullable=False)
     sign = Column(String(5), nullable=False)
     created_by = Column(String(6), nullable=False)

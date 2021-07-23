@@ -33,7 +33,9 @@ class UserModel(db.Model):
         "ReceivePushTypeModel", backref=backref("users"), uselist=False
     )
     interest_houses = relationship("InterestHouseModel", back_populates="users", uselist=True)
-    point = relationship("PointModel", back_populates="users", uselist=True)
+    point = relationship(
+        "PointModel", backref=backref("users"), uselist=True
+    )
 
     def to_entity(self) -> UserEntity:
         return UserEntity(
