@@ -302,7 +302,8 @@ def test_upsert_user_info_view_when_input_user_data_then_create_success(
         _send_sqs_message, client, session, test_request_context, make_header, make_authorization, user_factory
 ):
     user_id = 1
-    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    user = user_factory.create(id=user_id, is_required_agree_terms=False, device=True, receive_push_type=True,
+                               user_profile=True, interest_houses=True)
     session.add(user)
     session.commit()
 
@@ -347,7 +348,9 @@ def test_upsert_user_info_view_when_input_user_data_then_update_success(
         _send_sqs_message, client, session, test_request_context, make_header, make_authorization, user_factory
 ):
     user_id = 1
-    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    user = user_factory.create(id=user_id, is_required_agree_terms=False, device=True, receive_push_type=True,
+                               user_profile=True, interest_houses=True)
+
     session.add(user)
     session.commit()
 
@@ -658,7 +661,7 @@ def test_get_user_info_view_when_input_address_then_create_both_data_success(
         create_sido_codes
 ):
     user_id = 1
-    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    user = user_factory.build(id=user_id, is_required_agree_terms=False, device=True, receive_push_type=True, user_profile=True, interest_houses=True)
     session.add(user)
     session.commit()
 
@@ -699,7 +702,7 @@ def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_
         _send_sqs_message, client, session, test_request_context, make_header, make_authorization, user_factory,
 ):
     user_id = 1
-    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    user = user_factory.build(id=user_id, is_required_agree_terms=False, device=True, receive_push_type=True, user_profile=True, interest_houses=True)
     session.add(user)
     session.commit()
 
