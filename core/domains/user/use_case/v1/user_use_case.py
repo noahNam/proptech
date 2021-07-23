@@ -8,8 +8,11 @@ import inject
 from app.extensions.queue import SqsTypeEnum, SenderDto
 from app.extensions.queue.sender import QueueMessageSender
 from app.extensions.utils.enum.aws_enum import S3PathEnum, S3BucketEnum
+from app.extensions.utils.event_observer import send_message, get_event_object
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.time_helper import get_server_timestamp
+from core.domains.notification.dto.notification_dto import GetBadgeDto
+from core.domains.notification.enum import NotificationTopicEnum
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateUserProfileImgDto,
@@ -338,3 +341,30 @@ class UserOutUseCase(UserBaseUseCase):
         self._user_repo.update_user_status_to_out(user_id=dto.user_id)
 
         return UseCaseSuccessOutput()
+
+
+class GetUserMainUseCase(UserBaseUseCase):
+    def execute(
+            self, dto: GetUserDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+            )
+
+        # survey_step(설문 단계) + point 조회
+        user: UserEntity = self._user_repo.get_user_survey_step_and_point(dto=dto)
+
+        # badge 여부 조회
+        is_badge: bool = self._get_badge(dto=dto)
+        result: dict = self._make_result_object(user=user, is_badge=is_badge)
+
+        return UseCaseSuccessOutput(value=result)
+
+    def _make_result_object(self, user: UserEntity, is_badge: bool):
+        return dict(survey_step=user.survey_step, point=user.total_amount, is_badge=is_badge)
+
+    def _get_badge(self, dto: GetUserDto) -> bool:
+        dto = GetBadgeDto(user_id=dto.user_id)
+        send_message(topic_name=NotificationTopicEnum.GET_BADGE, dto=dto)
+        return get_event_object(topic_name=NotificationTopicEnum.GET_BADGE)

@@ -15,9 +15,9 @@ from app.persistence.model import (
     UserInfoModel, ReceivePushTypeModel,
 )
 from core.domains.user.dto.user_dto import UpsertUserInfoDetailDto
-from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, CodeEnum, MonthlyIncomeEnum
+from core.domains.user.enum.user_enum import UserSurveyStepEnum
+from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, CodeEnum, MonthlyIncomeEnum, CodeStepEnum
 from core.domains.user.repository.user_repository import UserRepository
-from core.use_case_output import FailureType
 
 
 def test_get_user_view_then_success(
@@ -302,7 +302,8 @@ def test_upsert_user_info_view_when_input_user_data_then_create_success(
         _send_sqs_message, client, session, test_request_context, make_header, make_authorization, user_factory
 ):
     user_id = 1
-    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    user = user_factory.create(id=user_id, is_required_agree_terms=False, device=True, receive_push_type=True,
+                               user_profile=True, interest_houses=True)
     session.add(user)
     session.commit()
 
@@ -347,7 +348,9 @@ def test_upsert_user_info_view_when_input_user_data_then_update_success(
         _send_sqs_message, client, session, test_request_context, make_header, make_authorization, user_factory
 ):
     user_id = 1
-    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    user = user_factory.create(id=user_id, is_required_agree_terms=False, device=True, receive_push_type=True,
+                               user_profile=True, interest_houses=True)
+
     session.add(user)
     session.commit()
 
@@ -658,7 +661,8 @@ def test_get_user_info_view_when_input_address_then_create_both_data_success(
         create_sido_codes
 ):
     user_id = 1
-    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    user = user_factory.build(id=user_id, is_required_agree_terms=False, device=True, receive_push_type=True,
+                              user_profile=True, interest_houses=True)
     session.add(user)
     session.commit()
 
@@ -699,7 +703,8 @@ def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_
         _send_sqs_message, client, session, test_request_context, make_header, make_authorization, user_factory,
 ):
     user_id = 1
-    user = user_factory.build(id=user_id, is_required_agree_terms=False)
+    user = user_factory.build(id=user_id, is_required_agree_terms=False, device=True, receive_push_type=True,
+                              user_profile=True, interest_houses=True)
     session.add(user)
     session.commit()
 
@@ -784,3 +789,56 @@ def test_patch_user_out_view_then_success(
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert data["result"] == "success"
+
+
+def test_get_user_main_view_then_success_then_point_is_0_and_survey_step_is_step_one_and_badge_is_true(
+        client, session, test_request_context, make_header, make_authorization, create_users, create_notifications
+):
+    user_id = create_users[0].id
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_user_main_view"),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_ONE.value
+    assert data["result"]["point"] == 0
+    assert data["result"]["is_badge"] is True
+
+
+def test_get_user_main_view_then_success_then_point_is_0_and_survey_step_is_step_one_and_badge_is_false(
+        client, session, test_request_context, make_header, make_authorization, user_factory
+):
+    user = user_factory.create(device=True, receive_push_type=True, user_profile=True, interest_houses=True,
+                               point=True)
+    user.user_profile.last_update_code = CodeStepEnum.COMPLETE.value
+    session.add(user)
+    session.commit()
+
+    authorization = make_authorization(user_id=user.id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_user_main_view"),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_COMPLETE.value
+    assert data["result"]["point"] == 1000
+    assert data["result"]["is_badge"] is False

@@ -9,15 +9,16 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto, GetUserInfoDetailDto,
+    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto, GetUserInfoDetailDto, GetUserDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
     UserInfoEmptyEntity, UserEntity, UserInfoCodeValueEntity,
 )
+from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, IsHouseHolderCodeEnum, IsMarriedCodeEnum, \
     NumberDependentsEnum, IsChildEnum, IsSubAccountEnum, MonthlyIncomeEnum, AssetsRealEstateEnum, AssetsCarEnum, \
-    AssetsTotalEnum, SpecialCondEnum, CodeEnum
+    AssetsTotalEnum, SpecialCondEnum, CodeEnum, CodeStepEnum
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
 
@@ -352,3 +353,52 @@ def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(sess
     user = UserRepository().get_user(user_id=create_users[0].id)
 
     assert user.is_out is True
+
+
+def test_get_user_point_and_survey_step_then_user_point_is_3000_and_survey_step_is_1(session, create_users,
+                                                                                     point_factory):
+    dto = GetUserDto(user_id=create_users[0].id)
+    points = point_factory.build_batch(size=3, user_id=create_users[0].id)
+    session.add_all(points)
+    session.commit()
+
+    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    total_amount = result.total_amount
+    survey_step = result.survey_step
+
+    assert isinstance(result, UserEntity)
+    assert total_amount == 3000
+    assert survey_step == UserSurveyStepEnum.STEP_ONE.value
+
+
+def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_no(session, user_factory):
+    user = user_factory.create(device=True, receive_push_type=True, user_profile=False, interest_houses=True,
+                               point=False)
+    session.add(user)
+    session.commit()
+
+    dto = GetUserDto(user_id=user.id)
+    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    total_amount = result.total_amount
+    survey_step = result.survey_step
+
+    assert isinstance(result, UserEntity)
+    assert total_amount == 0
+    assert survey_step == UserSurveyStepEnum.STEP_NO.value
+
+
+def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_complete(session, user_factory):
+    user = user_factory.create(device=True, receive_push_type=True, user_profile=True, interest_houses=True,
+                               point=False)
+    user.user_profile.last_update_code = CodeStepEnum.COMPLETE.value
+    session.add(user)
+    session.commit()
+
+    dto = GetUserDto(user_id=user.id)
+    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    total_amount = result.total_amount
+    survey_step = result.survey_step
+
+    assert isinstance(result, UserEntity)
+    assert total_amount == 0
+    assert survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
