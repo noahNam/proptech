@@ -33,7 +33,7 @@ class UserModel(db.Model):
         "ReceivePushTypeModel", backref=backref("users"), uselist=False
     )
     interest_houses = relationship("InterestHouseModel", back_populates="users", uselist=True)
-    point = relationship(
+    points = relationship(
         "PointModel", backref=backref("users"), uselist=True
     )
 
@@ -49,5 +49,6 @@ class UserModel(db.Model):
             receive_push_type=self.receive_push_type.to_entity(),
             interest_houses=[interest_house.to_entity() for interest_house in
                              self.interest_houses] if self.interest_houses else None,
-            point=self.point.to_entity() if self.point else None,
+            points=[point.to_entity() for point in
+                    self.points] if self.points else None,
         )
