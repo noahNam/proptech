@@ -1,0 +1,57 @@
+openapi: "3.0.2"
+tags:
+  - User
+security:
+  - userAuth: []
+responses:
+  '200':
+    description: survey_step=0(미진행), 1(1단계설문중), 2(2단계설문중), 3(설문완료)
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                result:
+                  type: object
+                  properties:
+                    survey_step:
+                      type: integer
+                      example: 1
+                    point:
+                      type: integer
+                      example: 1000
+                    is_badge:
+                      type: boolean
+                      example: True
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'
