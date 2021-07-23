@@ -21,7 +21,7 @@ from core.domains.user.dto.user_dto import (
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
     GetUserInfoDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto,
-    GetUserInfoDetailDto,
+    GetUserInfoDetailDto, GetUserDto,
 )
 from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity, \
     UserInfoCodeValueEntity
@@ -362,3 +362,6 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_app_agree_terms_to_receive_marketing] user_id : {dto.user_id} error : {e}"
             )
+
+    def get_user_main(self, dto: GetUserDto):
+        pass

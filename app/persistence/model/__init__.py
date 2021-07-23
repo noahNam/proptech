@@ -19,3 +19,5 @@ from .administrative_division_model import AdministrativeDivisionModel
 from .interest_house_model import InterestHouseModel
 from .post_model import PostModel
 from .article_model import ArticleModel
+from .point_model import PointModel
+from .point_type_model import PointTypeModel
