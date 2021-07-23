@@ -9,17 +9,15 @@ from app.persistence.model import (
     DeviceModel,
     DeviceTokenModel,
     UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel,
-    ReceivePushTypeModel, AppAgreeTermsModel
+    ReceivePushTypeModel, AppAgreeTermsModel, PointTypeModel, PointModel, UserModel, ArticleModel, PostModel
 )
-from app.persistence.model.article_model import ArticleModel
-from app.persistence.model.post_model import PostModel
-from app.persistence.model.user_model import UserModel
 
 # factory에 사용해야 하는 Model을 가져온다
 from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.notification.enum.notification_enum import NotificationTopicEnum, NotificationBadgeTypeEnum, \
     NotificationStatusEnum
 from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
+from core.domains.user.enum.user_enum import UserPointTypeDivisionEnum, UserPointCreatedByEnum, UserPointSignEnum
 
 faker = FakerFactory.create(locale="ko_KR")
 
@@ -45,8 +43,8 @@ class DeviceFactory(BaseFactory):
     is_active = True
     is_auth = True
     phone_number = "01012345678"
+    endpoint = ""
 
-    # device_token = factory.List([factory.SubFactory(DeviceTokenFactory)])
     device_token = factory.SubFactory(DeviceTokenFactory)
 
 
@@ -78,6 +76,26 @@ class InterestHouseFactory(BaseFactory):
     is_like = True
 
 
+class PointTypeFactory(BaseFactory):
+    class Meta:
+        model = PointTypeModel
+
+    name = "결제포인트 적립"
+    division = UserPointTypeDivisionEnum.CHARGED.value
+
+
+class PointFactory(BaseFactory):
+    class Meta:
+        model = PointModel
+
+    amount = 1000
+    sign = UserPointSignEnum.PLUS.value
+    created_by = UserPointCreatedByEnum.SYSTEM.value
+    created_at = get_server_timestamp()
+
+    point_type = factory.SubFactory(PointTypeFactory)
+
+
 class UserFactory(BaseFactory):
     """
     Define user factory
@@ -91,11 +109,30 @@ class UserFactory(BaseFactory):
     is_active = True
     is_out = False
 
-    # devices = factory.List([factory.SubFactory(DeviceFactory)])
-    device = factory.SubFactory(DeviceFactory)
-    user_profile = factory.SubFactory(UserProfileFactory)
-    receive_push_type = factory.SubFactory(ReceivePushTypeFactory)
-    interest_houses = factory.List([factory.SubFactory(InterestHouseFactory)])
+    @factory.post_generation
+    def device(obj, create, extracted, **kwargs):
+        if extracted:
+            DeviceFactory(users=obj, **kwargs)
+
+    @factory.post_generation
+    def user_profile(obj, create, extracted, **kwargs):
+        if extracted:
+            UserProfileFactory(users=obj, **kwargs)
+
+    @factory.post_generation
+    def receive_push_type(obj, create, extracted, **kwargs):
+        if extracted:
+            ReceivePushTypeFactory(users=obj, **kwargs)
+
+    @factory.post_generation
+    def interest_houses(obj, create, extracted, **kwargs):
+        if extracted:
+            InterestHouseFactory(users=obj, **kwargs)
+
+    @factory.post_generation
+    def point(obj, create, extracted, **kwargs):
+        if extracted:
+            PointFactory(users=obj, **kwargs)
 
 
 class AvgMonthlyIncomeWorkerFactory(BaseFactory):
@@ -149,7 +186,7 @@ class AppAgreeTermsFactory(BaseFactory):
     receive_marketing_date = get_server_timestamp()
 
 
-class PostFactory(factory.alchemy.SQLAlchemyModelFactory):
+class PostFactory(BaseFactory):
     class Meta:
         model = PostModel
 
@@ -168,7 +205,7 @@ class PostFactory(factory.alchemy.SQLAlchemyModelFactory):
             ArticleFactory(post=obj, **kwargs)
 
 
-class ArticleFactory(factory.alchemy.SQLAlchemyModelFactory):
+class ArticleFactory(BaseFactory):
     class Meta:
         model = ArticleModel
 
