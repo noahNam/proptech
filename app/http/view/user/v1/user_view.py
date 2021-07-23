@@ -8,13 +8,13 @@ from app.http.requests.v1.user_request import (
     CreateUserRequestSchema,
     CreateAppAgreeTermsRequestSchema,
     UpsertUserInfoRequestSchema,
-    GetUserInfoRequestSchema, GetUserRequestSchema,
+    GetUserInfoRequestSchema, GetUserRequestSchema, GetUserMainRequestSchema,
 )
 from app.http.responses.presenters.v1.user_presenter import (
     CreateUserPresenter,
     CreateAppAgreeTermsPresenter,
     UpsertUserInfoPresenter,
-    GetUserInfoPresenter, GetUserPresenter, PatchUserOutPresenter,
+    GetUserInfoPresenter, GetUserPresenter, PatchUserOutPresenter, GetUserMainPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.user.enum.user_enum import UserProviderCallEnum
@@ -22,7 +22,7 @@ from core.domains.user.use_case.v1.user_use_case import (
     CreateUserUseCase,
     CreateAppAgreeTermsUseCase,
     UpsertUserInfoUseCase,
-    GetUserInfoUseCase, GetUserUseCase, UserOutUseCase,
+    GetUserInfoUseCase, GetUserUseCase, UserOutUseCase, GetUserMainUseCase,
 )
 
 
@@ -121,3 +121,15 @@ def patch_user_out_view():
     ).validate_request_and_make_dto()
 
     return PatchUserOutPresenter().transform(UserOutUseCase().execute(dto=dto))
+
+
+@api.route("/v1/users/main", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_user.yml", methods=["GET"])
+def get_user_main_view():
+    dto = GetUserMainRequestSchema(
+        user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return GetUserMainPresenter().transform(GetUserMainUseCase().execute(dto=dto))

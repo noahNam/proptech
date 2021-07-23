@@ -46,6 +46,10 @@ class GetUserInfoSchema(BaseModel):
     codes: list
 
 
+class GetUserMainSchema(BaseModel):
+    user_id: StrictInt
+
+
 class GetUserRequestSchema:
     def __init__(
             self, user_id
@@ -160,5 +164,24 @@ class GetUserInfoRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetUserInfoRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetUserMainRequestSchema:
+    def __init__(
+            self, user_id
+    ):
+        self.user_id = int(user_id) if user_id else None
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetUserMainSchema(
+                user_id=self.user_id,
+            ).dict()
+            return GetUserDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetUserMainRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
