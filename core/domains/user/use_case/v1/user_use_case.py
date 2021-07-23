@@ -338,3 +338,25 @@ class UserOutUseCase(UserBaseUseCase):
         self._user_repo.update_user_status_to_out(user_id=dto.user_id)
 
         return UseCaseSuccessOutput()
+
+
+class GetUserMainUseCase(UserBaseUseCase):
+    def execute(
+            self, dto: GetUserDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+            )
+
+        # todo. survey_step(설문 단계) + point
+
+        # todo. badge 조회
+        self._get_badge(dto=dto)
+
+        return UseCaseSuccessOutput()
+
+    def _get_badge(self, dto: GetUserDto) -> None:
+        pass
+        # send_message(topic_name=UserTopicEnum.UPDATE_APP_AGREE_TERMS_TO_RECEIVE_MARKETING, dto=dto)
+        # return get_event_object(topic_name=UserTopicEnum.UPDATE_APP_AGREE_TERMS_TO_RECEIVE_MARKETING)
