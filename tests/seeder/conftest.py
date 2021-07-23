@@ -10,7 +10,8 @@ from tests.seeder.factory import (
     UserFactory,
     UserProfileFactory,
     AvgMonthlyIncomeWorkerFactory,
-    SidoCodeFactory, NotificationFactory, InterestHouseFactory, AppAgreeTermsFactory, PostFactory, ArticleFactory
+    SidoCodeFactory, NotificationFactory, InterestHouseFactory, AppAgreeTermsFactory, PostFactory, ArticleFactory,
+    PointFactory, PointTypeFactory, DeviceFactory, DeviceTokenFactory, ReceivePushTypeFactory
 )
 
 MODEL_FACTORIES = [
@@ -22,7 +23,12 @@ MODEL_FACTORIES = [
     InterestHouseFactory,
     AppAgreeTermsFactory,
     PostFactory,
-    ArticleFactory
+    ArticleFactory,
+    PointFactory,
+    PointTypeFactory,
+    DeviceFactory,
+    DeviceTokenFactory,
+    ReceivePushTypeFactory
 ]
 
 faker = Faker()
@@ -30,7 +36,12 @@ faker = Faker()
 
 @pytest.fixture
 def create_users(session, user_factory):
-    users = user_factory.build_batch(size=3)
+    users = list()
+
+    for index in range(3):
+        user = user_factory.build(device=True, receive_push_type=True, user_profile=True, interest_houses=True,
+                                  point=False)
+        users.append(user)
     session.add_all(users)
     session.commit()
 
