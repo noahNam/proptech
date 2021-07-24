@@ -7,7 +7,8 @@ from app.extensions.utils.time_helper import get_server_timestamp
 from app.http.responses import success_response
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
-from core.domains.house.entity.house_entity import BoundingRealEstateEntity, AdministrativeDivisionEntity
+from core.domains.house.entity.house_entity import BoundingRealEstateEntity, AdministrativeDivisionEntity, \
+    CalenderInfoEntity, PublicSaleCalenderEntity, HousePublicDetailEntity
 from core.domains.house.enum.house_enum import HouseTypeEnum, BoundingLevelEnum, DivisionLevelEnum
 
 
@@ -203,7 +204,8 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
         updated_at=get_server_timestamp()
     )
 
-    with patch("app.http.responses.presenters.v1.house_presenter.BoundingAdministrativePresenter.transform") as mock_result:
+    with patch(
+            "app.http.responses.presenters.v1.house_presenter.BoundingAdministrativePresenter.transform") as mock_result:
         mock_result.return_value = success_response(result=bounding_entitiy.dict())
         with patch(
                 "core.domains.house.repository.house_repository.HouseRepository.get_administrative_by_coordinates_range_dto"
@@ -223,3 +225,132 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
     assert data["name"] == bounding_entitiy.name
     assert mock_get_bounding.called is True
     assert mock_result.called is True
+
+
+def test_house_calender_list_view_when_included_request_date_then_show_info_list(
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_real_estate_with_public_sale
+):
+    # request header
+    user_id = 1
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    public_sale_calender = PublicSaleCalenderEntity(
+        id=1,
+        real_estate_id=1,
+        name="힐스테이트",
+        offer_date="20210705",
+        subscription_start_date="20210705",
+        subscription_end_date="20210705",
+        special_supply_date="20210705",
+        special_supply_etc_date="20210705",
+        first_supply_date="20210705",
+        first_supply_etc_date="20210705",
+        second_supply_date="20210705",
+        second_supply_etc_date="20210705",
+        notice_winner_date="20210705",
+        contract_start_date="20210705",
+        contract_end_date="20210705",
+        move_in_year=2023,
+        move_in_month=12
+    )
+    sample_calender_info = CalenderInfoEntity(
+        is_like=True,
+        id=1,
+        name="힐스테이트",
+        road_address="서울 서초구 어딘가",
+        jibun_address="서울 서초구 어딘가",
+        public_sale=public_sale_calender
+    )
+
+    with patch(
+            "core.domains.house.repository.house_repository.HouseRepository"
+            ".get_calender_info_by_get_calender_info_dto"
+    ) as mock_calender_info:
+        mock_calender_info.return_value = [sample_calender_info]
+        with test_request_context:
+            response = client.get(
+                url_for("api/tanos.house_calender_list_view", year=2021, month=7), headers=headers
+            )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert mock_calender_info.called is True
+    assert data["houses"][0]["name"] == sample_calender_info.name
+    assert data["houses"][0]["is_like"] == sample_calender_info.is_like
+
+
+def test_house_public_detail_view_when_valid_request_id(
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_real_estate_with_public_sale
+):
+    # request header
+    user_id = 1
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    sample_entity = HousePublicDetailEntity(
+        id=1,
+        name="분양아파트",
+        road_address="서울특별시 서초구 어딘가1길 10",
+        jibun_address="서울특별시 서초구 어딘가 123-1",
+        si_do="서울특별시",
+        si_gun_gu="서초구",
+        dong_myun="어딘가",
+        ri="-",
+        road_name="어딘가1길",
+        road_number="10",
+        land_number="123-1",
+        is_available=True,
+        latitude=127,
+        longitude=37.71,
+        is_like=True,
+        min_pyoung_number=24,
+        max_pyoung_number=32,
+        min_supply_area=50,
+        max_supply_area=80,
+        avg_supply_price=1000,
+        supply_price_per_pyoung=1000,
+        min_acquisition_tax=2000,
+        max_acquisition_tax=3000,
+        public_sales=None,
+        near_houses=None,
+    )
+
+    with patch(
+            "core.domains.house.repository.house_repository.HouseRepository.is_enable_public_sale_house"
+    ) as mock_enable:
+        mock_enable.return_value = True
+        with patch(
+                "core.domains.house.repository.house_repository.HouseRepository"
+                ".get_house_public_detail_by_get_house_public_detail_dto"
+        ) as mock_house_public_detail:
+            mock_house_public_detail.return_value = sample_entity
+            with test_request_context:
+                response = client.get(
+                    url_for("api/tanos.house_public_detail_view", house_id=1), headers=headers
+                )
+
+    data = response.get_json()["data"]
+
+    assert response.status_code == 200
+    assert mock_house_public_detail.called is True
+    assert mock_enable.called is True
+    assert data["house"]["name"] == sample_entity.name

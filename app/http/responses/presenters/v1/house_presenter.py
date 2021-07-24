@@ -4,7 +4,8 @@ from typing import Union
 from core.domains.house.schema.house_schema import (
     BoundingResponseSchema,
     BoundingAdministrativeResponseSchema,
-    GetHousePublicDetailResponseSchema, GetCalenderInfoResponseSchema
+    GetHousePublicDetailResponseSchema,
+    GetCalenderInfoResponseSchema
 )
 from pydantic import ValidationError
 from app.http.responses import failure_response, success_response

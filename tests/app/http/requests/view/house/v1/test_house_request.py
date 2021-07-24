@@ -1,11 +1,10 @@
 import pytest
 
-from app.http.requests.v1.house_request import GetCoordinatesRequest
+from app.http.requests.v1.house_request import GetCoordinatesRequest, GetCalenderInfoRequest
 from core.domains.house.enum.house_enum import BoundingLevelEnum
-
-# input parameter
 from core.exceptions import InvalidRequestException
 
+# input parameter
 start_x = 126.5
 start_y = 37.7
 end_x = 127.09
@@ -39,3 +38,14 @@ def test_get_coordinates_request_when_invalid_level_then_fail():
     with pytest.raises(InvalidRequestException):
         GetCoordinatesRequest(start_x=start_x, start_y=start_y, end_x=end_x, end_y=end_y,
                               level=wrong_level).validate_request_and_make_dto()
+
+
+def test_get_calender_info_request_when_valid_value_then_success():
+    year = 2021
+    month = 7
+    user_id = 1
+    result = GetCalenderInfoRequest(year=year, month=month, user_id=user_id).validate_request_and_make_dto()
+
+    assert result.user_id == user_id
+    assert result.year == str(year)
+    assert result.month == "0" + str(month)
