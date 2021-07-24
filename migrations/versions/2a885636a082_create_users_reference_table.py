@@ -103,6 +103,26 @@ def upgrade():
                     )
     op.create_index(op.f('ix_interest_houses_house_id'), 'interest_houses', ['house_id'], unique=False)
 
+    op.create_table('point_types',
+                    sa.Column('id', sa.SmallInteger().with_variant(sa.Integer(), 'sqlite'), nullable=False),
+                    sa.Column('name', sa.String(length=20), nullable=False),
+                    sa.Column('division', sa.String(length=7), nullable=False),
+                    sa.PrimaryKeyConstraint('id')
+                    )
+
+    op.create_table('points',
+                    sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), nullable=False),
+                    sa.Column('user_id', sa.BigInteger(), nullable=False),
+                    sa.Column('type', sa.SmallInteger(), nullable=False),
+                    sa.Column('amount', sa.Integer(), nullable=False),
+                    sa.Column('sign', sa.String(length=5), nullable=False),
+                    sa.Column('created_by', sa.String(length=6), nullable=False),
+                    sa.Column('created_at', sa.DateTime(), nullable=False),
+                    sa.ForeignKeyConstraint(['type'], ['point_types.id'], ),
+                    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+                    sa.PrimaryKeyConstraint('id')
+                    )
+
 
 def downgrade():
     op.drop_table('user_infos')
@@ -113,3 +133,5 @@ def downgrade():
     op.drop_table('users')
     op.drop_index(op.f('ix_interest_houses_house_id'), table_name='interest_houses')
     op.drop_table('interest_houses')
+    op.drop_table('points')
+    op.drop_table('point_types')

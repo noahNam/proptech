@@ -45,7 +45,7 @@ class LocalConfig(Config):
                               ".cluster-cmib56uiilha.ap-northeast-2.rds.amazonaws.com:5432/tanos"
 
     # Local environment configuration using Docker API service
-    # SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@postgres:5432/tanos"
+    SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@postgres:5432/tanos"
     # Prod migrate
     # SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://postgres:%s@localhost:5432/tanos" % urlquote("password")
 
