@@ -158,16 +158,41 @@ def create_notifications(session, notification_factory):
 
 
 @pytest.fixture
-def create_real_estate_with_bounding(session, real_estate_factory):
+def create_real_estate_with_public_sale(session, real_estate_factory):
+    real_estates = list()
+
+    for _ in range(3):
+        real_estate_with_public_sale = real_estate_factory.build(private_sales=False, public_sales=True)
+        real_estates.append(real_estate_with_public_sale)
+
+    session.add_all(real_estates)
+    session.commit()
+
+    return real_estates
+
+
+@pytest.fixture
+def create_real_estate_with_private_sale(session, real_estate_factory):
     real_estates = list()
 
     for _ in range(3):
         real_estate_with_private_sale = real_estate_factory.build(private_sales=True, public_sales=False)
         real_estates.append(real_estate_with_private_sale)
 
-    for _ in range(3):
-        real_estate_with_public_sale = real_estate_factory.build(private_sales=False, public_sales=True)
-        real_estates.append(real_estate_with_public_sale)
+    session.add_all(real_estates)
+    session.commit()
+
+    return real_estates
+
+
+@pytest.fixture
+def create_real_estate_with_bounding(session,
+                                     create_real_estate_with_public_sale,
+                                     create_real_estate_with_private_sale):
+    real_estates = list()
+
+    real_estates.extend(create_real_estate_with_private_sale)
+    real_estates.extend(create_real_estate_with_public_sale)
 
     session.add_all(real_estates)
     session.commit()

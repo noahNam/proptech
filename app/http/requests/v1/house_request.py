@@ -4,7 +4,6 @@ from pydantic import BaseModel, StrictFloat, validator, ValidationError, StrictI
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.house.dto.house_dto import CoordinatesRangeDto, GetHousePublicDetailDto, GetCalenderInfoDto
-from pydantic import BaseModel, StrictInt, ValidationError
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.enum.house_enum import CalenderYearThreshHold
 from core.exceptions import InvalidRequestException
