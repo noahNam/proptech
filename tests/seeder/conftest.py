@@ -1,7 +1,6 @@
-from itertools import cycle
+from datetime import date, timedelta, datetime
 
 import pytest
-from datetime import date, timedelta, datetime
 from faker import Faker
 
 from app.extensions.utils.message_converter import MessageConverter
@@ -18,6 +17,11 @@ from tests.seeder.factory import (
     AppAgreeTermsFactory,
     PostFactory,
     ArticleFactory,
+    PointFactory,
+    PointTypeFactory,
+    DeviceFactory,
+    DeviceTokenFactory,
+    ReceivePushTypeFactory,
     PrivateSaleDetailFactory,
     PrivateSaleFactory,
     RealEstateFactory,
@@ -34,6 +38,11 @@ MODEL_FACTORIES = [
     AppAgreeTermsFactory,
     PostFactory,
     ArticleFactory,
+    PointFactory,
+    PointTypeFactory,
+    DeviceFactory,
+    DeviceTokenFactory,
+    ReceivePushTypeFactory,
     PrivateSaleDetailFactory,
     PrivateSaleFactory,
     RealEstateFactory,
@@ -45,7 +54,12 @@ faker = Faker()
 
 @pytest.fixture
 def create_users(session, user_factory):
-    users = user_factory.build_batch(size=3)
+    users = list()
+
+    for index in range(3):
+        user = user_factory.build(device=True, receive_push_type=True, user_profile=True, interest_houses=True,
+                                  point=False)
+        users.append(user)
     session.add_all(users)
     session.commit()
 

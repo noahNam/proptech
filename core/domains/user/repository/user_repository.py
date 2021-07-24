@@ -1,6 +1,7 @@
 from typing import Optional, List, Union
 
 from sqlalchemy import exc, exists
+from sqlalchemy.orm import joinedload
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
@@ -14,6 +15,7 @@ from app.persistence.model import (
     AvgMonthlyIncomeWokrerModel,
     SidoCodeModel,
     ReceivePushTypeModel,
+    PointModel,
     UserModel,
     RecentlyViewModel
 )
@@ -27,7 +29,7 @@ from core.domains.user.dto.user_dto import (
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
     GetUserInfoDetailDto,
-    RecentlyViewDto,
+    GetUserDto, RecentlyViewDto,
 )
 from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity, \
     UserInfoCodeValueEntity
@@ -360,7 +362,8 @@ class UserRepository:
     def update_app_agree_terms_to_receive_marketing(self, dto: UpdateReceiveNotificationSettingDto) -> None:
         try:
             session.query(AppAgreeTermsModel).filter_by(user_id=dto.user_id).update(
-                {"receive_marketing_yn": dto.is_active, "receive_marketing_date": get_server_timestamp(), "updated_at": get_server_timestamp()}
+                {"receive_marketing_yn": dto.is_active, "receive_marketing_date": get_server_timestamp(),
+                 "updated_at": get_server_timestamp()}
             )
             session.commit()
         except exc.IntegrityError as e:
@@ -368,6 +371,31 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_app_agree_terms_to_receive_marketing] user_id : {dto.user_id} error : {e}"
             )
+
+    def get_user_survey_step_and_point(self, dto: GetUserDto) -> UserEntity:
+        """
+        {
+            "data": {
+                "result":
+                    {
+                        "survey_step": 0,
+                        "point": 1000,
+                        "is_badge": true or false,
+                    }
+            },
+            "meta": null
+        }
+        """
+        query = (
+            session.query(UserModel).options(
+                joinedload(UserModel.user_profile)
+            ).options(
+                joinedload(UserModel.points)
+                    .joinedload(PointModel.point_type)
+            ).filter(UserModel.id == dto.user_id)
+        )
+        user = query.first()
+        return user.to_entity()
 
     def create_recently_view(self, dto: RecentlyViewDto) -> None:
         try:
