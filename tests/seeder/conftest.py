@@ -25,7 +25,12 @@ from tests.seeder.factory import (
     PrivateSaleDetailFactory,
     PrivateSaleFactory,
     RealEstateFactory,
-    RecentlyViewFactory
+    RecentlyViewFactory,
+    PublicSaleFactory,
+    PublicSalePhotoFactory,
+    PublicSaleDetailFactory,
+    PublicSaleDetailPhotoFactory,
+
 )
 
 MODEL_FACTORIES = [
@@ -46,7 +51,11 @@ MODEL_FACTORIES = [
     PrivateSaleDetailFactory,
     PrivateSaleFactory,
     RealEstateFactory,
-    RecentlyViewFactory
+    RecentlyViewFactory,
+    PublicSaleFactory,
+    PublicSalePhotoFactory,
+    PublicSaleDetailFactory,
+    PublicSaleDetailPhotoFactory,
 ]
 
 faker = Faker()
@@ -150,7 +159,16 @@ def create_notifications(session, notification_factory):
 
 @pytest.fixture
 def create_real_estate_with_bounding(session, real_estate_factory):
-    real_estates = real_estate_factory.build_batch(size=2)
+    real_estates = list()
+
+    for _ in range(3):
+        real_estate_with_private_sale = real_estate_factory.build(private_sales=True, public_sales=False)
+        real_estates.append(real_estate_with_private_sale)
+
+    for _ in range(3):
+        real_estate_with_public_sale = real_estate_factory.build(private_sales=False, public_sales=True)
+        real_estates.append(real_estate_with_public_sale)
+
     session.add_all(real_estates)
     session.commit()
 
