@@ -156,7 +156,7 @@ def test_bounding_view_when_level_is_grater_than_queryset_flag_then_success_with
     ) as mock_result:
         mock_result.return_value = success_response(result=bounding_entitiy.dict())
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_bounding_by_coordinates_range_dto"
+            "core.domains.house.repository.house_repository.HouseRepository.get_bounding"
         ) as mock_get_bounding:
             mock_get_bounding.return_value = create_real_estate_with_bounding
             with test_request_context:
@@ -229,7 +229,7 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
     ) as mock_result:
         mock_result.return_value = success_response(result=bounding_entitiy.dict())
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_administrative_by_coordinates_range_dto"
+            "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
         ) as mock_get_bounding:
             mock_get_bounding.return_value = create_real_estate_with_bounding
             with test_request_context:
@@ -298,8 +298,7 @@ def test_house_calender_list_view_when_included_request_date_then_show_info_list
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository"
-        ".get_calender_info_by_get_calender_info_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
     ) as mock_calender_info:
         mock_calender_info.return_value = [sample_calender_info]
         with test_request_context:
@@ -365,8 +364,7 @@ def test_house_public_detail_view_when_valid_request_id(
     ) as mock_enable:
         mock_enable.return_value = True
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository"
-            ".get_house_public_detail_by_get_house_public_detail_dto"
+            "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
         ) as mock_house_public_detail:
             mock_house_public_detail.return_value = sample_entity
             with test_request_context:

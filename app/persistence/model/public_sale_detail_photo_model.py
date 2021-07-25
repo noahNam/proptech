@@ -43,6 +43,6 @@ class PublicSaleDetailPhotoModel(db.Model):
             file_name=self.file_name,
             path=S3Helper.get_s3_url() + "/" + self.path,
             extension=self.extension,
-            created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
-            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S"),
+            created_at=self.created_at,
+            updated_at=self.updated_at,
         )

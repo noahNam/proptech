@@ -57,6 +57,6 @@ class AdministrativeDivisionModel(db.Model):
             level=self.level,
             latitude=self.latitude,
             longitude=self.longitude,
-            created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
-            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S"),
+            created_at=self.created_at,
+            updated_at=self.updated_at,
         )

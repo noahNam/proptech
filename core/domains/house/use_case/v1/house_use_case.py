@@ -72,11 +72,11 @@ class BoundingUseCase(HouseBaseUseCase):
             )
         # dto.level condition
         if dto.level >= BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
-            bounding_entities = self._house_repo.get_bounding_by_coordinates_range_dto(
+            bounding_entities = self._house_repo.get_bounding(
                 dto=dto
             )
         else:
-            bounding_entities = self._house_repo.get_administrative_by_coordinates_range_dto(
+            bounding_entities = self._house_repo.get_administrative_divisions(
                 dto=dto
             )
 
@@ -101,7 +101,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         )
 
         # get HousePublicDetailEntity (degrees 조절 필요)
-        entities = self._house_repo.get_house_public_detail_by_get_house_public_detail_dto(
+        entities = self._house_repo.get_house_public_detail(
             dto=dto, degrees=1, is_like=is_like
         )
 
@@ -125,7 +125,7 @@ class GetCalenderInfoUseCase(HouseBaseUseCase):
     def execute(
         self, dto: GetCalenderInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        calender_entities = self._house_repo.get_calender_info_by_get_calender_info_dto(
+        calender_entities = self._house_repo.get_calender_info(
             dto=dto
         )
         if not calender_entities:
