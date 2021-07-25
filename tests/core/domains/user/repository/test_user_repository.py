@@ -403,3 +403,4 @@ def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_
     assert isinstance(result, UserEntity)
     assert total_amount == 0
     assert survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
+    assert result.point == 0
