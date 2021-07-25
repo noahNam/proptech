@@ -5,13 +5,10 @@ from core.domains.house.schema.house_schema import (
     BoundingResponseSchema,
     BoundingAdministrativeResponseSchema,
     GetHousePublicDetailResponseSchema,
-    GetCalenderInfoResponseSchema,
+    GetCalenderInfoResponseSchema, UpsertInterestHouseResponseSchema, GetInterestHouseListResponseSchema,
 )
 from pydantic import ValidationError
 from app.http.responses import failure_response, success_response
-from core.domains.notification.schema.notification_schema import (
-    UpdateNotificationResponseSchema,
-)
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
@@ -19,8 +16,31 @@ class UpsertInterestHousePresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = UpdateNotificationResponseSchema(result=output.type)
-            except ValidationError as e:
+                schema = UpsertInterestHouseResponseSchema(result=output.type)
+            except ValidationError:
+                return failure_response(
+                    UseCaseFailureOutput(
+                        type="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            result = {
+                "data": schema.dict(),
+                "meta": output.meta,
+            }
+            return success_response(result=result)
+        elif isinstance(output, UseCaseFailureOutput):
+            return failure_response(output=output, status_code=output.code)
+
+
+class GetInterestHouseListPresenter:
+    def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
+        if isinstance(output, UseCaseSuccessOutput):
+            try:
+                schema = GetInterestHouseListResponseSchema(houses=output.value)
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -43,7 +63,7 @@ class BoundingPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = BoundingResponseSchema(houses=output.value)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -66,7 +86,7 @@ class BoundingAdministrativePresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = BoundingAdministrativeResponseSchema(houses=output.value)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -89,7 +109,7 @@ class GetHousePublicDetailPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = GetHousePublicDetailResponseSchema(house=output.value)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -112,7 +132,7 @@ class GetCalenderInfoPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = GetCalenderInfoResponseSchema(houses=output.value)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",

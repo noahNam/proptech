@@ -23,7 +23,7 @@ class GetUserPresenter:
             try:
                 if user:
                     schema = GetUserResponseSchema(user=output.value)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -46,7 +46,7 @@ class CreateUserPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = CreateUserResponseSchema(result=output.type)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -69,7 +69,7 @@ class CreateAppAgreeTermsPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = CreateAppAgreeTermsResponseSchema(result=output.type)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -92,7 +92,7 @@ class UpsertUserInfoPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = UpsertUserInfoResponseSchema(result=output.type)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -115,7 +115,7 @@ class GetUserInfoPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = GetUserInfoResponseSchema(result=output.value)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -138,7 +138,7 @@ class PatchUserOutPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = PatchUserOutResponseSchema(result=output.type)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
@@ -161,7 +161,7 @@ class GetUserMainPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = GetUserMainResponseSchema(result=output.value)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
