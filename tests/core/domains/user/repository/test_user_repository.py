@@ -87,9 +87,7 @@ def test_get_user_repo_then_success(create_users):
     assert user.is_active == create_users[0].is_active
 
 
-def test_create_user_when_first_login_then_success(
-        session
-):
+def test_create_user_when_first_login_then_success(session):
     UserRepository().create_user(dto=create_user_dto)
 
     user = session.query(UserModel).first()
@@ -102,7 +100,7 @@ def test_create_user_when_first_login_then_success(
 
 
 def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_unique_error(
-        session,
+    session,
 ):
     UserRepository().create_user(dto=create_user_dto)
 
@@ -111,7 +109,7 @@ def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_uniqu
 
 
 def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_success(
-        session,
+    session,
 ):
     UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
 
@@ -124,7 +122,7 @@ def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_s
 
 
 def test_agree_terms_repo_when_app_first_start_with_receive_marketing_then_success(
-        session,
+    session,
 ):
     create_app_agree_term_dto.receive_marketing_yn = True
     UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
@@ -150,8 +148,8 @@ def test_create_user_nickname_when_start_user_info_then_success(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
     result = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_detail_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_detail_dto.user_id)
+        .first()
     )
 
     assert result.nickname == upsert_user_info_detail_dto.value
@@ -166,8 +164,8 @@ def test_update_user_nickname_when_update_user_info_then_success(session):
 
     result = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_detail_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_detail_dto.user_id)
+        .first()
     )
 
     assert result.nickname == "noah2"
@@ -179,11 +177,11 @@ def test_create_user_info_when_input_user_data_then_success(session):
 
     result = (
         session.query(UserInfoModel)
-            .filter_by(
+        .filter_by(
             user_profile_id=upsert_user_info_detail_dto.user_profile_id,
             code=upsert_user_info_detail_dto.code,
         )
-            .first()
+        .first()
     )
 
     assert result.user_profile_id == upsert_user_info_detail_dto.user_profile_id
@@ -192,7 +190,7 @@ def test_create_user_info_when_input_user_data_then_success(session):
 
 
 def test_create_user_info_when_input_user_data_without_profile_id_then_error(
-        session, create_users
+    session, create_users
 ):
     dto = UpsertUserInfoDetailDto(user_id=create_users[0].id, code=1005, value="1")
     with pytest.raises(NotUniqueErrorException):
@@ -207,11 +205,11 @@ def test_update_user_info_when_input_user_data_then_success(session):
 
     result = (
         session.query(UserInfoModel)
-            .filter_by(
+        .filter_by(
             user_profile_id=upsert_user_info_detail_dto.user_profile_id,
             code=upsert_user_info_detail_dto.code,
         )
-            .first()
+        .first()
     )
 
     assert result.user_profile_id == upsert_user_info_detail_dto.user_profile_id
@@ -283,7 +281,7 @@ def test_get_user_info_when_input_user_data_then_None(session):
 
 
 def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
-        avg_monthly_income_worker_factory, session, create_users
+    avg_monthly_income_worker_factory, session, create_users
 ):
     avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
     session.add(avg_monthly_income_workers)
@@ -390,7 +388,7 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
 
 
 def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(
-        session, create_users
+    session, create_users
 ):
     UserRepository().update_user_status_to_out(user_id=create_users[0].id)
     user = UserRepository().get_user(user_id=create_users[0].id)
@@ -399,7 +397,7 @@ def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(
 
 
 def test_get_user_point_and_survey_step_then_user_point_is_3000_and_survey_step_is_1(
-        session, create_users, point_factory
+    session, create_users, point_factory
 ):
     dto = GetUserDto(user_id=create_users[0].id)
     points = point_factory.build_batch(size=3, user_id=create_users[0].id)
@@ -416,7 +414,7 @@ def test_get_user_point_and_survey_step_then_user_point_is_3000_and_survey_step_
 
 
 def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_no(
-        session, user_factory
+    session, user_factory
 ):
     user = user_factory.create(
         device=True,
@@ -439,7 +437,7 @@ def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_
 
 
 def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_complete(
-        session, user_factory
+    session, user_factory
 ):
     user = user_factory.create(
         device=True,

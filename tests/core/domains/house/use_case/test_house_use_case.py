@@ -17,7 +17,9 @@ from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
     GetCalenderInfoUseCase,
+    GetInterestHouseListUseCase,
 )
+from core.domains.user.dto.user_dto import GetUserDto
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 upsert_interest_house_dto = UpsertInterestHouseDto(
@@ -272,3 +274,26 @@ def test_get_calender_info_use_case_when_no_included_request_date(
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value == "null"
     assert mock_calender_info.called is True
+
+
+def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_one(
+    session, create_users, create_real_estate_with_public_sale
+):
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = GetInterestHouseListUseCase().execute(dto=dto)
+
+    assert isinstance(result, UseCaseSuccessOutput)
+    assert isinstance(result.value, list)
+    assert len(result.value) == 1
+    assert result.value[0].id == 1
+
+
+def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_zero(
+    session, create_users
+):
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = GetInterestHouseListUseCase().execute(dto=dto)
+
+    assert isinstance(result, UseCaseSuccessOutput)
+    assert isinstance(result.value, list)
+    assert len(result.value) == 0

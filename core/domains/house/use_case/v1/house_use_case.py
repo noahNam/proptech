@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Union
+from typing import Union, List
 
 import inject
 
@@ -11,9 +11,10 @@ from core.domains.house.dto.house_dto import (
 )
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
+from core.domains.house.entity.house_entity import InterestHouseListEntity
 from core.domains.house.enum.house_enum import BoundingLevelEnum, HouseTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
-from core.domains.user.dto.user_dto import RecentlyViewDto
+from core.domains.user.dto.user_dto import RecentlyViewDto, GetUserDto
 from core.domains.user.enum import UserTopicEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -72,13 +73,9 @@ class BoundingUseCase(HouseBaseUseCase):
             )
         # dto.level condition
         if dto.level >= BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
-            bounding_entities = self._house_repo.get_bounding(
-                dto=dto
-            )
+            bounding_entities = self._house_repo.get_bounding(dto=dto)
         else:
-            bounding_entities = self._house_repo.get_administrative_divisions(
-                dto=dto
-            )
+            bounding_entities = self._house_repo.get_administrative_divisions(dto=dto)
 
         if not bounding_entities:
             return UseCaseSuccessOutput(value="null")
@@ -125,9 +122,25 @@ class GetCalenderInfoUseCase(HouseBaseUseCase):
     def execute(
         self, dto: GetCalenderInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        calender_entities = self._house_repo.get_calender_info(
-            dto=dto
-        )
+        calender_entities = self._house_repo.get_calender_info(dto=dto)
         if not calender_entities:
             return UseCaseSuccessOutput(value="null")
         return UseCaseSuccessOutput(value=calender_entities)
+
+
+class GetInterestHouseListUseCase(HouseBaseUseCase):
+    def execute(
+        self, dto: GetUserDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        result: List[
+            InterestHouseListEntity
+        ] = self._house_repo.get_interest_house_list(dto=dto)
+
+        return UseCaseSuccessOutput(value=result)

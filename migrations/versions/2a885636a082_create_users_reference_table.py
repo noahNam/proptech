@@ -16,17 +16,20 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table('users',
-                    sa.Column('id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), nullable=False),
-                    sa.Column('is_required_agree_terms', sa.Boolean(), nullable=False),
-                    sa.Column('join_date', sa.String(length=8), nullable=False),
-                    sa.Column('is_active', sa.Boolean(), nullable=False),
-                    sa.Column('is_out', sa.Boolean(), nullable=False),
-                    sa.Column('point', sa.Integer(), nullable=False),
-                    sa.Column('created_at', sa.DateTime(), nullable=True),
-                    sa.Column('updated_at', sa.DateTime(), nullable=True),
-                    sa.PrimaryKeyConstraint('id')
-                    )
+    op.create_table(
+        "users",
+        sa.Column(
+            "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
+        ),
+        sa.Column("is_required_agree_terms", sa.Boolean(), nullable=False),
+        sa.Column("join_date", sa.String(length=8), nullable=False),
+        sa.Column("is_active", sa.Boolean(), nullable=False),
+        sa.Column("is_out", sa.Boolean(), nullable=False),
+        sa.Column("point", sa.Integer(), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=True),
+        sa.Column("updated_at", sa.DateTime(), nullable=True),
+        sa.PrimaryKeyConstraint("id"),
+    )
 
     op.create_table(
         "devices",
@@ -42,7 +45,7 @@ def upgrade():
         sa.Column("endpoint", sa.String(length=100), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("user_id"),
     )
@@ -60,7 +63,7 @@ def upgrade():
         sa.Column("is_private", sa.Boolean(), nullable=False),
         sa.Column("is_marketing", sa.Boolean(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("user_id"),
     )
@@ -75,7 +78,7 @@ def upgrade():
         sa.Column("last_update_code", sa.SmallInteger(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("user_id"),
     )
@@ -87,7 +90,7 @@ def upgrade():
         ),
         sa.Column("device_id", sa.BigInteger(), nullable=False),
         sa.Column("token", sa.String(length=163), nullable=False),
-        sa.ForeignKeyConstraint(["device_id"], ["devices.id"], ),
+        sa.ForeignKeyConstraint(["device_id"], ["devices.id"],),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("device_id"),
     )
@@ -102,7 +105,7 @@ def upgrade():
         sa.Column("value", sa.String(length=8), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["user_profile_id"], ["user_profiles.id"], ),
+        sa.ForeignKeyConstraint(["user_profile_id"], ["user_profiles.id"],),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("user_profile_id", "code"),
     )
@@ -118,7 +121,7 @@ def upgrade():
         sa.Column("is_like", sa.Boolean(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("user_id", "house_id", "type"),
     )
@@ -150,8 +153,8 @@ def upgrade():
         sa.Column("sign", sa.String(length=5), nullable=False),
         sa.Column("created_by", sa.String(length=6), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["type"], ["point_types.id"], ),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ),
+        sa.ForeignKeyConstraint(["type"], ["point_types.id"],),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
         sa.PrimaryKeyConstraint("id"),
     )
 

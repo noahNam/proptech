@@ -1,6 +1,6 @@
 from typing import List, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictStr
 
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
@@ -8,6 +8,15 @@ from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
     CalenderInfoEntity,
 )
+
+
+class GetInterestHouseListBaseSchema(BaseModel):
+    id: int
+    type: int
+    name: str
+    road_address: str
+    subscription_start_date: str
+    subscription_end_date: str
 
 
 class BoundingResponseSchema(BaseModel):
@@ -24,3 +33,11 @@ class GetHousePublicDetailResponseSchema(BaseModel):
 
 class GetCalenderInfoResponseSchema(BaseModel):
     houses: Union[List[CalenderInfoEntity], str]
+
+
+class UpsertInterestHouseResponseSchema(BaseModel):
+    result: StrictStr
+
+
+class GetInterestHouseListResponseSchema(BaseModel):
+    houses: List[GetInterestHouseListBaseSchema]
