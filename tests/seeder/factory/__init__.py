@@ -108,6 +108,7 @@ class UserFactory(BaseFactory):
     join_date = get_server_timestamp().strftime("%y%m%d")
     is_active = True
     is_out = False
+    point = 0
 
     @factory.post_generation
     def device(obj, create, extracted, **kwargs):
