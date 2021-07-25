@@ -84,6 +84,7 @@ def bounding_view():
 @api.route("/v1/houses/public/<int:house_id>", methods=["GET"])
 @jwt_required
 @auth_required
+@swag_from("house_public_detail_view.yml", methods=["GET"])
 def house_public_detail_view(house_id: int):
     dto = GetHousePublicDetailRequest(house_id=house_id,
                                       user_id=current_user.id).validate_request_and_make_dto()
@@ -94,6 +95,7 @@ def house_public_detail_view(house_id: int):
 @api.route("/v1/houses/calender", methods=["GET"])
 @jwt_required
 @auth_required
+@swag_from("house_calender_list_view.yml", methods=["GET"])
 def house_calender_list_view():
     try:
         year = request.args.get("year")

@@ -1,0 +1,46 @@
+bounding_administrative:
+  properties:
+    data:
+      type: object
+      properties:
+        houses:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              name:
+                type: string
+                example: "서울특별시 서초구"
+              short_name:
+                type: string
+                example: "서초구"
+              real_trade_price:
+                type: float
+                example: 10000
+              real_rent_price:
+                type: float
+                example: 10000
+              real_deposit_price:
+                type: float
+                example: 10000
+              public_sale_price:
+                type: float
+                example: 10000
+              level:
+                type: integer
+                example: 10
+              latitude:
+                type: float
+                example: 37.484681
+              longitude:
+                type: float
+                example: 126.8519377
+              created_at:
+                type: string
+                example: "Mon, 12 Jul 2021 15:00:00 GMT"
+              updated_at:
+                type: string
+                example: "Mon, 12 Jul 2021 15:00:00 GMT"

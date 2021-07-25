@@ -72,50 +72,58 @@ bounding_private:
                 type: object
                 example: "null"
               private_sales:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                      example: 15
-                    real_estate_id:
-                      type: integer
-                      example: 1
-                    private_area:
-                      type: float
-                      example: 46.93
-                    supply_area:
-                      type: float
-                      example: 62.6816
-                    deposit_price:
-                      type: integer
-                      example: 0
-                    rent_price:
-                      type: integer
-                      example: 0
-                    trade_price:
-                      type: integer
-                      example: 9000
-                    floor:
-                      type: integer
-                      example: 9
-                    trade_type:
-                      type: string
-                      example: "매매 or 전세 or 월세"
-                    building_type:
-                      type: string
-                      example: "아파트 or 오피스텔 or 연립다세대"
-                    created_at:
-                      type: string
-                      example: "Mon, 12 Jul 2021 15:00:00 GMT"
-                    updated_at:
-                      type: string
-                      example: "Mon, 12 Jul 2021 15:00:00 GMT"
-                    is_available:
-                      type: boolen
-                      example: True
-
-
-
-
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 15
+                  real_estate_id:
+                    type: integer
+                    example: 1
+                  building_type:
+                    type: string
+                    example: "아파트 or 오피스텔 or 연립다세대"
+                  created_at:
+                    type: string
+                    example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                  updated_at:
+                    type: string
+                    example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                  private_sale_details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 15
+                        private_area:
+                          type: float
+                          example: 46.93
+                        supply_area:
+                          type: float
+                          example: 62.6816
+                        deposit_price:
+                          type: integer
+                          example: 0
+                        rent_price:
+                          type: integer
+                          example: 0
+                        trade_price:
+                          type: integer
+                          example: 9000
+                        floor:
+                          type: integer
+                          example: 9
+                        trade_type:
+                          type: string
+                          example: "매매 or 전세 or 월세"
+                        created_at:
+                          type: string
+                          example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                        updated_at:
+                          type: string
+                          example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                        is_available:
+                          type: boolen
+                          example: True
