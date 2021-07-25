@@ -39,10 +39,6 @@ class LocalConfig(Config):
     SQLALCHEMY_ECHO = True
     DEBUG = True
 
-    SQLALCHEMY_DATABASE_URI = (
-        "postgresql+psycopg2://postgres:skarlgur117@test-tanos-rds"
-        ".cluster-cmib56uiilha.ap-northeast-2.rds.amazonaws.com:5432/tanos"
-    )
     # Local environment configuration using Docker API service
     # SQLALCHEMY_DATABASE_URI = "postgresql+psycopg2://postgres:1234@postgres:5432/tanos"
     # Prod migrate
@@ -52,7 +48,7 @@ class LocalConfig(Config):
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = (
-        os.environ.get("TEST_DATABASE_URL") or "sqlite:///:memory:"
+            os.environ.get("TEST_DATABASE_URL") or "sqlite:///:memory:"
     )
 
     WTF_CSRF_ENABLED = False
