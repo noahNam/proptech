@@ -22,7 +22,7 @@ class UserModel(db.Model):
     join_date = Column(String(8), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     is_out = Column(Boolean, nullable=False, default=False)
-    point = Column(Integer, nullable=True, default=0)
+    point = Column(Integer, nullable=False, default=0)
     created_at = Column(DateTime, default=get_server_timestamp())
     updated_at = Column(DateTime, default=get_server_timestamp())
 
