@@ -1,8 +1,4 @@
-from typing import Optional, List
-
 from pydantic import BaseModel
-
-from core.domains.house.entity.house_entity import PrivateSaleEntity, RealEstateEntity
 
 
 class CoordinatesRangeDto(BaseModel):
@@ -10,6 +6,7 @@ class CoordinatesRangeDto(BaseModel):
         위도: Y (127.xxx),
         경도: X (37.xxx)
     """
+
     start_x: float
     start_y: float
     end_x: float
@@ -22,3 +19,14 @@ class UpsertInterestHouseDto(BaseModel):
     house_id: int
     type: int
     is_like: bool
+
+
+class GetHousePublicDetailDto(BaseModel):
+    user_id: int
+    house_id: int
+
+
+class GetCalenderInfoDto(BaseModel):
+    year: str
+    month: str
+    user_id: int

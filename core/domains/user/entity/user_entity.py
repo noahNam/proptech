@@ -110,3 +110,11 @@ class UserEntity(BaseModel):
             return UserSurveyStepEnum.STEP_TWO.value
         else:
             return UserSurveyStepEnum.STEP_COMPLETE.value
+
+
+class RecentlyViewEntity(BaseModel):
+    id: int
+    user_id: int
+    house_id: int
+    type: int
+    created_at: datetime

@@ -4,15 +4,23 @@ from typing import Union
 from pydantic import ValidationError
 
 from app.http.responses import failure_response, success_response
-from core.domains.notification.schema.notification_schema import GetNotificationResponseSchema, GetBadgeResponseSchema, \
-    UpdateNotificationResponseSchema, GetReceiveNotificationSettingResponseSchema, \
-    UpdateReceiveNotificationSettingResponseSchema
-from core.domains.post.schema.post_schema import GetPostListResponseSchema, UpdatePostReadCountResponseSchema
+from core.domains.notification.schema.notification_schema import (
+    GetNotificationResponseSchema,
+    GetBadgeResponseSchema,
+    UpdateNotificationResponseSchema,
+    GetReceiveNotificationSettingResponseSchema,
+    UpdateReceiveNotificationSettingResponseSchema,
+)
+from core.domains.post.schema.post_schema import (
+    GetPostListResponseSchema,
+    UpdatePostReadCountResponseSchema,
+)
 from core.domains.user.schema.user_schema import (
     CreateUserResponseSchema,
     CreateAppAgreeTermsResponseSchema,
     UpsertUserInfoResponseSchema,
-    GetUserInfoResponseSchema, GetUserResponseSchema,
+    GetUserInfoResponseSchema,
+    GetUserResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -27,7 +35,7 @@ class GetPostListPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -50,7 +58,7 @@ class UpdatePostReadCountPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )

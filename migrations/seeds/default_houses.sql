@@ -23,5 +23,8 @@ INSERT INTO public.public_sale_photos (id, public_sales_id, file_name, "path", "
 (1, 1, 'photo', 'public_sale_photos/2021/07/13/2c222a5b-b115-4330-8c88-9be638b14b46.png', 'png', '2021-07-13 04:30:32.749113', '2021-07-13 04:30:32.749154'),
 (2, 2, 'photo_test', 'public_sale_photos/2021/07/13/e71dead1-212e-4cf4-84c1-51d2d166ab06.png', 'png', '2021-07-13 04:38:46.631388', '2021-07-13 04:38:46.631411');
 
-INSERT INTO public.private_sales (id, real_estate_id, private_area, supply_area, contract_date, deposit_price, rent_price, trade_price, floor, trade_type, building_type, is_available, created_at, updated_at) VALUES
-(1, 3, '56', '84', '20210707', 0, 0, 100000, 3, '매매', '아파트', 'True', '2021-07-13 08:56:59.486593', '2021-07-13 08:56:59.486611');
+INSERT INTO public.private_sales (id, real_estate_id, building_type, created_at, updated_at) VALUES
+(1, 3, '아파트', '2021-07-13 08:56:59.486593', '2021-07-13 08:56:59.486611');
+
+INSERT INTO public.private_sale_details (id, private_sales_id, private_area, supply_area, contract_date, deposit_price, rent_price, trade_price, floor, trade_type, is_available, created_at, updated_at) VALUES
+(1, 1, '56', '84', '20210707', 0, 0, 100000, 3, '매매', 'True', '2021-07-13 08:56:59.486593', '2021-07-13 08:56:59.486611');

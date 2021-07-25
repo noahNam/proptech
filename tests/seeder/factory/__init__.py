@@ -1,23 +1,61 @@
+import random
 import uuid
 from datetime import datetime
 
 import factory
 from faker import Factory as FakerFactory
 
-from app.extensions.utils.time_helper import get_server_timestamp
+from app.extensions.utils.time_helper import (
+    get_server_timestamp,
+    get_random_date_about_one_month_from_today,
+)
 from app.persistence.model import (
     DeviceModel,
     DeviceTokenModel,
-    UserProfileModel, AvgMonthlyIncomeWokrerModel, SidoCodeModel, NotificationModel, InterestHouseModel,
-    ReceivePushTypeModel, AppAgreeTermsModel, PointTypeModel, PointModel, UserModel, ArticleModel, PostModel
+    UserProfileModel,
+    AvgMonthlyIncomeWokrerModel,
+    SidoCodeModel,
+    NotificationModel,
+    InterestHouseModel,
+    ReceivePushTypeModel,
+    AppAgreeTermsModel,
+    PointTypeModel,
+    PointModel,
+    UserModel,
+    ArticleModel,
+    PostModel,
+    PrivateSaleDetailModel,
+    PrivateSaleModel,
+    PublicSaleModel,
+    RealEstateModel,
+    RecentlyViewModel,
+    PublicSaleDetailPhotoModel,
+    PublicSaleDetailModel,
+    PublicSalePhotoModel,
+    AdministrativeDivisionModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
-from core.domains.house.enum.house_enum import HouseTypeEnum
-from core.domains.notification.enum.notification_enum import NotificationTopicEnum, NotificationBadgeTypeEnum, \
-    NotificationStatusEnum
+from core.domains.house.enum.house_enum import (
+    HouseTypeEnum,
+    RealTradeTypeEnum,
+    BuildTypeEnum,
+    HousingCategoryEnum,
+    RentTypeEnum,
+    PreSaleTypeEnum,
+    DivisionLevelEnum,
+)
+from core.domains.notification.enum.notification_enum import (
+    NotificationTopicEnum,
+    NotificationBadgeTypeEnum,
+    NotificationStatusEnum,
+)
 from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
-from core.domains.user.enum.user_enum import UserPointTypeDivisionEnum, UserPointCreatedByEnum, UserPointSignEnum
+from core.domains.user.enum.user_enum import (
+    UserPointTypeDivisionEnum,
+    UserPointCreatedByEnum,
+    UserPointSignEnum,
+)
 
 faker = FakerFactory.create(locale="ko_KR")
 
@@ -212,3 +250,200 @@ class ArticleFactory(BaseFactory):
 
     post_id = 1
     body = factory.Sequence(lambda n: "body_게시글 입니다:) {}".format(n + 1))
+
+
+class PrivateSaleDetailFactory(BaseFactory):
+    class Meta:
+        model = PrivateSaleDetailModel
+
+    private_sales_id = 1
+    private_area = random.uniform(40, 90)
+    supply_area = random.uniform(50, 130)
+    contract_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
+    deposit_price = 0
+    rent_price = 0
+    trade_price = random.randint(10000, 50000)
+    floor = random.randint(1, 20)
+    trade_type = RealTradeTypeEnum.TRADING.value
+    is_available = True
+
+
+class PrivateSaleFactory(BaseFactory):
+    class Meta:
+        model = PrivateSaleModel
+
+    real_estate_id = factory.Sequence(lambda n: n + 1)
+    name = factory.Sequence(lambda n: f"아파트_{n}")
+    building_type = BuildTypeEnum.APARTMENT.value
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+    @factory.post_generation
+    def private_sale_details(obj, create, extracted, **kwargs):
+        if extracted:
+            PrivateSaleDetailFactory(private_sales=obj, **kwargs)
+
+
+class PublicSaleDetailPhotoFactory(BaseFactory):
+    class Meta:
+        model = PublicSaleDetailPhotoModel
+
+    public_sale_details_id = factory.Sequence(lambda n: n + 1)
+    file_name = "photo_file"
+    path = (
+        "https://sample.s3.sample.amazonaws.com"
+        "/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
+    )
+    extension = "jpeg"
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+
+class PublicSaleDetailFactory(BaseFactory):
+    class Meta:
+        model = PublicSaleDetailModel
+
+    public_sales_id = 1
+    private_area = random.uniform(40, 90)
+    supply_area = random.uniform(50, 130)
+    supply_price = random.randint(10000, 50000)
+    acquisition_tax = random.randint(1000000, 5000000)
+
+    @factory.post_generation
+    def private_sale_detail_photos(obj, create, extracted, **kwargs):
+        if extracted:
+            PublicSaleDetailPhotoFactory(public_sale_details=obj, **kwargs)
+
+
+class PublicSalePhotoFactory(BaseFactory):
+    class Meta:
+        model = PublicSalePhotoModel
+
+    public_sales_id = factory.Sequence(lambda n: n + 1)
+    file_name = "photo_file"
+    path = (
+        "https://sample.s3.sample.amazonaws.com"
+        "/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
+    )
+    extension = "jpeg"
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+
+class PublicSaleFactory(BaseFactory):
+    class Meta:
+        model = PublicSaleModel
+
+    real_estate_id = factory.Sequence(lambda n: n + 1)
+    name = factory.Sequence(lambda n: f"아파트_{n}")
+    region = "경기"
+    housing_category = HousingCategoryEnum.PUBLIC.value
+    rent_type = RentTypeEnum.PRE_SALE.value
+    trade_type = PreSaleTypeEnum.PRE_SALE.value
+    construct_company = "건설회사"
+    supply_household = random.randint(100, 500)
+    is_available = True
+    offer_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
+    subscription_start_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    subscription_end_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    special_supply_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    special_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    first_supply_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
+    first_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    second_supply_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
+    second_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    notice_winner_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
+    contract_start_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    contract_end_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
+    move_in_year = random.randint(2023, 2025)
+    move_in_month = random.randint(1, 12)
+    min_down_payment = random.randint(10_000_000, 50_000_000)
+    max_down_payment = random.randint(10_000_000, 50_000_000)
+    down_payment_ratio = 20
+    reference_url = "https://www.reference.com"
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+    @factory.post_generation
+    def private_sale_photos(obj, create, extracted, **kwargs):
+        if extracted:
+            PublicSalePhotoFactory(public_sales=obj, **kwargs)
+
+    @factory.post_generation
+    def private_sale_details(obj, create, extracted, **kwargs):
+        if extracted:
+            PublicSaleDetailFactory(public_sales=obj, **kwargs)
+
+
+class RealEstateFactory(BaseFactory):
+    class Meta:
+        model = RealEstateModel
+
+    name = faker.building_name()
+    road_address = faker.road_address()
+    jibun_address = faker.land_address()
+    si_do = faker.province()
+    si_gun_gu = faker.city() + faker.borough()
+    dong_myun = "XX동"
+    ri = "-"
+    road_name = faker.road()
+    road_number = faker.road_number() + faker.road_suffix()
+    land_number = faker.land_number()
+    is_available = True
+    coordinates = f"SRID=4326;POINT({random.uniform(125.0666666, 131.8722222)} {random.uniform(33.1, 38.45)})"
+
+    latitude = random.uniform(33.1, 38.45)
+    longitude = random.uniform(125.0666666, 131.8722222)
+
+    @factory.post_generation
+    def private_sales(obj, create, extracted, **kwargs):
+        if extracted:
+            PrivateSaleFactory(real_estates=obj, **kwargs)
+
+    @factory.post_generation
+    def public_sales(obj, create, extracted, **kwargs):
+        if extracted:
+            PublicSaleFactory(real_estates=obj, **kwargs)
+
+
+class RecentlyViewFactory(BaseFactory):
+    class Meta:
+        model = RecentlyViewModel
+
+    user_id = 1
+    house_id = 1
+    type = HouseTypeEnum.PUBLIC_SALES.value
+    created_at = get_server_timestamp()
+
+
+class AdministrativeDivisionFactory(BaseFactory):
+    class Meta:
+        model = AdministrativeDivisionModel
+
+    name = factory.Sequence(lambda n: f"XX시 XX구 읍면동_{n}")
+    short_name = factory.Sequence(lambda n: f"읍면동_{n}")
+    real_trade_price = random.randint(10_000_000, 50_000_000)
+    real_rent_price = random.randint(10_000_000, 50_000_000)
+    real_deposit_price = random.randint(10_000_000, 50_000_000)
+    public_sale_price = random.randint(10_000_000, 50_000_000)
+    level = DivisionLevelEnum.LEVEL_3.value
+    coordinates = f"SRID=4326;POINT({random.uniform(125.0666666, 131.8722222)} {random.uniform(33.1, 38.45)})"
+
+    latitude = random.uniform(33.1, 38.45)
+    longitude = random.uniform(125.0666666, 131.8722222)
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()

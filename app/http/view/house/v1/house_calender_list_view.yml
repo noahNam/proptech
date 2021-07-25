@@ -1,0 +1,70 @@
+openapi: "3.0.2"
+tags:
+  - House
+security:
+  - userAuth: []
+parameters:
+  - name: Authorization
+    in: header
+    required: true
+    description: User's OAuth access_token
+    schema:
+      type: string
+      example: Bearer eyJ0eXAiOiJKV1QiLC....JWT...values
+  - name: year
+    in: path
+    required: true
+    description: year yyyy
+    schema:
+      type: integer
+      example: 2021
+  - name: month
+    in: path
+    required: true
+    description: month 1 ~ 12
+    schema:
+      type: integer
+      example: 7
+responses:
+  '200 #1':
+    description: public_sales detail result
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/calender_info'
+  '200 #2':
+    description: when not found result data
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/result_null'
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

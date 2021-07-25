@@ -2,7 +2,9 @@ from flask import g
 from pubsub import pub
 
 from core.domains.notification.enum import NotificationTopicEnum
-from core.domains.notification.repository.notification_repository import NotificationRepository
+from core.domains.notification.repository.notification_repository import (
+    NotificationRepository,
+)
 from core.domains.user.dto.user_dto import CreateUserDto
 
 

@@ -3,7 +3,8 @@ from sqlalchemy import (
     BigInteger,
     Boolean,
     DateTime,
-    Integer, String,
+    Integer,
+    String,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -33,10 +34,11 @@ class UserModel(db.Model):
     receive_push_type = relationship(
         "ReceivePushTypeModel", backref=backref("users"), uselist=False
     )
-    interest_houses = relationship("InterestHouseModel", back_populates="users", uselist=True)
-    points = relationship(
-        "PointModel", backref=backref("users"), uselist=True
+    interest_houses = relationship(
+        "InterestHouseModel", back_populates="users", uselist=True
     )
+    points = relationship("PointModel", backref=backref("users"), uselist=True)
+    recently_views = relationship("RecentlyViewModel", back_populates="users")
 
     def to_entity(self) -> UserEntity:
         return UserEntity(
@@ -49,8 +51,12 @@ class UserModel(db.Model):
             device=self.device.to_entity(),
             user_profile=self.user_profile.to_entity() if self.user_profile else None,
             receive_push_type=self.receive_push_type.to_entity(),
-            interest_houses=[interest_house.to_entity() for interest_house in
-                             self.interest_houses] if self.interest_houses else None,
-            points=[point.to_entity() for point in
-                    self.points] if self.points else None,
+            interest_houses=[
+                interest_house.to_entity() for interest_house in self.interest_houses
+            ]
+            if self.interest_houses
+            else None,
+            points=[point.to_entity() for point in self.points]
+            if self.points
+            else None,
         )

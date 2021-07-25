@@ -5,15 +5,23 @@ from core.domains.post.enum.post_enum import PostCategoryEnum
 
 
 def test_get_post_list_include_article_view_when_watch_notice_and_faq_then_return_teb_posts(
-        client, session, test_request_context, make_header, make_authorization, create_users, post_factory
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    post_factory,
 ):
     post_list = []
     for index in range(15):
-        post_list.append(post_factory(
-            Article=True,
-            user_id=create_users[0].id,
-            category_id=PostCategoryEnum.NOTICE.value
-        ))
+        post_list.append(
+            post_factory(
+                Article=True,
+                user_id=create_users[0].id,
+                category_id=PostCategoryEnum.NOTICE.value,
+            )
+        )
 
     session.add_all(post_list)
     session.commit()
@@ -58,12 +66,18 @@ def test_get_post_list_include_article_view_when_watch_notice_and_faq_then_retur
 
 
 def test_update_post_read_count_view_when_watch_notice_and_faq_then_return_success(
-        client, session, test_request_context, make_header, make_authorization, create_users, post_factory
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    post_factory,
 ):
     post = post_factory(
         Article=True,
         user_id=create_users[0].id,
-        category_id=PostCategoryEnum.NOTICE.value
+        category_id=PostCategoryEnum.NOTICE.value,
     )
 
     session.add(post)
@@ -98,5 +112,5 @@ def test_update_post_read_count_view_when_watch_notice_and_faq_then_return_succe
     data = response.get_json()["data"]
     meta = response.get_json()["meta"]
     assert response.status_code == 200
-    assert data["posts"][0]['read_count'] == 1
+    assert data["posts"][0]["read_count"] == 1
     assert meta["cursor"]["last_post_id"] == 1

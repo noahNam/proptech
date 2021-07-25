@@ -8,7 +8,10 @@ from core.domains.user.schema.user_schema import (
     CreateUserResponseSchema,
     CreateAppAgreeTermsResponseSchema,
     UpsertUserInfoResponseSchema,
-    GetUserInfoResponseSchema, GetUserResponseSchema, PatchUserOutResponseSchema, GetUserMainResponseSchema,
+    GetUserInfoResponseSchema,
+    GetUserResponseSchema,
+    PatchUserOutResponseSchema,
+    GetUserMainResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -25,7 +28,7 @@ class GetUserPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -48,7 +51,7 @@ class CreateUserPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -71,7 +74,7 @@ class CreateAppAgreeTermsPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -94,7 +97,7 @@ class UpsertUserInfoPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -117,7 +120,7 @@ class GetUserInfoPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -140,7 +143,7 @@ class PatchUserOutPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -163,7 +166,7 @@ class GetUserMainPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )

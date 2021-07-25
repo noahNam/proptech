@@ -3,22 +3,46 @@ from typing import List
 
 import pytest
 
-from app.persistence.model import AppAgreeTermsModel, UserProfileModel, UserInfoModel
+from app.persistence.model import (
+    AppAgreeTermsModel,
+    UserProfileModel,
+    UserInfoModel,
+    RecentlyViewModel,
+)
 from app.persistence.model.user_model import UserModel
+from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto, GetUserInfoDetailDto, GetUserDto,
+    AvgMonthlyIncomeWokrerDto,
+    UpsertUserInfoDetailDto,
+    GetUserInfoDetailDto,
+    GetUserDto,
+    RecentlyViewDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
-    UserInfoEmptyEntity, UserEntity, UserInfoCodeValueEntity,
+    UserInfoEmptyEntity,
+    UserEntity,
+    UserInfoCodeValueEntity,
 )
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
-from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, IsHouseHolderCodeEnum, IsMarriedCodeEnum, \
-    NumberDependentsEnum, IsChildEnum, IsSubAccountEnum, MonthlyIncomeEnum, AssetsRealEstateEnum, AssetsCarEnum, \
-    AssetsTotalEnum, SpecialCondEnum, CodeEnum, CodeStepEnum
+from core.domains.user.enum.user_info_enum import (
+    IsHouseOwnerCodeEnum,
+    IsHouseHolderCodeEnum,
+    IsMarriedCodeEnum,
+    NumberDependentsEnum,
+    IsChildEnum,
+    IsSubAccountEnum,
+    MonthlyIncomeEnum,
+    AssetsRealEstateEnum,
+    AssetsCarEnum,
+    AssetsTotalEnum,
+    SpecialCondEnum,
+    CodeEnum,
+    CodeStepEnum,
+)
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
 
@@ -47,6 +71,10 @@ upsert_user_info_detail_dto = UpsertUserInfoDto(
 
 upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
     user_id=1, user_profile_id=1, code=1005, value="1"
+)
+
+recently_view_dto = RecentlyViewDto(
+    user_id=1, house_id=1, type=HouseTypeEnum.PUBLIC_SALES.value
 )
 
 
@@ -195,7 +223,10 @@ def test_update_last_code_to_user_info_when_input_user_data_then_success(session
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
 
     dto = UpsertUserInfoDetailDto(
-        user_id=upsert_user_info_detail_dto.user_id, user_profile_id=1, code=1007, value="2"
+        user_id=upsert_user_info_detail_dto.user_id,
+        user_profile_id=1,
+        code=1007,
+        value="2",
     )
     UserRepository().update_last_code_to_user_info(dto=dto)
 
@@ -206,7 +237,9 @@ def test_update_last_code_to_user_info_when_input_user_data_then_success(session
 
 def test_get_user_profile_id_when_input_user_data_then_success(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
-    get_user_profile_id = UserRepository().get_user_profile_id(dto=upsert_user_info_detail_dto)
+    get_user_profile_id = UserRepository().get_user_profile_id(
+        dto=upsert_user_info_detail_dto
+    )
 
     assert get_user_profile_id == 1
 
@@ -215,7 +248,9 @@ def test_get_user_profile_id_when_input_user_data_then_none(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
 
     upsert_user_info_detail_dto.user_id = upsert_user_info_detail_dto.user_id + 1
-    get_user_profile_id = UserRepository().get_user_profile_id(dto=upsert_user_info_detail_dto)
+    get_user_profile_id = UserRepository().get_user_profile_id(
+        dto=upsert_user_info_detail_dto
+    )
 
     assert get_user_profile_id is None
 
@@ -247,8 +282,9 @@ def test_get_user_info_when_input_user_data_then_None(session):
     assert isinstance(user_info, UserInfoEmptyEntity)
 
 
-def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_monthly_income_worker_factory, session,
-                                                                          create_users):
+def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
+        avg_monthly_income_worker_factory, session, create_users
+):
     avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
     session.add(avg_monthly_income_workers)
     session.commit()
@@ -308,12 +344,16 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
         # 외벌이, 맞벌이 확인
         # 외벌이 -> 1,3,4 / 맞벌이 -> 2
         result1: UserInfoEntity = UserRepository().get_user_info_by_code(
-            user_profile_id=upsert_user_info_detail_dto.user_profile_id, code=CodeEnum.IS_MARRIED.value)
+            user_profile_id=upsert_user_info_detail_dto.user_profile_id,
+            code=CodeEnum.IS_MARRIED.value,
+        )
 
         # 부양가족 수
         # 3인 이하->1,2,3,9 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
         result2: UserInfoEntity = UserRepository().get_user_info_by_code(
-            user_profile_id=upsert_user_info_detail_dto.user_profile_id, code=CodeEnum.NUMBER_DEPENDENTS.value)
+            user_profile_id=upsert_user_info_detail_dto.user_profile_id,
+            code=CodeEnum.NUMBER_DEPENDENTS.value,
+        )
 
         # 부양가족별 default 소득
         income_result_dict = {
@@ -349,15 +389,18 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
         assert len(user_info.code_values.detail_code) == len(user_info.code_values.name)
 
 
-def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(session, create_users):
+def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(
+        session, create_users
+):
     UserRepository().update_user_status_to_out(user_id=create_users[0].id)
     user = UserRepository().get_user(user_id=create_users[0].id)
 
     assert user.is_out is True
 
 
-def test_get_user_point_and_survey_step_then_user_point_is_3000_and_survey_step_is_1(session, create_users,
-                                                                                     point_factory):
+def test_get_user_point_and_survey_step_then_user_point_is_3000_and_survey_step_is_1(
+        session, create_users, point_factory
+):
     dto = GetUserDto(user_id=create_users[0].id)
     points = point_factory.build_batch(size=3, user_id=create_users[0].id)
     session.add_all(points)
@@ -372,9 +415,16 @@ def test_get_user_point_and_survey_step_then_user_point_is_3000_and_survey_step_
     assert survey_step == UserSurveyStepEnum.STEP_ONE.value
 
 
-def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_no(session, user_factory):
-    user = user_factory.create(device=True, receive_push_type=True, user_profile=False, interest_houses=True,
-                               point=False)
+def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_no(
+        session, user_factory
+):
+    user = user_factory.create(
+        device=True,
+        receive_push_type=True,
+        user_profile=False,
+        interest_houses=True,
+        point=False,
+    )
     session.add(user)
     session.commit()
 
@@ -388,9 +438,16 @@ def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_
     assert survey_step == UserSurveyStepEnum.STEP_NO.value
 
 
-def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_complete(session, user_factory):
-    user = user_factory.create(device=True, receive_push_type=True, user_profile=True, interest_houses=True,
-                               point=False)
+def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_complete(
+        session, user_factory
+):
+    user = user_factory.create(
+        device=True,
+        receive_push_type=True,
+        user_profile=True,
+        interest_houses=True,
+        point=False,
+    )
     user.user_profile.last_update_code = CodeStepEnum.COMPLETE.value
     session.add(user)
     session.commit()
@@ -404,3 +461,12 @@ def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_
     assert total_amount == 0
     assert survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
     assert result.point == 0
+
+
+def test_create_recently_view_table(session):
+    UserRepository().create_recently_view(dto=recently_view_dto)
+    view_info = session.query(RecentlyViewModel).first()
+
+    assert view_info.user_id == recently_view_dto.user_id
+    assert view_info.house_id == recently_view_dto.house_id
+    assert view_info.type == recently_view_dto.type
