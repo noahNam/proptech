@@ -32,6 +32,33 @@ class CodeEnum(Enum):
     SPECIAL_COND = 1026
 
 
+class CodeStepEnum(Enum):
+    ONE = [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008,
+        1009,
+        1010,
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016,
+        1017,
+        1018,
+        1019,
+    ]
+    TWO = [1020, 1021, 1022, 1023, 1024, 1025]
+    COMPLETE = 1026
+
+
 class AddressCodeEnum(Enum):
     COND_CD = []
     COND_NM = []

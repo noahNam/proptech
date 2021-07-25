@@ -1,0 +1,129 @@
+bounding_private:
+  properties:
+    data:
+      type: object
+      properties:
+        houses:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              avg_deposit_price:
+                type: float
+                example: 10000
+              avg_private_pyoung_number:
+                type: float
+                example: 10000
+              avg_public_pyoung_number:
+                type: float
+                example: 10000
+              avg_rent_price:
+                type: float
+                example: 10000
+              avg_supply_price:
+                type: float
+                example: 10000
+              avg_trade_price:
+                type: float
+                example: 10000
+              name:
+                type: string
+                example: "개봉동한진아파트"
+              road_address:
+                type: string
+                example: "서울특별시 구로구 개봉로3길 87 개봉동한진아파트"
+              jibun_address:
+                type: string
+                example: "서울특별시 구로구 개봉동 478 개봉동한진아파트"
+              si_do:
+                type: string
+                example: "서울특별시"
+              si_gun_gu:
+                type: string
+                example: "구로구"
+              dong_myun:
+                type: string
+                example: "개봉동"
+              ri:
+                type: string
+                example: "-"
+              road_name:
+                type: string
+                example: "개봉로3길"
+              road_number:
+                type: string
+                example: "87"
+              is_available:
+                type: boolen
+                example: True
+              land_number:
+                type: string
+                example: "478"
+              latitude:
+                type: float
+                example: 37.484681
+              longitude:
+                type: float
+                example: 126.8519377
+              public_sales:
+                type: object
+                example: "null"
+              private_sales:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 15
+                  real_estate_id:
+                    type: integer
+                    example: 1
+                  building_type:
+                    type: string
+                    example: "아파트 or 오피스텔 or 연립다세대"
+                  created_at:
+                    type: string
+                    example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                  updated_at:
+                    type: string
+                    example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                  private_sale_details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 15
+                        private_area:
+                          type: float
+                          example: 46.93
+                        supply_area:
+                          type: float
+                          example: 62.6816
+                        deposit_price:
+                          type: integer
+                          example: 0
+                        rent_price:
+                          type: integer
+                          example: 0
+                        trade_price:
+                          type: integer
+                          example: 9000
+                        floor:
+                          type: integer
+                          example: 9
+                        trade_type:
+                          type: string
+                          example: "매매 or 전세 or 월세"
+                        created_at:
+                          type: string
+                          example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                        updated_at:
+                          type: string
+                          example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                        is_available:
+                          type: boolen
+                          example: True

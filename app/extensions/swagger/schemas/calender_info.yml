@@ -1,0 +1,70 @@
+calender_info:
+  properties:
+    data:
+      type: array
+      items:
+        type: object
+        properties:
+          houses:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              name:
+                type: string
+                example: "래미안 원베일리"
+              road_address:
+                type: string
+                example: "서울특별시 서초구 신반포로19길 10"
+              jibun_address:
+                type: string
+                example: "서울특별시 서초구 반포동 1-1"
+              is_like:
+                type: boolen
+                example: True
+              public_sales:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 3
+                  real_estate_id:
+                    type: integer
+                    example: 1
+                  contract_start_date:
+                    type: string
+                    example: "20210709"
+                  contract_end_date:
+                    type: string
+                    example: "20210714"
+                  first_supply_date:
+                    type: string
+                    example: "20210701"
+                  first_supply_etc_date:
+                    type: string
+                    example: "20210702"
+                  second_supply_date:
+                    type: string
+                    example: "20210703"
+                  second_supply_etc_date:
+                    type: string
+                    example: "20210704"
+                  special_supply_date:
+                    type: string
+                    example: "20210628"
+                  special_supply_etc_date:
+                    type: string
+                    example: "20210629"
+                  subscription_start_date:
+                    type: string
+                    example: "20210621"
+                  subscription_end_date:
+                    type: string
+                    example: "20210715"
+                  move_in_year:
+                    type: integer
+                    example: 2023
+                  move_in_month:
+                    type: integer
+                    example: 12

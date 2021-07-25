@@ -39,7 +39,7 @@ def _get_user_id():
         pass
 
     if decoded:
-        user_id = decoded['identity']
+        user_id = decoded["identity"]
 
     return User(_id=user_id, is_expired=is_expired)
 
@@ -73,5 +73,5 @@ def jwt_required(fn):
 @api.after_request
 def refresh_expiring_jwts(response):
     # Access Token이 만료되었을 때 응답헤더에 추가
-    response.headers['Needs-Refresh-JWT'] = current_user.is_expired
+    response.headers["Needs-Refresh-JWT"] = current_user.is_expired
     return response

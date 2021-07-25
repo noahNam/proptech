@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel
@@ -89,3 +90,9 @@ class SidoCodeDto(BaseModel):
 class SigugunCodeDto(BaseModel):
     sigugun_code: list
     sigugun_name: list
+
+
+class RecentlyViewDto(BaseModel):
+    user_id: int
+    house_id: int
+    type: int
