@@ -384,6 +384,13 @@ class GetUserMainUseCase(UserBaseUseCase):
     def execute(
         self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        """
+        point는 points 스키마의 sum(amount)로 가져온다. -> 안정성을 위해
+        즉, user 스키마의 포인트는 현재로서는 사용안하고, 포인트의 변화가 있을 때 업데이트 용도로만 사용한다.
+        추후에, 사용자가 많아지고 point 합산으로 인한 퍼포먼스 문제가 발생할 시에 user.point를 가져오는 것으로 수정 한다.
+        그 전까지는 sum(point.amount) == user.point 가 맞는지 꾸준히 확인하여 로직이 세는 곳이 있는지 트래킹한다.
+        """
+
         if not dto.user_id:
             return UseCaseFailureOutput(
                 type="user_id",

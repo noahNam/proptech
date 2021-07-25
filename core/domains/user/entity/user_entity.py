@@ -78,6 +78,7 @@ class UserEntity(BaseModel):
     join_date: str
     is_active: bool
     is_out: bool
+    point: int
     device: DeviceEntity
     user_profile: UserProfileEntity = None
     receive_push_type: ReceivePushTypeEntity
