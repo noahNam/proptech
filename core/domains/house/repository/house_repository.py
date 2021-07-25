@@ -76,7 +76,7 @@ class HouseRepository:
                 f"[HouseRepository][update_is_like_house] house_id : {dto.house_id} error : {e}"
             )
 
-    def _make_object_bounding_entity_from_queryset(
+    def _make_object_bounding_entity(
         self, queryset: Optional[list]
     ) -> Optional[List[BoundingRealEstateEntity]]:
         if not queryset:
@@ -102,7 +102,7 @@ class HouseRepository:
 
         return results
 
-    def get_bounding_by_coordinates_range_dto(
+    def get_bounding(
         self, dto: CoordinatesRangeDto
     ) -> Optional[list]:
         filters = list()
@@ -145,7 +145,7 @@ class HouseRepository:
                 RealEstateModel,
                 func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
                 func.avg(PrivateSaleDetailModel.deposit_price)
-                .filter(PrivateSaleDetailModel.trade_type == "전세")
+                .filter(PrivateSaleDetailModel.trade_type == RealTradeTypeEnum.LONG_TERM_RENT.value)
                 .label("avg_deposit_price"),
                 func.avg(PrivateSaleDetailModel.rent_price).label("avg_rent_price"),
                 func.avg(PublicSaleDetailModel.supply_price).label("avg_supply_price"),
@@ -166,9 +166,9 @@ class HouseRepository:
 
         queryset = query.all()
 
-        return self._make_object_bounding_entity_from_queryset(queryset=queryset)
+        return self._make_object_bounding_entity(queryset=queryset)
 
-    def _make_bounding_administrative_entity_from_queryset(
+    def _make_bounding_administrative_entity(
         self, queryset: Optional[list]
     ) -> Optional[List[AdministrativeDivisionEntity]]:
         if not queryset:
@@ -180,7 +180,7 @@ class HouseRepository:
             results.append(query.to_entity())
         return results
 
-    def get_administrative_by_coordinates_range_dto(
+    def get_administrative_divisions(
         self, dto: CoordinatesRangeDto
     ) -> Optional[list]:
         """
@@ -220,7 +220,7 @@ class HouseRepository:
         query = session.query(AdministrativeDivisionModel).filter(*filters)
         queryset = query.all()
 
-        return self._make_bounding_administrative_entity_from_queryset(
+        return self._make_bounding_administrative_entity(
             queryset=queryset
         )
 
@@ -272,7 +272,7 @@ class HouseRepository:
             return None
         return interest_house
 
-    def _get_house_with_public_sales_by_id(self, house_id: int) -> list:
+    def _get_house_with_public_sales(self, house_id: int) -> list:
         filters = list()
         filters.append(PublicSaleModel.id == house_id)
         filters.append(
@@ -303,7 +303,7 @@ class HouseRepository:
         )
         return query.first()
 
-    def _make_house_with_private_entities_from_queryset(
+    def _make_house_with_private_entities(
         self, queryset: Optional[list]
     ) -> Optional[List[RealEstateWithPrivateSaleEntity]]:
         if not queryset:
@@ -330,7 +330,7 @@ class HouseRepository:
             return 0
         return supply_price / avg_pyoung_number
 
-    def _make_house_public_detail_entity_from_queryset(
+    def _make_house_public_detail_entity(
         self,
         house_with_public_sales: list,
         house_with_private_entities: Optional[list],
@@ -356,7 +356,7 @@ class HouseRepository:
             near_houses=house_with_private_entities,
         )
 
-    def get_house_public_detail_by_get_house_public_detail_dto(
+    def get_house_public_detail(
         self, dto: GetHousePublicDetailDto, degrees: float, is_like: bool
     ) -> HousePublicDetailEntity:
         """
@@ -371,7 +371,7 @@ class HouseRepository:
             : 분양 매물 상세 queryset + is_like + 주변 실거래가 queryset -> HousePublicDetailEntity
         """
         # 분양 매물 상세 query -> house_with_public_sales
-        house_with_public_sales = self._get_house_with_public_sales_by_id(
+        house_with_public_sales = self._get_house_with_public_sales(
             house_id=dto.house_id
         )
 
@@ -411,17 +411,17 @@ class HouseRepository:
         )
 
         house_with_private_queryset = query.all()
-        house_with_private_entities = self._make_house_with_private_entities_from_queryset(
+        house_with_private_entities = self._make_house_with_private_entities(
             queryset=house_with_private_queryset
         )
 
-        return self._make_house_public_detail_entity_from_queryset(
+        return self._make_house_public_detail_entity(
             house_with_public_sales=house_with_public_sales,
             house_with_private_entities=house_with_private_entities,
             is_like=is_like,
         )
 
-    def _make_calender_info_entity_from_queryset(
+    def _make_calender_info_entity(
         self, queryset: Optional[list], user_id: int
     ) -> Optional[List[CalenderInfoEntity]]:
         """
@@ -441,7 +441,7 @@ class HouseRepository:
 
         return result
 
-    def get_calender_info_by_get_calender_info_dto(
+    def get_calender_info(
         self, dto: GetCalenderInfoDto
     ) -> Optional[list]:
         year_month = dto.year + dto.month
@@ -477,6 +477,6 @@ class HouseRepository:
 
         queryset = query.all()
 
-        return self._make_calender_info_entity_from_queryset(
+        return self._make_calender_info_entity(
             queryset=queryset, user_id=dto.user_id
         )

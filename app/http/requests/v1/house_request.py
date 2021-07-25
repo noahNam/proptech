@@ -45,7 +45,7 @@ class UpsertInterestHouseRequestSchema:
             raise InvalidRequestException(message=e.errors())
 
 
-class GetCoordinatesRequestSchema(BaseModel):
+class GetCoordinatesSchema(BaseModel):
     """
         위도: Y (37.xxx),  <-- 주의: X Y 바뀐 형태
         경도: X (127.xxx),
@@ -131,7 +131,7 @@ class GetCoordinatesRequestSchema(BaseModel):
         return level
 
 
-class GetCoordinatesRequest:
+class GetCoordinatesRequestSchema:
     def __init__(self, start_x, start_y, end_x, end_y, level):
         self._start_x = start_x
         self._start_y = start_y
@@ -141,7 +141,7 @@ class GetCoordinatesRequest:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetCoordinatesRequestSchema(
+            schema = GetCoordinatesSchema(
                 x_points=(self._start_x, self._end_x),
                 y_points=(self._start_y, self._end_y),
                 level=self._level,
@@ -161,19 +161,19 @@ class GetCoordinatesRequest:
             raise InvalidRequestException(message=e.errors())
 
 
-class GetHousePublicDetailRequestSchema(BaseModel):
+class GetHousePublicDetailSchema(BaseModel):
     user_id: StrictInt
     house_id: StrictInt
 
 
-class GetHousePublicDetailRequest:
+class GetHousePublicDetailRequestSchema:
     def __init__(self, user_id, house_id):
         self.user_id = int(user_id) if user_id else None
         self.house_id = house_id
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetHousePublicDetailRequestSchema(
+            schema = GetHousePublicDetailSchema(
                 user_id=self.user_id, house_id=self.house_id
             ).dict()
             return GetHousePublicDetailDto(**schema)
@@ -184,7 +184,7 @@ class GetHousePublicDetailRequest:
             raise InvalidRequestException(message=e.errors())
 
 
-class GetCalenderInfoRequestSchema(BaseModel):
+class GetCalenderInfoSchema(BaseModel):
     year: str
     month: str
     user_id: StrictInt
@@ -212,7 +212,7 @@ class GetCalenderInfoRequestSchema(BaseModel):
         return month
 
 
-class GetCalenderInfoRequest:
+class GetCalenderInfoRequestSchema:
     def __init__(self, year, month, user_id):
         self.year = year
         self.month = month
@@ -220,7 +220,7 @@ class GetCalenderInfoRequest:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetCalenderInfoRequestSchema(
+            schema = GetCalenderInfoSchema(
                 year=self.year, month=self.month, user_id=self.user_id
             ).dict()
             return GetCalenderInfoDto(**schema)

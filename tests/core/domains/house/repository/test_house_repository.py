@@ -69,10 +69,10 @@ def test_get_bounding_by_coordinates_range_dto(
         get_bounding_by_coordinates_range_dto -> return mocking
     """
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_bounding_by_coordinates_range_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_bounding"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
-        result = HouseRepository().get_bounding_by_coordinates_range_dto(
+        result = HouseRepository().get_bounding(
             dto=coordinates_dto
         )
 
@@ -87,10 +87,10 @@ def test_get_administrative_by_coordinates_range_dto(
         get_administrative_by_coordinates_range_dto -> return mocking
     """
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_administrative_by_coordinates_range_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
-        result = HouseRepository().get_administrative_by_coordinates_range_dto(
+        result = HouseRepository().get_administrative_divisions(
             dto=coordinates_dto
         )
 
@@ -121,11 +121,10 @@ def test_get_house_public_detail_when_get_house_public_detail_dto(
     """
     dto = get_house_public_detail_dto
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository"
-        ".get_house_public_detail_by_get_house_public_detail_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
     ) as mock_house_public_detail:
         mock_house_public_detail.return_value = create_real_estate_with_public_sale[0]
-        result = HouseRepository().get_house_public_detail_by_get_house_public_detail_dto(
+        result = HouseRepository().get_house_public_detail(
             dto=dto, degrees=1, is_like=True
         )
     assert result == mock_house_public_detail.return_value
@@ -140,11 +139,10 @@ def test_get_calender_info_when_get_calender_info_dto(
     """
     dto = get_calender_info_dto
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository"
-        ".get_calender_info_by_get_calender_info_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
     ) as mock_calender_info:
         mock_calender_info.return_value = create_real_estate_with_public_sale[0]
-        result = HouseRepository().get_calender_info_by_get_calender_info_dto(dto=dto)
+        result = HouseRepository().get_calender_info(dto=dto)
 
     assert result == mock_calender_info.return_value
     assert mock_calender_info.called is True

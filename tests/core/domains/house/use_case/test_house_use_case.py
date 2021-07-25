@@ -115,7 +115,7 @@ def test_bounding_use_case_when_level_is_grater_than_queryset_flag_then_call_get
         HouseRepository().get_bounding_by_coordinates_range_dto 호출
     """
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_bounding_by_coordinates_range_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_bounding"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
         result = BoundingUseCase().execute(dto=coordinates_dto)
@@ -140,7 +140,7 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
         level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value - 1,
     )
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_administrative_by_coordinates_range_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
         result = BoundingUseCase().execute(dto=lower_dto)
@@ -165,8 +165,7 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
     ) as mock_enable:
         mock_enable.return_value = True
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository"
-            ".get_house_public_detail_by_get_house_public_detail_dto"
+            "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
         ) as mock_house_public_detail:
             mock_house_public_detail.return_value = create_real_estate_with_public_sale[
                 0
@@ -197,8 +196,7 @@ def test_get_house_public_detail_use_case_when_disable_public_sale_house(
     ) as mock_disable:
         mock_disable.return_value = False
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository"
-            ".get_house_public_detail_by_get_house_public_detail_dto"
+            "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
         ) as mock_house_public_detail:
             mock_house_public_detail.return_value = create_real_estate_with_public_sale[
                 0
@@ -249,8 +247,7 @@ def test_get_calender_info_use_case_when_included_request_date(
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository"
-        ".get_calender_info_by_get_calender_info_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
     ) as mock_calender_info:
         mock_calender_info.return_value = sample_calender_info
         result = GetCalenderInfoUseCase().execute(dto=get_calender_info_dto)
@@ -267,8 +264,7 @@ def test_get_calender_info_use_case_when_no_included_request_date(
         요청 받은 년월에 속한 매물이 없으면 null 리턴
     """
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository"
-        ".get_calender_info_by_get_calender_info_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
     ) as mock_calender_info:
         mock_calender_info.return_value = None
         result = GetCalenderInfoUseCase().execute(dto=get_calender_info_dto)

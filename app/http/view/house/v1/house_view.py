@@ -4,9 +4,9 @@ from flasgger import swag_from
 from flask import request
 
 from app.http.requests.v1.house_request import (
-    GetCoordinatesRequest,
-    GetHousePublicDetailRequest,
-    GetCalenderInfoRequest,
+    GetCoordinatesRequestSchema,
+    GetHousePublicDetailRequestSchema,
+    GetCalenderInfoRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -43,34 +43,18 @@ def upsert_interest_house_view(house_id):
     )
 
 
-@api.route("/v1/houses/bounding", methods=["GET"])
+@api.route("/v1/houses/map", methods=["GET"])
 @jwt_required
 @auth_required
 @swag_from("bounding_view.yml", methods=["GET"])
 def bounding_view():
     try:
-        start_x = request.args.get("start_x")
-        start_y = request.args.get("start_y")
-        end_x = request.args.get("end_x")
-        end_y = request.args.get("end_y")
-        level = request.args.get("level")
-
-    except Exception as e:
-        return failure_response(
-            UseCaseFailureOutput(
-                type=FailureType.INVALID_REQUEST_ERROR,
-                message=f"Not enough or Wrong type Parameter, Error: {e} ",
-            ),
-            status_code=HTTPStatus.BAD_REQUEST,
-        )
-
-    try:
-        dto = GetCoordinatesRequest(
-            start_x=float(start_x),
-            start_y=float(start_y),
-            end_x=float(end_x),
-            end_y=float(end_y),
-            level=int(level),
+        dto = GetCoordinatesRequestSchema(
+            start_x=float(request.args.get("start_x")),
+            start_y=float(request.args.get("start_y")),
+            end_x=float(request.args.get("end_x")),
+            end_y=float(request.args.get("end_y")),
+            level=int(request.args.get("level")),
         ).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
@@ -92,7 +76,7 @@ def bounding_view():
 @auth_required
 @swag_from("house_public_detail_view.yml", methods=["GET"])
 def house_public_detail_view(house_id: int):
-    dto = GetHousePublicDetailRequest(
+    dto = GetHousePublicDetailRequestSchema(
         house_id=house_id, user_id=current_user.id
     ).validate_request_and_make_dto()
 
@@ -107,22 +91,8 @@ def house_public_detail_view(house_id: int):
 @swag_from("house_calender_list_view.yml", methods=["GET"])
 def house_calender_list_view():
     try:
-        year = request.args.get("year")
-        month = request.args.get("month")
-        user_id = current_user.id
-
-    except Exception as e:
-        return failure_response(
-            UseCaseFailureOutput(
-                type=FailureType.INVALID_REQUEST_ERROR,
-                message=f"Not enough or Wrong type Parameter, Error: {e} ",
-            ),
-            status_code=HTTPStatus.BAD_REQUEST,
-        )
-
-    try:
-        dto = GetCalenderInfoRequest(
-            year=year, month=month, user_id=user_id
+        dto = GetCalenderInfoRequestSchema(
+            year=request.args.get("year"), month=request.args.get("month"), user_id=current_user.id
         ).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
