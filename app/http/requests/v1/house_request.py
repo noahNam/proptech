@@ -56,9 +56,7 @@ class GetInterestHouseListRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetInterestHouseSchema(
-                user_id=self.user_id,
-            ).dict()
+            schema = GetInterestHouseSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -215,8 +213,8 @@ class GetCalenderInfoSchema(BaseModel):
     def check_year(cls, year) -> str:
         year_to_int = int(year)
         if (
-                year_to_int < CalenderYearThreshHold.MIN_YEAR.value
-                or year_to_int > CalenderYearThreshHold.MAX_YEAR.value
+            year_to_int < CalenderYearThreshHold.MIN_YEAR.value
+            or year_to_int > CalenderYearThreshHold.MAX_YEAR.value
         ):
             raise ValidationError("Out of range: year is currently support 2017 ~ 2030")
         return year

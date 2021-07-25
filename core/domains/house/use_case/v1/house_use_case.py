@@ -27,7 +27,7 @@ class HouseBaseUseCase:
 
 class UpsertInterestHouseUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: UpsertInterestHouseDto
+        self, dto: UpsertInterestHouseDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -47,7 +47,7 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
 
 class BoundingUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: CoordinatesRangeDto
+        self, dto: CoordinatesRangeDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
             <dto.level condition>
@@ -63,8 +63,8 @@ class BoundingUseCase(HouseBaseUseCase):
             )
         # dto.level range check
         if (
-                dto.level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
-                or dto.level > BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value
+            dto.level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
+            or dto.level > BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value
         ):
             return UseCaseFailureOutput(
                 type="level",
@@ -73,13 +73,9 @@ class BoundingUseCase(HouseBaseUseCase):
             )
         # dto.level condition
         if dto.level >= BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
-            bounding_entities = self._house_repo.get_bounding(
-                dto=dto
-            )
+            bounding_entities = self._house_repo.get_bounding(dto=dto)
         else:
-            bounding_entities = self._house_repo.get_administrative_divisions(
-                dto=dto
-            )
+            bounding_entities = self._house_repo.get_administrative_divisions(dto=dto)
 
         if not bounding_entities:
             return UseCaseSuccessOutput(value="null")
@@ -88,7 +84,7 @@ class BoundingUseCase(HouseBaseUseCase):
 
 class GetHousePublicDetailUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetHousePublicDetailDto
+        self, dto: GetHousePublicDetailDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not self._house_repo.is_enable_public_sale_house(dto=dto):
             return UseCaseFailureOutput(
@@ -124,11 +120,9 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
 
 class GetCalenderInfoUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetCalenderInfoDto
+        self, dto: GetCalenderInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        calender_entities = self._house_repo.get_calender_info(
-            dto=dto
-        )
+        calender_entities = self._house_repo.get_calender_info(dto=dto)
         if not calender_entities:
             return UseCaseSuccessOutput(value="null")
         return UseCaseSuccessOutput(value=calender_entities)
@@ -136,7 +130,7 @@ class GetCalenderInfoUseCase(HouseBaseUseCase):
 
 class GetInterestHouseListUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -145,8 +139,8 @@ class GetInterestHouseListUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        result: List[InterestHouseListEntity] = self._house_repo.get_interest_house_list(
-            dto=dto
-        )
+        result: List[
+            InterestHouseListEntity
+        ] = self._house_repo.get_interest_house_list(dto=dto)
 
         return UseCaseSuccessOutput(value=result)

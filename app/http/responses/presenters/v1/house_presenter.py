@@ -5,7 +5,9 @@ from core.domains.house.schema.house_schema import (
     BoundingResponseSchema,
     BoundingAdministrativeResponseSchema,
     GetHousePublicDetailResponseSchema,
-    GetCalenderInfoResponseSchema, UpsertInterestHouseResponseSchema, GetInterestHouseListResponseSchema,
+    GetCalenderInfoResponseSchema,
+    UpsertInterestHouseResponseSchema,
+    GetInterestHouseListResponseSchema,
 )
 from pydantic import ValidationError
 from app.http.responses import failure_response, success_response
