@@ -7,8 +7,10 @@ from core.domains.house.dto.house_dto import (
     GetHousePublicDetailDto,
     GetCalenderInfoDto,
 )
+from core.domains.house.entity.house_entity import InterestHouseListEntity
 from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
+from core.domains.user.dto.user_dto import GetUserDto
 
 upsert_interest_house_dto = UpsertInterestHouseDto(
     user_id=1, house_id=1, type=HouseTypeEnum.PUBLIC_SALES.value, is_like=True
@@ -72,9 +74,7 @@ def test_get_bounding_by_coordinates_range_dto(
         "core.domains.house.repository.house_repository.HouseRepository.get_bounding"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
-        result = HouseRepository().get_bounding(
-            dto=coordinates_dto
-        )
+        result = HouseRepository().get_bounding(dto=coordinates_dto)
 
     assert result == mock_get_bounding.return_value
     assert mock_get_bounding.called is True
@@ -90,9 +90,7 @@ def test_get_administrative_by_coordinates_range_dto(
         "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
-        result = HouseRepository().get_administrative_divisions(
-            dto=coordinates_dto
-        )
+        result = HouseRepository().get_administrative_divisions(dto=coordinates_dto)
 
     assert result == mock_get_bounding.return_value
     assert mock_get_bounding.called is True
@@ -146,3 +144,15 @@ def test_get_calender_info_when_get_calender_info_dto(
 
     assert result == mock_calender_info.return_value
     assert mock_calender_info.called is True
+
+
+def test_get_interest_house_list(
+    session, create_users, create_real_estate_with_public_sale
+):
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = HouseRepository().get_interest_house_list(dto=dto)
+
+    assert isinstance(result, list)
+    assert len(result) == 1
+    assert result[0].id == 1
+    assert result[0].road_address is not None

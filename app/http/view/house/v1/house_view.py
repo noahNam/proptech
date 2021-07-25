@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from flasgger import swag_from
 from flask import request
 
@@ -7,6 +5,7 @@ from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
     GetHousePublicDetailRequestSchema,
     GetCalenderInfoRequestSchema,
+    GetInterestHouseListRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -16,6 +15,7 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetHousePublicDetailPresenter,
     GetCalenderInfoPresenter,
     UpsertInterestHousePresenter,
+    GetInterestHouseListPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
@@ -23,6 +23,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
     GetCalenderInfoUseCase,
+    GetInterestHouseListUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -92,7 +93,9 @@ def house_public_detail_view(house_id: int):
 def house_calender_list_view():
     try:
         dto = GetCalenderInfoRequestSchema(
-            year=request.args.get("year"), month=request.args.get("month"), user_id=current_user.id
+            year=request.args.get("year"),
+            month=request.args.get("month"),
+            user_id=current_user.id,
         ).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
@@ -105,4 +108,18 @@ def house_calender_list_view():
         )
     return GetCalenderInfoPresenter().transform(
         GetCalenderInfoUseCase().execute(dto=dto)
+    )
+
+
+@api.route("/v1/houses/like", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_interest_house_list.yml", methods=["GET"])
+def get_interest_house_list_view():
+    dto = GetInterestHouseListRequestSchema(
+        user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return GetInterestHouseListPresenter().transform(
+        GetInterestHouseListUseCase().execute(dto=dto)
     )

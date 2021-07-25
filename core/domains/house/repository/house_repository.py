@@ -1,10 +1,11 @@
 from typing import Optional, List
 
-from sqlalchemy import and_, func, or_, exc
+from sqlalchemy import and_, func, or_, literal, String
 
-from app.extensions.database import session
-from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
+from sqlalchemy import exc
+from app.extensions.utils.log_helper import logger_
+from app.extensions.database import session
 from app.persistence.model import (
     RealEstateModel,
     PrivateSaleModel,
@@ -26,6 +27,7 @@ from core.domains.house.entity.house_entity import (
     AdministrativeDivisionEntity,
     BoundingRealEstateEntity,
     CalenderInfoEntity,
+    InterestHouseListEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -34,6 +36,7 @@ from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
     DivisionLevelEnum,
 )
+from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -102,9 +105,7 @@ class HouseRepository:
 
         return results
 
-    def get_bounding(
-        self, dto: CoordinatesRangeDto
-    ) -> Optional[list]:
+    def get_bounding(self, dto: CoordinatesRangeDto) -> Optional[list]:
         filters = list()
         filters.append(
             func.ST_Contains(
@@ -145,7 +146,10 @@ class HouseRepository:
                 RealEstateModel,
                 func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
                 func.avg(PrivateSaleDetailModel.deposit_price)
-                .filter(PrivateSaleDetailModel.trade_type == RealTradeTypeEnum.LONG_TERM_RENT.value)
+                .filter(
+                    PrivateSaleDetailModel.trade_type
+                    == RealTradeTypeEnum.LONG_TERM_RENT.value
+                )
                 .label("avg_deposit_price"),
                 func.avg(PrivateSaleDetailModel.rent_price).label("avg_rent_price"),
                 func.avg(PublicSaleDetailModel.supply_price).label("avg_supply_price"),
@@ -180,9 +184,7 @@ class HouseRepository:
             results.append(query.to_entity())
         return results
 
-    def get_administrative_divisions(
-        self, dto: CoordinatesRangeDto
-    ) -> Optional[list]:
+    def get_administrative_divisions(self, dto: CoordinatesRangeDto) -> Optional[list]:
         """
              dto.level: 6 ~ 14
              <filter condition>
@@ -220,9 +222,7 @@ class HouseRepository:
         query = session.query(AdministrativeDivisionModel).filter(*filters)
         queryset = query.all()
 
-        return self._make_bounding_administrative_entity(
-            queryset=queryset
-        )
+        return self._make_bounding_administrative_entity(queryset=queryset)
 
     def _convert_supply_area_to_pyoung_number(
         self, supply_area: Optional[float]
@@ -441,9 +441,7 @@ class HouseRepository:
 
         return result
 
-    def get_calender_info(
-        self, dto: GetCalenderInfoDto
-    ) -> Optional[list]:
+    def get_calender_info(self, dto: GetCalenderInfoDto) -> Optional[list]:
         year_month = dto.year + dto.month
         filters = list()
         filters.append(
@@ -477,6 +475,67 @@ class HouseRepository:
 
         queryset = query.all()
 
-        return self._make_calender_info_entity(
-            queryset=queryset, user_id=dto.user_id
+        return self._make_calender_info_entity(queryset=queryset, user_id=dto.user_id)
+
+    def get_interest_house_list(self, dto: GetUserDto) -> List[InterestHouseListEntity]:
+        public_sales_query = (
+            session.query(
+                InterestHouseModel.id,
+                InterestHouseModel.type,
+                PublicSaleModel.name,
+                RealEstateModel.road_address,
+                PublicSaleModel.subscription_start_date,
+                PublicSaleModel.subscription_end_date,
+            )
+            .join(
+                PublicSaleModel,
+                (InterestHouseModel.house_id == PublicSaleModel.id)
+                & (InterestHouseModel.type == HouseTypeEnum.PUBLIC_SALES.value)
+                & (InterestHouseModel.user_id == dto.user_id)
+                & (InterestHouseModel.is_like == True),
+            )
+            .join(PublicSaleModel.real_estates)
         )
+
+        private_sales_query = (
+            session.query(
+                InterestHouseModel.id,
+                InterestHouseModel.type,
+                PrivateSaleModel.name,
+                RealEstateModel.road_address,
+                literal("", String).label("subscription_start_date"),
+                literal("", String).label("subscription_end_date"),
+            )
+            .join(
+                PrivateSaleModel,
+                (InterestHouseModel.house_id == PrivateSaleModel.id)
+                & (InterestHouseModel.type == HouseTypeEnum.PRIVATE_SALES.value)
+                & (InterestHouseModel.user_id == dto.user_id)
+                & (InterestHouseModel.is_like == True),
+            )
+            .join(PrivateSaleModel.real_estates)
+        )
+
+        query = public_sales_query.union_all(private_sales_query)
+        queryset = query.all()
+
+        return self._make_intrest_house_list_entity(queryset=queryset)
+
+    def _make_intrest_house_list_entity(
+        self, queryset: Optional[List]
+    ) -> List[InterestHouseListEntity]:
+        result = list()
+
+        if queryset:
+            for query in queryset:
+                result.append(
+                    InterestHouseListEntity(
+                        id=query.id,
+                        type=query.type,
+                        name=query.name,
+                        road_address=query.road_address,
+                        subscription_start_date=query.subscription_start_date,
+                        subscription_end_date=query.subscription_end_date,
+                    )
+                )
+        return result
