@@ -408,19 +408,6 @@ class UserRepository:
             )
 
     def get_user_survey_step_and_point(self, dto: GetUserDto) -> UserEntity:
-        """
-        {
-            "data": {
-                "result":
-                    {
-                        "survey_step": 0,
-                        "point": 1000,
-                        "is_badge": true or false,
-                    }
-            },
-            "meta": null
-        }
-        """
         query = (
             session.query(UserModel)
             .options(joinedload(UserModel.user_profile))
