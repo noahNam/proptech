@@ -24,7 +24,5 @@ class DeviceTokenModel(db.Model):
 
     def to_entity(self) -> DeviceTokenEntity:
         return DeviceTokenEntity(
-            id=self.id,
-            device_id=self.device_id,
-            token=self.token,
+            id=self.id, device_id=self.device_id, token=self.token,
         )

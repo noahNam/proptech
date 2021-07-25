@@ -1,0 +1,103 @@
+openapi: "3.0.2"
+tags:
+  - House
+security:
+  - userAuth: []
+parameters:
+  - name: Authorization
+    in: header
+    required: true
+    description: User's OAuth access_token
+    schema:
+      type: string
+      example: Bearer eyJ0eXAiOiJKV1QiLC....JWT...values
+  - name: start_x
+    in: path
+    required: true
+    description: start - longitude (125.0666666 < start_x < 131.8722222, start_x > end_x)
+    schema:
+      type: float
+      example: 126.5
+  - name: start_y
+    in: path
+    required: true
+    description: start - latitude (33.1 < start_y < 38.45, start_y > end_y)
+    schema:
+      type: float
+      example: 37.7
+  - name: end_x
+    in: path
+    required: true
+    description: end - longitude (125.0666666 < end_x < 131.8722222, start_x > end_x)
+    schema:
+      type: float
+      example: 127.09
+  - name: end_y
+    in: path
+    required: true
+    description: start - latitude (33.1 < end_y < 38.45, start_y > end_y)
+    schema:
+      type: float
+      example: 37.42
+  - name: level
+    in: path
+    required: true
+    description: Naver map API zoom level ( 6 < level < 22)
+    schema:
+      type: int
+      example: 16
+responses:
+  '200 #1':
+    description: real_estate with public_sales
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/bounding_public'
+  '200 #2':
+    description: real_estate with private_sales
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/bounding_private'
+  '200 #3':
+    description: administrative_divisions
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/bounding_administrative'
+  '200 #4':
+    description: when not found result data
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/result_null'
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

@@ -11,7 +11,9 @@ from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import NotificationModel
 from core.domains.notification.dto.notification_dto import PushMessageDto
 from core.domains.notification.enum.notification_enum import (
-    NotificationBadgeTypeEnum, NotificationTopicEnum, NotificationStatusEnum,
+    NotificationBadgeTypeEnum,
+    NotificationTopicEnum,
+    NotificationStatusEnum,
 )
 
 logger = logging.getLogger(__name__)
@@ -25,10 +27,7 @@ message_dto = PushMessageDto(
     content="판교봇들마을3단지 모집공고가 게시되었습니다.",
     created_at=str(get_server_timestamp().replace(microsecond=0)),
     badge_type=NotificationBadgeTypeEnum.ALL.value,
-    data={
-        "user_id": 1,
-        "topic": NotificationTopicEnum.SUB_NEWS.value,
-    },
+    data={"user_id": 1, "topic": NotificationTopicEnum.SUB_NEWS.value,},
 )
 
 
@@ -47,7 +46,7 @@ def test_push_message_via_SNS(session):
         message=message_dict,
         is_read=False,
         is_pending=False,
-        status=NotificationStatusEnum.WAIT.value
+        status=NotificationStatusEnum.WAIT.value,
     )
     session.add(notification)
     session.commit()

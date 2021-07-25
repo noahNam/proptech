@@ -31,9 +31,14 @@ class AdministrativeDivisionModel(db.Model):
     real_rent_price = Column(Integer, nullable=False)
     real_deposit_price = Column(Integer, nullable=False)
     public_sale_price = Column(Integer, nullable=False)
-    level = Column(Enum(DivisionLevelEnum, values_callable=lambda obj: [e.value for e in obj]),
-                   nullable=False)
-    coordinates = Column(Geometry(geometry_type="POINT", srid=4326).with_variant(String, "sqlite"), nullable=True)
+    level = Column(
+        Enum(DivisionLevelEnum, values_callable=lambda obj: [e.value for e in obj]),
+        nullable=False,
+    )
+    coordinates = Column(
+        Geometry(geometry_type="POINT", srid=4326).with_variant(String, "sqlite"),
+        nullable=True,
+    )
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
@@ -52,6 +57,6 @@ class AdministrativeDivisionModel(db.Model):
             level=self.level,
             latitude=self.latitude,
             longitude=self.longitude,
-            created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
-            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S")
+            created_at=self.created_at,
+            updated_at=self.updated_at,
         )

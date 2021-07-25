@@ -2,7 +2,9 @@ import click
 from flask import current_app
 
 from app.commands.enum import TopicEnum
-from core.domains.notification.use_case.v1.notification_worker_use_case import PrePrcsNotificationUseCase
+from core.domains.notification.use_case.v1.notification_worker_use_case import (
+    PrePrcsNotificationUseCase,
+)
 
 
 def get_worker(topic: str):

@@ -5,13 +5,17 @@ from sqlalchemy import (
     String,
     Boolean,
     DateTime,
-    JSON, SmallInteger,
+    JSON,
+    SmallInteger,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.notification.entity.notification_entity import NotificationEntity, NotificationHistoryEntity
+from core.domains.notification.entity.notification_entity import (
+    NotificationEntity,
+    NotificationHistoryEntity,
+)
 from core.domains.notification.enum.notification_enum import NotificationStatusEnum
 
 
@@ -32,7 +36,10 @@ class NotificationModel(db.Model):
     is_read = Column("is_read", Boolean, nullable=False, default=False)
     is_pending = Column("is_pending", Boolean, nullable=False, default=True)
     status = Column(
-        SmallInteger, nullable=False, default=NotificationStatusEnum.WAIT.value, index=True
+        SmallInteger,
+        nullable=False,
+        default=NotificationStatusEnum.WAIT.value,
+        index=True,
     )
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
@@ -49,5 +56,5 @@ class NotificationModel(db.Model):
             is_read=self.is_read,
             is_pending=self.is_pending,
             status=self.status,
-            created_at=self.created_at
+            created_at=self.created_at,
         )

@@ -1,7 +1,8 @@
 from sqlalchemy import (
     Column,
     Integer,
-    String, SmallInteger,
+    String,
+    SmallInteger,
 )
 
 from app import db
@@ -18,8 +19,4 @@ class PointTypeModel(db.Model):
     division = Column(String(7), nullable=False)
 
     def to_entity(self) -> PointTypeEntity:
-        return PointTypeEntity(
-            id=self.id,
-            name=self.name,
-            division=self.division,
-        )
+        return PointTypeEntity(id=self.id, name=self.name, division=self.division,)

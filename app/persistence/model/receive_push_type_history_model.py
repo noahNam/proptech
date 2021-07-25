@@ -2,7 +2,9 @@ from sqlalchemy import (
     Column,
     BigInteger,
     Integer,
-    DateTime, Boolean, String,
+    DateTime,
+    Boolean,
+    String,
 )
 
 from app import db

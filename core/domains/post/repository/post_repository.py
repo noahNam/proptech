@@ -17,8 +17,7 @@ class PostRepository:
         ).scalar()
 
     def get_post_list_include_article(
-            self,
-            dto: GetPostListDto
+        self, dto: GetPostListDto
     ) -> Union[List[PostEntity], List]:
         search_filter = list()
         search_filter.append(PostModel.is_deleted == False)
@@ -29,17 +28,14 @@ class PostRepository:
             previous_post_id_filter.append(PostModel.id < dto.previous_post_id)
 
         try:
-            query = (
-                session.query(PostModel).filter(
-                    *search_filter,
-                    *previous_post_id_filter,
-                )
+            query = session.query(PostModel).filter(
+                *search_filter, *previous_post_id_filter,
             )
 
             post_list = (
                 query.order_by(PostModel.id.desc())
-                    .limit(PostLimitEnum.LIMIT.value)
-                    .all()
+                .limit(PostLimitEnum.LIMIT.value)
+                .all()
             )
 
             return [post.to_entity() for post in post_list]
@@ -50,7 +46,10 @@ class PostRepository:
     def update_read_count(self, post_id: int) -> None:
         try:
             session.query(PostModel).filter_by(id=post_id).update(
-                {"read_count": PostModel.read_count + 1, "updated_at": get_server_timestamp()}
+                {
+                    "read_count": PostModel.read_count + 1,
+                    "updated_at": get_server_timestamp(),
+                }
             )
             session.commit()
 
