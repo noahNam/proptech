@@ -23,17 +23,17 @@ class SqsMessageSender:
         )
 
     def send_message(
-            self,
-            queue_type: SqsTypeEnum = None,
-            msg: SenderDto = None,
-            logging: bool = False,
+        self,
+        queue_type: SqsTypeEnum = None,
+        msg: SenderDto = None,
+        logging: bool = False,
     ) -> bool:
         try:
             if not self.__target_q:
                 self.__target_q = (
-                        current_app.config["SQS_BASE"]
-                        + "/"
-                        + current_app.config[queue_type.value]
+                    current_app.config["SQS_BASE"]
+                    + "/"
+                    + current_app.config[queue_type.value]
                 )
                 logger.debug(
                     "[SqsMessageSender][Set] Target Queue {0}".format(self.__target_q)
@@ -44,7 +44,7 @@ class SqsMessageSender:
                 DelaySeconds=0,
                 MessageAttributes={},
                 MessageBody=msg.to_json(),
-                MessageGroupId=UserSqsTypeEnum.SEND_USER_DATA_TO_LAKE.value
+                MessageGroupId=UserSqsTypeEnum.SEND_USER_DATA_TO_LAKE.value,
             )
 
             if logging:
@@ -52,21 +52,16 @@ class SqsMessageSender:
             return True
 
         except Exception as e:
-            logger.error(
-                "[SqsMessageSender][send_message][Exception] {0}".format(e)
-            )
+            logger.error("[SqsMessageSender][send_message][Exception] {0}".format(e))
             return False
 
-    def receive_after_delete(
-            self,
-            queue_type: SqsTypeEnum = None,
-    ) -> bool:
+    def receive_after_delete(self, queue_type: SqsTypeEnum = None,) -> bool:
         while True:
             if not self.__target_q:
                 self.__target_q = (
-                        current_app.config["SQS_BASE"]
-                        + "/"
-                        + current_app.config[queue_type.value]
+                    current_app.config["SQS_BASE"]
+                    + "/"
+                    + current_app.config[queue_type.value]
                 )
                 logger.debug(
                     "[receive_after_delete] Target Queue {0}".format(self.__target_q)
@@ -74,9 +69,7 @@ class SqsMessageSender:
 
             # SQS에 큐가 비워질때까지 메세지 조회
             resp = self.__sqs.receive_message(
-                QueueUrl=self.__target_q,
-                AttributeNames=['All'],
-                MaxNumberOfMessages=10
+                QueueUrl=self.__target_q, AttributeNames=["All"], MaxNumberOfMessages=10
             )
 
             try:
@@ -85,21 +78,21 @@ class SqsMessageSender:
                 마찬가지로 return도 함수를 끝내므로 return을 사용해서 함수 중간에 빠져나오면 StopIteration 예외가 발생.
                 특히 제너레이터 안에서 return에 반환값을 지정하면 StopIteration 예외의 에러 메시지로 들어감
                 """
-                yield from resp['Messages']
+                yield from resp["Messages"]
             except KeyError:
                 # not has next
                 return False
 
             entries = [
-                {'Id': msg['MessageId'], 'ReceiveHandle': msg['ReceiveHandle']}
-                for msg in resp['Messages']
+                {"Id": msg["MessageId"], "ReceiveHandle": msg["ReceiveHandle"]}
+                for msg in resp["Messages"]
             ]
 
             resp = self.__sqs.delete_message_batch(
                 QueueUrl=self.__target_q, Entries=entries
             )
 
-            if len(resp['Successful']) != len(entries):
+            if len(resp["Successful"]) != len(entries):
                 raise RuntimeError(
                     f"Failed to delete messages: entries={entries!r} resp={resp!r}"
                 )

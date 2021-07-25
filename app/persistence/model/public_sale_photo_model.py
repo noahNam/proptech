@@ -23,10 +23,12 @@ class PublicSalePhotoModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    public_sales_id = Column(BigInteger,
-                             ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
-                             nullable=False,
-                             unique=True)
+    public_sales_id = Column(
+        BigInteger,
+        ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+    )
 
     file_name = Column(String(20), nullable=False)
     path = Column(String(150), nullable=False)
@@ -42,5 +44,5 @@ class PublicSalePhotoModel(db.Model):
             path=S3Helper.get_s3_url() + "/" + self.path,
             extension=self.extension,
             created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
-            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S")
+            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S"),
         )

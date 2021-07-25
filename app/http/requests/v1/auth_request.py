@@ -23,7 +23,7 @@ class MobileAuthSmsConfirmSchema(BaseModel):
 
 class MobileAuthSmsSendSchemeRequest:
     def __init__(
-            self, user_id, phone_number=None,
+        self, user_id, phone_number=None,
     ):
         self.user_id = user_id
         self.phone_number = phone_number
@@ -43,7 +43,7 @@ class MobileAuthSmsSendSchemeRequest:
 
 class MobileAuthSmsConfirmSchemeRequest:
     def __init__(
-            self, user_id, auth_number=None, phone_number=None,
+        self, user_id, auth_number=None, phone_number=None,
     ):
         self.user_id = user_id
         self.auth_number = auth_number

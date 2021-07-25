@@ -6,7 +6,7 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
     HousePublicDetailEntity,
-    CalenderInfoEntity
+    CalenderInfoEntity,
 )
 
 

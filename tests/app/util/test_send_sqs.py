@@ -31,20 +31,26 @@ def test_send_sqs(sqs: SqsMessageSender):
 def test_receive_sqs(sqs: SqsMessageSender):
     total = 0
     try:
-        for message in sqs.receive_after_delete(queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE):
+        for message in sqs.receive_after_delete(
+            queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE
+        ):
             test = message
-            if message['Body']:
+            if message["Body"]:
                 #### 처리 로직 -> data push to data lake ####
 
                 ##########################################
-                print("[receive_after_delete] Target Message {0}", message['Body'])
+                print("[receive_after_delete] Target Message {0}", message["Body"])
                 total += 1
     except Exception as e:
         print("SQS Fail : {}".format(e))
-        send_slack_message('Exception: {}'.format(str(e)), "[FAIL]" + SqsTypeEnum.USER_DATA_SYNC_TO_LAKE.value)
+        send_slack_message(
+            "Exception: {}".format(str(e)),
+            "[FAIL]" + SqsTypeEnum.USER_DATA_SYNC_TO_LAKE.value,
+        )
 
     dict_ = {
-        'result': True, 'total': total,
+        "result": True,
+        "total": total,
     }
     return dict_
 
@@ -54,7 +60,8 @@ def send_slack_message(message, title):
 
     text = title + " -> " + message
     slack_token = "xoxb-1811487173312-2075478573287-JtTJbgy3fAboqlwkLeas9R1o"
-    requests.post("https://slack.com/api/chat.postMessage",
-                  headers={"Authorization": "Bearer " + slack_token},
-                  data={"channel": channel, "text": text}
-                  )
+    requests.post(
+        "https://slack.com/api/chat.postMessage",
+        headers={"Authorization": "Bearer " + slack_token},
+        data={"channel": channel, "text": text},
+    )

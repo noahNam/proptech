@@ -5,11 +5,13 @@ from core.domains.house.schema.house_schema import (
     BoundingResponseSchema,
     BoundingAdministrativeResponseSchema,
     GetHousePublicDetailResponseSchema,
-    GetCalenderInfoResponseSchema
+    GetCalenderInfoResponseSchema,
 )
 from pydantic import ValidationError
 from app.http.responses import failure_response, success_response
-from core.domains.notification.schema.notification_schema import UpdateNotificationResponseSchema
+from core.domains.notification.schema.notification_schema import (
+    UpdateNotificationResponseSchema,
+)
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
@@ -23,7 +25,7 @@ class UpsertInterestHousePresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -46,7 +48,7 @@ class BoundingPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -69,7 +71,7 @@ class BoundingAdministrativePresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -92,7 +94,7 @@ class GetHousePublicDetailPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -115,7 +117,7 @@ class GetCalenderInfoPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )

@@ -1,14 +1,28 @@
 from flasgger import swag_from
 from flask import request
 
-from app.http.requests.v1.notification_request import GetNotificationRequestSchema, GetBadgeRequestSchema, \
-    UpdateNotificationRequestSchema, GetReceiveNotificationSettingRequestSchema, \
-    UpdateReceiveNotificationSettingRequestSchema
-from app.http.responses.presenters.v1.notification_presenter import GetNotificationPresenter, GetBadgePresenter, \
-    UpdateNotificationPresenter, GetReceiveNotificationSettingPresenter, UpdateReceiveNotificationSettingPresenter
+from app.http.requests.v1.notification_request import (
+    GetNotificationRequestSchema,
+    GetBadgeRequestSchema,
+    UpdateNotificationRequestSchema,
+    GetReceiveNotificationSettingRequestSchema,
+    UpdateReceiveNotificationSettingRequestSchema,
+)
+from app.http.responses.presenters.v1.notification_presenter import (
+    GetNotificationPresenter,
+    GetBadgePresenter,
+    UpdateNotificationPresenter,
+    GetReceiveNotificationSettingPresenter,
+    UpdateReceiveNotificationSettingPresenter,
+)
 from app.http.view import auth_required, api, current_user, jwt_required
-from core.domains.notification.use_case.v1.notification_use_case import GetNotificationUseCase, GetBadgeUseCase, \
-    UpdateNotificationUseCase, GetReceiveNotificationSettingUseCase, UpdateReceiveNotificationSettingUseCase
+from core.domains.notification.use_case.v1.notification_use_case import (
+    GetNotificationUseCase,
+    GetBadgeUseCase,
+    UpdateNotificationUseCase,
+    GetReceiveNotificationSettingUseCase,
+    UpdateReceiveNotificationSettingUseCase,
+)
 
 
 @api.route("/v1/notifications", methods=["GET"])
@@ -20,7 +34,9 @@ def get_notification_view():
         **request.get_json(), user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return GetNotificationPresenter().transform(GetNotificationUseCase().execute(dto=dto))
+    return GetNotificationPresenter().transform(
+        GetNotificationUseCase().execute(dto=dto)
+    )
 
 
 @api.route("/v1/notifications/badge", methods=["GET"])
@@ -44,7 +60,9 @@ def update_notification_view(notification_id):
         notification_id=notification_id, user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return UpdateNotificationPresenter().transform(UpdateNotificationUseCase().execute(dto=dto))
+    return UpdateNotificationPresenter().transform(
+        UpdateNotificationUseCase().execute(dto=dto)
+    )
 
 
 @api.route("/v1/notifications/receive", methods=["GET"])
@@ -57,7 +75,8 @@ def get_receive_notification_settings_view():
     ).validate_request()
 
     return GetReceiveNotificationSettingPresenter().transform(
-        GetReceiveNotificationSettingUseCase().execute(user_id=current_user.id))
+        GetReceiveNotificationSettingUseCase().execute(user_id=current_user.id)
+    )
 
 
 @api.route("/v1/notifications/receive", methods=["PATCH"])
@@ -69,4 +88,6 @@ def update_receive_notification_setting_view():
         **request.get_json(), user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return UpdateReceiveNotificationSettingPresenter().transform(UpdateReceiveNotificationSettingUseCase().execute(dto=dto))
+    return UpdateReceiveNotificationSettingPresenter().transform(
+        UpdateReceiveNotificationSettingUseCase().execute(dto=dto)
+    )

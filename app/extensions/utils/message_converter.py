@@ -36,4 +36,4 @@ class MessageConverter:
 
     @staticmethod
     def get_message(message: str):
-        return json.loads(message['GCM'])['data']
+        return json.loads(message["GCM"])["data"]

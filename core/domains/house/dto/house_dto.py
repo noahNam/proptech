@@ -6,6 +6,7 @@ class CoordinatesRangeDto(BaseModel):
         위도: Y (127.xxx),
         경도: X (37.xxx)
     """
+
     start_x: float
     start_y: float
     end_x: float

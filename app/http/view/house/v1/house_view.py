@@ -6,7 +6,7 @@ from flask import request
 from app.http.requests.v1.house_request import (
     GetCoordinatesRequest,
     GetHousePublicDetailRequest,
-    GetCalenderInfoRequest
+    GetCalenderInfoRequest,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -15,14 +15,14 @@ from app.http.responses.presenters.v1.house_presenter import (
     BoundingAdministrativePresenter,
     GetHousePublicDetailPresenter,
     GetCalenderInfoPresenter,
-    UpsertInterestHousePresenter
+    UpsertInterestHousePresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
 from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
-    GetCalenderInfoUseCase
+    GetCalenderInfoUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -38,7 +38,9 @@ def upsert_interest_house_view(house_id):
         house_id=house_id, user_id=current_user.id, **request.get_json()
     ).validate_request_and_make_dto()
 
-    return UpsertInterestHousePresenter().transform(UpsertInterestHouseUseCase().execute(dto=dto))
+    return UpsertInterestHousePresenter().transform(
+        UpsertInterestHouseUseCase().execute(dto=dto)
+    )
 
 
 @api.route("/v1/houses/bounding", methods=["GET"])
@@ -63,11 +65,13 @@ def bounding_view():
         )
 
     try:
-        dto = GetCoordinatesRequest(start_x=float(start_x),
-                                    start_y=float(start_y),
-                                    end_x=float(end_x),
-                                    end_y=float(end_y),
-                                    level=int(level)).validate_request_and_make_dto()
+        dto = GetCoordinatesRequest(
+            start_x=float(start_x),
+            start_y=float(start_y),
+            end_x=float(end_x),
+            end_y=float(end_y),
+            level=int(level),
+        ).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
             UseCaseFailureOutput(
@@ -77,7 +81,9 @@ def bounding_view():
         )
     if dto.level < BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
         # level 14 이하 : 행정구역 Presenter 변경
-        return BoundingAdministrativePresenter().transform(BoundingUseCase().execute(dto=dto))
+        return BoundingAdministrativePresenter().transform(
+            BoundingUseCase().execute(dto=dto)
+        )
     return BoundingPresenter().transform(BoundingUseCase().execute(dto=dto))
 
 
@@ -86,10 +92,13 @@ def bounding_view():
 @auth_required
 @swag_from("house_public_detail_view.yml", methods=["GET"])
 def house_public_detail_view(house_id: int):
-    dto = GetHousePublicDetailRequest(house_id=house_id,
-                                      user_id=current_user.id).validate_request_and_make_dto()
+    dto = GetHousePublicDetailRequest(
+        house_id=house_id, user_id=current_user.id
+    ).validate_request_and_make_dto()
 
-    return GetHousePublicDetailPresenter().transform(GetHousePublicDetailUseCase().execute(dto=dto))
+    return GetHousePublicDetailPresenter().transform(
+        GetHousePublicDetailUseCase().execute(dto=dto)
+    )
 
 
 @api.route("/v1/houses/calender", methods=["GET"])
@@ -112,14 +121,18 @@ def house_calender_list_view():
         )
 
     try:
-        dto = GetCalenderInfoRequest(year=year, month=month, user_id=user_id).validate_request_and_make_dto()
+        dto = GetCalenderInfoRequest(
+            year=year, month=month, user_id=user_id
+        ).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
                 message=f"Invalid Parameter input, "
-                        f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
-                        f"month: 1 ~ 12 required",
+                f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
+                f"month: 1 ~ 12 required",
             )
         )
-    return GetCalenderInfoPresenter().transform(GetCalenderInfoUseCase().execute(dto=dto))
+    return GetCalenderInfoPresenter().transform(
+        GetCalenderInfoUseCase().execute(dto=dto)
+    )
