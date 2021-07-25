@@ -1,0 +1,323 @@
+house_public_detail:
+  properties:
+    data:
+      type: object
+      properties:
+        houses:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 1
+            avg_supply_price:
+              type: float
+              example: 10000
+            name:
+              type: string
+              example: "래미안 원베일리"
+            jibun_address:
+              type: string
+              example: "서울특별시 서초구 반포동 1-1"
+            dong_myun:
+              type: string
+              example: "반포동"
+            is_available:
+              type: boolen
+              example: True
+            is_like:
+              type: boolen
+              example: True
+            land_number:
+              type: string
+              example: "1-1"
+            latitude:
+              type: float
+              example: 37.50145
+            longitude:
+              type: float
+              example: 126.987375
+            max_acquisition_tax:
+              type: integer
+              example: 100000
+            min_acquisition_tax:
+              type: integer
+              example: 10000
+            max_pyoung_number:
+              type: integer
+              example: 32
+            min_pyoung_number:
+              type: integer
+              example: 24
+            max_supply_area:
+              type: float
+              example: 62.6816
+            min_supply_area:
+              type: float
+              example: 44.6816
+            near_houses:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  avg_private_pyoung_number:
+                    type: float
+                    example: 21.0
+                  avg_trade_price:
+                    type: float
+                    example: 5500.0
+                  name:
+                    type: string
+                    example: "개봉동한진아파트"
+                  road_address:
+                    type: string
+                    example: "서울특별시 구로구 개봉로3길 87 개봉동한진아파트"
+                  jibun_address:
+                    type: string
+                    example: "서울특별시 구로구 개봉동 478 개봉동한진아파트"
+                  si_do:
+                    type: string
+                    example: "서울특별시"
+                  si_gun_gu:
+                    type: string
+                    example: "구로구"
+                  dong_myun:
+                    type: string
+                    example: "개봉동"
+                  ri:
+                    type: string
+                    example: "-"
+                  road_name:
+                    type: string
+                    example: "개봉로3길"
+                  road_number:
+                    type: string
+                    example: "87"
+                  is_available:
+                    type: boolen
+                    example: True
+                  land_number:
+                    type: string
+                    example: "478"
+                  latitude:
+                    type: float
+                    example: 37.484681
+                  longitude:
+                    type: float
+                    example: 126.8519377
+                  private_sales:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 15
+                      real_estate_id:
+                        type: integer
+                        example: 1
+                      building_type:
+                        type: string
+                        example: "아파트 or 오피스텔 or 연립다세대"
+                      created_at:
+                        type: string
+                        example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                      updated_at:
+                        type: string
+                        example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                      private_sale_details:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              example: 15
+                            private_area:
+                              type: float
+                              example: 46.93
+                            supply_area:
+                              type: float
+                              example: 62.6816
+                            deposit_price:
+                              type: integer
+                              example: 0
+                            rent_price:
+                              type: integer
+                              example: 0
+                            trade_price:
+                              type: integer
+                              example: 9000
+                            floor:
+                              type: integer
+                              example: 9
+                            trade_type:
+                              type: string
+                              example: "매매 or 전세 or 월세"
+                            created_at:
+                              type: string
+                              example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                            updated_at:
+                              type: string
+                              example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                            is_available:
+                              type: boolen
+                              example: True
+            public_sales:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 3
+                real_estate_id:
+                  type: integer
+                  example: 1
+                contract_start_date:
+                  type: string
+                  example: "20210709"
+                contract_end_date:
+                  type: string
+                  example: "20210714"
+                first_supply_date:
+                  type: string
+                  example: "20210701"
+                first_supply_etc_date:
+                  type: string
+                  example: "20210702"
+                second_supply_date:
+                  type: string
+                  example: "20210703"
+                second_supply_etc_date:
+                  type: string
+                  example: "20210704"
+                special_supply_date:
+                  type: string
+                  example: "20210628"
+                special_supply_etc_date:
+                  type: string
+                  example: "20210629"
+                subscription_start_date:
+                  type: string
+                  example: "20210621"
+                subscription_end_date:
+                  type: string
+                  example: "20210715"
+                housing_category:
+                  type: string
+                  example: "국민 or 민영"
+                rent_type:
+                  type: string
+                  example: "분양 or 임대"
+                trade_type:
+                  type: string
+                  example: "분양 or 사전청약"
+                region:
+                  type: string
+                  example: "서울"
+                supply_household:
+                  type: integer
+                  example: 224
+                reference_url:
+                  type: string
+                  example: "https://www.raemian.co.kr"
+                offer_notice_url:
+                  type: string
+                  example: "https://www.applyhome.co.kr/ai/aia/getAtchmnfl.do?houseManageNo=2021000401&pblancNo=2021000401&atchmnflSeqNo=479017"
+                construct_company:
+                  type: string
+                  example: "(주)삼성물산"
+                is_available:
+                  type: boolen
+                  example: True
+                min_down_payment:
+                  type: integer
+                  example: 181000000
+                max_down_payment:
+                  type: integer
+                  example: 344000000
+                down_payment_ratio:
+                  type: integer
+                  example: 20
+                move_in_year:
+                  type: integer
+                  example: 2023
+                move_in_month:
+                  type: integer
+                  example: 12
+                created_at:
+                  type: string
+                  example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                updated_at:
+                  type: string
+                  example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                public_sale_details:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 15
+                      public_sales_id:
+                        type: integer
+                        example: 3
+                      private_area:
+                        type: float
+                        example: 46.93
+                      supply_area:
+                        type: float
+                        example: 62.6816
+                      supply_price:
+                        type: integer
+                        example: 9000
+                      acquisition_tax:
+                        type: integer
+                        example: 30482100
+                      public_sale_detail_photos:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            example: 5
+                          public_sale_id:
+                            type: integer
+                            example: 3
+                          file_name:
+                            type: string
+                            example: "photo_name"
+                          path:
+                            type: string
+                            example: "https://None.s3.None.amazonaws.com/public_sale_photos/2021/07/13/2c222a5b-b115-4330-8c88-9be638b14b46.png"
+                          extension:
+                            type: string
+                            example: "png"
+                          created_at:
+                            type: string
+                            example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                          updated_at:
+                            type: string
+                            example: "Mon, 12 Jul 2021 15:00:00 GMT"
+            public_sale_photos:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 5
+                public_sale_id:
+                  type: integer
+                  example: 3
+                file_name:
+                  type: string
+                  example: "photo_name"
+                path:
+                  type: string
+                  example: "https://None.s3.None.amazonaws.com/public_sale_photos/2021/07/13/2c222a5b-b115-4330-8c88-9be638b14b46.png"
+                extension:
+                  type: string
+                  example: "png"
+                created_at:
+                  type: string
+                  example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                updated_at:
+                  type: string
+                  example: "Mon, 12 Jul 2021 15:00:00 GMT"

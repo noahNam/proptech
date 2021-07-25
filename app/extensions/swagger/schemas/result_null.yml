@@ -1,0 +1,11 @@
+result_null:
+  properties:
+    data:
+      type: object
+      properties:
+        houses:
+          type: string
+          example: "null"
+    meta:
+      type: string
+      example: null
