@@ -22,7 +22,7 @@ def upgrade():
                     sa.Column('join_date', sa.String(length=8), nullable=False),
                     sa.Column('is_active', sa.Boolean(), nullable=False),
                     sa.Column('is_out', sa.Boolean(), nullable=False),
-                    sa.Column('point', sa.Integer(), nullable=True),
+                    sa.Column('point', sa.Integer(), nullable=False),
                     sa.Column('created_at', sa.DateTime(), nullable=True),
                     sa.Column('updated_at', sa.DateTime(), nullable=True),
                     sa.PrimaryKeyConstraint('id')
