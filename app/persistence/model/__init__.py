@@ -5,6 +5,8 @@ from .device_token_model import DeviceTokenModel
 from .receive_push_type_model import ReceivePushTypeModel
 from .user_profile_model import UserProfileModel
 from .user_info_model import UserInfoModel
+from .point_type_model import PointTypeModel
+from .point_model import PointModel
 from .app_agree_terms_model import AppAgreeTermsModel
 from .avg_monthly_income_worker_model import AvgMonthlyIncomeWokrerModel
 from .sido_codes import SidoCodeModel
@@ -19,3 +21,6 @@ from .administrative_division_model import AdministrativeDivisionModel
 from .interest_house_model import InterestHouseModel
 from .post_model import PostModel
 from .article_model import ArticleModel
+from .public_sale_detail_photo_model import PublicSaleDetailPhotoModel
+from .recently_view_model import RecentlyViewModel
+from .private_sale_detail_model import PrivateSaleDetailModel

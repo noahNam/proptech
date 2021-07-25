@@ -5,7 +5,8 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, GetUserDto,
+    GetUserInfoDto,
+    GetUserDto,
 )
 from core.exceptions import InvalidRequestException
 
@@ -46,17 +47,17 @@ class GetUserInfoSchema(BaseModel):
     codes: list
 
 
+class GetUserMainSchema(BaseModel):
+    user_id: StrictInt
+
+
 class GetUserRequestSchema:
-    def __init__(
-            self, user_id
-    ):
+    def __init__(self, user_id):
         self.user_id = int(user_id) if user_id else None
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserSchema(
-                user_id=self.user_id,
-            ).dict()
+            schema = GetUserSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -67,7 +68,7 @@ class GetUserRequestSchema:
 
 class CreateUserRequestSchema:
     def __init__(
-            self, user_id, uuid, os, token,
+        self, user_id, uuid, os, token,
     ):
         self.user_id = int(user_id) if user_id else None
         self.is_required_agree_terms = False
@@ -102,7 +103,7 @@ class CreateUserRequestSchema:
 
 class CreateAppAgreeTermsRequestSchema:
     def __init__(
-            self, user_id, receive_marketing_yn,
+        self, user_id, receive_marketing_yn,
     ):
         self.user_id = int(user_id) if user_id else None
         self.private_user_info_yn = True
@@ -127,7 +128,7 @@ class CreateAppAgreeTermsRequestSchema:
 
 class UpsertUserInfoRequestSchema:
     def __init__(
-            self, user_id, codes, values,
+        self, user_id, codes, values,
     ):
         self.user_id = int(user_id) if user_id else None
         self.codes = codes
@@ -148,17 +149,32 @@ class UpsertUserInfoRequestSchema:
 
 class GetUserInfoRequestSchema:
     def __init__(
-            self, user_id, codes,
+        self, user_id, codes,
     ):
         self.user_id = int(user_id) if user_id else None
         self.codes = codes
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserInfoSchema(user_id=self.user_id, codes=self.codes, ).dict()
+            schema = GetUserInfoSchema(user_id=self.user_id, codes=self.codes,).dict()
             return GetUserInfoDto(**schema)
         except ValidationError as e:
             logger.error(
                 f"[GetUserInfoRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetUserMainRequestSchema:
+    def __init__(self, user_id):
+        self.user_id = int(user_id) if user_id else None
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetUserMainSchema(user_id=self.user_id,).dict()
+            return GetUserDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetUserMainRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
