@@ -10,6 +10,7 @@ from core.domains.house.dto.house_dto import (
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.enum.house_enum import CalenderYearThreshHold
+from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import InvalidRequestException
 
 logger = logger_.getLogger(__name__)
@@ -20,6 +21,10 @@ class UpsertInterestHouseSchema(BaseModel):
     house_id: StrictInt
     type: StrictInt
     is_like: bool
+
+
+class GetInterestHouseSchema(BaseModel):
+    user_id: StrictInt
 
 
 class UpsertInterestHouseRequestSchema:
@@ -41,6 +46,23 @@ class UpsertInterestHouseRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[UpsertInterestHouseRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetInterestHouseListRequestSchema:
+    def __init__(self, user_id):
+        self.user_id = int(user_id) if user_id else None
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetInterestHouseSchema(
+                user_id=self.user_id,
+            ).dict()
+            return GetUserDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetInterestHouseListRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 
@@ -193,8 +215,8 @@ class GetCalenderInfoSchema(BaseModel):
     def check_year(cls, year) -> str:
         year_to_int = int(year)
         if (
-            year_to_int < CalenderYearThreshHold.MIN_YEAR.value
-            or year_to_int > CalenderYearThreshHold.MAX_YEAR.value
+                year_to_int < CalenderYearThreshHold.MIN_YEAR.value
+                or year_to_int > CalenderYearThreshHold.MAX_YEAR.value
         ):
             raise ValidationError("Out of range: year is currently support 2017 ~ 2030")
         return year

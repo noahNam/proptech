@@ -1,12 +1,10 @@
-from http import HTTPStatus
-
 from flasgger import swag_from
 from flask import request
 
 from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
     GetHousePublicDetailRequestSchema,
-    GetCalenderInfoRequestSchema,
+    GetCalenderInfoRequestSchema, GetInterestHouseListRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -15,14 +13,14 @@ from app.http.responses.presenters.v1.house_presenter import (
     BoundingAdministrativePresenter,
     GetHousePublicDetailPresenter,
     GetCalenderInfoPresenter,
-    UpsertInterestHousePresenter,
+    UpsertInterestHousePresenter, GetInterestHouseListPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
 from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
-    GetCalenderInfoUseCase,
+    GetCalenderInfoUseCase, GetInterestHouseListUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -99,10 +97,22 @@ def house_calender_list_view():
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
                 message=f"Invalid Parameter input, "
-                f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
-                f"month: 1 ~ 12 required",
+                        f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
+                        f"month: 1 ~ 12 required",
             )
         )
     return GetCalenderInfoPresenter().transform(
         GetCalenderInfoUseCase().execute(dto=dto)
     )
+
+
+@api.route("/v1/houses/like", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_user_main.yml", methods=["GET"])
+def get_interest_house_list_view():
+    dto = GetInterestHouseListRequestSchema(
+        user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return GetInterestHouseListPresenter().transform(GetInterestHouseListUseCase().execute(dto=dto))

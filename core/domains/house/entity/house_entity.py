@@ -250,3 +250,12 @@ class CalenderInfoEntity(BaseModel):
     road_address: str
     jibun_address: str
     public_sale: PublicSaleCalenderEntity = None
+
+
+class InterestHouseListEntity(BaseModel):
+    id: int
+    type: int
+    name: str
+    road_address: str
+    subscription_start_date: str
+    subscription_end_date: str
