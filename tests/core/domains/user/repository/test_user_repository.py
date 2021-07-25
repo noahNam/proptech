@@ -9,7 +9,7 @@ from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto, GetUserInfoDetailDto, GetUserDto,
+    AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto, GetUserInfoDetailDto, GetUserDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
@@ -59,7 +59,7 @@ def test_get_user_repo_then_success(create_users):
     assert user.is_active == create_users[0].is_active
 
 
-def test_create_user_profiles_when_first_login_then_success(
+def test_create_user_when_first_login_then_success(
         session
 ):
     UserRepository().create_user(dto=create_user_dto)
@@ -67,6 +67,7 @@ def test_create_user_profiles_when_first_login_then_success(
     user = session.query(UserModel).first()
 
     assert user.id == create_user_dto.user_id
+    assert user.point == 0
     assert user.is_required_agree_terms == create_user_dto.is_required_agree_terms
     assert user.is_active == create_user_dto.is_active
     assert user.is_out == create_user_dto.is_out
@@ -402,3 +403,4 @@ def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_
     assert isinstance(result, UserEntity)
     assert total_amount == 0
     assert survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
+    assert result.point == 0
