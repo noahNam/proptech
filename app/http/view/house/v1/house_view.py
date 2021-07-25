@@ -109,7 +109,7 @@ def house_calender_list_view():
 @api.route("/v1/houses/like", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_user_main.yml", methods=["GET"])
+@swag_from("get_interest_house_list.yml", methods=["GET"])
 def get_interest_house_list_view():
     dto = GetInterestHouseListRequestSchema(
         user_id=current_user.id,
