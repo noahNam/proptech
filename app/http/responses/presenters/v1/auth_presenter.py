@@ -22,7 +22,7 @@ class AuthenticationPresenter:
                 UseCaseFailureOutput(
                     type=FailureType.SYSTEM_ERROR,
                     message="response schema validation error",
-                    code=HTTPStatus.INTERNAL_SERVER_ERROR
+                    code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
             )
         result = {
@@ -43,7 +43,7 @@ class AuthSmsSendPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -66,7 +66,7 @@ class AuthSmsConfirmPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )

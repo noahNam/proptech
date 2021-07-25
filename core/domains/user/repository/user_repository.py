@@ -17,10 +17,12 @@ from app.persistence.model import (
     ReceivePushTypeModel,
     PointModel,
     UserModel,
-    RecentlyViewModel
+    RecentlyViewModel,
 )
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
-from core.domains.notification.dto.notification_dto import UpdateReceiveNotificationSettingDto
+from core.domains.notification.dto.notification_dto import (
+    UpdateReceiveNotificationSettingDto,
+)
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
@@ -29,10 +31,15 @@ from core.domains.user.dto.user_dto import (
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
     GetUserInfoDetailDto,
-    GetUserDto, RecentlyViewDto,
+    GetUserDto,
+    RecentlyViewDto,
 )
-from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoEmptyEntity, UserEntity, \
-    UserInfoCodeValueEntity
+from core.domains.user.entity.user_entity import (
+    UserInfoEntity,
+    UserInfoEmptyEntity,
+    UserEntity,
+    UserInfoCodeValueEntity,
+)
 from core.domains.user.enum.user_info_enum import CodeEnum
 from core.exceptions import NotUniqueErrorException
 
@@ -88,7 +95,7 @@ class UserRepository:
 
     def create_device_token(self, dto: CreateUserDto, device_id) -> None:
         try:
-            device_token = DeviceTokenModel(device_id=device_id, token=dto.token, )
+            device_token = DeviceTokenModel(device_id=device_id, token=dto.token,)
             session.add(device_token)
             session.commit()
         except exc.IntegrityError as e:
@@ -125,7 +132,11 @@ class UserRepository:
     def update_user_mobile_auth_info(self, dto: MobileAuthConfirmSmsDto) -> None:
         try:
             session.query(DeviceModel).filter_by(user_id=dto.user_id).update(
-                {"phone_number": dto.phone_number, "is_auth": True, "updated_at": get_server_timestamp()}
+                {
+                    "phone_number": dto.phone_number,
+                    "is_auth": True,
+                    "updated_at": get_server_timestamp(),
+                }
             )
             session.commit()
         except Exception as e:
@@ -181,8 +192,8 @@ class UserRepository:
     def is_user_info(self, dto: UpsertUserInfoDto) -> Optional[UserInfoEntity]:
         return session.query(
             exists()
-                .where(UserInfoModel.user_profile_id == dto.user_profile_id)
-                .where(UserInfoModel.code == dto.code)
+            .where(UserInfoModel.user_profile_id == dto.user_profile_id)
+            .where(UserInfoModel.code == dto.code)
         ).scalar()
 
     def create_user_nickname(self, dto: UpsertUserInfoDetailDto) -> int:
@@ -205,7 +216,11 @@ class UserRepository:
     def update_user_nickname(self, dto: UpsertUserInfoDetailDto):
         try:
             session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
-                {"nickname": dto.value, "last_update_code": dto.code, "updated_at": get_server_timestamp()}
+                {
+                    "nickname": dto.value,
+                    "last_update_code": dto.code,
+                    "updated_at": get_server_timestamp(),
+                }
             )
             session.commit()
         except Exception as e:
@@ -233,16 +248,18 @@ class UserRepository:
 
     def update_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
         try:
-            user_info_id = session.query(UserInfoModel).filter_by(
-                user_profile_id=dto.user_profile_id, code=dto.code
-            ).update({"value": dto.value, "updated_at": get_server_timestamp()})
+            user_info_id = (
+                session.query(UserInfoModel)
+                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
+                .update({"value": dto.value, "updated_at": get_server_timestamp()})
+            )
             session.commit()
 
             return UserInfoEntity(
                 id=user_info_id,
                 user_profile_id=dto.user_profile_id,
                 code=dto.code,
-                user_value=dto.value
+                user_value=dto.value,
             )
         except Exception as e:
             session.rollback()
@@ -265,12 +282,12 @@ class UserRepository:
             raise Exception
 
     def get_user_info(
-            self, dto: GetUserInfoDetailDto
+        self, dto: GetUserInfoDetailDto
     ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
         user_info = (
             session.query(UserInfoModel)
-                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-                .first()
+            .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
+            .first()
         )
 
         if not user_info:
@@ -279,14 +296,16 @@ class UserRepository:
         return user_info.to_entity()
 
     def get_user_multi_data_info(
-            self, dto: GetUserInfoDto, codes: list
+        self, dto: GetUserInfoDto, codes: list
     ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
         # 복수개의 유저 결과를 리턴할 때
         user_info = (
             session.query(UserInfoModel)
-                .filter(UserInfoModel.user_profile_id == dto.user_profile_id,
-                        UserInfoModel.code.in_(codes))
-                .all()
+            .filter(
+                UserInfoModel.user_profile_id == dto.user_profile_id,
+                UserInfoModel.code.in_(codes),
+            )
+            .all()
         )
 
         if not user_info:
@@ -296,14 +315,20 @@ class UserRepository:
         for query in user_info:
             user_values.append(query.value)
 
-        return UserInfoEntity(id=user_info[0].id, user_profile_id=dto.user_profile_id, code=dto.code,
-                              user_values=user_values)
+        return UserInfoEntity(
+            id=user_info[0].id,
+            user_profile_id=dto.user_profile_id,
+            code=dto.code,
+            user_values=user_values,
+        )
 
-    def get_user_info_by_code(self, user_profile_id: int, code: int) -> Optional[UserInfoEntity]:
+    def get_user_info_by_code(
+        self, user_profile_id: int, code: int
+    ) -> Optional[UserInfoEntity]:
         user_info = (
             session.query(UserInfoModel)
-                .filter_by(user_profile_id=user_profile_id, code=code)
-                .first()
+            .filter_by(user_profile_id=user_profile_id, code=code)
+            .first()
         )
         if not user_info:
             return None
@@ -311,25 +336,30 @@ class UserRepository:
         return user_info.to_entity()
 
     def get_avg_monthly_income_workers(self) -> AvgMonthlyIncomeWokrerDto:
-        result = session.query(AvgMonthlyIncomeWokrerModel).filter_by(is_active=True).first()
+        result = (
+            session.query(AvgMonthlyIncomeWokrerModel).filter_by(is_active=True).first()
+        )
         return self._make_avg_monthly_income_worker_object(result)
 
-    def _make_avg_monthly_income_worker_object(self, result: AvgMonthlyIncomeWokrerModel) -> AvgMonthlyIncomeWokrerDto:
+    def _make_avg_monthly_income_worker_object(
+        self, result: AvgMonthlyIncomeWokrerModel
+    ) -> AvgMonthlyIncomeWokrerDto:
         return AvgMonthlyIncomeWokrerDto(
             three=result.three,
             four=result.four,
             five=result.five,
             six=result.six,
             seven=result.seven,
-            eight=result.eight
+            eight=result.eight,
         )
 
     def get_sido_codes(self, dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
         result = session.query(SidoCodeModel).all()
         return self._make_sido_codes_object(result, dto)
 
-    def _make_sido_codes_object(self, result: List[SidoCodeModel],
-                                dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
+    def _make_sido_codes_object(
+        self, result: List[SidoCodeModel], dto: GetUserInfoDetailDto
+    ) -> UserInfoCodeValueEntity:
         code_list = []
         name_list = []
 
@@ -359,11 +389,16 @@ class UserRepository:
                 f"[UserRepository][update_user_status_to_out] user_id : {user_id} error : {e}"
             )
 
-    def update_app_agree_terms_to_receive_marketing(self, dto: UpdateReceiveNotificationSettingDto) -> None:
+    def update_app_agree_terms_to_receive_marketing(
+        self, dto: UpdateReceiveNotificationSettingDto
+    ) -> None:
         try:
             session.query(AppAgreeTermsModel).filter_by(user_id=dto.user_id).update(
-                {"receive_marketing_yn": dto.is_active, "receive_marketing_date": get_server_timestamp(),
-                 "updated_at": get_server_timestamp()}
+                {
+                    "receive_marketing_yn": dto.is_active,
+                    "receive_marketing_date": get_server_timestamp(),
+                    "updated_at": get_server_timestamp(),
+                }
             )
             session.commit()
         except exc.IntegrityError as e:
@@ -387,12 +422,10 @@ class UserRepository:
         }
         """
         query = (
-            session.query(UserModel).options(
-                joinedload(UserModel.user_profile)
-            ).options(
-                joinedload(UserModel.points)
-                    .joinedload(PointModel.point_type)
-            ).filter(UserModel.id == dto.user_id)
+            session.query(UserModel)
+            .options(joinedload(UserModel.user_profile))
+            .options(joinedload(UserModel.points).joinedload(PointModel.point_type))
+            .filter(UserModel.id == dto.user_id)
         )
         user = query.first()
         return user.to_entity()

@@ -28,9 +28,9 @@ class PrivateSaleDetailModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    private_sales_id = Column(BigInteger,
-                              ForeignKey(PrivateSaleModel.id, ondelete="CASCADE"),
-                              nullable=False)
+    private_sales_id = Column(
+        BigInteger, ForeignKey(PrivateSaleModel.id, ondelete="CASCADE"), nullable=False
+    )
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
     contract_date = Column(String(8), nullable=True)
@@ -38,8 +38,10 @@ class PrivateSaleDetailModel(db.Model):
     rent_price = Column(Integer, nullable=False)
     trade_price = Column(Integer, nullable=False)
     floor = Column(SmallInteger, nullable=False)
-    trade_type = Column(Enum(RealTradeTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
-                        nullable=False)
+    trade_type = Column(
+        Enum(RealTradeTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
+        nullable=False,
+    )
     is_available = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
@@ -58,5 +60,5 @@ class PrivateSaleDetailModel(db.Model):
             trade_type=self.trade_type,
             is_available=self.is_available,
             created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
-            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S")
+            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S"),
         )

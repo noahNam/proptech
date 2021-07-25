@@ -1,9 +1,4 @@
-from sqlalchemy import (
-    Column,
-    BigInteger,
-    Integer,
-    String
-)
+from sqlalchemy import Column, BigInteger, Integer, String
 
 from app import db
 

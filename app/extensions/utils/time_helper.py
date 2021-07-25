@@ -21,4 +21,3 @@ def get_random_date_about_one_month_from_today():
     days_between_dates = time_between_dates.days
     random_number_of_days = random.randrange(days_between_dates)
     return start_date + timedelta(days=random_number_of_days)
-

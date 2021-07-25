@@ -4,14 +4,19 @@ from typing import Union
 from pydantic import ValidationError
 
 from app.http.responses import failure_response, success_response
-from core.domains.notification.schema.notification_schema import GetNotificationResponseSchema, GetBadgeResponseSchema, \
-    UpdateNotificationResponseSchema, GetReceiveNotificationSettingResponseSchema, \
-    UpdateReceiveNotificationSettingResponseSchema
+from core.domains.notification.schema.notification_schema import (
+    GetNotificationResponseSchema,
+    GetBadgeResponseSchema,
+    UpdateNotificationResponseSchema,
+    GetReceiveNotificationSettingResponseSchema,
+    UpdateReceiveNotificationSettingResponseSchema,
+)
 from core.domains.user.schema.user_schema import (
     CreateUserResponseSchema,
     CreateAppAgreeTermsResponseSchema,
     UpsertUserInfoResponseSchema,
-    GetUserInfoResponseSchema, GetUserResponseSchema,
+    GetUserInfoResponseSchema,
+    GetUserResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -26,7 +31,7 @@ class GetNotificationPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -49,7 +54,7 @@ class GetBadgePresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -72,7 +77,7 @@ class UpdateNotificationPresenter:
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -89,13 +94,15 @@ class GetReceiveNotificationSettingPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = GetReceiveNotificationSettingResponseSchema(receive_push_types=output.value)
+                schema = GetReceiveNotificationSettingResponseSchema(
+                    receive_push_types=output.value
+                )
             except ValidationError as e:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -112,13 +119,15 @@ class UpdateReceiveNotificationSettingPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = UpdateReceiveNotificationSettingResponseSchema(result=output.type)
+                schema = UpdateReceiveNotificationSettingResponseSchema(
+                    result=output.type
+                )
             except ValidationError as e:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )

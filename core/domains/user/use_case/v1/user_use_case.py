@@ -18,13 +18,18 @@ from core.domains.user.dto.user_dto import (
     CreateUserProfileImgDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, SendUserInfoToLakeDto, GetUserDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto,
+    GetUserInfoDto,
+    SendUserInfoToLakeDto,
+    GetUserDto,
+    AvgMonthlyIncomeWokrerDto,
+    UpsertUserInfoDetailDto,
     GetUserInfoDetailDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
     UserInfoCodeValueEntity,
-    UserInfoEmptyEntity, UserEntity,
+    UserInfoEmptyEntity,
+    UserEntity,
 )
 from core.domains.user.enum.user_enum import UserSqsTypeEnum
 from core.domains.user.enum.user_info_enum import (
@@ -38,7 +43,10 @@ from core.domains.user.enum.user_info_enum import (
     AssetsRealEstateEnum,
     AssetsCarEnum,
     AssetsTotalEnum,
-    SpecialCondEnum, CodeEnum, AddressCodeEnum, AddressDetailCodeEnum,
+    SpecialCondEnum,
+    CodeEnum,
+    AddressCodeEnum,
+    AddressDetailCodeEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -51,9 +59,7 @@ class UserBaseUseCase:
         self._sqs = queue_msg_sender
 
     def _send_sqs_message(self, queue_type: SqsTypeEnum, msg: SenderDto) -> bool:
-        return self._sqs.send_message(
-            queue_type=queue_type, msg=msg, logging=True
-        )
+        return self._sqs.send_message(queue_type=queue_type, msg=msg, logging=True)
 
     def _upload_user_profile_img(self, dto: CreateUserProfileImgDto) -> bool:
         """
@@ -93,7 +99,9 @@ class UserBaseUseCase:
 
 
 class GetUserUseCase(UserBaseUseCase):
-    def execute(self, dto: GetUserDto) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+    def execute(
+        self, dto: GetUserDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         user: UserEntity = self._user_repo.get_user(user_id=dto.user_id)
 
         return UseCaseSuccessOutput(value=user)
@@ -101,11 +109,13 @@ class GetUserUseCase(UserBaseUseCase):
 
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateUserDto
+        self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
             )
 
         self._user_repo.create_user(dto=dto)
@@ -137,11 +147,13 @@ class CreateUserUseCase(UserBaseUseCase):
 
 class CreateAppAgreeTermsUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateAppAgreeTermsDto
+        self, dto: CreateAppAgreeTermsDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
             )
 
         self._user_repo.create_app_agree_terms(dto=dto)
@@ -155,11 +167,13 @@ class CreateAppAgreeTermsUseCase(UserBaseUseCase):
 
 class UpsertUserInfoUseCase(UserBaseUseCase):
     def execute(
-            self, dto: UpsertUserInfoDto
+        self, dto: UpsertUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
             )
 
         user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(dto=dto)
@@ -174,21 +188,27 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                 user_id=dto.user_id,
                 user_profile_id=user_profile_id,
                 code=dto.codes[idx],
-                value=dto.values[idx] if dto.values else None
+                value=dto.values[idx] if dto.values else None,
             )
 
             if detail_dto.code == CodeEnum.NICKNAME.value:
                 # code==1000 (설문 시작 후 닉네임 생성 시) -> user_profiles 갱신
                 if not user_profile_id:
-                    user_profile_id: int = self._user_repo.create_user_nickname(dto=detail_dto)
+                    user_profile_id: int = self._user_repo.create_user_nickname(
+                        dto=detail_dto
+                    )
                 else:
                     self._user_repo.update_user_nickname(dto=detail_dto)
 
             detail_dto.user_profile_id = user_profile_id
             if not self._user_repo.is_user_info(dto=detail_dto):
-                user_info: UserInfoEntity = self._user_repo.create_user_info(dto=detail_dto)
+                user_info: UserInfoEntity = self._user_repo.create_user_info(
+                    dto=detail_dto
+                )
             else:
-                user_info: UserInfoEntity = self._user_repo.update_user_info(dto=detail_dto)
+                user_info: UserInfoEntity = self._user_repo.update_user_info(
+                    dto=detail_dto
+                )
 
             # 마지막으로 진행한 설문 단계 저장
             self._user_repo.update_last_code_to_user_info(dto=detail_dto)
@@ -196,7 +216,9 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
             # SQS Data 전송 -> Data Lake
             if user_info.user_value:
                 msg: SenderDto = self._make_sqs_send_message(dto=detail_dto)
-                self._send_sqs_message(queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg)
+                self._send_sqs_message(
+                    queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg
+                )
 
         return UseCaseSuccessOutput()
 
@@ -217,11 +239,13 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
 class GetUserInfoUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserInfoDto
+        self, dto: GetUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
             )
 
         user_profile_id: int = self._user_repo.get_user_profile_id(dto=dto)
@@ -237,7 +261,9 @@ class GetUserInfoUseCase(UserBaseUseCase):
 
             if not detail_dto.user_profile_id:
                 # nickname 생성 전 (즉, 최초 설문으로 user_profile_id가 없음)
-                user_info: UserInfoEmptyEntity = self._make_empty_user_info_entity(dto=detail_dto)
+                user_info: UserInfoEmptyEntity = self._make_empty_user_info_entity(
+                    dto=detail_dto
+                )
             else:
                 user_info: Union[
                     UserInfoEntity, UserInfoEmptyEntity
@@ -248,11 +274,15 @@ class GetUserInfoUseCase(UserBaseUseCase):
             result.append(user_info)
         return UseCaseSuccessOutput(value=result)
 
-    def _make_empty_user_info_entity(self, dto: GetUserInfoDetailDto) -> UserInfoEmptyEntity:
+    def _make_empty_user_info_entity(
+        self, dto: GetUserInfoDetailDto
+    ) -> UserInfoEmptyEntity:
         return UserInfoEmptyEntity(code=dto.code)
 
     def _bind_detail_code_values(
-            self, user_info: Union[UserInfoEntity, UserInfoEmptyEntity], dto: GetUserInfoDetailDto
+        self,
+        user_info: Union[UserInfoEntity, UserInfoEmptyEntity],
+        dto: GetUserInfoDetailDto,
     ):
         bind_detail_code_dict = {
             "1002": AddressCodeEnum,
@@ -276,19 +306,24 @@ class GetUserInfoUseCase(UserBaseUseCase):
             return
 
         if bind_code == AddressCodeEnum or bind_code == AddressDetailCodeEnum:
-            user_info_code_value_entity: UserInfoCodeValueEntity = self._user_repo.get_sido_codes(dto=dto)
+            user_info_code_value_entity: UserInfoCodeValueEntity = self._user_repo.get_sido_codes(
+                dto=dto
+            )
             user_info.code_values = user_info_code_value_entity
 
         elif bind_code == MonthlyIncomeEnum:
             # 외벌이, 맞벌이 확인
             # 외벌이 -> 1,3,4 / 맞벌이 -> 2
-            result1: UserInfoEntity = UserRepository().get_user_info_by_code(user_profile_id=dto.user_profile_id,
-                                                                             code=CodeEnum.IS_MARRIED.value)
+            result1: UserInfoEntity = UserRepository().get_user_info_by_code(
+                user_profile_id=dto.user_profile_id, code=CodeEnum.IS_MARRIED.value
+            )
 
             # 부양가족 수
             # 3인 이하->1,2,3,9 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
-            result2: UserInfoEntity = UserRepository().get_user_info_by_code(user_profile_id=dto.user_profile_id,
-                                                                             code=CodeEnum.NUMBER_DEPENDENTS.value)
+            result2: UserInfoEntity = UserRepository().get_user_info_by_code(
+                user_profile_id=dto.user_profile_id,
+                code=CodeEnum.NUMBER_DEPENDENTS.value,
+            )
 
             # 부양가족별 basic 소득
             income_result: AvgMonthlyIncomeWokrerDto = UserRepository().get_avg_monthly_income_workers()
@@ -331,11 +366,13 @@ class GetUserInfoUseCase(UserBaseUseCase):
 
 class UserOutUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
             )
 
         self._user_repo.update_user_status_to_out(user_id=dto.user_id)
@@ -345,11 +382,13 @@ class UserOutUseCase(UserBaseUseCase):
 
 class GetUserMainUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
             )
 
         # survey_step(설문 단계) + point 조회
@@ -362,7 +401,9 @@ class GetUserMainUseCase(UserBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _make_result_object(self, user: UserEntity, is_badge: bool):
-        return dict(survey_step=user.survey_step, point=user.total_amount, is_badge=is_badge)
+        return dict(
+            survey_step=user.survey_step, point=user.total_amount, is_badge=is_badge
+        )
 
     def _get_badge(self, dto: GetUserDto) -> bool:
         dto = GetBadgeDto(user_id=dto.user_id)

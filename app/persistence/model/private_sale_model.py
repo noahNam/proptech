@@ -25,25 +25,33 @@ class PrivateSaleModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    real_estate_id = Column(BigInteger,
-                            ForeignKey(RealEstateModel.id, ondelete="CASCADE"),
-                            nullable=False)
+    real_estate_id = Column(
+        BigInteger, ForeignKey(RealEstateModel.id, ondelete="CASCADE"), nullable=False
+    )
     name = Column(String(50), nullable=True)
-    building_type = Column(Enum(BuildTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
-                           nullable=False)
+    building_type = Column(
+        Enum(BuildTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
+        nullable=False,
+    )
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    private_sale_details = relationship("PrivateSaleDetailModel",
-                                        backref=backref("private_sales", cascade="all, delete"))
+    private_sale_details = relationship(
+        "PrivateSaleDetailModel",
+        backref=backref("private_sales", cascade="all, delete"),
+    )
 
     def to_entity(self) -> PrivateSaleEntity:
         return PrivateSaleEntity(
             id=self.id,
             real_estate_id=self.real_estate_id,
             building_type=self.building_type,
-            private_sale_details=[private_sale_details.to_entity() for private_sale_details in
-                                  self.private_sale_details] if self.private_sale_details else None,
+            private_sale_details=[
+                private_sale_details.to_entity()
+                for private_sale_details in self.private_sale_details
+            ]
+            if self.private_sale_details
+            else None,
             created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
-            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S")
+            updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S"),
         )

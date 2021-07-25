@@ -5,7 +5,10 @@ from datetime import datetime
 import factory
 from faker import Factory as FakerFactory
 
-from app.extensions.utils.time_helper import get_server_timestamp, get_random_date_about_one_month_from_today
+from app.extensions.utils.time_helper import (
+    get_server_timestamp,
+    get_random_date_about_one_month_from_today,
+)
 from app.persistence.model import (
     DeviceModel,
     DeviceTokenModel,
@@ -29,15 +32,30 @@ from app.persistence.model import (
     PublicSaleDetailPhotoModel,
     PublicSaleDetailModel,
     PublicSalePhotoModel,
-    AdministrativeDivisionModel
+    AdministrativeDivisionModel,
 )
+
 # factory에 사용해야 하는 Model을 가져온다
-from core.domains.house.enum.house_enum import HouseTypeEnum, RealTradeTypeEnum, BuildTypeEnum, HousingCategoryEnum, \
-    RentTypeEnum, PreSaleTypeEnum, DivisionLevelEnum
-from core.domains.notification.enum.notification_enum import NotificationTopicEnum, NotificationBadgeTypeEnum, \
-    NotificationStatusEnum
+from core.domains.house.enum.house_enum import (
+    HouseTypeEnum,
+    RealTradeTypeEnum,
+    BuildTypeEnum,
+    HousingCategoryEnum,
+    RentTypeEnum,
+    PreSaleTypeEnum,
+    DivisionLevelEnum,
+)
+from core.domains.notification.enum.notification_enum import (
+    NotificationTopicEnum,
+    NotificationBadgeTypeEnum,
+    NotificationStatusEnum,
+)
 from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
-from core.domains.user.enum.user_enum import UserPointTypeDivisionEnum, UserPointCreatedByEnum, UserPointSignEnum
+from core.domains.user.enum.user_enum import (
+    UserPointTypeDivisionEnum,
+    UserPointCreatedByEnum,
+    UserPointSignEnum,
+)
 
 faker = FakerFactory.create(locale="ko_KR")
 
@@ -271,8 +289,10 @@ class PublicSaleDetailPhotoFactory(BaseFactory):
 
     public_sale_details_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
-    path = "https://sample.s3.sample.amazonaws.com" \
-           "/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
+    path = (
+        "https://sample.s3.sample.amazonaws.com"
+        "/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
+    )
     extension = "jpeg"
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
@@ -300,8 +320,10 @@ class PublicSalePhotoFactory(BaseFactory):
 
     public_sales_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
-    path = "https://sample.s3.sample.amazonaws.com" \
-           "/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
+    path = (
+        "https://sample.s3.sample.amazonaws.com"
+        "/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
+    )
     extension = "jpeg"
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
@@ -321,16 +343,30 @@ class PublicSaleFactory(BaseFactory):
     supply_household = random.randint(100, 500)
     is_available = True
     offer_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
-    subscription_start_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
-    subscription_end_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
-    special_supply_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
-    special_supply_etc_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
+    subscription_start_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    subscription_end_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    special_supply_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    special_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
     first_supply_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
-    first_supply_etc_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
+    first_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
     second_supply_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
-    second_supply_etc_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
+    second_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
     notice_winner_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
-    contract_start_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
+    contract_start_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
     contract_end_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
     move_in_year = random.randint(2023, 2025)
     move_in_month = random.randint(1, 12)

@@ -6,15 +6,24 @@ from sqlalchemy import (
     DateTime,
     Boolean,
     Enum,
-    String, SmallInteger,
+    String,
+    SmallInteger,
 )
 from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
-from core.domains.house.entity.house_entity import PublicSaleEntity, PublicSalePushEntity, PublicSaleCalenderEntity
-from core.domains.house.enum.house_enum import HousingCategoryEnum, RentTypeEnum, PreSaleTypeEnum
+from core.domains.house.entity.house_entity import (
+    PublicSaleEntity,
+    PublicSalePushEntity,
+    PublicSaleCalenderEntity,
+)
+from core.domains.house.enum.house_enum import (
+    HousingCategoryEnum,
+    RentTypeEnum,
+    PreSaleTypeEnum,
+)
 
 
 class PublicSaleModel(db.Model):
@@ -26,16 +35,23 @@ class PublicSaleModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    real_estate_id = Column(BigInteger,
-                            ForeignKey(RealEstateModel.id, ondelete="CASCADE"),
-                            nullable=False)
+    real_estate_id = Column(
+        BigInteger, ForeignKey(RealEstateModel.id, ondelete="CASCADE"), nullable=False
+    )
     name = Column(String(50), nullable=False)
     region = Column(String(20), nullable=False)
-    housing_category = Column(Enum(HousingCategoryEnum, values_callable=lambda obj: [e.value for e in obj]),
-                              nullable=False)
-    rent_type = Column(Enum(RentTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
-                       nullable=False)
-    trade_type = Column(Enum(PreSaleTypeEnum, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
+    housing_category = Column(
+        Enum(HousingCategoryEnum, values_callable=lambda obj: [e.value for e in obj]),
+        nullable=False,
+    )
+    rent_type = Column(
+        Enum(RentTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
+        nullable=False,
+    )
+    trade_type = Column(
+        Enum(PreSaleTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
+        nullable=False,
+    )
     construct_company = Column(String(30), nullable=True)
     supply_household = Column(Integer, nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
@@ -62,12 +78,12 @@ class PublicSaleModel(db.Model):
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
     # 1:1 relationship
-    public_sale_photos = relationship("PublicSalePhotoModel",
-                                      backref=backref("public_sales"),
-                                      uselist=False)
-    public_sale_details = relationship("PublicSaleDetailModel",
-                                       backref=backref("public_sales",
-                                                       cascade="all, delete"))
+    public_sale_photos = relationship(
+        "PublicSalePhotoModel", backref=backref("public_sales"), uselist=False
+    )
+    public_sale_details = relationship(
+        "PublicSaleDetailModel", backref=backref("public_sales", cascade="all, delete")
+    )
 
     def to_entity(self) -> PublicSaleEntity:
         return PublicSaleEntity(
@@ -102,17 +118,20 @@ class PublicSaleModel(db.Model):
             offer_notice_url=self.offer_notice_url,
             created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
             updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S"),
-            public_sale_photos=self.public_sale_photos.to_entity() if self.public_sale_photos else None,
-            public_sale_details=[public_sale_detail.to_entity() for public_sale_detail in
-                                 self.public_sale_details] if self.public_sale_details else None
+            public_sale_photos=self.public_sale_photos.to_entity()
+            if self.public_sale_photos
+            else None,
+            public_sale_details=[
+                public_sale_detail.to_entity()
+                for public_sale_detail in self.public_sale_details
+            ]
+            if self.public_sale_details
+            else None,
         )
 
     def to_push_entity(self, message_type: str) -> PublicSalePushEntity:
         return PublicSalePushEntity(
-            id=self.id,
-            name=self.name,
-            region=self.region,
-            message_type=message_type,
+            id=self.id, name=self.name, region=self.region, message_type=message_type,
         )
 
     def to_calender_entity(self) -> PublicSaleCalenderEntity:

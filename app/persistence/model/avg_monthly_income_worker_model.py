@@ -2,7 +2,8 @@ from sqlalchemy import (
     Column,
     BigInteger,
     Integer,
-    String, Boolean,
+    String,
+    Boolean,
 )
 
 from app import db

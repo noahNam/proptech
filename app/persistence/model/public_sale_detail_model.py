@@ -22,9 +22,9 @@ class PublicSaleDetailModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    public_sales_id = Column(BigInteger,
-                             ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
-                             nullable=False)
+    public_sales_id = Column(
+        BigInteger, ForeignKey(PublicSaleModel.id, ondelete="CASCADE"), nullable=False
+    )
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
     supply_price = Column(Integer, nullable=False)
@@ -32,9 +32,11 @@ class PublicSaleDetailModel(db.Model):
     area_type = Column(String(5), nullable=False)
 
     # 1:1 relationship
-    public_sale_detail_photos = relationship("PublicSaleDetailPhotoModel",
-                                             backref=backref("public_sale_details"),
-                                             uselist=False)
+    public_sale_detail_photos = relationship(
+        "PublicSaleDetailPhotoModel",
+        backref=backref("public_sale_details"),
+        uselist=False,
+    )
 
     def to_entity(self) -> PublicSaleDetailEntity:
         return PublicSaleDetailEntity(
@@ -45,5 +47,7 @@ class PublicSaleDetailModel(db.Model):
             supply_price=self.supply_price,
             acquisition_tax=self.acquisition_tax,
             area_type=self.area_type,
-            public_sale_detail_photos=self.public_sale_detail_photos.to_entity() if self.public_sale_detail_photos else None
+            public_sale_detail_photos=self.public_sale_detail_photos.to_entity()
+            if self.public_sale_detail_photos
+            else None,
         )

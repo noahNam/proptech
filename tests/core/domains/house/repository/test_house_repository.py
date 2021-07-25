@@ -1,24 +1,21 @@
 from unittest.mock import patch
 
 from app.persistence.model import InterestHouseModel
-from core.domains.house.dto.house_dto import UpsertInterestHouseDto, CoordinatesRangeDto, GetHousePublicDetailDto, \
-    GetCalenderInfoDto
+from core.domains.house.dto.house_dto import (
+    UpsertInterestHouseDto,
+    CoordinatesRangeDto,
+    GetHousePublicDetailDto,
+    GetCalenderInfoDto,
+)
 from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
 
 upsert_interest_house_dto = UpsertInterestHouseDto(
-    user_id=1,
-    house_id=1,
-    type=HouseTypeEnum.PUBLIC_SALES.value,
-    is_like=True
+    user_id=1, house_id=1, type=HouseTypeEnum.PUBLIC_SALES.value, is_like=True
 )
 
 coordinates_dto = CoordinatesRangeDto(
-    start_x=126.5,
-    start_y=37.7,
-    end_x=127.9,
-    end_y=37.42,
-    level=15
+    start_x=126.5, start_y=37.7, end_x=127.9, end_y=37.42, level=15
 )
 
 get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)
@@ -42,7 +39,9 @@ def test_create_like_house_repo_when_like_public_sales_then_success(session):
     assert result.type == upsert_interest_house_dto.type
 
 
-def test_update_is_like_house_repo_when_unlike_public_sales_then_success(session, interest_house_factory):
+def test_update_is_like_house_repo_when_unlike_public_sales_then_success(
+    session, interest_house_factory
+):
     interest_house = interest_house_factory.build()
     session.add(interest_house)
     session.commit()
@@ -63,29 +62,37 @@ def test_update_is_like_house_repo_when_unlike_public_sales_then_success(session
     assert result.type == upsert_interest_house_dto.type
 
 
-def test_get_bounding_by_coordinates_range_dto(session, create_real_estate_with_bounding):
+def test_get_bounding_by_coordinates_range_dto(
+    session, create_real_estate_with_bounding
+):
     """
         get_bounding_by_coordinates_range_dto -> return mocking
     """
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_bounding_by_coordinates_range_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_bounding_by_coordinates_range_dto"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
-        result = HouseRepository().get_bounding_by_coordinates_range_dto(dto=coordinates_dto)
+        result = HouseRepository().get_bounding_by_coordinates_range_dto(
+            dto=coordinates_dto
+        )
 
     assert result == mock_get_bounding.return_value
     assert mock_get_bounding.called is True
 
 
-def test_get_administrative_by_coordinates_range_dto(session, create_real_estate_with_bounding):
+def test_get_administrative_by_coordinates_range_dto(
+    session, create_real_estate_with_bounding
+):
     """
         get_administrative_by_coordinates_range_dto -> return mocking
     """
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_administrative_by_coordinates_range_dto"
+        "core.domains.house.repository.house_repository.HouseRepository.get_administrative_by_coordinates_range_dto"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
-        result = HouseRepository().get_administrative_by_coordinates_range_dto(dto=coordinates_dto)
+        result = HouseRepository().get_administrative_by_coordinates_range_dto(
+            dto=coordinates_dto
+        )
 
     assert result == mock_get_bounding.return_value
     assert mock_get_bounding.called is True
@@ -106,14 +113,16 @@ def test_is_user_liked_house(session, create_interest_house):
     assert result is True
 
 
-def test_get_house_public_detail_when_get_house_public_detail_dto(session, create_real_estate_with_public_sale):
+def test_get_house_public_detail_when_get_house_public_detail_dto(
+    session, create_real_estate_with_public_sale
+):
     """
         get_house_public_detail_by_get_house_public_detail_dto -> return mocking
     """
     dto = get_house_public_detail_dto
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository"
-            ".get_house_public_detail_by_get_house_public_detail_dto"
+        "core.domains.house.repository.house_repository.HouseRepository"
+        ".get_house_public_detail_by_get_house_public_detail_dto"
     ) as mock_house_public_detail:
         mock_house_public_detail.return_value = create_real_estate_with_public_sale[0]
         result = HouseRepository().get_house_public_detail_by_get_house_public_detail_dto(
@@ -123,14 +132,16 @@ def test_get_house_public_detail_when_get_house_public_detail_dto(session, creat
     assert mock_house_public_detail.called is True
 
 
-def test_get_calender_info_when_get_calender_info_dto(session, create_real_estate_with_public_sale):
+def test_get_calender_info_when_get_calender_info_dto(
+    session, create_real_estate_with_public_sale
+):
     """
         get_calender_info_by_get_calender_info_dto -> return mocking
     """
     dto = get_calender_info_dto
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository"
-            ".get_calender_info_by_get_calender_info_dto"
+        "core.domains.house.repository.house_repository.HouseRepository"
+        ".get_calender_info_by_get_calender_info_dto"
     ) as mock_calender_info:
         mock_calender_info.return_value = create_real_estate_with_public_sale[0]
         result = HouseRepository().get_calender_info_by_get_calender_info_dto(dto=dto)

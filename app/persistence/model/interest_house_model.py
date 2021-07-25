@@ -3,7 +3,10 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     Boolean,
-    DateTime, SmallInteger, UniqueConstraint, ForeignKey,
+    DateTime,
+    SmallInteger,
+    UniqueConstraint,
+    ForeignKey,
 )
 from sqlalchemy.orm import relationship
 
@@ -15,9 +18,7 @@ from core.domains.house.entity.house_entity import InterestHouseEntity
 
 class InterestHouseModel(db.Model):
     __tablename__ = "interest_houses"
-    __table_args__ = (
-        UniqueConstraint('user_id', 'house_id', 'type'),
-    )
+    __table_args__ = (UniqueConstraint("user_id", "house_id", "type"),)
 
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
