@@ -405,7 +405,7 @@ def test_get_interest_house_list_view_when_like_one_public_sale_then_return_resu
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert len(data["houses"]) == 1
-    assert data["houses"][0]["id"] == 1
+    assert data["houses"][0]["house_id"] == 1
     assert data["houses"][0]["type"] == HouseTypeEnum.PUBLIC_SALES.value
 
 
