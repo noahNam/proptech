@@ -4,7 +4,8 @@ from sqlalchemy import (
     DateTime,
     SmallInteger,
     BigInteger,
-    ForeignKey, Unicode,
+    ForeignKey,
+    Unicode,
 )
 
 from app import db

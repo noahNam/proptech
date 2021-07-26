@@ -5,6 +5,7 @@ class NotificationStatusEnum(Enum):
     """
         notifications.status value
     """
+
     WAIT = 0
     SUCCESS = 1
     FAILURE = 2
@@ -14,6 +15,7 @@ class NotificationBadgeTypeEnum(Enum):
     """
         notifications.badge_type value
     """
+
     ALL = "all"
     IN = "in"
     OUT = "out"
@@ -37,6 +39,7 @@ class NotificationPushTypeEnum(Enum):
                2. 추후 Push 고도화 시 코드레벨에서도 필요할 듯 하여 남겨둠.
                3. AWS SNS Topic Level로 사용중
     """
+
     OFFICIAL = "official"
     PRIVATE = "private"
     MARKETING = "marketing"
@@ -52,6 +55,7 @@ class NotificationTopicEnum(Enum):
 
         사용처 : Push에 직접적으로 실리는 Topic
     """
+
     OFFICIAL = "apt001"
     SUB_NEWS = "apt002"
     SUB_SCHEDULE = "apt003"
@@ -64,5 +68,6 @@ class NotificationHistoryCategoryEnum(Enum):
         OFFICIAL = NotificationTopicEnum.OFFICIAL
         MY = NotificationTopicEnum.SUB_NEWS, NotificationTopicEnum.SUB_SCHEDULE
     """
+
     OFFICIAL = "official"
     MY = "my"

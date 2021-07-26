@@ -9,6 +9,12 @@ class GetUserBaseSchema(BaseModel):
     is_out: bool
 
 
+class GetUserMainBaseSchema(BaseModel):
+    survey_step: int
+    point: int
+    is_badge: bool
+
+
 class GetUserResponseSchema(BaseModel):
     user: GetUserBaseSchema
 
@@ -31,3 +37,7 @@ class GetUserInfoResponseSchema(BaseModel):
 
 class PatchUserOutResponseSchema(BaseModel):
     result: StrictStr
+
+
+class GetUserMainResponseSchema(BaseModel):
+    result: GetUserMainBaseSchema
