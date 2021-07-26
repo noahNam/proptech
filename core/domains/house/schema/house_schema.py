@@ -19,6 +19,13 @@ class GetInterestHouseListBaseSchema(BaseModel):
     subscription_end_date: str
 
 
+class GetRecentViewListBaseSchema(BaseModel):
+    house_id: int
+    type: int
+    name: str
+    image_path: str
+
+
 class BoundingResponseSchema(BaseModel):
     houses: Union[List[BoundingRealEstateEntity], str]
 
@@ -41,3 +48,7 @@ class UpsertInterestHouseResponseSchema(BaseModel):
 
 class GetInterestHouseListResponseSchema(BaseModel):
     houses: List[GetInterestHouseListBaseSchema]
+
+
+class GetRecentViewListResponseSchema(BaseModel):
+    houses: List[GetRecentViewListBaseSchema]
