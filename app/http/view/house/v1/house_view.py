@@ -5,7 +5,8 @@ from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
     GetHousePublicDetailRequestSchema,
     GetCalenderInfoRequestSchema,
-    GetInterestHouseListRequestSchema, GetRecentViewListRequestSchema,
+    GetInterestHouseListRequestSchema,
+    GetRecentViewListRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -15,7 +16,8 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetHousePublicDetailPresenter,
     GetCalenderInfoPresenter,
     UpsertInterestHousePresenter,
-    GetInterestHouseListPresenter, GetRecentViewListPresenter,
+    GetInterestHouseListPresenter,
+    GetRecentViewListPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
@@ -23,7 +25,8 @@ from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
     GetCalenderInfoUseCase,
-    GetInterestHouseListUseCase, GetRecentViewListUseCase,
+    GetInterestHouseListUseCase,
+    GetRecentViewListUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
