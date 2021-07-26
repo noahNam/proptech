@@ -11,7 +11,7 @@ from core.domains.house.dto.house_dto import (
 )
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
-from core.domains.house.entity.house_entity import InterestHouseListEntity
+from core.domains.house.entity.house_entity import InterestHouseListEntity, GetRecentViewListEntity
 from core.domains.house.enum.house_enum import BoundingLevelEnum, HouseTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import RecentlyViewDto, GetUserDto
@@ -157,6 +157,6 @@ class GetRecentViewListUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        # todo. 최근 본 목록 조회
+        result: List[GetRecentViewListEntity] = self._house_repo.get_recent_view_list(dto=dto)
 
-        return UseCaseSuccessOutput()
+        return UseCaseSuccessOutput(value=result)
