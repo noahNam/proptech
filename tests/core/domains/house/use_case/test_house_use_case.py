@@ -285,7 +285,7 @@ def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
     assert len(result.value) == 1
-    assert result.value[0].id == 1
+    assert result.value[0].house_id == 1
 
 
 def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_zero(

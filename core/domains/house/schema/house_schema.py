@@ -11,7 +11,7 @@ from core.domains.house.entity.house_entity import (
 
 
 class GetInterestHouseListBaseSchema(BaseModel):
-    id: int
+    house_id: int
     type: int
     name: str
     road_address: str

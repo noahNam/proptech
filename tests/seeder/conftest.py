@@ -73,6 +73,7 @@ def create_users(session, user_factory):
             receive_push_type=True,
             user_profile=True,
             interest_houses=True,
+            recently_view=True,
             point=False,
         )
         users.append(user)
