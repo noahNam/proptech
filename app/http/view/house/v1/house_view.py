@@ -5,7 +5,7 @@ from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
     GetHousePublicDetailRequestSchema,
     GetCalenderInfoRequestSchema,
-    GetInterestHouseListRequestSchema,
+    GetInterestHouseListRequestSchema, GetRecentViewListRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -15,7 +15,7 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetHousePublicDetailPresenter,
     GetCalenderInfoPresenter,
     UpsertInterestHousePresenter,
-    GetInterestHouseListPresenter,
+    GetInterestHouseListPresenter, GetRecentViewListPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
@@ -23,7 +23,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
     GetCalenderInfoUseCase,
-    GetInterestHouseListUseCase,
+    GetInterestHouseListUseCase, GetRecentViewListUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -122,4 +122,18 @@ def get_interest_house_list_view():
 
     return GetInterestHouseListPresenter().transform(
         GetInterestHouseListUseCase().execute(dto=dto)
+    )
+
+
+@api.route("/v1/houses/recent", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_interest_house_list.yml", methods=["GET"])
+def get_recent_view_list_view():
+    dto = GetRecentViewListRequestSchema(
+        user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return GetRecentViewListPresenter().transform(
+        GetRecentViewListUseCase().execute(dto=dto)
     )
