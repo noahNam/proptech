@@ -146,7 +146,7 @@ def test_get_calender_info_when_get_calender_info_dto(
     assert mock_calender_info.called is True
 
 
-def test_get_interest_house_list(
+def test_get_interest_house_list_then_entity_result(
     session, create_users, create_real_estate_with_public_sale
 ):
     dto = GetUserDto(user_id=create_users[0].id)
@@ -154,5 +154,23 @@ def test_get_interest_house_list(
 
     assert isinstance(result, list)
     assert len(result) == 1
-    assert result[0].id == 1
+    assert result[0].house_id == 1
     assert result[0].road_address is not None
+
+
+def test_get_recent_view_list_then_entity_result(
+    session,
+    create_users,
+    create_real_estate_with_public_sale,
+    public_sale_photo_factory,
+):
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    session.add(public_sale_photo)
+    session.commit()
+
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = HouseRepository().get_recent_view_list(dto=dto)
+
+    assert isinstance(result, list)
+    assert len(result) == 1
+    assert result[0].image_path == public_sale_photo_factory.path

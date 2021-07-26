@@ -18,6 +18,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetHousePublicDetailUseCase,
     GetCalenderInfoUseCase,
     GetInterestHouseListUseCase,
+    GetRecentViewListUseCase,
 )
 from core.domains.user.dto.user_dto import GetUserDto
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -285,7 +286,7 @@ def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
     assert len(result.value) == 1
-    assert result.value[0].id == 1
+    assert result.value[0].house_id == 1
 
 
 def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_zero(
@@ -297,3 +298,22 @@ def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
     assert len(result.value) == 0
+
+
+def test_get_recent_view_list_use_case_when_watch_recently_view_then_result_one(
+    session,
+    create_users,
+    create_real_estate_with_public_sale,
+    public_sale_photo_factory,
+):
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    session.add(public_sale_photo)
+    session.commit()
+
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = GetRecentViewListUseCase().execute(dto=dto)
+
+    assert isinstance(result, UseCaseSuccessOutput)
+    assert isinstance(result.value, list)
+    assert len(result.value) == 1
+    assert result.value[0].image_path == public_sale_photo.path

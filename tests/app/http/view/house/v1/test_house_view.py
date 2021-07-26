@@ -405,7 +405,7 @@ def test_get_interest_house_list_view_when_like_one_public_sale_then_return_resu
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert len(data["houses"]) == 1
-    assert data["houses"][0]["id"] == 1
+    assert data["houses"][0]["house_id"] == 1
     assert data["houses"][0]["type"] == HouseTypeEnum.PUBLIC_SALES.value
 
 
@@ -427,3 +427,35 @@ def test_get_interest_house_list_view_when_like_nothing_then_return_no_result(
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert len(data["houses"]) == 0
+
+
+def test_get_recent_view_list_use_case_when_watch_recently_view_then_result_one(
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    create_real_estate_with_public_sale,
+    public_sale_photo_factory,
+):
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    session.add(public_sale_photo)
+    session.commit()
+
+    authorization = make_authorization(user_id=create_users[0].id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_recent_view_list_view"), headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert len(data["houses"]) == 1
+    assert data["houses"][0]["image_path"] == public_sale_photo.path

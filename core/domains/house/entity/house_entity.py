@@ -253,9 +253,16 @@ class CalenderInfoEntity(BaseModel):
 
 
 class InterestHouseListEntity(BaseModel):
-    id: int
+    house_id: int
     type: int
     name: str
     road_address: str
     subscription_start_date: str
     subscription_end_date: str
+
+
+class GetRecentViewListEntity(BaseModel):
+    house_id: int
+    type: int
+    name: str
+    image_path: Optional[str]
