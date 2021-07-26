@@ -479,7 +479,8 @@ class HouseRepository:
 
     def get_interest_house_list(self, dto: GetUserDto) -> List[InterestHouseListEntity]:
         public_sales_query = (
-            session.query(
+            session.query(InterestHouseModel)
+            .with_entities(
                 InterestHouseModel.id,
                 InterestHouseModel.type,
                 PublicSaleModel.name,
@@ -498,7 +499,8 @@ class HouseRepository:
         )
 
         private_sales_query = (
-            session.query(
+            session.query(InterestHouseModel)
+            .with_entities(
                 InterestHouseModel.id,
                 InterestHouseModel.type,
                 PrivateSaleModel.name,
