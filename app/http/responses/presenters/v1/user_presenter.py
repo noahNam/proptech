@@ -8,7 +8,10 @@ from core.domains.user.schema.user_schema import (
     CreateUserResponseSchema,
     CreateAppAgreeTermsResponseSchema,
     UpsertUserInfoResponseSchema,
-    GetUserInfoResponseSchema, GetUserResponseSchema, PatchUserOutResponseSchema,
+    GetUserInfoResponseSchema,
+    GetUserResponseSchema,
+    PatchUserOutResponseSchema,
+    GetUserMainResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -20,12 +23,12 @@ class GetUserPresenter:
             try:
                 if user:
                     schema = GetUserResponseSchema(user=output.value)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -43,12 +46,12 @@ class CreateUserPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = CreateUserResponseSchema(result=output.type)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -66,12 +69,12 @@ class CreateAppAgreeTermsPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = CreateAppAgreeTermsResponseSchema(result=output.type)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -89,12 +92,12 @@ class UpsertUserInfoPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = UpsertUserInfoResponseSchema(result=output.type)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -112,12 +115,12 @@ class GetUserInfoPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = GetUserInfoResponseSchema(result=output.value)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
@@ -135,12 +138,35 @@ class PatchUserOutPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = PatchUserOutResponseSchema(result=output.type)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
                         message=FailureType.INTERNAL_ERROR,
-                        code=HTTPStatus.INTERNAL_SERVER_ERROR
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            result = {
+                "data": schema.dict(),
+                "meta": output.meta,
+            }
+            return success_response(result=result)
+        elif isinstance(output, UseCaseFailureOutput):
+            return failure_response(output=output, status_code=output.code)
+
+
+class GetUserMainPresenter:
+    def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
+        if isinstance(output, UseCaseSuccessOutput):
+            try:
+                schema = GetUserMainResponseSchema(result=output.value)
+            except ValidationError:
+                return failure_response(
+                    UseCaseFailureOutput(
+                        type="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )

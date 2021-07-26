@@ -21,11 +21,13 @@ class PostBaseUseCase:
 
 class GetPostListUseCase(PostBaseUseCase):
     def execute(
-            self, dto: GetPostListDto
+        self, dto: GetPostListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
             )
 
         post_list = self._post_repo.get_post_list_include_article(dto=dto)
@@ -40,11 +42,13 @@ class GetPostListUseCase(PostBaseUseCase):
 
 class UpdatePostReadCountUseCase(PostBaseUseCase):
     def execute(
-            self, dto: UpdatePostReadCountDto
+        self, dto: UpdatePostReadCountDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
-                type="user_id", message=FailureType.NOT_FOUND_ERROR, code=HTTPStatus.NOT_FOUND
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
             )
 
         self._post_repo.update_read_count(post_id=dto.post_id)

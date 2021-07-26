@@ -3,21 +3,46 @@ from typing import List
 
 import pytest
 
-from app.persistence.model import AppAgreeTermsModel, UserProfileModel, UserInfoModel
+from app.persistence.model import (
+    AppAgreeTermsModel,
+    UserProfileModel,
+    UserInfoModel,
+    RecentlyViewModel,
+)
 from app.persistence.model.user_model import UserModel
+from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
-    GetUserInfoDto, AvgMonthlyIncomeWokrerDto, UpsertUserInfoDetailDto, GetUserInfoDetailDto,
+    AvgMonthlyIncomeWokrerDto,
+    UpsertUserInfoDetailDto,
+    GetUserInfoDetailDto,
+    GetUserDto,
+    RecentlyViewDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
-    UserInfoEmptyEntity, UserEntity, UserInfoCodeValueEntity,
+    UserInfoEmptyEntity,
+    UserEntity,
+    UserInfoCodeValueEntity,
 )
-from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, IsHouseHolderCodeEnum, IsMarriedCodeEnum, \
-    NumberDependentsEnum, IsChildEnum, IsSubAccountEnum, MonthlyIncomeEnum, AssetsRealEstateEnum, AssetsCarEnum, \
-    AssetsTotalEnum, SpecialCondEnum, CodeEnum
+from core.domains.user.enum.user_enum import UserSurveyStepEnum
+from core.domains.user.enum.user_info_enum import (
+    IsHouseOwnerCodeEnum,
+    IsHouseHolderCodeEnum,
+    IsMarriedCodeEnum,
+    NumberDependentsEnum,
+    IsChildEnum,
+    IsSubAccountEnum,
+    MonthlyIncomeEnum,
+    AssetsRealEstateEnum,
+    AssetsCarEnum,
+    AssetsTotalEnum,
+    SpecialCondEnum,
+    CodeEnum,
+    CodeStepEnum,
+)
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
 
@@ -48,6 +73,10 @@ upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
     user_id=1, user_profile_id=1, code=1005, value="1"
 )
 
+recently_view_dto = RecentlyViewDto(
+    user_id=1, house_id=1, type=HouseTypeEnum.PUBLIC_SALES.value
+)
+
 
 def test_get_user_repo_then_success(create_users):
     user = UserRepository().get_user(create_users[0].id)
@@ -58,21 +87,20 @@ def test_get_user_repo_then_success(create_users):
     assert user.is_active == create_users[0].is_active
 
 
-def test_create_user_profiles_when_first_login_then_success(
-        session
-):
+def test_create_user_when_first_login_then_success(session):
     UserRepository().create_user(dto=create_user_dto)
 
     user = session.query(UserModel).first()
 
     assert user.id == create_user_dto.user_id
+    assert user.point == 0
     assert user.is_required_agree_terms == create_user_dto.is_required_agree_terms
     assert user.is_active == create_user_dto.is_active
     assert user.is_out == create_user_dto.is_out
 
 
 def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_unique_error(
-        session,
+    session,
 ):
     UserRepository().create_user(dto=create_user_dto)
 
@@ -81,7 +109,7 @@ def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_uniqu
 
 
 def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_success(
-        session,
+    session,
 ):
     UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
 
@@ -94,7 +122,7 @@ def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_s
 
 
 def test_agree_terms_repo_when_app_first_start_with_receive_marketing_then_success(
-        session,
+    session,
 ):
     create_app_agree_term_dto.receive_marketing_yn = True
     UserRepository().create_app_agree_terms(dto=create_app_agree_term_dto)
@@ -120,8 +148,8 @@ def test_create_user_nickname_when_start_user_info_then_success(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
     result = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_detail_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_detail_dto.user_id)
+        .first()
     )
 
     assert result.nickname == upsert_user_info_detail_dto.value
@@ -136,8 +164,8 @@ def test_update_user_nickname_when_update_user_info_then_success(session):
 
     result = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_detail_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_detail_dto.user_id)
+        .first()
     )
 
     assert result.nickname == "noah2"
@@ -149,11 +177,11 @@ def test_create_user_info_when_input_user_data_then_success(session):
 
     result = (
         session.query(UserInfoModel)
-            .filter_by(
+        .filter_by(
             user_profile_id=upsert_user_info_detail_dto.user_profile_id,
             code=upsert_user_info_detail_dto.code,
         )
-            .first()
+        .first()
     )
 
     assert result.user_profile_id == upsert_user_info_detail_dto.user_profile_id
@@ -162,7 +190,7 @@ def test_create_user_info_when_input_user_data_then_success(session):
 
 
 def test_create_user_info_when_input_user_data_without_profile_id_then_error(
-        session, create_users
+    session, create_users
 ):
     dto = UpsertUserInfoDetailDto(user_id=create_users[0].id, code=1005, value="1")
     with pytest.raises(NotUniqueErrorException):
@@ -177,11 +205,11 @@ def test_update_user_info_when_input_user_data_then_success(session):
 
     result = (
         session.query(UserInfoModel)
-            .filter_by(
+        .filter_by(
             user_profile_id=upsert_user_info_detail_dto.user_profile_id,
             code=upsert_user_info_detail_dto.code,
         )
-            .first()
+        .first()
     )
 
     assert result.user_profile_id == upsert_user_info_detail_dto.user_profile_id
@@ -193,7 +221,10 @@ def test_update_last_code_to_user_info_when_input_user_data_then_success(session
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
 
     dto = UpsertUserInfoDetailDto(
-        user_id=upsert_user_info_detail_dto.user_id, user_profile_id=1, code=1007, value="2"
+        user_id=upsert_user_info_detail_dto.user_id,
+        user_profile_id=1,
+        code=1007,
+        value="2",
     )
     UserRepository().update_last_code_to_user_info(dto=dto)
 
@@ -204,7 +235,9 @@ def test_update_last_code_to_user_info_when_input_user_data_then_success(session
 
 def test_get_user_profile_id_when_input_user_data_then_success(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
-    get_user_profile_id = UserRepository().get_user_profile_id(dto=upsert_user_info_detail_dto)
+    get_user_profile_id = UserRepository().get_user_profile_id(
+        dto=upsert_user_info_detail_dto
+    )
 
     assert get_user_profile_id == 1
 
@@ -213,7 +246,9 @@ def test_get_user_profile_id_when_input_user_data_then_none(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
 
     upsert_user_info_detail_dto.user_id = upsert_user_info_detail_dto.user_id + 1
-    get_user_profile_id = UserRepository().get_user_profile_id(dto=upsert_user_info_detail_dto)
+    get_user_profile_id = UserRepository().get_user_profile_id(
+        dto=upsert_user_info_detail_dto
+    )
 
     assert get_user_profile_id is None
 
@@ -245,8 +280,9 @@ def test_get_user_info_when_input_user_data_then_None(session):
     assert isinstance(user_info, UserInfoEmptyEntity)
 
 
-def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_monthly_income_worker_factory, session,
-                                                                          create_users):
+def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
+    avg_monthly_income_worker_factory, session, create_users
+):
     avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
     session.add(avg_monthly_income_workers)
     session.commit()
@@ -306,12 +342,16 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
         # 외벌이, 맞벌이 확인
         # 외벌이 -> 1,3,4 / 맞벌이 -> 2
         result1: UserInfoEntity = UserRepository().get_user_info_by_code(
-            user_profile_id=upsert_user_info_detail_dto.user_profile_id, code=CodeEnum.IS_MARRIED.value)
+            user_profile_id=upsert_user_info_detail_dto.user_profile_id,
+            code=CodeEnum.IS_MARRIED.value,
+        )
 
         # 부양가족 수
         # 3인 이하->1,2,3,9 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
         result2: UserInfoEntity = UserRepository().get_user_info_by_code(
-            user_profile_id=upsert_user_info_detail_dto.user_profile_id, code=CodeEnum.NUMBER_DEPENDENTS.value)
+            user_profile_id=upsert_user_info_detail_dto.user_profile_id,
+            code=CodeEnum.NUMBER_DEPENDENTS.value,
+        )
 
         # 부양가족별 default 소득
         income_result_dict = {
@@ -347,8 +387,84 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(avg_mo
         assert len(user_info.code_values.detail_code) == len(user_info.code_values.name)
 
 
-def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(session, create_users):
+def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(
+    session, create_users
+):
     UserRepository().update_user_status_to_out(user_id=create_users[0].id)
     user = UserRepository().get_user(user_id=create_users[0].id)
 
     assert user.is_out is True
+
+
+def test_get_user_point_and_survey_step_then_user_point_is_3000_and_survey_step_is_1(
+    session, create_users, point_factory
+):
+    dto = GetUserDto(user_id=create_users[0].id)
+    points = point_factory.build_batch(size=3, user_id=create_users[0].id)
+    session.add_all(points)
+    session.commit()
+
+    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    total_amount = result.total_amount
+    survey_step = result.survey_step
+
+    assert isinstance(result, UserEntity)
+    assert total_amount == 3000
+    assert survey_step == UserSurveyStepEnum.STEP_ONE.value
+
+
+def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_no(
+    session, user_factory
+):
+    user = user_factory.create(
+        device=True,
+        receive_push_type=True,
+        user_profile=False,
+        interest_houses=True,
+        point=False,
+    )
+    session.add(user)
+    session.commit()
+
+    dto = GetUserDto(user_id=user.id)
+    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    total_amount = result.total_amount
+    survey_step = result.survey_step
+
+    assert isinstance(result, UserEntity)
+    assert total_amount == 0
+    assert survey_step == UserSurveyStepEnum.STEP_NO.value
+
+
+def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_complete(
+    session, user_factory
+):
+    user = user_factory.create(
+        device=True,
+        receive_push_type=True,
+        user_profile=True,
+        interest_houses=True,
+        point=False,
+    )
+    user.user_profile.last_update_code = CodeStepEnum.COMPLETE.value
+    session.add(user)
+    session.commit()
+
+    dto = GetUserDto(user_id=user.id)
+    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    total_amount = result.total_amount
+    survey_step = result.survey_step
+
+    assert isinstance(result, UserEntity)
+    assert total_amount == 0
+    assert survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
+    assert result.point == 0
+
+
+def test_create_recently_view_table(session):
+    UserRepository().create_recently_view(dto=recently_view_dto)
+    view_info = session.query(RecentlyViewModel).first()
+
+    assert view_info.user_id == recently_view_dto.user_id
+    assert view_info.house_id == recently_view_dto.house_id
+    assert view_info.type == recently_view_dto.type

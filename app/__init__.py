@@ -15,11 +15,12 @@ from app.extensions.swagger import swagger_config
 from app.http.view import api
 
 # alembic auto-generate detected
-from app.persistence.model import *
+# from app.persistence.model import *
 
 
 # event listener initialization
 from core.domains.user import event
+from core.domains.notification import event
 
 
 def init_config(

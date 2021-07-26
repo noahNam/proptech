@@ -32,6 +32,33 @@ class CodeEnum(Enum):
     SPECIAL_COND = 1026
 
 
+class CodeStepEnum(Enum):
+    ONE = [
+        1000,
+        1001,
+        1002,
+        1003,
+        1004,
+        1005,
+        1006,
+        1007,
+        1008,
+        1009,
+        1010,
+        1011,
+        1012,
+        1013,
+        1014,
+        1015,
+        1016,
+        1017,
+        1018,
+        1019,
+    ]
+    TWO = [1020, 1021, 1022, 1023, 1024, 1025]
+    COMPLETE = 1026
+
+
 class AddressCodeEnum(Enum):
     COND_CD = []
     COND_NM = []
@@ -106,5 +133,5 @@ class AssetsTotalEnum(Enum):
 
 
 class SpecialCondEnum(Enum):
-    COND_CD = [1, 2, 3, 4]
-    COND_NM = ["공통", "국민주택", "민영주택", "없음"]
+    COND_CD = [1, 2, 3]
+    COND_NM = ["없음", "기관 추천 특별공급", "기타"]

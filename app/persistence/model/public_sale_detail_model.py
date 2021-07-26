@@ -4,7 +4,9 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     Float,
+    String,
 )
+from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.persistence.model.public_sale_model import PublicSaleModel
@@ -20,13 +22,21 @@ class PublicSaleDetailModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    public_sales_id = Column(BigInteger,
-                             ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
-                             nullable=False)
+    public_sales_id = Column(
+        BigInteger, ForeignKey(PublicSaleModel.id, ondelete="CASCADE"), nullable=False
+    )
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
     supply_price = Column(Integer, nullable=False)
     acquisition_tax = Column(Integer, nullable=False)
+    area_type = Column(String(5), nullable=False)
+
+    # 1:1 relationship
+    public_sale_detail_photos = relationship(
+        "PublicSaleDetailPhotoModel",
+        backref=backref("public_sale_details"),
+        uselist=False,
+    )
 
     def to_entity(self) -> PublicSaleDetailEntity:
         return PublicSaleDetailEntity(
@@ -35,5 +45,9 @@ class PublicSaleDetailModel(db.Model):
             private_area=self.private_area,
             supply_area=self.supply_area,
             supply_price=self.supply_price,
-            acquisition_tax=self.acquisition_tax
+            acquisition_tax=self.acquisition_tax,
+            area_type=self.area_type,
+            public_sale_detail_photos=self.public_sale_detail_photos.to_entity()
+            if self.public_sale_detail_photos
+            else None,
         )

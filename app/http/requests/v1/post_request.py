@@ -19,9 +19,7 @@ class UpdatePostReadCountSchema(BaseModel):
 
 
 class GetPostListRequestSchema:
-    def __init__(
-            self, user_id, post_category, previous_post_id
-    ):
+    def __init__(self, user_id, post_category, previous_post_id):
         self.user_id = int(user_id) if user_id else None
         self.post_category = post_category
         self.previous_post_id = previous_post_id
@@ -42,17 +40,14 @@ class GetPostListRequestSchema:
 
 
 class UpdatePostReadCountRequestSchema:
-    def __init__(
-            self, user_id, post_id
-    ):
+    def __init__(self, user_id, post_id):
         self.user_id = int(user_id) if user_id else None
         self.post_id = post_id
 
     def validate_request_and_make_dto(self):
         try:
             schema = UpdatePostReadCountSchema(
-                user_id=self.user_id,
-                post_id=self.post_id,
+                user_id=self.user_id, post_id=self.post_id,
             ).dict()
             return UpdatePostReadCountDto(**schema)
         except ValidationError as e:

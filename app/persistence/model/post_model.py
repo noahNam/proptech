@@ -5,7 +5,8 @@ from sqlalchemy import (
     String,
     DateTime,
     ForeignKey,
-    Boolean, SmallInteger,
+    Boolean,
+    SmallInteger,
 )
 from sqlalchemy.orm import relationship
 
@@ -48,5 +49,5 @@ class PostModel(db.Model):
             created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),
             updated_at=self.updated_at.date().strftime("%Y-%m-%d %H:%M:%S"),
             user=self.user.to_entity() if self.user else None,
-            category_id=self.category_id
+            category_id=self.category_id,
         )
