@@ -131,7 +131,7 @@ def get_interest_house_list_view():
 @api.route("/v1/houses/recent", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_interest_house_list.yml", methods=["GET"])
+@swag_from("get_recent_view_list.yml", methods=["GET"])
 def get_recent_view_list_view():
     dto = GetRecentViewListRequestSchema(
         user_id=current_user.id,
