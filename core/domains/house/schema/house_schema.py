@@ -11,12 +11,19 @@ from core.domains.house.entity.house_entity import (
 
 
 class GetInterestHouseListBaseSchema(BaseModel):
-    id: int
+    house_id: int
     type: int
     name: str
     road_address: str
     subscription_start_date: str
     subscription_end_date: str
+
+
+class GetRecentViewListBaseSchema(BaseModel):
+    house_id: int
+    type: int
+    name: str
+    image_path: str
 
 
 class BoundingResponseSchema(BaseModel):
@@ -41,3 +48,7 @@ class UpsertInterestHouseResponseSchema(BaseModel):
 
 class GetInterestHouseListResponseSchema(BaseModel):
     houses: List[GetInterestHouseListBaseSchema]
+
+
+class GetRecentViewListResponseSchema(BaseModel):
+    houses: List[GetRecentViewListBaseSchema]

@@ -14,6 +14,8 @@ from app.persistence.model import (
     PublicSaleDetailModel,
     InterestHouseModel,
     PrivateSaleDetailModel,
+    RecentlyViewModel,
+    PublicSalePhotoModel,
 )
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
@@ -28,6 +30,7 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     CalenderInfoEntity,
     InterestHouseListEntity,
+    GetRecentViewListEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -481,7 +484,7 @@ class HouseRepository:
         public_sales_query = (
             session.query(InterestHouseModel)
             .with_entities(
-                InterestHouseModel.id,
+                InterestHouseModel.house_id,
                 InterestHouseModel.type,
                 PublicSaleModel.name,
                 RealEstateModel.road_address,
@@ -501,7 +504,7 @@ class HouseRepository:
         private_sales_query = (
             session.query(InterestHouseModel)
             .with_entities(
-                InterestHouseModel.id,
+                InterestHouseModel.house_id,
                 InterestHouseModel.type,
                 PrivateSaleModel.name,
                 RealEstateModel.road_address,
@@ -521,9 +524,9 @@ class HouseRepository:
         query = public_sales_query.union_all(private_sales_query)
         queryset = query.all()
 
-        return self._make_intrest_house_list_entity(queryset=queryset)
+        return self._make_interest_house_list_entity(queryset=queryset)
 
-    def _make_intrest_house_list_entity(
+    def _make_interest_house_list_entity(
         self, queryset: Optional[List]
     ) -> List[InterestHouseListEntity]:
         result = list()
@@ -532,12 +535,51 @@ class HouseRepository:
             for query in queryset:
                 result.append(
                     InterestHouseListEntity(
-                        id=query.id,
+                        house_id=query.house_id,
                         type=query.type,
                         name=query.name,
                         road_address=query.road_address,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
+                    )
+                )
+        return result
+
+    def get_recent_view_list(self, dto: GetUserDto) -> List[GetRecentViewListEntity]:
+        # private_sales 는 X -> MVP 에서는 매매 상세화면이 없음
+        query = (
+            session.query(RecentlyViewModel)
+            .with_entities(
+                RecentlyViewModel.house_id,
+                RecentlyViewModel.type,
+                PublicSaleModel.name,
+                PublicSalePhotoModel.path,
+            )
+            .join(
+                PublicSaleModel,
+                (RecentlyViewModel.house_id == PublicSaleModel.id)
+                & (RecentlyViewModel.type == HouseTypeEnum.PUBLIC_SALES.value)
+                & (RecentlyViewModel.user_id == dto.user_id),
+            )
+            .join(PublicSaleModel.public_sale_photos, isouter=True)
+        )
+
+        queryset = query.all()
+        return self._make_get_recent_view_list_entity(queryset=queryset)
+
+    def _make_get_recent_view_list_entity(
+        self, queryset: Optional[List]
+    ) -> List[GetRecentViewListEntity]:
+        result = list()
+
+        if queryset:
+            for query in queryset:
+                result.append(
+                    GetRecentViewListEntity(
+                        house_id=query.house_id,
+                        type=query.type,
+                        name=query.name,
+                        image_path=query.path,
                     )
                 )
         return result

@@ -11,7 +11,10 @@ from core.domains.house.dto.house_dto import (
 )
 from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
-from core.domains.house.entity.house_entity import InterestHouseListEntity
+from core.domains.house.entity.house_entity import (
+    InterestHouseListEntity,
+    GetRecentViewListEntity,
+)
 from core.domains.house.enum.house_enum import BoundingLevelEnum, HouseTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import RecentlyViewDto, GetUserDto
@@ -142,5 +145,23 @@ class GetInterestHouseListUseCase(HouseBaseUseCase):
         result: List[
             InterestHouseListEntity
         ] = self._house_repo.get_interest_house_list(dto=dto)
+
+        return UseCaseSuccessOutput(value=result)
+
+
+class GetRecentViewListUseCase(HouseBaseUseCase):
+    def execute(
+        self, dto: GetUserDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        result: List[GetRecentViewListEntity] = self._house_repo.get_recent_view_list(
+            dto=dto
+        )
 
         return UseCaseSuccessOutput(value=result)

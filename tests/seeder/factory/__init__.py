@@ -173,6 +173,11 @@ class UserFactory(BaseFactory):
         if extracted:
             PointFactory(users=obj, **kwargs)
 
+    @factory.post_generation
+    def recently_view(obj, create, extracted, **kwargs):
+        if extracted:
+            RecentlyViewFactory(users=obj, **kwargs)
+
 
 class AvgMonthlyIncomeWorkerFactory(BaseFactory):
     class Meta:

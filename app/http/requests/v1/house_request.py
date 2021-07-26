@@ -23,7 +23,11 @@ class UpsertInterestHouseSchema(BaseModel):
     is_like: bool
 
 
-class GetInterestHouseSchema(BaseModel):
+class GetInterestHouseListSchema(BaseModel):
+    user_id: StrictInt
+
+
+class GetRecentViewListSchema(BaseModel):
     user_id: StrictInt
 
 
@@ -56,11 +60,26 @@ class GetInterestHouseListRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetInterestHouseSchema(user_id=self.user_id,).dict()
+            schema = GetInterestHouseListSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
                 f"[GetInterestHouseListRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetRecentViewListRequestSchema:
+    def __init__(self, user_id):
+        self.user_id = int(user_id) if user_id else None
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetRecentViewListSchema(user_id=self.user_id,).dict()
+            return GetUserDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetRecentViewListRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 

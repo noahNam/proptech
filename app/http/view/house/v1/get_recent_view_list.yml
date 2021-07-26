@@ -26,15 +26,9 @@ responses:
                       name:
                         type: string
                         example: 동탄 레미안 원베일리
-                      road_address:
+                      image_path:
                         type: string
-                        example: 경기도 화성시 영천동 993
-                      subscription_start_date:
-                        type: string
-                        example: 20210701
-                      subscription_end_date:
-                        type: string
-                        example: 20210703
+                        example: https://sample.s3.sample.amazonaws.com/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg
   '400':
     description: invalid_request_error
     content:
