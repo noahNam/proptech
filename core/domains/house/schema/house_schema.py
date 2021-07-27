@@ -7,6 +7,7 @@ from core.domains.house.entity.house_entity import (
     AdministrativeDivisionEntity,
     HousePublicDetailEntity,
     CalenderInfoEntity,
+    GetSearchHouseListEntity,
 )
 
 
@@ -55,7 +56,7 @@ class GetRecentViewListResponseSchema(BaseModel):
 
 
 class GetSearchHouseListResponseSchema(BaseModel):
-    houses: Union[List[BoundingRealEstateEntity], str]
+    houses: Union[GetSearchHouseListEntity, str]
 
 
 class BoundingWithinRadiusResponseSchema(BaseModel):
