@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -122,24 +122,24 @@ class RecentlyViewEntity(BaseModel):
 class SurveyResultEntity(BaseModel):
     id = int
     user_id = int
-    total_point = int
-    detail_point_house = int
-    detail_point_family = int
-    detail_point_bank = int
-    public_newly_married = int
-    public_first_life = int
-    public_multiple_children = int
-    public_old_parent = int
-    public_agency_recommend = int
-    public_normal = int
-    private_newly_married = int
-    private_first_life = int
-    private_multiple_children = int
-    private_old_parent = int
-    private_agency_recommend = int
-    private_normal = int
-    hope_town_phase_one = int
-    hope_town_phase_two = int
+    total_point = Optional[int]
+    detail_point_house = Optional[int]
+    detail_point_family = Optional[int]
+    detail_point_bank = Optional[int]
+    public_newly_married = Optional[int]
+    public_first_life = Optional[int]
+    public_multiple_children = Optional[int]
+    public_old_parent = Optional[int]
+    public_agency_recommend = Optional[int]
+    public_normal = Optional[int]
+    private_newly_married = Optional[int]
+    private_first_life = Optional[int]
+    private_multiple_children = Optional[int]
+    private_old_parent = Optional[int]
+    private_agency_recommend = Optional[int]
+    private_normal = Optional[int]
+    hope_town_phase_one = Optional[int]
+    hope_town_phase_two = Optional[int]
     created_at = datetime
     updated_at = datetime
 
