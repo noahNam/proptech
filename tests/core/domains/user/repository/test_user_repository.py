@@ -93,7 +93,7 @@ def test_create_user_when_first_login_then_success(session):
     user = session.query(UserModel).first()
 
     assert user.id == create_user_dto.user_id
-    assert user.point == 0
+    assert user.number_ticket == 0
     assert user.is_required_agree_terms == create_user_dto.is_required_agree_terms
     assert user.is_active == create_user_dto.is_active
     assert user.is_out == create_user_dto.is_out
@@ -396,24 +396,24 @@ def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(
     assert user.is_out is True
 
 
-def test_get_user_point_and_survey_step_then_user_point_is_3000_and_survey_step_is_1(
-    session, create_users, point_factory
+def test_get_user_ticket_and_survey_step_then_user_ticket_is_3000_and_survey_step_is_1(
+    session, create_users, ticket_factory
 ):
     dto = GetUserDto(user_id=create_users[0].id)
-    points = point_factory.build_batch(size=3, user_id=create_users[0].id)
-    session.add_all(points)
+    tickets = ticket_factory.build_batch(size=3, user_id=create_users[0].id)
+    session.add_all(tickets)
     session.commit()
 
-    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    result = UserRepository().get_user_survey_step_and_ticket(dto=dto)
     total_amount = result.total_amount
     survey_step = result.survey_step
 
     assert isinstance(result, UserEntity)
-    assert total_amount == 3000
+    assert total_amount == 3
     assert survey_step == UserSurveyStepEnum.STEP_ONE.value
 
 
-def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_no(
+def test_get_user_ticket_and_survey_step_then_user_ticket_is_0_and_survey_step_is_step_no(
     session, user_factory
 ):
     user = user_factory.create(
@@ -421,13 +421,13 @@ def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_
         receive_push_type=True,
         user_profile=False,
         interest_houses=True,
-        point=False,
+        tickets=False,
     )
     session.add(user)
     session.commit()
 
     dto = GetUserDto(user_id=user.id)
-    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    result = UserRepository().get_user_survey_step_and_ticket(dto=dto)
     total_amount = result.total_amount
     survey_step = result.survey_step
 
@@ -436,7 +436,7 @@ def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_
     assert survey_step == UserSurveyStepEnum.STEP_NO.value
 
 
-def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_complete(
+def test_get_user_ticket_and_survey_step_then_user_ticket_is_0_and_survey_step_is_step_complete(
     session, user_factory
 ):
     user = user_factory.create(
@@ -444,21 +444,21 @@ def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_
         receive_push_type=True,
         user_profile=True,
         interest_houses=True,
-        point=False,
+        tickets=False,
     )
     user.user_profile.last_update_code = CodeStepEnum.COMPLETE.value
     session.add(user)
     session.commit()
 
     dto = GetUserDto(user_id=user.id)
-    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    result = UserRepository().get_user_survey_step_and_ticket(dto=dto)
     total_amount = result.total_amount
     survey_step = result.survey_step
 
     assert isinstance(result, UserEntity)
     assert total_amount == 0
     assert survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
-    assert result.point == 0
+    assert result.number_ticket == 0
 
 
 def test_create_recently_view_table(session):

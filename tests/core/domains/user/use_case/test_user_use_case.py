@@ -446,7 +446,7 @@ def test_patch_user_out_info_when_user_request_then_success(session, create_user
     assert isinstance(result, UseCaseSuccessOutput)
 
 
-def test_get_user_main_use_case_when_enter_my_page_main_then_point_is_0_and_survey_step_is_step_one_and_badge_is_true(
+def test_get_user_main_use_case_when_enter_my_page_main_then_ticket_is_0_and_survey_step_is_step_one_and_badge_is_true(
     session, create_users, create_notifications
 ):
     get_user_dto = GetUserDto(user_id=create_users[0].id)
@@ -454,5 +454,5 @@ def test_get_user_main_use_case_when_enter_my_page_main_then_point_is_0_and_surv
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value["survey_step"] == UserSurveyStepEnum.STEP_ONE.value
-    assert result.value["point"] == 0
+    assert result.value["tickets"] == 0
     assert result.value["is_badge"] is True

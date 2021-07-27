@@ -19,8 +19,8 @@ from app.persistence.model import (
     InterestHouseModel,
     ReceivePushTypeModel,
     AppAgreeTermsModel,
-    PointTypeModel,
-    PointModel,
+    TicketTypeModel,
+    TicketModel,
     UserModel,
     ArticleModel,
     PostModel,
@@ -52,9 +52,9 @@ from core.domains.notification.enum.notification_enum import (
 )
 from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
 from core.domains.user.enum.user_enum import (
-    UserPointTypeDivisionEnum,
-    UserPointCreatedByEnum,
-    UserPointSignEnum,
+    UserTicketTypeDivisionEnum,
+    UserTicketCreatedByEnum,
+    UserTicketSignEnum,
 )
 
 faker = FakerFactory.create(locale="ko_KR")
@@ -114,24 +114,23 @@ class InterestHouseFactory(BaseFactory):
     is_like = True
 
 
-class PointTypeFactory(BaseFactory):
+class TicketTypeFactory(BaseFactory):
     class Meta:
-        model = PointTypeModel
+        model = TicketTypeModel
 
-    name = "결제포인트 적립"
-    division = UserPointTypeDivisionEnum.CHARGED.value
+    division = UserTicketTypeDivisionEnum.CHARGED.value
 
 
-class PointFactory(BaseFactory):
+class TicketFactory(BaseFactory):
     class Meta:
-        model = PointModel
+        model = TicketModel
 
-    amount = 1000
-    sign = UserPointSignEnum.PLUS.value
-    created_by = UserPointCreatedByEnum.SYSTEM.value
+    amount = 1
+    sign = UserTicketSignEnum.PLUS.value
+    created_by = UserTicketCreatedByEnum.SYSTEM.value
     created_at = get_server_timestamp()
 
-    point_type = factory.SubFactory(PointTypeFactory)
+    ticket_type = factory.SubFactory(TicketTypeFactory)
 
 
 class UserFactory(BaseFactory):
@@ -146,7 +145,7 @@ class UserFactory(BaseFactory):
     join_date = get_server_timestamp().strftime("%y%m%d")
     is_active = True
     is_out = False
-    point = 0
+    number_ticket = 0
 
     @factory.post_generation
     def device(obj, create, extracted, **kwargs):
@@ -169,9 +168,9 @@ class UserFactory(BaseFactory):
             InterestHouseFactory(users=obj, **kwargs)
 
     @factory.post_generation
-    def point(obj, create, extracted, **kwargs):
+    def tickets(obj, create, extracted, **kwargs):
         if extracted:
-            PointFactory(users=obj, **kwargs)
+            TicketFactory(users=obj, **kwargs)
 
     @factory.post_generation
     def recently_view(obj, create, extracted, **kwargs):

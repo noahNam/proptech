@@ -11,7 +11,7 @@ class GetUserBaseSchema(BaseModel):
 
 class GetUserMainBaseSchema(BaseModel):
     survey_step: int
-    point: int
+    tickets: int
     is_badge: bool
 
 

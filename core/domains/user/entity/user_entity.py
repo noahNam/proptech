@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from core.domains.house.entity.house_entity import InterestHouseEntity
 from core.domains.notification.entity.notification_entity import ReceivePushTypeEntity
-from core.domains.user.enum.user_enum import UserPointSignEnum, UserSurveyStepEnum
+from core.domains.user.enum.user_enum import UserTicketSignEnum, UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import CodeStepEnum
 
 
@@ -55,13 +55,12 @@ class UserProfileEntity(BaseModel):
     updated_at: datetime
 
 
-class PointTypeEntity(BaseModel):
+class TicketTypeEntity(BaseModel):
     id: int
-    name: str
     division: str
 
 
-class PointEntity(BaseModel):
+class TicketEntity(BaseModel):
     id: int
     user_id: int
     type: int
@@ -69,7 +68,7 @@ class PointEntity(BaseModel):
     sign: str
     created_by: str
     created_at: datetime
-    point_type: PointTypeEntity = None
+    ticket_type: TicketTypeEntity = None
 
 
 class UserEntity(BaseModel):
@@ -78,24 +77,24 @@ class UserEntity(BaseModel):
     join_date: str
     is_active: bool
     is_out: bool
-    point: int
+    number_ticket: int
     device: DeviceEntity
     user_profile: UserProfileEntity = None
     receive_push_type: ReceivePushTypeEntity
     interest_houses: List[InterestHouseEntity] = None
-    points: List[PointEntity] = None
+    tickets: List[TicketEntity] = None
 
     @property
     def total_amount(self) -> int:
         total_amount = 0
-        if not self.points:
+        if not self.tickets:
             return total_amount
 
-        for point in self.points:
-            if point.sign == UserPointSignEnum.PLUS.value:
-                total_amount += point.amount
+        for ticket in self.tickets:
+            if ticket.sign == UserTicketSignEnum.PLUS.value:
+                total_amount += ticket.amount
             else:
-                total_amount -= point.amount
+                total_amount -= ticket.amount
 
         return 0 if total_amount < 0 else total_amount
 

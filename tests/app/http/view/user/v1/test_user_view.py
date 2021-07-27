@@ -935,7 +935,7 @@ def test_patch_user_out_view_then_success(
     assert data["result"] == "success"
 
 
-def test_get_user_main_view_then_success_then_point_is_0_and_survey_step_is_step_one_and_badge_is_true(
+def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_step_one_and_badge_is_true(
     client,
     session,
     test_request_context,
@@ -958,11 +958,11 @@ def test_get_user_main_view_then_success_then_point_is_0_and_survey_step_is_step
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_ONE.value
-    assert data["result"]["point"] == 0
+    assert data["result"]["tickets"] == 0
     assert data["result"]["is_badge"] is True
 
 
-def test_get_user_main_view_then_success_then_point_is_0_and_survey_step_is_step_one_and_badge_is_false(
+def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_step_one_and_badge_is_false(
     client, session, test_request_context, make_header, make_authorization, user_factory
 ):
     user = user_factory.create(
@@ -970,7 +970,7 @@ def test_get_user_main_view_then_success_then_point_is_0_and_survey_step_is_step
         receive_push_type=True,
         user_profile=True,
         interest_houses=True,
-        point=True,
+        tickets=True,
     )
     user.user_profile.last_update_code = CodeStepEnum.COMPLETE.value
     session.add(user)
@@ -989,5 +989,5 @@ def test_get_user_main_view_then_success_then_point_is_0_and_survey_step_is_step
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_COMPLETE.value
-    assert data["result"]["point"] == 1000
+    assert data["result"]["tickets"] == 1
     assert data["result"]["is_badge"] is False
