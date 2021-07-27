@@ -117,3 +117,45 @@ class RecentlyViewEntity(BaseModel):
     house_id: int
     type: int
     created_at: datetime
+
+
+class SurveyResultEntity(BaseModel):
+    id = int
+    user_id = int
+    total_point = int
+    detail_point_house = int
+    detail_point_family = int
+    detail_point_bank = int
+    public_newly_married = int
+    public_first_life = int
+    public_multiple_children = int
+    public_old_parent = int
+    public_agency_recommend = int
+    public_normal = int
+    private_newly_married = int
+    private_first_life = int
+    private_multiple_children = int
+    private_old_parent = int
+    private_agency_recommend = int
+    private_normal = int
+    hope_town_phase_one = int
+    hope_town_phase_two = int
+    created_at = datetime
+    updated_at = datetime
+
+
+class TicketUsageResultDetailEntity(BaseModel):
+    id: int
+    ticket_usage_result_id: int
+    house_type: str
+    subscription_type: str
+    rank: int
+
+
+class TicketUsageResultEntity(BaseModel):
+    id: int
+    user_id: int
+    house_id: int
+    is_active: bool
+    created_at: datetime
+    ticket_usage_result_details: TicketUsageResultDetailEntity
