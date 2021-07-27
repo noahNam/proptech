@@ -94,3 +94,14 @@ class CalenderYearThreshHold(Enum):
 
     MIN_YEAR = 2017
     MAX_YEAR = 2030
+
+
+class SearchTypeEnum(Enum):
+    """
+        사용처 : get_bounding_within_radius_view(),
+               GetBoundingWithinRadiusSchema
+        목적 : 파라미터 search_type 값의 범위 제한
+    """
+    FROM_REAL_ESTATE = 1
+    FROM_PUBLIC_SALE = 2
+    FROM_ADMINISTRATIVE_DIVISION = 3

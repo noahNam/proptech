@@ -30,3 +30,12 @@ class GetCalenderInfoDto(BaseModel):
     year: str
     month: str
     user_id: int
+
+
+class GetSearchHouseListDto(BaseModel):
+    keywords: str
+
+
+class BoundingWithinRadiusDto(BaseModel):
+    house_id: int
+    search_type: int

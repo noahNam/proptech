@@ -7,6 +7,8 @@ from app.http.requests.v1.house_request import (
     GetCalenderInfoRequestSchema,
     GetInterestHouseListRequestSchema,
     GetRecentViewListRequestSchema,
+    GetSearchHouseListRequestSchema,
+    GetBoundingWithinRadiusRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -18,6 +20,8 @@ from app.http.responses.presenters.v1.house_presenter import (
     UpsertInterestHousePresenter,
     GetInterestHouseListPresenter,
     GetRecentViewListPresenter,
+    GetSearchHouseListPresenter,
+    BoundingWithinRadiusPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
@@ -27,6 +31,8 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetCalenderInfoUseCase,
     GetInterestHouseListUseCase,
     GetRecentViewListUseCase,
+    GetSearchHouseListUseCase,
+    BoundingWithinRadiusUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -105,8 +111,8 @@ def house_calender_list_view():
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
                 message=f"Invalid Parameter input, "
-                f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
-                f"month: 1 ~ 12 required",
+                        f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
+                        f"month: 1 ~ 12 required",
             )
         )
     return GetCalenderInfoPresenter().transform(
@@ -139,4 +145,27 @@ def get_recent_view_list_view():
 
     return GetRecentViewListPresenter().transform(
         GetRecentViewListUseCase().execute(dto=dto)
+    )
+
+
+@api.route("/v1/houses/map/search", methods=["GET"])
+def get_search_house_list_view():
+    dto = GetSearchHouseListRequestSchema(
+        keywords=request.args.get("keywords"),
+    ).validate_request_and_make_dto()
+
+    return GetSearchHouseListPresenter().transform(
+        GetSearchHouseListUseCase().execute(dto=dto)
+    )
+
+
+@api.route("/v1/houses/map/<int:house_id>", methods=["GET"])
+def get_bounding_within_radius_view(house_id):
+    dto = GetBoundingWithinRadiusRequestSchema(
+        house_id=house_id,
+        search_type=request.args.get("search_type")
+    ).validate_request_and_make_dto()
+
+    return BoundingWithinRadiusPresenter().transform(
+        BoundingWithinRadiusUseCase().execute(dto=dto)
     )

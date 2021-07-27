@@ -52,3 +52,11 @@ class GetInterestHouseListResponseSchema(BaseModel):
 
 class GetRecentViewListResponseSchema(BaseModel):
     houses: List[GetRecentViewListBaseSchema]
+
+
+class GetSearchHouseListResponseSchema(BaseModel):
+    houses: Union[List[BoundingRealEstateEntity], str]
+
+
+class BoundingWithinRadiusResponseSchema(BaseModel):
+    houses: Union[List[BoundingRealEstateEntity], str]
