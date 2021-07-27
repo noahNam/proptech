@@ -396,7 +396,7 @@ def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(
     assert user.is_out is True
 
 
-def test_get_user_ticket_and_survey_step_then_user_ticket_is_3000_and_survey_step_is_1(
+def test_get_user_ticket_and_survey_step_then_user_ticket_is_3_and_survey_step_is_1(
     session, create_users, ticket_factory
 ):
     dto = GetUserDto(user_id=create_users[0].id)
