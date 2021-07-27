@@ -20,8 +20,8 @@ from tests.seeder.factory import (
     AppAgreeTermsFactory,
     PostFactory,
     ArticleFactory,
-    PointFactory,
-    PointTypeFactory,
+    TicketFactory,
+    TicketTypeFactory,
     DeviceFactory,
     DeviceTokenFactory,
     ReceivePushTypeFactory,
@@ -45,8 +45,8 @@ MODEL_FACTORIES = [
     AppAgreeTermsFactory,
     PostFactory,
     ArticleFactory,
-    PointFactory,
-    PointTypeFactory,
+    TicketFactory,
+    TicketTypeFactory,
     DeviceFactory,
     DeviceTokenFactory,
     ReceivePushTypeFactory,
@@ -74,7 +74,7 @@ def create_users(session, user_factory):
             user_profile=True,
             interest_houses=True,
             recently_view=True,
-            point=False,
+            tickets=False,
         )
         users.append(user)
     session.add_all(users)

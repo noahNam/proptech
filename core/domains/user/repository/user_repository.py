@@ -15,7 +15,7 @@ from app.persistence.model import (
     AvgMonthlyIncomeWokrerModel,
     SidoCodeModel,
     ReceivePushTypeModel,
-    PointModel,
+    TicketModel,
     UserModel,
     RecentlyViewModel,
 )
@@ -407,11 +407,11 @@ class UserRepository:
                 f"[UserRepository][update_app_agree_terms_to_receive_marketing] user_id : {dto.user_id} error : {e}"
             )
 
-    def get_user_survey_step_and_point(self, dto: GetUserDto) -> UserEntity:
+    def get_user_survey_step_and_ticket(self, dto: GetUserDto) -> UserEntity:
         query = (
             session.query(UserModel)
             .options(joinedload(UserModel.user_profile))
-            .options(joinedload(UserModel.points).joinedload(PointModel.point_type))
+            .options(joinedload(UserModel.tickets).joinedload(TicketModel.ticket_type))
             .filter(UserModel.id == dto.user_id)
         )
         user = query.first()
