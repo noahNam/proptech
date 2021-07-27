@@ -95,7 +95,7 @@ class UserRepository:
 
     def create_device_token(self, dto: CreateUserDto, device_id) -> None:
         try:
-            device_token = DeviceTokenModel(device_id=device_id, token=dto.token,)
+            device_token = DeviceTokenModel(device_id=device_id, token=dto.token, )
             session.add(device_token)
             session.commit()
         except exc.IntegrityError as e:
@@ -192,8 +192,8 @@ class UserRepository:
     def is_user_info(self, dto: UpsertUserInfoDto) -> Optional[UserInfoEntity]:
         return session.query(
             exists()
-            .where(UserInfoModel.user_profile_id == dto.user_profile_id)
-            .where(UserInfoModel.code == dto.code)
+                .where(UserInfoModel.user_profile_id == dto.user_profile_id)
+                .where(UserInfoModel.code == dto.code)
         ).scalar()
 
     def create_user_nickname(self, dto: UpsertUserInfoDetailDto) -> int:
@@ -250,8 +250,8 @@ class UserRepository:
         try:
             user_info_id = (
                 session.query(UserInfoModel)
-                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-                .update({"value": dto.value, "updated_at": get_server_timestamp()})
+                    .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
+                    .update({"value": dto.value, "updated_at": get_server_timestamp()})
             )
             session.commit()
 
@@ -282,12 +282,12 @@ class UserRepository:
             raise Exception
 
     def get_user_info(
-        self, dto: GetUserInfoDetailDto
+            self, dto: GetUserInfoDetailDto
     ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
         user_info = (
             session.query(UserInfoModel)
-            .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-            .first()
+                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
+                .first()
         )
 
         if not user_info:
@@ -296,16 +296,16 @@ class UserRepository:
         return user_info.to_entity()
 
     def get_user_multi_data_info(
-        self, dto: GetUserInfoDto, codes: list
+            self, dto: GetUserInfoDto, codes: list
     ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
         # 복수개의 유저 결과를 리턴할 때
         user_info = (
             session.query(UserInfoModel)
-            .filter(
+                .filter(
                 UserInfoModel.user_profile_id == dto.user_profile_id,
                 UserInfoModel.code.in_(codes),
             )
-            .all()
+                .all()
         )
 
         if not user_info:
@@ -323,12 +323,12 @@ class UserRepository:
         )
 
     def get_user_info_by_code(
-        self, user_profile_id: int, code: int
+            self, user_profile_id: int, code: int
     ) -> Optional[UserInfoEntity]:
         user_info = (
             session.query(UserInfoModel)
-            .filter_by(user_profile_id=user_profile_id, code=code)
-            .first()
+                .filter_by(user_profile_id=user_profile_id, code=code)
+                .first()
         )
         if not user_info:
             return None
@@ -342,7 +342,7 @@ class UserRepository:
         return self._make_avg_monthly_income_worker_object(result)
 
     def _make_avg_monthly_income_worker_object(
-        self, result: AvgMonthlyIncomeWokrerModel
+            self, result: AvgMonthlyIncomeWokrerModel
     ) -> AvgMonthlyIncomeWokrerDto:
         return AvgMonthlyIncomeWokrerDto(
             three=result.three,
@@ -358,7 +358,7 @@ class UserRepository:
         return self._make_sido_codes_object(result, dto)
 
     def _make_sido_codes_object(
-        self, result: List[SidoCodeModel], dto: GetUserInfoDetailDto
+            self, result: List[SidoCodeModel], dto: GetUserInfoDetailDto
     ) -> UserInfoCodeValueEntity:
         code_list = []
         name_list = []
@@ -390,7 +390,7 @@ class UserRepository:
             )
 
     def update_app_agree_terms_to_receive_marketing(
-        self, dto: UpdateReceiveNotificationSettingDto
+            self, dto: UpdateReceiveNotificationSettingDto
     ) -> None:
         try:
             session.query(AppAgreeTermsModel).filter_by(user_id=dto.user_id).update(
@@ -410,9 +410,9 @@ class UserRepository:
     def get_user_survey_step_and_ticket(self, dto: GetUserDto) -> UserEntity:
         query = (
             session.query(UserModel)
-            .options(joinedload(UserModel.user_profile))
-            .options(joinedload(UserModel.tickets).joinedload(TicketModel.ticket_type))
-            .filter(UserModel.id == dto.user_id)
+                .options(joinedload(UserModel.user_profile))
+                .options(joinedload(UserModel.tickets).joinedload(TicketModel.ticket_type))
+                .filter(UserModel.id == dto.user_id)
         )
         user = query.first()
         return user.to_entity()
@@ -430,19 +430,3 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][create_recently_view] user_id : {dto.user_id} house_id: {dto.house_id} error : {e}"
             )
-
-    # def get_recently_view_list(self, dto: GetUserDto):
-    #     """
-    #         필터 조건 : 분양 매물중
-    #     """
-    #     filters = list()
-    #     filters.append(RecentlyViewModel.user_id == dto.user_id)
-    #     filters.append(RecentlyViewModel.type == 1)
-    #     filters.append(and_(RealEstateModel.id == RecentlyViewModel.house_id,
-    #                         RealEstateModel.is_available == "True",
-    #                         PublicSaleModel.real_estate_id == RecentlyViewModel.house_id,
-    #                         PublicSaleModel.is_available == "True"))
-    #
-    #     query = session.query(RecentlyViewModel).filter(*filters).order_by(RecentlyViewModel.created_at).limit(30)
-    #
-    #     queryset = query.all()
