@@ -21,7 +21,6 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetInterestHouseListPresenter,
     GetRecentViewListPresenter,
     GetSearchHouseListPresenter,
-    BoundingWithinRadiusPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
@@ -166,6 +165,6 @@ def get_bounding_within_radius_view(house_id):
         search_type=request.args.get("search_type")
     ).validate_request_and_make_dto()
 
-    return BoundingWithinRadiusPresenter().transform(
+    return BoundingPresenter().transform(
         BoundingWithinRadiusUseCase().execute(dto=dto)
     )

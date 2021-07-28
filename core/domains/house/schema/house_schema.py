@@ -57,7 +57,3 @@ class GetRecentViewListResponseSchema(BaseModel):
 
 class GetSearchHouseListResponseSchema(BaseModel):
     houses: Union[GetSearchHouseListEntity, str]
-
-
-class BoundingWithinRadiusResponseSchema(BaseModel):
-    houses: Union[List[BoundingRealEstateEntity], str]
