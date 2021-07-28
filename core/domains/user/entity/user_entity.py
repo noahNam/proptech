@@ -1,11 +1,11 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
 from core.domains.house.entity.house_entity import InterestHouseEntity
 from core.domains.notification.entity.notification_entity import ReceivePushTypeEntity
-from core.domains.user.enum.user_enum import UserPointSignEnum, UserSurveyStepEnum
+from core.domains.user.enum.user_enum import UserTicketSignEnum, UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import CodeStepEnum
 
 
@@ -46,6 +46,31 @@ class DeviceEntity(BaseModel):
     device_token: DeviceTokenEntity = None
 
 
+class SurveyResultEntity(BaseModel):
+    id = int
+    user_id = int
+    total_point: Optional[int]
+    detail_point_house: Optional[int]
+    detail_point_family: Optional[int]
+    detail_point_bank: Optional[int]
+    public_newly_married: Optional[int]
+    public_first_life: Optional[int]
+    public_multiple_children: Optional[int]
+    public_old_parent: Optional[int]
+    public_agency_recommend: Optional[int]
+    public_normal: Optional[int]
+    private_newly_married: Optional[int]
+    private_first_life: Optional[int]
+    private_multiple_children: Optional[int]
+    private_old_parent: Optional[int]
+    private_agency_recommend: Optional[int]
+    private_normal: Optional[int]
+    hope_town_phase_one: Optional[int]
+    hope_town_phase_two: Optional[int]
+    created_at = datetime
+    updated_at = datetime
+
+
 class UserProfileEntity(BaseModel):
     id: int
     user_id: int
@@ -53,15 +78,16 @@ class UserProfileEntity(BaseModel):
     last_update_code: int
     created_at: datetime
     updated_at: datetime
+    user_infos: List[UserInfoEntity] = []
+    survey_result: Optional[SurveyResultEntity]
 
 
-class PointTypeEntity(BaseModel):
+class TicketTypeEntity(BaseModel):
     id: int
-    name: str
     division: str
 
 
-class PointEntity(BaseModel):
+class TicketEntity(BaseModel):
     id: int
     user_id: int
     type: int
@@ -69,7 +95,7 @@ class PointEntity(BaseModel):
     sign: str
     created_by: str
     created_at: datetime
-    point_type: PointTypeEntity = None
+    ticket_type: TicketTypeEntity = None
 
 
 class UserEntity(BaseModel):
@@ -78,24 +104,24 @@ class UserEntity(BaseModel):
     join_date: str
     is_active: bool
     is_out: bool
-    point: int
+    number_ticket: int
     device: DeviceEntity
     user_profile: UserProfileEntity = None
     receive_push_type: ReceivePushTypeEntity
     interest_houses: List[InterestHouseEntity] = None
-    points: List[PointEntity] = None
+    tickets: List[TicketEntity] = None
 
     @property
     def total_amount(self) -> int:
         total_amount = 0
-        if not self.points:
+        if not self.tickets:
             return total_amount
 
-        for point in self.points:
-            if point.sign == UserPointSignEnum.PLUS.value:
-                total_amount += point.amount
+        for ticket in self.tickets:
+            if ticket.sign == UserTicketSignEnum.PLUS.value:
+                total_amount += ticket.amount
             else:
-                total_amount -= point.amount
+                total_amount -= ticket.amount
 
         return 0 if total_amount < 0 else total_amount
 
@@ -118,3 +144,20 @@ class RecentlyViewEntity(BaseModel):
     house_id: int
     type: int
     created_at: datetime
+
+
+class TicketUsageResultDetailEntity(BaseModel):
+    id: int
+    ticket_usage_result_id: int
+    house_type: str
+    subscription_type: str
+    rank: int
+
+
+class TicketUsageResultEntity(BaseModel):
+    id: int
+    user_id: int
+    house_id: int
+    is_active: bool
+    created_at: datetime
+    ticket_usage_result_details: TicketUsageResultDetailEntity
