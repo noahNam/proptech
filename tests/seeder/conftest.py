@@ -32,7 +32,8 @@ from tests.seeder.factory import (
     PublicSaleFactory,
     PublicSalePhotoFactory,
     PublicSaleDetailFactory,
-    PublicSaleDetailPhotoFactory, SurveyResultMFactory, UserInfoFactory,
+    PublicSaleDetailPhotoFactory, SurveyResultMFactory, UserInfoFactory, TicketUsageResultFactory,
+    TicketUsageResultDetailFactory,
 )
 
 MODEL_FACTORIES = [
@@ -59,7 +60,9 @@ MODEL_FACTORIES = [
     PublicSaleDetailFactory,
     PublicSaleDetailPhotoFactory,
     SurveyResultMFactory,
-    UserInfoFactory
+    UserInfoFactory,
+    TicketUsageResultDetailFactory,
+    TicketUsageResultFactory
 ]
 
 faker = Faker()
@@ -83,6 +86,19 @@ def create_users(session, user_factory):
     session.commit()
 
     return users
+
+
+@pytest.fixture
+def create_ticket_usage_results(session, ticket_usage_result_detail_factory, ticket_usage_result_factory):
+    ticket_usage_result_detail = ticket_usage_result_detail_factory.build_batch(size=2)
+    session.add_all(ticket_usage_result_detail)
+    session.commit()
+
+    ticket_usage_result = ticket_usage_result_factory.build()
+    session.add(ticket_usage_result)
+    session.commit()
+
+    return ticket_usage_result
 
 
 @pytest.fixture

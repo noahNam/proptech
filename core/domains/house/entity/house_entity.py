@@ -266,3 +266,9 @@ class GetRecentViewListEntity(BaseModel):
     type: int
     name: str
     image_path: Optional[str]
+
+
+class GetTicketUsageResultEntity(BaseModel):
+    house_id: int
+    name: str
+    image_path: Optional[str]

@@ -32,7 +32,7 @@ from app.persistence.model import (
     PublicSaleDetailPhotoModel,
     PublicSaleDetailModel,
     PublicSalePhotoModel,
-    AdministrativeDivisionModel, SurveyResultModel, UserInfoModel,
+    AdministrativeDivisionModel, SurveyResultModel, UserInfoModel, TicketUsageResultModel, TicketUsageResultDetailModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -164,10 +164,34 @@ class TicketFactory(BaseFactory):
 
     amount = 1
     sign = UserTicketSignEnum.PLUS.value
+    is_active = True
     created_by = UserTicketCreatedByEnum.SYSTEM.value
     created_at = get_server_timestamp()
 
     ticket_type = factory.SubFactory(TicketTypeFactory)
+
+
+class TicketUsageResultDetailFactory(BaseFactory):
+    class Meta:
+        model = TicketUsageResultDetailModel
+
+    ticket_usage_result_id = 1
+    house_structure_type = factory.Sequence(lambda n: f"59B_{n}")
+    subscription_type = factory.Sequence(lambda n: f"신혼부부_{n}")
+    rank = factory.Sequence(lambda n: n + 1)
+
+
+class TicketUsageResultFactory(BaseFactory):
+    class Meta:
+        model = TicketUsageResultModel
+
+    user_id = 1
+    public_house_id = 1
+    ticket_id = 1
+    is_active = True
+    created_at = get_server_timestamp()
+
+    ticket_usage_result_details = factory.List([factory.SubFactory(TicketUsageResultDetailFactory)])
 
 
 class UserFactory(BaseFactory):

@@ -25,7 +25,7 @@ def upgrade():
         sa.Column(
             "id",
             sa.BigInteger().with_variant(sa.Integer(), "sqlite"),
-            autoincrement=False,
+            autoincrement=True,
             nullable=False,
         ),
         sa.Column("name", sa.String(length=100), nullable=False),
