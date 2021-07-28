@@ -26,7 +26,7 @@ class RealEstateModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"),
         primary_key=True,
         nullable=False,
-        autoincrement=True,
+        autoincrement=False,
     )
     name = Column(String(50), nullable=True)
     road_address = Column(String(100), nullable=False)

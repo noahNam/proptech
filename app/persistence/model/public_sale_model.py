@@ -33,7 +33,7 @@ class PublicSaleModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"),
         primary_key=True,
         nullable=False,
-        autoincrement=True,
+        autoincrement=False,
     )
     real_estate_id = Column(
         BigInteger, ForeignKey(RealEstateModel.id, ondelete="CASCADE"), nullable=False
