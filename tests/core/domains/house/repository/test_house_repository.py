@@ -179,6 +179,16 @@ def test_get_recent_view_list_then_entity_result(
 def test_get_ticket_usage_results(
         session,
         create_users,
+        create_real_estate_with_public_sale,
         create_ticket_usage_results,
+        public_sale_photo_factory,
 ):
-    assert 1 == 1
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    session.add(public_sale_photo)
+    session.commit()
+
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = HouseRepository().get_ticket_usage_results(dto=dto)
+
+    assert result[0].house_id == 1
+    assert '아파트' in result[0].name
