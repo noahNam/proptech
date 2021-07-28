@@ -6,7 +6,6 @@ import pytest
 from flask import url_for
 
 from app.extensions.utils.enum.cache_enum import RedisKeyPrefix, RedisExpire
-from core.use_case_output import FailureType
 from tests.seeder.factory import UserFactory
 
 

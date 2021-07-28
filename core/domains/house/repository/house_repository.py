@@ -2,6 +2,8 @@ from typing import Optional, List, Any
 
 from geoalchemy2 import Geometry
 from sqlalchemy import and_, func, or_, literal, String
+from sqlalchemy.orm import joinedload
+
 from sqlalchemy import exc
 from sqlalchemy.sql.functions import _FunctionGenerator
 
@@ -18,6 +20,7 @@ from app.persistence.model import (
     PrivateSaleDetailModel,
     RecentlyViewModel,
     PublicSalePhotoModel,
+    TicketUsageResultModel,
 )
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
@@ -39,6 +42,8 @@ from core.domains.house.entity.house_entity import (
     SearchRealEstateEntity,
     SearchPublicSaleEntity,
     SearchAdministrativeDivisionEntity,
+    PublicSaleEntity,
+    GetTicketUsageResultEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -374,9 +379,10 @@ class HouseRepository:
             near_houses=house_with_private_entities,
         )
 
-    def get_house_public_detail(
-            self, dto: GetHousePublicDetailDto, degree: float, is_like: bool
-    ) -> HousePublicDetailEntity:
+    def get_house_public_detail(self,
+                                dto: GetHousePublicDetailDto,
+                                degree: float,
+                                is_like: bool) -> HousePublicDetailEntity:
         """
             <주변 실거래가 매물 List 가져오기>
             Postgis func- ST_DWithin(A_Geometry, B_Geometry, degree) -> bool
@@ -402,6 +408,7 @@ class HouseRepository:
                 degree,
             )
         )
+
         filters.append(
             and_(
                 RealEstateModel.is_available == "True",
@@ -442,6 +449,7 @@ class HouseRepository:
     def _make_calender_info_entity(
             self, queryset: Optional[list], user_id: int
     ) -> Optional[List[CalenderInfoEntity]]:
+
         """
             <최종 Entity 구성>
             : 분양 매물 + 상세 queryset + is_like -> CalenderInfoEntity
@@ -453,9 +461,9 @@ class HouseRepository:
         for query in queryset:
             dto = GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
 
-            # 사용자가 해당 분양 매물에 대해 찜하기 했는지 여부
-            is_like = self.is_user_liked_house(self.get_public_interest_house(dto=dto))
-            result.append(query.to_calender_info_entity(is_like=is_like))
+        # 사용자가 해당 분양 매물에 대해 찜하기 했는지 여부
+        is_like = self.is_user_liked_house(self.get_public_interest_house(dto=dto))
+        result.append(query.to_calender_info_entity(is_like=is_like))
 
         return result
 
@@ -468,6 +476,7 @@ class HouseRepository:
                 PublicSaleModel.is_available == "True",
             )
         )
+
         filters.append(
             or_(
                 PublicSaleModel.offer_date.startswith(year_month),
@@ -544,6 +553,7 @@ class HouseRepository:
     def _make_interest_house_list_entity(
             self, queryset: Optional[List]
     ) -> List[InterestHouseListEntity]:
+
         result = list()
 
         if queryset:
@@ -558,6 +568,7 @@ class HouseRepository:
                         subscription_end_date=query.subscription_end_date,
                     )
                 )
+
         return result
 
     def get_recent_view_list(self, dto: GetUserDto) -> List[GetRecentViewListEntity]:
@@ -595,6 +606,39 @@ class HouseRepository:
                         type=query.type,
                         name=query.name,
                         image_path=query.path,
+                    )
+                )
+
+        return result
+
+    def get_ticket_usage_results(self, dto: GetUserDto) -> List[GetTicketUsageResultEntity]:
+        subquery = (
+            session.query(
+                TicketUsageResultModel.public_house_id
+            ).filter_by(user_id=dto.user_id, is_active=True).subquery()
+        )
+
+        query = (
+            session.query(PublicSaleModel)
+                .options(joinedload(PublicSaleModel.public_sale_photos))
+                .filter(PublicSaleModel.id == subquery.c.public_house_id)
+        )
+
+        query_set = query.all()
+        return self._make_get_ticket_usage_result_entity(query_set=query_set)
+
+    def _make_get_ticket_usage_result_entity(
+            self, query_set: Optional[List]
+    ) -> List[GetTicketUsageResultEntity]:
+        result = list()
+
+        if query_set:
+            for query in query_set:
+                result.append(
+                    GetTicketUsageResultEntity(
+                        house_id=query.id,
+                        name=query.name,
+                        image_path=query.public_sale_photos.path,
                     )
                 )
         return result
@@ -644,6 +688,7 @@ class HouseRepository:
                      RealEstateModel.jibun_address.contains(dto.keywords))
             )
         )
+
         real_estates_queryset = real_estates_query.all()
 
         public_sales_query = (
@@ -653,6 +698,7 @@ class HouseRepository:
                      PublicSaleModel.name.contains(dto.keywords))
             )
         )
+
         public_sales_queryset = public_sales_query.all()
 
         administrative_divisions_query = (

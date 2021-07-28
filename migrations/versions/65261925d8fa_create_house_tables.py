@@ -56,7 +56,7 @@ def upgrade():
         sa.Column(
             "id",
             sa.BigInteger().with_variant(sa.Integer(), "sqlite"),
-            autoincrement=True,
+            autoincrement=False,
             nullable=False,
         ),
         sa.Column("name", sa.String(length=50), nullable=True),
@@ -87,7 +87,7 @@ def upgrade():
         sa.Column(
             "id",
             sa.BigInteger().with_variant(sa.Integer(), "sqlite"),
-            autoincrement=True,
+            autoincrement=False,
             nullable=False,
         ),
         sa.Column("real_estate_id", sa.BigInteger(), nullable=False),
@@ -121,7 +121,7 @@ def upgrade():
         sa.Column(
             "id",
             sa.BigInteger().with_variant(sa.Integer(), "sqlite"),
-            autoincrement=True,
+            autoincrement=False,
             nullable=False,
         ),
         sa.Column("real_estate_id", sa.BigInteger(), nullable=False),
