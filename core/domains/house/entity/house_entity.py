@@ -270,7 +270,6 @@ class GetRecentViewListEntity(BaseModel):
 
 class SearchRealEstateEntity(BaseModel):
     id: int
-    road_address: str
     jibun_address: str
 
 

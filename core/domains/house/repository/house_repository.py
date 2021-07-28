@@ -2,6 +2,7 @@ from typing import Optional, List
 
 from sqlalchemy import and_, func, or_, literal, String
 
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
 from sqlalchemy import exc
 from app.extensions.utils.log_helper import logger_
@@ -22,6 +23,7 @@ from core.domains.house.dto.house_dto import (
     GetHousePublicDetailDto,
     GetCalenderInfoDto,
     UpsertInterestHouseDto,
+    GetSearchHouseListDto,
 )
 from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
@@ -30,7 +32,8 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     CalenderInfoEntity,
     InterestHouseListEntity,
-    GetRecentViewListEntity,
+    GetRecentViewListEntity, GetSearchHouseListEntity, SearchRealEstateEntity, SearchPublicSaleEntity,
+    SearchAdministrativeDivisionEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -70,8 +73,8 @@ class HouseRepository:
         try:
             interest_house = (
                 session.query(InterestHouseModel)
-                .filter(*filters)
-                .update({"is_like": dto.is_like, "updated_at": get_server_timestamp()})
+                    .filter(*filters)
+                    .update({"is_like": dto.is_like, "updated_at": get_server_timestamp()})
             )
             session.commit()
 
@@ -83,7 +86,7 @@ class HouseRepository:
             )
 
     def _make_object_bounding_entity(
-        self, queryset: Optional[list]
+            self, queryset: Optional[list]
     ) -> Optional[List[BoundingRealEstateEntity]]:
         if not queryset:
             return None
@@ -149,11 +152,11 @@ class HouseRepository:
                 RealEstateModel,
                 func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
                 func.avg(PrivateSaleDetailModel.deposit_price)
-                .filter(
+                    .filter(
                     PrivateSaleDetailModel.trade_type
                     == RealTradeTypeEnum.LONG_TERM_RENT.value
                 )
-                .label("avg_deposit_price"),
+                    .label("avg_deposit_price"),
                 func.avg(PrivateSaleDetailModel.rent_price).label("avg_rent_price"),
                 func.avg(PublicSaleDetailModel.supply_price).label("avg_supply_price"),
                 func.avg(PrivateSaleDetailModel.supply_area).label(
@@ -163,12 +166,12 @@ class HouseRepository:
                     "avg_public_supply_area"
                 ),
             )
-            .join(RealEstateModel.private_sales, isouter=True)
-            .join(RealEstateModel.public_sales, isouter=True)
-            .join(PublicSaleModel.public_sale_details, isouter=True)
-            .join(PublicSaleModel.public_sale_photos, isouter=True)
-            .filter(*filters)
-            .group_by(RealEstateModel.id)
+                .join(RealEstateModel.private_sales, isouter=True)
+                .join(RealEstateModel.public_sales, isouter=True)
+                .join(PublicSaleModel.public_sale_details, isouter=True)
+                .join(PublicSaleModel.public_sale_photos, isouter=True)
+                .filter(*filters)
+                .group_by(RealEstateModel.id)
         )
 
         queryset = query.all()
@@ -176,7 +179,7 @@ class HouseRepository:
         return self._make_object_bounding_entity(queryset=queryset)
 
     def _make_bounding_administrative_entity(
-        self, queryset: Optional[list]
+            self, queryset: Optional[list]
     ) -> Optional[List[AdministrativeDivisionEntity]]:
         if not queryset:
             return None
@@ -210,9 +213,9 @@ class HouseRepository:
                 AdministrativeDivisionModel.level == DivisionLevelEnum.LEVEL_3.value
             )
         elif (
-            BoundingLevelEnum.MIN_SI_GUN_GU_LEVEL.value
-            <= dto.level
-            <= BoundingLevelEnum.MAX_SI_GUN_GU_LEVEL.value
+                BoundingLevelEnum.MIN_SI_GUN_GU_LEVEL.value
+                <= dto.level
+                <= BoundingLevelEnum.MAX_SI_GUN_GU_LEVEL.value
         ):
             filters.append(
                 AdministrativeDivisionModel.level == DivisionLevelEnum.LEVEL_2.value
@@ -228,7 +231,7 @@ class HouseRepository:
         return self._make_bounding_administrative_entity(queryset=queryset)
 
     def _convert_supply_area_to_pyoung_number(
-        self, supply_area: Optional[float]
+            self, supply_area: Optional[float]
     ) -> Optional[int]:
         """
             1평 = 3.3058 (제곱미터)
@@ -262,7 +265,7 @@ class HouseRepository:
         return interest_house.is_like
 
     def get_public_interest_house(
-        self, dto: GetHousePublicDetailDto
+            self, dto: GetHousePublicDetailDto
     ) -> Optional[InterestHouseModel]:
         filters = list()
         filters.append(InterestHouseModel.user_id == dto.user_id)
@@ -298,16 +301,16 @@ class HouseRepository:
                     "max_acquisition_tax"
                 ),
             )
-            .join(RealEstateModel.public_sales)
-            .join(PublicSaleModel.public_sale_details)
-            .join(PublicSaleModel.public_sale_photos)
-            .filter(*filters)
-            .group_by(RealEstateModel.id)
+                .join(RealEstateModel.public_sales)
+                .join(PublicSaleModel.public_sale_details)
+                .join(PublicSaleModel.public_sale_photos)
+                .filter(*filters)
+                .group_by(RealEstateModel.id)
         )
         return query.first()
 
     def _make_house_with_private_entities(
-        self, queryset: Optional[list]
+            self, queryset: Optional[list]
     ) -> Optional[List[RealEstateWithPrivateSaleEntity]]:
         if not queryset:
             return None
@@ -327,17 +330,17 @@ class HouseRepository:
         return results
 
     def _get_supply_price_per_pyoung(
-        self, supply_price: Optional[float], avg_pyoung_number: Optional[float]
+            self, supply_price: Optional[float], avg_pyoung_number: Optional[float]
     ) -> float:
         if not avg_pyoung_number or not supply_price:
             return 0
         return supply_price / avg_pyoung_number
 
     def _make_house_public_detail_entity(
-        self,
-        house_with_public_sales: list,
-        house_with_private_entities: Optional[list],
-        is_like: bool,
+            self,
+            house_with_public_sales: list,
+            house_with_private_entities: Optional[list],
+            is_like: bool,
     ) -> HousePublicDetailEntity:
         return house_with_public_sales[0].to_house_with_public_detail_entity(
             is_like=is_like,
@@ -360,7 +363,7 @@ class HouseRepository:
         )
 
     def get_house_public_detail(
-        self, dto: GetHousePublicDetailDto, degrees: float, is_like: bool
+            self, dto: GetHousePublicDetailDto, degrees: float, is_like: bool
     ) -> HousePublicDetailEntity:
         """
             <주변 실거래가 매물 List 가져오기>
@@ -408,9 +411,9 @@ class HouseRepository:
                     "avg_private_supply_area"
                 ),
             )
-            .join(RealEstateModel.private_sales)
-            .filter(*filters)
-            .group_by(RealEstateModel.id)
+                .join(RealEstateModel.private_sales)
+                .filter(*filters)
+                .group_by(RealEstateModel.id)
         )
 
         house_with_private_queryset = query.all()
@@ -425,7 +428,7 @@ class HouseRepository:
         )
 
     def _make_calender_info_entity(
-        self, queryset: Optional[list], user_id: int
+            self, queryset: Optional[list], user_id: int
     ) -> Optional[List[CalenderInfoEntity]]:
         """
             <최종 Entity 구성>
@@ -472,8 +475,8 @@ class HouseRepository:
 
         query = (
             session.query(RealEstateModel)
-            .join(RealEstateModel.public_sales)
-            .filter(*filters)
+                .join(RealEstateModel.public_sales)
+                .filter(*filters)
         )
 
         queryset = query.all()
@@ -483,7 +486,7 @@ class HouseRepository:
     def get_interest_house_list(self, dto: GetUserDto) -> List[InterestHouseListEntity]:
         public_sales_query = (
             session.query(InterestHouseModel)
-            .with_entities(
+                .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
                 PublicSaleModel.name,
@@ -491,19 +494,19 @@ class HouseRepository:
                 PublicSaleModel.subscription_start_date,
                 PublicSaleModel.subscription_end_date,
             )
-            .join(
+                .join(
                 PublicSaleModel,
                 (InterestHouseModel.house_id == PublicSaleModel.id)
                 & (InterestHouseModel.type == HouseTypeEnum.PUBLIC_SALES.value)
                 & (InterestHouseModel.user_id == dto.user_id)
                 & (InterestHouseModel.is_like == True),
             )
-            .join(PublicSaleModel.real_estates)
+                .join(PublicSaleModel.real_estates)
         )
 
         private_sales_query = (
             session.query(InterestHouseModel)
-            .with_entities(
+                .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
                 PrivateSaleModel.name,
@@ -511,14 +514,14 @@ class HouseRepository:
                 literal("", String).label("subscription_start_date"),
                 literal("", String).label("subscription_end_date"),
             )
-            .join(
+                .join(
                 PrivateSaleModel,
                 (InterestHouseModel.house_id == PrivateSaleModel.id)
                 & (InterestHouseModel.type == HouseTypeEnum.PRIVATE_SALES.value)
                 & (InterestHouseModel.user_id == dto.user_id)
                 & (InterestHouseModel.is_like == True),
             )
-            .join(PrivateSaleModel.real_estates)
+                .join(PrivateSaleModel.real_estates)
         )
 
         query = public_sales_query.union_all(private_sales_query)
@@ -527,7 +530,7 @@ class HouseRepository:
         return self._make_interest_house_list_entity(queryset=queryset)
 
     def _make_interest_house_list_entity(
-        self, queryset: Optional[List]
+            self, queryset: Optional[List]
     ) -> List[InterestHouseListEntity]:
         result = list()
 
@@ -549,26 +552,26 @@ class HouseRepository:
         # private_sales 는 X -> MVP 에서는 매매 상세화면이 없음
         query = (
             session.query(RecentlyViewModel)
-            .with_entities(
+                .with_entities(
                 RecentlyViewModel.house_id,
                 RecentlyViewModel.type,
                 PublicSaleModel.name,
                 PublicSalePhotoModel.path,
             )
-            .join(
+                .join(
                 PublicSaleModel,
                 (RecentlyViewModel.house_id == PublicSaleModel.id)
                 & (RecentlyViewModel.type == HouseTypeEnum.PUBLIC_SALES.value)
                 & (RecentlyViewModel.user_id == dto.user_id),
             )
-            .join(PublicSaleModel.public_sale_photos, isouter=True)
+                .join(PublicSaleModel.public_sale_photos, isouter=True)
         )
 
         queryset = query.all()
         return self._make_get_recent_view_list_entity(queryset=queryset)
 
     def _make_get_recent_view_list_entity(
-        self, queryset: Optional[List]
+            self, queryset: Optional[List]
     ) -> List[GetRecentViewListEntity]:
         result = list()
 
@@ -583,3 +586,65 @@ class HouseRepository:
                     )
                 )
         return result
+
+    def _make_get_search_house_list_entity(self,
+                                           real_estates: Optional[List],
+                                           public_sales: Optional[List],
+                                           administrative_divisions: Optional[List]
+                                           ) -> GetSearchHouseListEntity:
+        search_real_estate_entities = list()
+        search_public_sale_entities = list()
+        search_administrative_divisions_entities = list()
+
+        if real_estates:
+            for real_estate in real_estates:
+                search_real_estate_entities.append(
+                    SearchRealEstateEntity(id=real_estate.id,
+                                           jibun_address=real_estate.jibun_address))
+
+        if public_sales:
+            for public_sale in public_sales:
+                search_public_sale_entities.append(
+                    SearchPublicSaleEntity(id=public_sale.id, name=public_sale.name))
+
+        if administrative_divisions:
+            for division in administrative_divisions:
+                search_administrative_divisions_entities.append(
+                    SearchAdministrativeDivisionEntity(id=division.id, name=division.name))
+
+        return GetSearchHouseListEntity(
+            real_estates=search_real_estate_entities,
+            public_sales=search_public_sale_entities,
+            administrative_divisions=search_administrative_divisions_entities
+        )
+
+    def get_search_house_list(self, dto: GetSearchHouseListDto) -> GetSearchHouseListEntity:
+        real_estates_query = (
+            session.query(RealEstateModel.id, RealEstateModel.jibun_address)
+                .filter(
+                and_(RealEstateModel.is_available == "True",
+                     RealEstateModel.jibun_address.contains(dto.keywords))
+            )
+        )
+        real_estates_queryset = real_estates_query.all()
+
+        public_sales_query = (
+            session.query(PublicSaleModel.id, PublicSaleModel.name)
+                .filter(
+                and_(PublicSaleModel.is_available == "True",
+                     PublicSaleModel.name.contains(dto.keywords))
+            )
+        )
+        public_sales_queryset = public_sales_query.all()
+
+        administrative_divisions_query = (
+            session.query(AdministrativeDivisionModel.id, AdministrativeDivisionModel.name)
+                .filter(AdministrativeDivisionModel.name.contains(dto.keywords))
+        )
+        administrative_divisions_queryset = administrative_divisions_query.all()
+
+        return self._make_get_search_house_list_entity(
+            real_estates=real_estates_queryset,
+            public_sales=public_sales_queryset,
+            administrative_divisions=administrative_divisions_queryset
+        )
