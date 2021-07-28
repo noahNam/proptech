@@ -433,9 +433,16 @@ class GetSurveyResultUseCase(UserBaseUseCase):
 
         user_profile_entity: Optional[UserProfileEntity] = self._user_repo.get_survey_result(dto=dto)
 
-        if not user_profile_entity.user_infos:
+        if not user_profile_entity:
             return UseCaseFailureOutput(
                 type="survey_result",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        if not user_profile_entity.user_infos:
+            return UseCaseFailureOutput(
+                type="wrong_survey_step",
                 message=FailureType.NOT_FOUND_ERROR,
                 code=HTTPStatus.NOT_FOUND,
             )
