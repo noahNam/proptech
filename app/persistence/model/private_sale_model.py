@@ -23,7 +23,6 @@ class PrivateSaleModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"),
         primary_key=True,
         nullable=False,
-        autoincrement=False,
     )
     real_estate_id = Column(
         BigInteger, ForeignKey(RealEstateModel.id, ondelete="CASCADE"), nullable=False
