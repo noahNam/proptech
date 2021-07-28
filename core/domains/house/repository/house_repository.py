@@ -1,6 +1,7 @@
 from typing import Optional, List
 
 from sqlalchemy import and_, func, or_, literal, String
+from sqlalchemy.orm import joinedload
 
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
 from sqlalchemy import exc
@@ -15,7 +16,7 @@ from app.persistence.model import (
     InterestHouseModel,
     PrivateSaleDetailModel,
     RecentlyViewModel,
-    PublicSalePhotoModel,
+    PublicSalePhotoModel, TicketUsageResultModel,
 )
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
@@ -30,7 +31,7 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     CalenderInfoEntity,
     InterestHouseListEntity,
-    GetRecentViewListEntity,
+    GetRecentViewListEntity, PublicSaleEntity, GetTicketUsageResultEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -584,24 +585,34 @@ class HouseRepository:
                 )
         return result
 
-    def get_ticket_usage_results(self, dto: GetUserDto) -> List[GetRecentViewListEntity]:
-        # private_sales 는 X -> MVP 에서는 매매 상세화면이 없음
-        query = (
-            session.query(RecentlyViewModel)
-                .with_entities(
-                RecentlyViewModel.house_id,
-                RecentlyViewModel.type,
-                PublicSaleModel.name,
-                PublicSalePhotoModel.path,
-            )
-                .join(
-                PublicSaleModel,
-                (RecentlyViewModel.house_id == PublicSaleModel.id)
-                & (RecentlyViewModel.type == HouseTypeEnum.PUBLIC_SALES.value)
-                & (RecentlyViewModel.user_id == dto.user_id),
-            )
-                .join(PublicSaleModel.public_sale_photos, isouter=True)
+    def get_ticket_usage_results(self, dto: GetUserDto) -> List[GetTicketUsageResultEntity]:
+        subquery = (
+            session.query(
+                TicketUsageResultModel.public_house_id
+            ).filter_by(user_id=dto.user_id, is_active=True).subquery()
         )
 
-        queryset = query.all()
-        return self._make_get_recent_view_list_entity(queryset=queryset)
+        query = (
+            session.query(PublicSaleModel)
+                .options(joinedload(PublicSaleModel.public_sale_photos))
+                .filter(PublicSaleModel.id == subquery.c.public_house_id)
+        )
+
+        query_set = query.all()
+        return self._make_get_ticket_usage_result_entity(query_set=query_set)
+
+    def _make_get_ticket_usage_result_entity(
+            self, query_set: Optional[List]
+    ) -> List[GetTicketUsageResultEntity]:
+        result = list()
+
+        if query_set:
+            for query in query_set:
+                result.append(
+                    GetTicketUsageResultEntity(
+                        house_id=query.id,
+                        name=query.name,
+                        image_path=query.public_sale_photos.path,
+                    )
+                )
+        return result

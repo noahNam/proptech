@@ -6,7 +6,7 @@ from app.http.requests.v1.house_request import (
     GetHousePublicDetailRequestSchema,
     GetCalenderInfoRequestSchema,
     GetInterestHouseListRequestSchema,
-    GetRecentViewListRequestSchema,
+    GetRecentViewListRequestSchema, GetTicketUsageResultRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -17,7 +17,7 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetCalenderInfoPresenter,
     UpsertInterestHousePresenter,
     GetInterestHouseListPresenter,
-    GetRecentViewListPresenter,
+    GetRecentViewListPresenter, GetTicketUsageResultPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
@@ -26,7 +26,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetHousePublicDetailUseCase,
     GetCalenderInfoUseCase,
     GetInterestHouseListUseCase,
-    GetRecentViewListUseCase,
+    GetRecentViewListUseCase, GetTicketUsageResultUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -139,4 +139,18 @@ def get_recent_view_list_view():
 
     return GetRecentViewListPresenter().transform(
         GetRecentViewListUseCase().execute(dto=dto)
+    )
+
+
+@api.route("/v1/houses/ticket", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_recent_view_list.yml", methods=["GET"])
+def get_ticket_usage_result_view():
+    dto = GetTicketUsageResultRequestSchema(
+        user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return GetTicketUsageResultPresenter().transform(
+        GetTicketUsageResultUseCase().execute(dto=dto)
     )
