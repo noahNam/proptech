@@ -87,6 +87,12 @@ class TicketTypeEntity(BaseModel):
     division: str
 
 
+class TicketTargetEntity(BaseModel):
+    id: int
+    ticket_id: int
+    public_house_id: int
+
+
 class TicketEntity(BaseModel):
     id: int
     user_id: int
@@ -95,7 +101,8 @@ class TicketEntity(BaseModel):
     sign: str
     created_by: str
     created_at: datetime
-    ticket_type: TicketTypeEntity = None
+    ticket_type: Optional[TicketTypeEntity]
+    ticket_targets: Optional[List[TicketTargetEntity]]
 
 
 class UserEntity(BaseModel):
@@ -158,6 +165,7 @@ class TicketUsageResultEntity(BaseModel):
     id: int
     user_id: int
     house_id: int
+    ticket_id: int
     is_active: bool
     created_at: datetime
     ticket_usage_result_details: TicketUsageResultDetailEntity

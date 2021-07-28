@@ -27,3 +27,4 @@ from .private_sale_detail_model import PrivateSaleDetailModel
 from .survey_result_model import SurveyResultModel
 from .ticket_usage_result_model import TicketUsageResultModel
 from .ticket_usage_result_detail_model import TicketUsageResultDetailModel
+from .ticket_target_model import TicketTargetModel
