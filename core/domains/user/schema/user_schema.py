@@ -1,6 +1,8 @@
+from typing import Optional
+
 from pydantic import BaseModel, StrictStr, StrictInt
 
-from core.domains.user.entity.user_entity import UserInfoCodeValueEntity
+from core.domains.user.entity.user_entity import UserInfoCodeValueEntity, SurveyResultEntity, UserProfileEntity
 
 
 class GetUserBaseSchema(BaseModel):
@@ -11,7 +13,7 @@ class GetUserBaseSchema(BaseModel):
 
 class GetUserMainBaseSchema(BaseModel):
     survey_step: int
-    point: int
+    tickets: int
     is_badge: bool
 
 
@@ -41,3 +43,7 @@ class PatchUserOutResponseSchema(BaseModel):
 
 class GetUserMainResponseSchema(BaseModel):
     result: GetUserMainBaseSchema
+
+
+class GetSurveyResultResponseSchema(BaseModel):
+    result: UserProfileEntity
