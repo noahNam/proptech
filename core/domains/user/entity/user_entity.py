@@ -99,6 +99,7 @@ class TicketEntity(BaseModel):
     type: int
     amount: int
     sign: str
+    is_active: bool
     created_by: str
     created_at: datetime
     ticket_type: Optional[TicketTypeEntity]
@@ -125,10 +126,11 @@ class UserEntity(BaseModel):
             return total_amount
 
         for ticket in self.tickets:
-            if ticket.sign == UserTicketSignEnum.PLUS.value:
-                total_amount += ticket.amount
-            else:
-                total_amount -= ticket.amount
+            if ticket.is_active:
+                if ticket.sign == UserTicketSignEnum.PLUS.value:
+                    total_amount += ticket.amount
+                else:
+                    total_amount -= ticket.amount
 
         return 0 if total_amount < 0 else total_amount
 
