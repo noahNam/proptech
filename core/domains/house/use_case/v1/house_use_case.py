@@ -17,6 +17,7 @@ from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
     GetRecentViewListEntity,
     BoundingRealEstateEntity,
+    GetSearchHouseListEntity,
 )
 from core.domains.house.enum.house_enum import BoundingLevelEnum, HouseTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
@@ -174,7 +175,12 @@ class GetSearchHouseListUseCase(HouseBaseUseCase):
     def execute(
             self, dto: GetSearchHouseListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        result: Union[List[BoundingRealEstateEntity], str] = "null"
+        if not dto.keywords or dto.keywords == "":
+            result = "null"
+            return UseCaseSuccessOutput(value=result)
+
+        result: Union[GetSearchHouseListEntity, str] = self._house_repo.get_search_house_list(dto=dto)
+
         return UseCaseSuccessOutput(value=result)
 
 

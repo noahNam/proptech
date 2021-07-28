@@ -174,3 +174,4 @@ def test_get_recent_view_list_then_entity_result(
     assert isinstance(result, list)
     assert len(result) == 1
     assert result[0].image_path == public_sale_photo_factory.path
+
