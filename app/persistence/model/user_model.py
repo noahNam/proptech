@@ -17,7 +17,7 @@ class UserModel(db.Model):
     __tablename__ = "users"
 
     id = Column(
-        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False, autoincrement=False
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     is_required_agree_terms = Column(Boolean, nullable=False, default=False)
     join_date = Column(String(8), nullable=False)
