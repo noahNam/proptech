@@ -32,7 +32,7 @@ from app.persistence.model import (
     PublicSaleDetailPhotoModel,
     PublicSaleDetailModel,
     PublicSalePhotoModel,
-    AdministrativeDivisionModel,
+    AdministrativeDivisionModel, SurveyResultModel, UserInfoModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -86,12 +86,49 @@ class DeviceFactory(BaseFactory):
     device_token = factory.SubFactory(DeviceTokenFactory)
 
 
+class SurveyResultMFactory(BaseFactory):
+    class Meta:
+        model = SurveyResultModel
+
+    user_id = 1
+    total_point = 32
+    detail_point_house = 24
+    detail_point_family = 25
+    detail_point_bank = 26
+    public_newly_married = 10
+    public_first_life = 11
+    public_multiple_children = 12
+    public_old_parent = 13
+    public_agency_recommend = 14
+    public_normal = 15
+    private_newly_married = 16
+    private_first_life = 17
+    private_old_parent = 19
+    private_agency_recommend = 20
+    private_normal = 21
+    hope_town_phase_one = 7
+    hope_town_phase_two = 9
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+
+class UserInfoFactory(BaseFactory):
+    class Meta:
+        model = UserInfoModel
+
+    code = 1001
+    value = "19850509"
+
+
 class UserProfileFactory(BaseFactory):
     class Meta:
         model = UserProfileModel
 
     nickname = "noah"
     last_update_code = 1000
+
+    user_infos = factory.List([factory.SubFactory(UserInfoFactory)])
+    survey_result = factory.SubFactory(SurveyResultMFactory)
 
 
 class ReceivePushTypeFactory(BaseFactory):
