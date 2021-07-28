@@ -268,6 +268,12 @@ class GetRecentViewListEntity(BaseModel):
     image_path: Optional[str]
 
 
+class GetTicketUsageResultEntity(BaseModel):
+    house_id: int
+    name: str
+    image_path: Optional[str]
+
+
 class SearchRealEstateEntity(BaseModel):
     id: int
     jibun_address: str

@@ -19,8 +19,8 @@ from app.persistence.model import (
     InterestHouseModel,
     ReceivePushTypeModel,
     AppAgreeTermsModel,
-    PointTypeModel,
-    PointModel,
+    TicketTypeModel,
+    TicketModel,
     UserModel,
     ArticleModel,
     PostModel,
@@ -32,7 +32,7 @@ from app.persistence.model import (
     PublicSaleDetailPhotoModel,
     PublicSaleDetailModel,
     PublicSalePhotoModel,
-    AdministrativeDivisionModel,
+    AdministrativeDivisionModel, SurveyResultModel, UserInfoModel, TicketUsageResultModel, TicketUsageResultDetailModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -52,9 +52,9 @@ from core.domains.notification.enum.notification_enum import (
 )
 from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
 from core.domains.user.enum.user_enum import (
-    UserPointTypeDivisionEnum,
-    UserPointCreatedByEnum,
-    UserPointSignEnum,
+    UserTicketTypeDivisionEnum,
+    UserTicketCreatedByEnum,
+    UserTicketSignEnum,
 )
 
 faker = FakerFactory.create(locale="ko_KR")
@@ -86,12 +86,49 @@ class DeviceFactory(BaseFactory):
     device_token = factory.SubFactory(DeviceTokenFactory)
 
 
+class SurveyResultMFactory(BaseFactory):
+    class Meta:
+        model = SurveyResultModel
+
+    user_id = 1
+    total_point = 32
+    detail_point_house = 24
+    detail_point_family = 25
+    detail_point_bank = 26
+    public_newly_married = 10
+    public_first_life = 11
+    public_multiple_children = 12
+    public_old_parent = 13
+    public_agency_recommend = 14
+    public_normal = 15
+    private_newly_married = 16
+    private_first_life = 17
+    private_old_parent = 19
+    private_agency_recommend = 20
+    private_normal = 21
+    hope_town_phase_one = 7
+    hope_town_phase_two = 9
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+
+class UserInfoFactory(BaseFactory):
+    class Meta:
+        model = UserInfoModel
+
+    code = 1001
+    value = "19850509"
+
+
 class UserProfileFactory(BaseFactory):
     class Meta:
         model = UserProfileModel
 
     nickname = "noah"
     last_update_code = 1000
+
+    user_infos = factory.List([factory.SubFactory(UserInfoFactory)])
+    survey_result = factory.SubFactory(SurveyResultMFactory)
 
 
 class ReceivePushTypeFactory(BaseFactory):
@@ -114,24 +151,47 @@ class InterestHouseFactory(BaseFactory):
     is_like = True
 
 
-class PointTypeFactory(BaseFactory):
+class TicketTypeFactory(BaseFactory):
     class Meta:
-        model = PointTypeModel
+        model = TicketTypeModel
 
-    name = "결제포인트 적립"
-    division = UserPointTypeDivisionEnum.CHARGED.value
+    division = UserTicketTypeDivisionEnum.CHARGED.value
 
 
-class PointFactory(BaseFactory):
+class TicketFactory(BaseFactory):
     class Meta:
-        model = PointModel
+        model = TicketModel
 
-    amount = 1000
-    sign = UserPointSignEnum.PLUS.value
-    created_by = UserPointCreatedByEnum.SYSTEM.value
+    amount = 1
+    sign = UserTicketSignEnum.PLUS.value
+    is_active = True
+    created_by = UserTicketCreatedByEnum.SYSTEM.value
     created_at = get_server_timestamp()
 
-    point_type = factory.SubFactory(PointTypeFactory)
+    ticket_type = factory.SubFactory(TicketTypeFactory)
+
+
+class TicketUsageResultDetailFactory(BaseFactory):
+    class Meta:
+        model = TicketUsageResultDetailModel
+
+    ticket_usage_result_id = 1
+    house_structure_type = factory.Sequence(lambda n: f"59B_{n}")
+    subscription_type = factory.Sequence(lambda n: f"신혼부부_{n}")
+    rank = factory.Sequence(lambda n: n + 1)
+
+
+class TicketUsageResultFactory(BaseFactory):
+    class Meta:
+        model = TicketUsageResultModel
+
+    user_id = 1
+    public_house_id = 1
+    ticket_id = 1
+    is_active = True
+    created_at = get_server_timestamp()
+
+    ticket_usage_result_details = factory.List([factory.SubFactory(TicketUsageResultDetailFactory)])
 
 
 class UserFactory(BaseFactory):
@@ -146,7 +206,7 @@ class UserFactory(BaseFactory):
     join_date = get_server_timestamp().strftime("%y%m%d")
     is_active = True
     is_out = False
-    point = 0
+    number_ticket = 0
 
     @factory.post_generation
     def device(obj, create, extracted, **kwargs):
@@ -169,9 +229,9 @@ class UserFactory(BaseFactory):
             InterestHouseFactory(users=obj, **kwargs)
 
     @factory.post_generation
-    def point(obj, create, extracted, **kwargs):
+    def tickets(obj, create, extracted, **kwargs):
         if extracted:
-            PointFactory(users=obj, **kwargs)
+            TicketFactory(users=obj, **kwargs)
 
     @factory.post_generation
     def recently_view(obj, create, extracted, **kwargs):

@@ -11,9 +11,9 @@ class UserProviderCallEnum(Enum):
     CALL_END_POINT = "/api/captain/v1/users/provider"
 
 
-class UserPointTypeDivisionEnum(Enum):
+class UserTicketTypeDivisionEnum(Enum):
     """
-    point_types.division 테이블에서 사용
+    ticket_types.division 테이블에서 사용
     """
 
     FREE = "free"
@@ -21,18 +21,18 @@ class UserPointTypeDivisionEnum(Enum):
     REFUND = "refund"
 
 
-class UserPointSignEnum(Enum):
+class UserTicketSignEnum(Enum):
     """
-    points.sign 테이블에서 사용
+    tickets.sign 테이블에서 사용
     """
 
     PLUS = "plus"
     MINUS = "minus"
 
 
-class UserPointCreatedByEnum(Enum):
+class UserTicketCreatedByEnum(Enum):
     """
-    points.created_by 테이블에서 사용
+    tickets.created_by 테이블에서 사용
     """
 
     SYSTEM = "system"

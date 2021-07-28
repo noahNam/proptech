@@ -178,6 +178,24 @@ def test_get_recent_view_list_then_entity_result(
     assert result[0].image_path == public_sale_photo_factory.path
 
 
+def test_get_ticket_usage_results(
+        session,
+        create_users,
+        create_real_estate_with_public_sale,
+        create_ticket_usage_results,
+        public_sale_photo_factory,
+):
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    session.add(public_sale_photo)
+    session.commit()
+
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = HouseRepository().get_ticket_usage_results(dto=dto)
+
+    assert result[0].house_id == 1
+    assert '아파트' in result[0].name
+
+
 def test_get_search_house_list_when_get_keywords(
         session,
         create_real_estate_with_public_sale
