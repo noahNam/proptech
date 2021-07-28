@@ -145,7 +145,7 @@ def get_recent_view_list_view():
 @api.route("/v1/houses/ticket", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_recent_view_list.yml", methods=["GET"])
+@swag_from("get_ticket_usage_result.yml", methods=["GET"])
 def get_ticket_usage_result_view():
     dto = GetTicketUsageResultRequestSchema(
         user_id=current_user.id,

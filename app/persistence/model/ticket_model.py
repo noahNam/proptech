@@ -43,6 +43,7 @@ class TicketModel(db.Model):
             type=self.type,
             amount=self.amount,
             sign=self.sign,
+            is_active=self.is_active,
             created_by=self.created_by,
             created_at=self.created_at,
             ticket_type=self.ticket_type.to_entity() if self.ticket_type else None,
