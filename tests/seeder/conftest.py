@@ -32,7 +32,7 @@ from tests.seeder.factory import (
     PublicSaleFactory,
     PublicSalePhotoFactory,
     PublicSaleDetailFactory,
-    PublicSaleDetailPhotoFactory,
+    PublicSaleDetailPhotoFactory, SurveyResultMFactory, UserInfoFactory,
 )
 
 MODEL_FACTORIES = [
@@ -58,6 +58,8 @@ MODEL_FACTORIES = [
     PublicSalePhotoFactory,
     PublicSaleDetailFactory,
     PublicSaleDetailPhotoFactory,
+    SurveyResultMFactory,
+    UserInfoFactory
 ]
 
 faker = Faker()
@@ -143,7 +145,7 @@ def create_notifications(session, notification_factory):
         content="관심 설정 해두신 동탄 메르시 분양이 시작됐습니다.",
         created_at=str(get_server_timestamp().replace(microsecond=0)),
         badge_type=NotificationBadgeTypeEnum.ALL.value,
-        data={"user_id": user_id, "topic": NotificationTopicEnum.SUB_NEWS.value,},
+        data={"user_id": user_id, "topic": NotificationTopicEnum.SUB_NEWS.value, },
     )
     # make notification message
     message_dict_1 = MessageConverter.to_dict(message_dto)
@@ -154,7 +156,7 @@ def create_notifications(session, notification_factory):
         content="관심 설정 해두신 동탄 메르시 신청 당일입니다.신청을 서둘러 주세요:)",
         created_at=str(get_server_timestamp().replace(microsecond=0)),
         badge_type=NotificationBadgeTypeEnum.ALL.value,
-        data={"user_id": user_id, "topic": NotificationTopicEnum.SUB_SCHEDULE.value,},
+        data={"user_id": user_id, "topic": NotificationTopicEnum.SUB_SCHEDULE.value, },
     )
     # make notification message
     message_dict_2 = MessageConverter.to_dict(message_dto)
@@ -165,7 +167,7 @@ def create_notifications(session, notification_factory):
         content="2.0버전이 출시되었습니다.업데이트 요청 드립니다.",
         created_at=str(get_server_timestamp().replace(microsecond=0)),
         badge_type=NotificationBadgeTypeEnum.ALL.value,
-        data={"user_id": user_id, "topic": NotificationTopicEnum.OFFICIAL.value,},
+        data={"user_id": user_id, "topic": NotificationTopicEnum.OFFICIAL.value, },
     )
     # make notification message
     message_dict_3 = MessageConverter.to_dict(message_dto)
@@ -221,7 +223,7 @@ def create_real_estate_with_private_sale(session, real_estate_factory):
 
 @pytest.fixture
 def create_real_estate_with_bounding(
-    session, create_real_estate_with_public_sale, create_real_estate_with_private_sale
+        session, create_real_estate_with_public_sale, create_real_estate_with_private_sale
 ):
     real_estates = list()
 

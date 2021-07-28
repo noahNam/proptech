@@ -17,7 +17,7 @@ from app.persistence.model import (
     ReceivePushTypeModel,
     TicketModel,
     UserModel,
-    RecentlyViewModel,
+    RecentlyViewModel, SurveyResultModel,
 )
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
 from core.domains.notification.dto.notification_dto import (
@@ -38,7 +38,7 @@ from core.domains.user.entity.user_entity import (
     UserInfoEntity,
     UserInfoEmptyEntity,
     UserEntity,
-    UserInfoCodeValueEntity,
+    UserInfoCodeValueEntity, UserProfileEntity,
 )
 from core.domains.user.enum.user_info_enum import CodeEnum
 from core.exceptions import NotUniqueErrorException
@@ -430,3 +430,21 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][create_recently_view] user_id : {dto.user_id} house_id: {dto.house_id} error : {e}"
             )
+
+    def get_survey_result(self, dto: GetUserDto) -> UserProfileEntity:
+        query = (
+            session.query(UserProfileModel)
+                .options(joinedload(UserProfileModel.survey_result))
+                .join(
+                UserInfoModel,
+                (UserProfileModel.id == UserInfoModel.user_profile_id)
+                & (UserInfoModel.code == CodeEnum.BIRTHDAY.value))
+                .filter(UserProfileModel.user_id == dto.user_id)
+        )
+
+        user_profile = query.first()
+
+        if not user_profile:
+            return None
+
+        return user_profile.to_entity()

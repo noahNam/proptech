@@ -24,7 +24,8 @@ class TicketUsageResultModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
     ticket_usage_result_details = relationship(
-        "TicketUsageResultDetailModel", backref=backref("ticket_usage_results"), uselist=False
+        "TicketUsageResultDetailModel", backref=backref("ticket_usage_results"), uselist=True,
+        primaryjoin='foreign(TicketUsageResultModel.id)== TicketUsageResultDetailModel.ticket_usage_result_id'
     )
 
     def to_entity(self) -> TicketUsageResultEntity:

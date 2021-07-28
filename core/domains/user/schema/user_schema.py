@@ -1,6 +1,8 @@
+from typing import Optional
+
 from pydantic import BaseModel, StrictStr, StrictInt
 
-from core.domains.user.entity.user_entity import UserInfoCodeValueEntity
+from core.domains.user.entity.user_entity import UserInfoCodeValueEntity, SurveyResultEntity, UserProfileEntity
 
 
 class GetUserBaseSchema(BaseModel):
@@ -41,3 +43,7 @@ class PatchUserOutResponseSchema(BaseModel):
 
 class GetUserMainResponseSchema(BaseModel):
     result: GetUserMainBaseSchema
+
+
+class GetSurveyResultResponseSchema(BaseModel):
+    result: UserProfileEntity
