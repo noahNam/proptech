@@ -1,12 +1,13 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 
+from geoalchemy2 import Geometry
 from sqlalchemy import and_, func, or_, literal, String
-
-from app.extensions.utils.query_helper import RawQueryHelper
-from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
 from sqlalchemy import exc
-from app.extensions.utils.log_helper import logger_
+from sqlalchemy.sql.functions import _FunctionGenerator
+
 from app.extensions.database import session
+from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
     PrivateSaleModel,
@@ -24,6 +25,7 @@ from core.domains.house.dto.house_dto import (
     GetCalenderInfoDto,
     UpsertInterestHouseDto,
     GetSearchHouseListDto,
+    BoundingWithinRadiusDto,
 )
 from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
@@ -32,7 +34,10 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     CalenderInfoEntity,
     InterestHouseListEntity,
-    GetRecentViewListEntity, GetSearchHouseListEntity, SearchRealEstateEntity, SearchPublicSaleEntity,
+    GetRecentViewListEntity,
+    GetSearchHouseListEntity,
+    SearchRealEstateEntity,
+    SearchPublicSaleEntity,
     SearchAdministrativeDivisionEntity,
 )
 from core.domains.house.enum.house_enum import (
@@ -111,16 +116,23 @@ class HouseRepository:
 
         return results
 
-    def get_bounding(self, dto: CoordinatesRangeDto) -> Optional[list]:
-        filters = list()
-        filters.append(
-            func.ST_Contains(
-                func.ST_MakeEnvelope(
-                    dto.start_x, dto.end_y, dto.end_x, dto.start_y, 4326
-                ),
-                RealEstateModel.coordinates,
-            )
+    def get_bounding_filter_with_two_points(self, dto: CoordinatesRangeDto) -> _FunctionGenerator:
+        return func.ST_Contains(
+            func.ST_MakeEnvelope(
+                dto.start_x, dto.end_y, dto.end_x, dto.start_y, 4326), RealEstateModel.coordinates
         )
+
+    def get_bounding_filter_with_radius(self, geometry_coordinates: Geometry,
+                                        degree: float) -> _FunctionGenerator:
+        return func.ST_DWithin(
+            geometry_coordinates,
+            RealEstateModel.coordinates,
+            degree,
+        )
+
+    def get_bounding(self, bounding_filter: Any) -> Optional[list]:
+        filters = list()
+        filters.append(bounding_filter)
         filters.append(
             or_(
                 and_(
@@ -363,15 +375,15 @@ class HouseRepository:
         )
 
     def get_house_public_detail(
-            self, dto: GetHousePublicDetailDto, degrees: float, is_like: bool
+            self, dto: GetHousePublicDetailDto, degree: float, is_like: bool
     ) -> HousePublicDetailEntity:
         """
             <주변 실거래가 매물 List 가져오기>
-            Postgis func- ST_DWithin(A_Geometry, B_Geometry, degrees) -> bool
+            Postgis func- ST_DWithin(A_Geometry, B_Geometry, degree) -> bool
             : A_Geometry 기준, 반경 x degree 이내 B_Geometry 속하면 True, or False
             -> A_Geometry : 분양 매물 위치
             -> B_Geometry : 주변 실거래가 매물
-            -> degrees : 반경 1도 -> 약 111km (검색 결과에 따라 범위 조정 필요합니다.)
+            -> degree : 반경 1도 -> 약 111km (검색 결과에 따라 범위 조정 필요합니다.)
 
             <최종 Entity 구성>
             : 분양 매물 상세 queryset + is_like + 주변 실거래가 queryset -> HousePublicDetailEntity
@@ -387,7 +399,7 @@ class HouseRepository:
             func.ST_DWithin(
                 house_with_public_sales[0].coordinates,
                 RealEstateModel.coordinates,
-                degrees,
+                degree,
             )
         )
         filters.append(
@@ -619,6 +631,12 @@ class HouseRepository:
         )
 
     def get_search_house_list(self, dto: GetSearchHouseListDto) -> GetSearchHouseListEntity:
+        """
+            todo: 검색 성능 고도화 필요
+            - full_scan 방식
+            - %LIKE% : 서로 다른 두 단어부터 검색 불가
+            - Full Text Search 필요(ts_vector, pg_trgm, elastic_search...)
+        """
         real_estates_query = (
             session.query(RealEstateModel.id, RealEstateModel.jibun_address)
                 .filter(
@@ -648,3 +666,26 @@ class HouseRepository:
             public_sales=public_sales_queryset,
             administrative_divisions=administrative_divisions_queryset
         )
+
+    def get_geometry_coordinates_from_real_estate(self, real_estate_id: int) -> Optional[Geometry]:
+        real_estate = session.query(RealEstateModel).filter_by(id=real_estate_id).first()
+
+        if real_estate:
+            return real_estate.coordinates
+        return None
+
+    def get_geometry_coordinates_from_public_sale(self, public_sale_id: int) -> Optional[Geometry]:
+        public_sale = session.query(PublicSaleModel).filter_by(id=public_sale_id).first()
+
+        if public_sale:
+            return self.get_geometry_coordinates_from_real_estate(real_estate_id=public_sale.real_estate_id)
+        return None
+
+    def get_geometry_coordinates_from_administrative_division(self,
+                                                              administrative_division_id: int
+                                                              ) -> Optional[Geometry]:
+        division = session.query(AdministrativeDivisionModel).filter_by(id=administrative_division_id).first()
+
+        if division:
+            return division.coordinates
+        return None

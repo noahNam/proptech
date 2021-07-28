@@ -19,7 +19,7 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     GetSearchHouseListEntity,
 )
-from core.domains.house.enum.house_enum import BoundingLevelEnum, HouseTypeEnum
+from core.domains.house.enum.house_enum import BoundingLevelEnum, HouseTypeEnum, SearchTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import RecentlyViewDto, GetUserDto
 from core.domains.user.enum import UserTopicEnum
@@ -80,7 +80,8 @@ class BoundingUseCase(HouseBaseUseCase):
             )
         # dto.level condition
         if dto.level >= BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
-            bounding_entities = self._house_repo.get_bounding(dto=dto)
+            bounding_filter = self._house_repo.get_bounding_filter_with_two_points(dto=dto)
+            bounding_entities = self._house_repo.get_bounding(bounding_filter=bounding_filter)
         else:
             bounding_entities = self._house_repo.get_administrative_divisions(dto=dto)
 
@@ -104,9 +105,9 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             self._house_repo.get_public_interest_house(dto=dto)
         )
 
-        # get HousePublicDetailEntity (degrees 조절 필요)
+        # get HousePublicDetailEntity (degree 조절 필요)
         entities = self._house_repo.get_house_public_detail(
-            dto=dto, degrees=1, is_like=is_like
+            dto=dto, degree=1, is_like=is_like
         )
 
         recently_view_dto = RecentlyViewDto(
@@ -188,5 +189,32 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
     def execute(
             self, dto: BoundingWithinRadiusDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        result: Union[List[BoundingRealEstateEntity], str] = "null"
-        return UseCaseSuccessOutput(value=result)
+
+        if not dto.house_id or not dto.search_type:
+            return UseCaseFailureOutput(
+                type="BoundingWithinRadiusDto",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+        coordinates = None
+        if dto.search_type == SearchTypeEnum.FROM_REAL_ESTATE.value:
+            coordinates = self._house_repo.get_geometry_coordinates_from_real_estate(dto.house_id)
+        elif dto.search_type == SearchTypeEnum.FROM_PUBLIC_SALE.value:
+            coordinates = self._house_repo.get_geometry_coordinates_from_public_sale(dto.house_id)
+        elif dto.search_type == SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value:
+            coordinates = self._house_repo.get_geometry_coordinates_from_administrative_division(dto.house_id)
+
+        if not coordinates:
+            return UseCaseFailureOutput(
+                type="coordinates",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+        # degree 테스트 필요: app에 나오는 반경 범위를 보면서 degree 조절 필요합니다.
+        bounding_filter = self._house_repo.get_bounding_filter_with_radius(geometry_coordinates=coordinates,
+                                                                           degree=1)
+        bounding_entities = self._house_repo.get_bounding(bounding_filter=bounding_filter)
+
+        if not bounding_entities:
+            return UseCaseSuccessOutput(value="null")
+        return UseCaseSuccessOutput(value=bounding_entities)
