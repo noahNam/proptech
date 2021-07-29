@@ -24,12 +24,7 @@ def upgrade():
 
     op.create_table(
         "administrative_divisions",
-        sa.Column(
-            "id",
-            sa.BigInteger(),
-            autoincrement=True,
-            nullable=False,
-        ),
+        sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False,),
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column(
             "name_ts",

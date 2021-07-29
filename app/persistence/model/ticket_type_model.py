@@ -1,7 +1,8 @@
 from sqlalchemy import (
     Column,
     String,
-    SmallInteger, Integer,
+    SmallInteger,
+    Integer,
 )
 
 from app import db

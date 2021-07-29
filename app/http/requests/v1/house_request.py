@@ -1,6 +1,13 @@
 from typing import Tuple
 
-from pydantic import BaseModel, StrictFloat, validator, ValidationError, StrictInt, StrictStr
+from pydantic import (
+    BaseModel,
+    StrictFloat,
+    validator,
+    ValidationError,
+    StrictInt,
+    StrictStr,
+)
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.house.dto.house_dto import (
@@ -66,7 +73,7 @@ class GetInterestHouseListRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetInterestHouseListSchema(user_id=self.user_id, ).dict()
+            schema = GetInterestHouseListSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -81,7 +88,7 @@ class GetRecentViewListRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetRecentViewListSchema(user_id=self.user_id, ).dict()
+            schema = GetRecentViewListSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -238,8 +245,8 @@ class GetCalenderInfoSchema(BaseModel):
     def check_year(cls, year) -> str:
         year_to_int = int(year)
         if (
-                year_to_int < CalenderYearThreshHold.MIN_YEAR.value
-                or year_to_int > CalenderYearThreshHold.MAX_YEAR.value
+            year_to_int < CalenderYearThreshHold.MIN_YEAR.value
+            or year_to_int > CalenderYearThreshHold.MAX_YEAR.value
         ):
             raise ValidationError("Out of range: year is currently support 2017 ~ 2030")
         return year
@@ -282,7 +289,7 @@ class GetTicketUsageResultRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetTicketUsageResultSchema(user_id=self.user_id, ).dict()
+            schema = GetTicketUsageResultSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -317,8 +324,8 @@ class GetBoundingWithinRadiusSchema(BaseModel):
     @validator("search_type")
     def check_search_type(cls, search_type) -> int:
         if (
-                search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
-                or search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
+            search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
+            or search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
         ):
             raise ValidationError("Out of range: Available search_type - (1, 2, 3) ")
         return search_type
@@ -332,8 +339,7 @@ class GetBoundingWithinRadiusRequestSchema:
     def validate_request_and_make_dto(self):
         try:
             schema = GetBoundingWithinRadiusSchema(
-                house_id=self.house_id,
-                search_type=self.search_type
+                house_id=self.house_id, search_type=self.search_type
             ).dict()
             return BoundingWithinRadiusDto(**schema)
         except ValidationError as e:
