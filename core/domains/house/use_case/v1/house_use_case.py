@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from typing import Union, List
+from typing import Union, List, Optional
 
 import inject
 
@@ -196,10 +196,10 @@ class GetSearchHouseListUseCase(HouseBaseUseCase):
             self, dto: GetSearchHouseListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.keywords or dto.keywords == "":
-            result = "null"
+            result = None
             return UseCaseSuccessOutput(value=result)
 
-        result: Union[GetSearchHouseListEntity, str] = self._house_repo.get_search_house_list(dto=dto)
+        result: Optional[GetSearchHouseListEntity] = self._house_repo.get_search_house_list(dto=dto)
 
         return UseCaseSuccessOutput(value=result)
 

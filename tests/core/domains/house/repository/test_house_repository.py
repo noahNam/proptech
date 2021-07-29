@@ -201,7 +201,9 @@ def test_get_search_house_list_when_get_keywords(
         create_real_estate_with_public_sale
 ):
     dto = GetSearchHouseListDto(keywords="서울")
-    real_estates = [SearchRealEstateEntity(id=1, jibun_address="서울시 서초구 어딘가")]
+    real_estates = [SearchRealEstateEntity(id=1,
+                                           jibun_address="서울시 서초구 어딘가",
+                                           road_address="서울시 서초구 어딘가길")]
     public_sales = [SearchPublicSaleEntity(id=2, name="서울숲아파트")]
     administrative_divisions = [SearchAdministrativeDivisionEntity(id=3, name="서울특별시 서초구")]
 

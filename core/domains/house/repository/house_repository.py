@@ -656,7 +656,8 @@ class HouseRepository:
             for real_estate in real_estates:
                 search_real_estate_entities.append(
                     SearchRealEstateEntity(id=real_estate.id,
-                                           jibun_address=real_estate.jibun_address))
+                                           jibun_address=real_estate.jibun_address,
+                                           road_address=real_estate.road_address))
 
         if public_sales:
             for public_sale in public_sales:
@@ -682,10 +683,14 @@ class HouseRepository:
             - Full Text Search 필요(ts_vector, pg_trgm, elastic_search...)
         """
         real_estates_query = (
-            session.query(RealEstateModel.id, RealEstateModel.jibun_address)
+            session.query(RealEstateModel.id, RealEstateModel.jibun_address, RealEstateModel.road_address)
                 .filter(
-                and_(RealEstateModel.is_available == "True",
-                     RealEstateModel.jibun_address.contains(dto.keywords))
+                (
+                        ((RealEstateModel.is_available == "True") & (
+                            RealEstateModel.jibun_address.contains(dto.keywords))) |
+                        ((RealEstateModel.is_available == "True") & (
+                            RealEstateModel.road_address.contains(dto.keywords)))
+                )
             )
         )
 

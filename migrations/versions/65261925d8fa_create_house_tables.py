@@ -10,6 +10,8 @@ from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
+from sqlalchemy.dialects import postgresql
+
 revision = "65261925d8fa"
 down_revision = "50659369a256"
 branch_labels = None
@@ -18,7 +20,7 @@ depends_on = None
 
 def upgrade():
     # 로컬 사용시 postgis 주석 처리 필요
-    op.execute("create extension postgis;")
+    # op.execute("create extension postgis;")
 
     op.create_table(
         "administrative_divisions",
@@ -29,6 +31,11 @@ def upgrade():
             nullable=False,
         ),
         sa.Column("name", sa.String(length=100), nullable=False),
+        sa.Column(
+            "name_ts",
+            postgresql.TSVECTOR(),
+            nullable=True,
+        ),
         sa.Column("short_name", sa.String(length=30), nullable=False),
         sa.Column("real_trade_price", sa.Integer(), nullable=False),
         sa.Column("real_rent_price", sa.Integer(), nullable=False),
@@ -61,7 +68,17 @@ def upgrade():
         ),
         sa.Column("name", sa.String(length=50), nullable=True),
         sa.Column("road_address", sa.String(length=100), nullable=False),
+        sa.Column(
+            "road_address_ts",
+            postgresql.TSVECTOR(),
+            nullable=True,
+        ),
         sa.Column("jibun_address", sa.String(length=100), nullable=False),
+        sa.Column(
+            "jibun_address_ts",
+            postgresql.TSVECTOR(),
+            nullable=True,
+        ),
         sa.Column("si_do", sa.String(length=20), nullable=False),
         sa.Column("si_gun_gu", sa.String(length=16), nullable=False),
         sa.Column("dong_myun", sa.String(length=16), nullable=False),
@@ -126,6 +143,11 @@ def upgrade():
         ),
         sa.Column("real_estate_id", sa.BigInteger(), nullable=False),
         sa.Column("name", sa.String(length=50), nullable=False),
+        sa.Column(
+            "name_ts",
+            postgresql.TSVECTOR(),
+            nullable=True,
+        ),
         sa.Column("region", sa.String(length=20), nullable=False),
         sa.Column(
             "housing_category",
@@ -204,6 +226,8 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("public_sales_id"),
     )
+    # with open("./migrations/seeds/default_houses.sql") as fp:
+    #     op.execute(fp.read())
 
 
 def downgrade():

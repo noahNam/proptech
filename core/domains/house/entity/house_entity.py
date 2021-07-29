@@ -277,6 +277,7 @@ class GetTicketUsageResultEntity(BaseModel):
 class SearchRealEstateEntity(BaseModel):
     id: int
     jibun_address: str
+    road_address: str
 
 
 class SearchPublicSaleEntity(BaseModel):
