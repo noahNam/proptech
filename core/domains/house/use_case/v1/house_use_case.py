@@ -86,8 +86,6 @@ class BoundingUseCase(HouseBaseUseCase):
         else:
             bounding_entities = self._house_repo.get_administrative_divisions(dto=dto)
 
-        if not bounding_entities:
-            return UseCaseSuccessOutput(value="null")
         return UseCaseSuccessOutput(value=bounding_entities)
 
 
@@ -132,8 +130,7 @@ class GetCalenderInfoUseCase(HouseBaseUseCase):
             self, dto: GetCalenderInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         calender_entities = self._house_repo.get_calender_info(dto=dto)
-        if not calender_entities:
-            return UseCaseSuccessOutput(value="null")
+
         return UseCaseSuccessOutput(value=calender_entities)
 
 
@@ -195,7 +192,7 @@ class GetSearchHouseListUseCase(HouseBaseUseCase):
     def execute(
             self, dto: GetSearchHouseListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        if not dto.keywords or dto.keywords == "":
+        if not dto.keywords or dto.keywords == "" or len(dto.keywords) < 2:
             result = None
             return UseCaseSuccessOutput(value=result)
 
@@ -209,7 +206,9 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
             self, dto: BoundingWithinRadiusDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
 
-        if not dto.house_id or not dto.search_type:
+        if not dto \
+                or dto.search_type < SearchTypeEnum.FROM_REAL_ESTATE.value \
+                or dto.search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value:
             return UseCaseFailureOutput(
                 type="BoundingWithinRadiusDto",
                 message=FailureType.NOT_FOUND_ERROR,
@@ -234,6 +233,4 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
                                                                            degree=1)
         bounding_entities = self._house_repo.get_bounding(bounding_filter=bounding_filter)
 
-        if not bounding_entities:
-            return UseCaseSuccessOutput(value="null")
         return UseCaseSuccessOutput(value=bounding_entities)
