@@ -488,7 +488,7 @@ def test_upsert_user_info_view_when_next_step_input_user_data_then_update_user_l
     assert user_profile_model.last_update_code == dict2_.get("codes")[0]
 
 
-def test_get_user_info_when_no_user_data_with_none_detail_code_then_success(
+def test_get_user_info_when_survey_step_one_then_success(
         client, session, test_request_context, make_header, make_authorization, create_users
 ):
     user_id = create_users[0].id
@@ -498,68 +498,26 @@ def test_get_user_info_when_no_user_data_with_none_detail_code_then_success(
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(codes=[1000], )
 
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_user_info_view"),
-            data=json.dumps(dict_),
+            url_for("api/tanos.get_user_info_view", survey_step=1),
             headers=headers,
         )
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"][0]["code"] == dict_.get("codes")[0]
-    assert data["result"][0]["code_values"] is None
-    assert data["result"][0]["user_value"] is None
+    assert len(data["surveys"]) == len(CodeStepEnum.ONE.value)
 
 
-def test_get_user_info_when_no_user_data_with_detail_code_then_success(
-        client, session, test_request_context, make_header, make_authorization, create_users
+def test_get_user_info_when_survey_step_two_then_success(
+        client, session, test_request_context, make_header, make_authorization, create_users,
+        avg_monthly_income_worker_factory
 ):
-    user_id = create_users[0].id
-    authorization = make_authorization(user_id=user_id)
-    headers = make_header(
-        authorization=authorization,
-        content_type="application/json",
-        accept="application/json",
-    )
-    dict_ = dict(codes=[1005], )
+    avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
+    session.add(avg_monthly_income_workers)
+    session.commit()
 
-    with test_request_context:
-        response = client.get(
-            url_for("api/tanos.get_user_info_view"),
-            data=json.dumps(dict_),
-            headers=headers,
-        )
-
-    data = response.get_json()["data"]
-    assert response.status_code == 200
-    assert data["result"][0]["code"] == dict_.get("codes")[0]
-    assert len(data["result"][0]["code_values"]["detail_code"]) == 3
-    assert len(data["result"][0]["code_values"]["name"]) == 3
-    assert (
-            data["result"][0]["code_values"]["detail_code"]
-            == IsHouseOwnerCodeEnum.COND_CD.value
-    )
-    assert (
-            data["result"][0]["code_values"]["name"] == IsHouseOwnerCodeEnum.COND_NM.value
-    )
-
-
-@patch(
-    "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
-    return_value=True,
-)
-def test_get_user_info_when_exist_user_data_with_detail_code_then_success(
-        _send_sqs_message,
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
     headers = make_header(
@@ -568,37 +526,15 @@ def test_get_user_info_when_exist_user_data_with_detail_code_then_success(
         accept="application/json",
     )
 
-    dict_ = dict(codes=[1005], values=["2"])
-
-    with test_request_context:
-        client.post(
-            url_for("api/tanos.upsert_user_info_view"),
-            data=json.dumps(dict_),
-            headers=headers,
-        )
-
-    dict2_ = dict(codes=[1005], )
-
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_user_info_view"),
-            data=json.dumps(dict2_),
+            url_for("api/tanos.get_user_info_view", survey_step=2),
             headers=headers,
         )
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"][0]["code"] == dict_.get("codes")[0]
-    assert data["result"][0]["user_value"] == dict_.get("values")[0]
-    assert len(data["result"][0]["code_values"]["detail_code"]) == 3
-    assert len(data["result"][0]["code_values"]["name"]) == 3
-    assert (
-            data["result"][0]["code_values"]["detail_code"]
-            == IsHouseOwnerCodeEnum.COND_CD.value
-    )
-    assert (
-            data["result"][0]["code_values"]["name"] == IsHouseOwnerCodeEnum.COND_NM.value
-    )
+    assert len(data["surveys"]) == len(CodeStepEnum.TWO.value)
 
 
 @patch(
@@ -649,174 +585,27 @@ def test_get_user_info_view_when_monthly_income_then_success(
         accept="application/json",
     )
 
-    dict_ = dict(codes=[CodeEnum.MONTHLY_INCOME.value])
-
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_user_info_view"),
-            data=json.dumps(dict_),
+            url_for("api/tanos.get_user_info_view", survey_step=2),
             headers=headers,
         )
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"][0]["code"] == dict_.get("codes")[0]
-    assert data["result"][0]["user_value"] is None
-    assert (
-            data["result"][0]["code_values"]["detail_code"]
-            == MonthlyIncomeEnum.COND_CD_2.value
-    )
-    assert len(data["result"][0]["code_values"]["detail_code"]) == len(
-        data["result"][0]["code_values"]["name"]
-    )
+
     # 맞벌이, 부양가족 5인 기준
-    assert data["result"][0]["code_values"]["name"] == [
-        3547102,
-        5675364,
-        7803626,
-        8513046,
-        9222466,
-        9931887,
-        11350728,
-    ]
-
-
-@patch(
-    "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
-    return_value=True,
-)
-def test_get_user_info_view_when_get_address_then_success(
-        _send_sqs_message,
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-        create_sido_codes,
-):
-    user_id = create_users[0].id
-    authorization = make_authorization(user_id=user_id)
-    headers = make_header(
-        authorization=authorization,
-        content_type="application/json",
-        accept="application/json",
-    )
-
-    dict_ = dict(codes=[CodeEnum.ADDRESS.value, CodeEnum.ADDRESS_DETAIL.value])
-
-    with test_request_context:
-        response = client.get(
-            url_for("api/tanos.get_user_info_view"),
-            data=json.dumps(dict_),
-            headers=headers,
-        )
-
-    data = response.get_json()["data"]
-    assert response.status_code == 200
-    assert data["result"][0]["code"] == dict_.get("codes")[0]
-    assert data["result"][0]["user_value"] is None
-    assert len(data["result"][0]["code_values"]) == 2
-    assert len(data["result"][0]["code_values"]["detail_code"]) == len(
-        data["result"][0]["code_values"]["name"]
-    )
-    assert len(data["result"][1]["code_values"]["detail_code"]) == len(
-        data["result"][1]["code_values"]["name"]
-    )
-
-
-def test_get_user_info_when_no_user_data_with_detail_code_then_success(
-        client, session, test_request_context, make_header, make_authorization, create_users
-):
-    user_id = create_users[0].id
-    authorization = make_authorization(user_id=user_id)
-    headers = make_header(
-        authorization=authorization,
-        content_type="application/json",
-        accept="application/json",
-    )
-    dict_ = dict(codes=[1005])
-
-    with test_request_context:
-        response = client.get(
-            url_for("api/tanos.get_user_info_view"),
-            data=json.dumps(dict_),
-            headers=headers,
-        )
-
-    data = response.get_json()["data"]
-    assert response.status_code == 200
-    assert data["result"][0]["code"] == dict_.get("codes")[0]
-    assert len(data["result"][0]["code_values"]["detail_code"]) == 3
-    assert len(data["result"][0]["code_values"]["name"]) == 3
-    assert (
-            data["result"][0]["code_values"]["detail_code"]
-            == IsHouseOwnerCodeEnum.COND_CD.value
-    )
-    assert (
-            data["result"][0]["code_values"]["name"] == IsHouseOwnerCodeEnum.COND_NM.value
-    )
-
-
-@patch(
-    "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
-    return_value=True,
-)
-def test_get_user_info_view_when_input_address_then_create_both_data_success(
-        _send_sqs_message,
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        user_factory,
-        create_sido_codes,
-):
-    user_id = 1
-    user = user_factory.build(
-        id=user_id,
-        is_required_agree_terms=False,
-        device=True,
-        receive_push_type=True,
-        user_profile=True,
-        interest_houses=True,
-    )
-    session.add(user)
-    session.commit()
-
-    authorization = make_authorization(user_id=user_id)
-    headers = make_header(
-        authorization=authorization,
-        content_type="application/json",
-        accept="application/json",
-    )
-    dict_ = dict(
-        codes=[CodeEnum.ADDRESS.value, CodeEnum.ADDRESS_DETAIL.value],
-        values=["29", "29010"],
-    )
-
-    with test_request_context:
-        client.post(
-            url_for("api/tanos.upsert_user_info_view"),
-            data=json.dumps(dict_),
-            headers=headers,
-        )
-
-    dict2_ = dict(codes=[CodeEnum.ADDRESS.value, CodeEnum.ADDRESS_DETAIL.value])
-
-    with test_request_context:
-        response = client.get(
-            url_for("api/tanos.get_user_info_view"),
-            data=json.dumps(dict2_),
-            headers=headers,
-        )
-
-    data = response.get_json()["data"]
-    assert response.status_code == 200
-    assert data["result"][0]["code"] == CodeEnum.ADDRESS.value
-    assert len(data["result"]) == len(dict2_.get("codes"))
-    assert data["result"][0]["user_value"] == dict_.get("values")[0]
-    assert data["result"][1]["user_value"] == dict_.get("values")[1]
+    for survay in data["surveys"]:
+        if survay['code'] == CodeEnum.MONTHLY_INCOME.value:
+            assert survay['code_values']['name'] == [
+                3547102,
+                5675364,
+                7803626,
+                8513046,
+                9222466,
+                9931887,
+                11350728,
+            ]
 
 
 @patch(
@@ -831,7 +620,12 @@ def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_
         make_header,
         make_authorization,
         user_factory,
+        avg_monthly_income_worker_factory
 ):
+    avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
+    session.add(avg_monthly_income_workers)
+    session.commit()
+
     user_id = 1
     user = user_factory.build(
         id=user_id,
@@ -855,8 +649,9 @@ def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_
             CodeEnum.CHILD_AGE_SIX.value,
             CodeEnum.CHILD_AGE_NINETEEN.value,
             CodeEnum.CHILD_AGE_TWENTY.value,
+            CodeEnum.CHILD_OVER_THREE.value,
         ],
-        values=["1", "2", "True"],
+        values=["1", "2", "3", True],
     )
 
     with test_request_context:
@@ -866,30 +661,25 @@ def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_
             headers=headers,
         )
 
-    dict2_ = dict(
-        codes=[
-            CodeEnum.CHILD_AGE_SIX.value,
-            CodeEnum.CHILD_AGE_NINETEEN.value,
-            CodeEnum.CHILD_AGE_TWENTY.value,
-        ]
-    )
-
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_user_info_view"),
-            data=json.dumps(dict2_),
+            url_for("api/tanos.get_user_info_view", survey_step=2),
             headers=headers,
         )
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"][0]["code"] == CodeEnum.CHILD_AGE_SIX.value
-    assert data["result"][1]["code"] == CodeEnum.CHILD_AGE_NINETEEN.value
-    assert data["result"][2]["code"] == CodeEnum.CHILD_AGE_TWENTY.value
-    assert len(data["result"]) == len(dict2_.get("codes"))
-    assert data["result"][0]["user_value"] == dict_.get("values")[0]
-    assert data["result"][1]["user_value"] == dict_.get("values")[1]
-    assert data["result"][2]["user_value"] == dict_.get("values")[2]
+
+    # 맞벌이, 부양가족 5인 기준
+    for survay in data["surveys"]:
+        if survay['code'] == CodeEnum.CHILD_AGE_SIX.value:
+            assert survay['user_value'] == dict_['values'][0]
+        elif survay['code'] == CodeEnum.CHILD_AGE_NINETEEN.value:
+            assert survay['user_value'] == dict_['values'][1]
+        elif survay['code'] == CodeEnum.CHILD_AGE_TWENTY.value:
+            assert survay['user_value'] == dict_['values'][2]
+        elif survay['code'] == CodeEnum.CHILD_OVER_THREE.value:
+            assert survay['user_value'] == dict_['values'][3]
 
 
 @pytest.mark.skip(reason="local에서 환경변수 미설정 시 에러나므로 skip")

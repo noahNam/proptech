@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, StrictStr, StrictInt
 
-from core.domains.user.entity.user_entity import UserInfoCodeValueEntity, SurveyResultEntity, UserProfileEntity
+from core.domains.user.entity.user_entity import UserInfoCodeValueEntity, SurveyResultEntity, UserProfileEntity, \
+    UserInfoResultEntity
 
 
 class GetUserBaseSchema(BaseModel):
@@ -34,7 +35,7 @@ class UpsertUserInfoResponseSchema(BaseModel):
 
 
 class GetUserInfoResponseSchema(BaseModel):
-    result: list
+    surveys: List[UserInfoResultEntity]
 
 
 class PatchUserOutResponseSchema(BaseModel):

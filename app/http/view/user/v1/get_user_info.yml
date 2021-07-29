@@ -3,21 +3,14 @@ tags:
   - User
 security:
   - userAuth: []
-requestBody:
-  required: true
-  description: codes는 integer type
-  content:
-    application/json:
-      schema:
-        type: object
-        required:
-          - codes
-        properties:
-          codes:
-            type: array
-            items:
-              type: integer
-              example: 1000, 1001
+parameters:
+  - name: survey_step
+    in: query
+    required: true
+    description: 1(1단계), 2(2단계)
+    schema:
+      type: integer
+      example: 1
 responses:
   '200':
     description: code_values의 경우 값이 서버에서 내려주는 값이 없을 수 있다. (주관식의 경우)

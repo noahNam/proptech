@@ -88,7 +88,7 @@ def upsert_user_info_view():
 @swag_from("get_user_info.yml", methods=["GET"])
 def get_user_info_view():
     dto = GetUserInfoRequestSchema(
-        **request.get_json(), user_id=current_user.id,
+        survey_step=request.args.get("survey_step"), user_id=1,
     ).validate_request_and_make_dto()
 
     return GetUserInfoPresenter().transform(GetUserInfoUseCase().execute(dto=dto))

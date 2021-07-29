@@ -3,7 +3,7 @@ user_info:
     data:
       type: object
       properties:
-        result:
+        surveys:
           type: array
           items:
             type: object

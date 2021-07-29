@@ -17,15 +17,13 @@ from core.domains.user.dto.user_dto import (
     UpsertUserInfoDto,
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
-    GetUserInfoDetailDto,
     GetUserDto,
     RecentlyViewDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
-    UserInfoEmptyEntity,
     UserEntity,
-    UserInfoCodeValueEntity,
+    UserInfoCodeValueEntity, UserInfoResultEntity,
 )
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import (
@@ -253,33 +251,6 @@ def test_get_user_profile_id_when_input_user_data_then_none(session):
     assert get_user_profile_id is None
 
 
-def test_get_user_info_when_input_user_data_then_success(session):
-    UserRepository().create_user_info(dto=upsert_user_info_detail_dto)
-    dto = GetUserInfoDetailDto(
-        user_id=upsert_user_info_detail_dto.user_id,
-        user_profile_id=upsert_user_info_detail_dto.user_profile_id,
-        code=upsert_user_info_detail_dto.code,
-    )
-
-    user_info: UserInfoEntity = UserRepository().get_user_info(dto=dto)
-
-    assert user_info.code == dto.code
-    assert user_info.user_value[0] == upsert_user_info_detail_dto.value
-
-
-def test_get_user_info_when_input_user_data_then_None(session):
-    UserRepository().create_user_info(dto=upsert_user_info_detail_dto)
-    dto = GetUserInfoDetailDto(
-        user_id=upsert_user_info_detail_dto.user_id,
-        code=upsert_user_info_detail_dto.code + 1,
-        value=upsert_user_info_detail_dto.value,
-    )
-
-    user_info: UserInfoEmptyEntity = UserRepository().get_user_info(dto=dto)
-
-    assert isinstance(user_info, UserInfoEmptyEntity)
-
-
 def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
         avg_monthly_income_worker_factory, session, create_users
 ):
@@ -327,7 +298,7 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
         "1025": SpecialCondEnum,
     }
 
-    user_info = UserInfoEntity(id=1, user_profile_id=1, code=user_info_code)
+    user_info = UserInfoResultEntity(code=user_info_code)
     bind_code = bind_detail_code_dict.get(user_info_code)
     # dto.code != "1019" 일 떄로 변경
     dto_code = "1019"
@@ -367,9 +338,9 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
         }
 
         calc_result_list = []
-        my_basic_income = income_result_dict.get(result2.user_value)
+        my_basic_income = income_result_dict.get(result2.value)
 
-        monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_value != "2" else MonthlyIncomeEnum.COND_CD_2.value
+        monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.value != "2" else MonthlyIncomeEnum.COND_CD_2.value
 
         for percentage_num in monthly_income_enum:
             income_by_segment = (int(my_basic_income) * percentage_num) / 100
@@ -383,7 +354,7 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
 
         user_info.code_values = user_info_code_value_entity
 
-        assert isinstance(user_info, UserInfoEntity)
+        assert isinstance(user_info, UserInfoResultEntity)
         assert len(user_info.code_values.detail_code) == len(user_info.code_values.name)
 
 
