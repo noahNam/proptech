@@ -9,6 +9,7 @@ from sqlalchemy import (
     String,
     SmallInteger,
 )
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, backref
 
 from app import db
@@ -75,6 +76,8 @@ class PublicSaleModel(db.Model):
     offer_notice_url = Column(String(100), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+
+    name_ts = Column(TSVECTOR().with_variant(String(50), "sqlite"), nullable=False)
 
     # 1:1 relationship
     public_sale_photos = relationship(
