@@ -5,7 +5,6 @@ from http import HTTPStatus
 from typing import Union, Optional, List
 
 import inject
-from dateutil.relativedelta import relativedelta
 
 from app.extensions.queue import SqsTypeEnum, SenderDto
 from app.extensions.queue.sender import QueueMessageSender
@@ -25,13 +24,11 @@ from core.domains.user.dto.user_dto import (
     GetUserDto,
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
-    GetUserInfoDetailDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
     UserInfoCodeValueEntity,
-    UserInfoEmptyEntity,
-    UserEntity, UserProfileEntity,
+    UserEntity, UserProfileEntity, UserInfoResultEntity,
 )
 from core.domains.user.enum.user_enum import UserSqsTypeEnum
 from core.domains.user.enum.user_info_enum import (
@@ -48,7 +45,7 @@ from core.domains.user.enum.user_info_enum import (
     SpecialCondEnum,
     CodeEnum,
     AddressCodeEnum,
-    AddressDetailCodeEnum,
+    AddressDetailCodeEnum, CodeStepEnum, IsSupportParentCodeEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -204,11 +201,11 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
             detail_dto.user_profile_id = user_profile_id
             if not self._user_repo.is_user_info(dto=detail_dto):
-                user_info: UserInfoEntity = self._user_repo.create_user_info(
+                user_info: UserInfoResultEntity = self._user_repo.create_user_info(
                     dto=detail_dto
                 )
             else:
-                user_info: UserInfoEntity = self._user_repo.update_user_info(
+                user_info: UserInfoResultEntity = self._user_repo.update_user_info(
                     dto=detail_dto
                 )
 
@@ -250,120 +247,141 @@ class GetUserInfoUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        user_profile_id: int = self._user_repo.get_user_profile_id(dto=dto)
+        user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(dto=dto)
         dto.user_profile_id = user_profile_id
-        result = list()
 
-        for idx in range(len(dto.codes)):
-            detail_dto = GetUserInfoDetailDto(
-                user_id=dto.user_id,
-                user_profile_id=user_profile_id,
-                code=dto.codes[idx],
-            )
+        user_info_entity: List[UserInfoEntity] = self._user_repo.get_user_multi_data_info(dto=dto)
 
-            if not detail_dto.user_profile_id:
-                # nickname 생성 전 (즉, 최초 설문으로 user_profile_id가 없음)
-                user_info: UserInfoEmptyEntity = self._make_empty_user_info_entity(
-                    dto=detail_dto
-                )
-            else:
-                user_info: Union[
-                    UserInfoEntity, UserInfoEmptyEntity
-                ] = self._user_repo.get_user_info(dto=detail_dto)
+        # 유저 설문이 작성되지 않은 object 생성
+        self._make_empty_object(user_infos=user_info_entity, dto=dto)
+        user_info_result_entity: List[UserInfoResultEntity] = self._bind_detail_code_values(
+            user_infos=user_info_entity)
 
-                self._bind_detail_code_values(user_info=user_info, dto=detail_dto)
+        return UseCaseSuccessOutput(value=user_info_result_entity)
 
-            result.append(user_info)
-        return UseCaseSuccessOutput(value=result)
+    def _make_empty_object(self, user_infos: List[UserInfoEntity], dto: GetUserInfoDto) -> None:
+        if dto.survey_step == 1:
+            # 1단계 설문 데이터 조회
+            survey_step_codes = CodeStepEnum.ONE.value
+        else:
+            # 2단계 설문 데이터 조회
+            survey_step_codes = CodeStepEnum.TWO.value
 
-    def _make_empty_user_info_entity(
-            self, dto: GetUserInfoDetailDto
-    ) -> UserInfoEmptyEntity:
-        return UserInfoEmptyEntity(code=dto.code)
+        user_info_codes = [user_info.code for user_info in user_infos]
+        empty_codes: list = list(set(survey_step_codes) - set(user_info_codes))
+
+        empty_user_info_entity = [UserInfoEntity(
+            user_profile_id=dto.user_profile_id,
+            code=empty_code,
+            value=None,
+        ) for empty_code in empty_codes]
+
+        user_infos.extend(empty_user_info_entity)
 
     def _bind_detail_code_values(
             self,
-            user_info: Union[UserInfoEntity, UserInfoEmptyEntity],
-            dto: GetUserInfoDetailDto,
-    ):
-        bind_detail_code_dict = {
-            "1002": AddressCodeEnum,
-            "1003": AddressDetailCodeEnum,
-            "1005": IsHouseOwnerCodeEnum,
-            "1007": IsHouseHolderCodeEnum,
-            "1008": IsMarriedCodeEnum,
-            "1010": NumberDependentsEnum,
-            "1011": IsChildEnum,
-            "1016": IsSubAccountEnum,
-            "1020": MonthlyIncomeEnum,
-            "1021": AssetsRealEstateEnum,
-            "1022": AssetsCarEnum,
-            "1023": AssetsTotalEnum,
-            "1026": SpecialCondEnum,
-        }
-
-        bind_code = bind_detail_code_dict.get(str(dto.code))
-
-        if not bind_code:
-            return
-
-        if bind_code == AddressCodeEnum or bind_code == AddressDetailCodeEnum:
-            user_info_code_value_entity: UserInfoCodeValueEntity = self._user_repo.get_sido_codes(
-                dto=dto
-            )
-            user_info.code_values = user_info_code_value_entity
-
-        elif bind_code == MonthlyIncomeEnum:
-            # 외벌이, 맞벌이 확인
-            # 외벌이 -> 1,3,4 / 맞벌이 -> 2
-            result1: UserInfoEntity = UserRepository().get_user_info_by_code(
-                user_profile_id=dto.user_profile_id, code=CodeEnum.IS_MARRIED.value
+            user_infos: List[UserInfoEntity],
+    ) -> List[UserInfoResultEntity]:
+        results = list()
+        for user_info in user_infos:
+            user_info_result_entity = UserInfoResultEntity(
+                code=user_info.code,
+                code_values=None,
+                user_value=user_info.value
             )
 
-            # 부양가족 수
-            # 3인 이하->1,2,3,9 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
-            result2: UserInfoEntity = UserRepository().get_user_info_by_code(
-                user_profile_id=dto.user_profile_id,
-                code=CodeEnum.NUMBER_DEPENDENTS.value,
-            )
-
-            # 부양가족별 basic 소득
-            income_result: AvgMonthlyIncomeWokrerDto = UserRepository().get_avg_monthly_income_workers()
-            income_result_dict = {
-                "1": income_result.three,
-                "2": income_result.three,
-                "3": income_result.three,
-                "4": income_result.four,
-                "5": income_result.five,
-                "6": income_result.six,
-                "7": income_result.seven,
-                "8": income_result.eight,
-                "9": income_result.three,
+            bind_detail_code_dict = {
+                "1002": AddressCodeEnum,
+                "1003": AddressDetailCodeEnum,
+                "1005": IsHouseOwnerCodeEnum,
+                "1007": IsHouseHolderCodeEnum,
+                "1008": IsMarriedCodeEnum,
+                "1010": NumberDependentsEnum,
+                "1011": IsChildEnum,
+                "1016": IsSubAccountEnum,
+                "1020": MonthlyIncomeEnum,
+                "1021": AssetsRealEstateEnum,
+                "1022": AssetsCarEnum,
+                "1023": AssetsTotalEnum,
+                "1024": IsSupportParentCodeEnum,
+                "1026": SpecialCondEnum,
             }
 
-            calc_result_list = []
-            my_basic_income = income_result_dict.get(result2.user_value)
+            bind_code = bind_detail_code_dict.get(str(user_info.code))
 
-            monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_value != "2" else MonthlyIncomeEnum.COND_CD_2.value
+            if not bind_code:
+                results.append(user_info_result_entity)
+                continue
 
-            for percentage_num in monthly_income_enum:
-                income_by_segment = (int(my_basic_income) * percentage_num) / 100
-                income_by_segment = round(income_by_segment)
-                calc_result_list.append(income_by_segment)
+            if bind_code == AddressCodeEnum or bind_code == AddressDetailCodeEnum:
+                user_info_code_value_entity: UserInfoCodeValueEntity = self._user_repo.get_sido_codes(
+                    code=user_info.code
+                )
+                user_info_result_entity.code_values = user_info_code_value_entity
+                results.append(user_info_result_entity)
 
-            user_info_code_value_entity = UserInfoCodeValueEntity()
+            elif bind_code == MonthlyIncomeEnum:
+                # 외벌이, 맞벌이 확인
+                # 외벌이 -> 1,3,4 / 맞벌이 -> 2
+                is_married_result: UserInfoEntity = UserRepository().get_user_info_by_code(
+                    user_profile_id=user_info.user_profile_id, code=CodeEnum.IS_MARRIED.value
+                )
 
-            user_info_code_value_entity.detail_code = monthly_income_enum
-            user_info_code_value_entity.name = calc_result_list
+                # 부양가족 수
+                # 3인 이하->1,2,3,9(0명) / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
+                number_dependents_result: UserInfoEntity = UserRepository().get_user_info_by_code(
+                    user_profile_id=user_info.user_profile_id,
+                    code=CodeEnum.NUMBER_DEPENDENTS.value,
+                )
 
-            user_info.code_values = user_info_code_value_entity
-        else:
-            user_info_code_value_entity = UserInfoCodeValueEntity()
+                # 부양가족별 basic 소득
+                income_result: AvgMonthlyIncomeWokrerDto = UserRepository().get_avg_monthly_income_workers()
+                income_result_dict = {
+                    "1": income_result.three,
+                    "2": income_result.three,
+                    "3": income_result.three,
+                    "4": income_result.four,
+                    "5": income_result.five,
+                    "6": income_result.six,
+                    "7": income_result.seven,
+                    "8": income_result.eight,
+                    "9": income_result.three,  # 0명
+                }
 
-            user_info_code_value_entity.detail_code = bind_code.COND_CD.value
-            user_info_code_value_entity.name = bind_code.COND_NM.value
+                calc_result_list = []
 
-            user_info.code_values = user_info_code_value_entity
+                if number_dependents_result:
+                    my_basic_income = income_result_dict.get(number_dependents_result.value)
+                    monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if is_married_result.value != "2" else MonthlyIncomeEnum.COND_CD_2.value
+                else:
+                    # 설문 1단계를 완료 안하고 들어오지 못하지만 가드 코드 추가
+                    # my_basic_income = 부양가족 3인 기본 값
+                    # monthly_income_enum = 외벌이 기준
+                    my_basic_income = income_result_dict.get("1")
+                    monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value
+
+                for percentage_num in monthly_income_enum:
+                    income_by_segment = (int(my_basic_income) * percentage_num) / 100
+                    income_by_segment = round(income_by_segment)
+                    calc_result_list.append(income_by_segment)
+
+                user_info_code_value_entity = UserInfoCodeValueEntity()
+
+                user_info_code_value_entity.detail_code = monthly_income_enum
+                user_info_code_value_entity.name = calc_result_list
+
+                user_info_result_entity.code_values = user_info_code_value_entity
+                results.append(user_info_result_entity)
+            else:
+                user_info_code_value_entity = UserInfoCodeValueEntity()
+
+                user_info_code_value_entity.detail_code = bind_code.COND_CD.value
+                user_info_code_value_entity.name = bind_code.COND_NM.value
+
+                user_info_result_entity.code_values = user_info_code_value_entity
+                results.append(user_info_result_entity)
+
+        return results
 
 
 class UserOutUseCase(UserBaseUseCase):

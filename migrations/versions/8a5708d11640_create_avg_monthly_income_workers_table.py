@@ -32,6 +32,9 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
 
+    with open("./migrations/seeds/avg_monthly_income_workers.sql") as fp:
+        op.execute(fp.read())
+
 
 def downgrade():
     op.drop_table("avg_monthly_income_workers")

@@ -30,17 +30,15 @@ from core.domains.user.dto.user_dto import (
     GetUserInfoDto,
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
-    GetUserInfoDetailDto,
     GetUserDto,
     RecentlyViewDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
-    UserInfoEmptyEntity,
     UserEntity,
-    UserInfoCodeValueEntity, UserProfileEntity,
+    UserInfoCodeValueEntity, UserProfileEntity, UserInfoResultEntity,
 )
-from core.domains.user.enum.user_info_enum import CodeEnum
+from core.domains.user.enum.user_info_enum import CodeEnum, CodeStepEnum
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -230,7 +228,7 @@ class UserRepository:
             )
             raise Exception
 
-    def create_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
+    def create_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoResultEntity:
         try:
             user_info = UserInfoModel(
                 user_profile_id=dto.user_profile_id, code=dto.code, value=dto.value
@@ -238,7 +236,7 @@ class UserRepository:
             session.add(user_info)
             session.commit()
 
-            return user_info.to_entity()
+            return user_info.to_result_entity()
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
@@ -246,18 +244,16 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T008")
 
-    def update_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
+    def update_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoResultEntity:
         try:
-            user_info_id = (
+            user_info = (
                 session.query(UserInfoModel)
                     .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
                     .update({"value": dto.value, "updated_at": get_server_timestamp()})
             )
             session.commit()
 
-            return UserInfoEntity(
-                id=user_info_id,
-                user_profile_id=dto.user_profile_id,
+            return UserInfoResultEntity(
                 code=dto.code,
                 user_value=dto.value,
             )
@@ -281,46 +277,29 @@ class UserRepository:
             )
             raise Exception
 
-    def get_user_info(
-            self, dto: GetUserInfoDetailDto
-    ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
-        user_info = (
-            session.query(UserInfoModel)
-                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-                .first()
-        )
-
-        if not user_info:
-            return UserInfoEmptyEntity(code=dto.code)
-
-        return user_info.to_entity()
-
     def get_user_multi_data_info(
-            self, dto: GetUserInfoDto, codes: list
-    ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
-        # 복수개의 유저 결과를 리턴할 때
-        user_info = (
-            session.query(UserInfoModel)
-                .filter(
-                UserInfoModel.user_profile_id == dto.user_profile_id,
-                UserInfoModel.code.in_(codes),
-            )
-                .all()
-        )
+            self, dto: GetUserInfoDto
+    ) -> List[UserInfoEntity]:
+        filters = list()
+        filters.append(UserInfoModel.user_profile_id == dto.user_profile_id)
 
-        if not user_info:
-            return UserInfoEmptyEntity(code=dto.code)
+        if dto.survey_step == 1:
+            # 1단계 설문 데이터 조회
+            filters.append(UserInfoModel.code.in_(CodeStepEnum.ONE.value))
+        else:
+            # 2단계 설문 데이터 조회
+            filters.append(UserInfoModel.code.in_(CodeStepEnum.TWO.value))
 
-        user_values = []
-        for query in user_info:
-            user_values.append(query.value)
+        user_infos = session.query(UserInfoModel).filter(*filters).all()
 
-        return UserInfoEntity(
-            id=user_info[0].id,
-            user_profile_id=dto.user_profile_id,
-            code=dto.code,
-            user_values=user_values,
-        )
+        if not user_infos:
+            return []
+
+        return [UserInfoEntity(
+            user_profile_id=user_info.user_profile_id,
+            code=user_info.code,
+            value=user_info.value,
+        ) for user_info in user_infos]
 
     def get_user_info_by_code(
             self, user_profile_id: int, code: int
@@ -353,18 +332,18 @@ class UserRepository:
             eight=result.eight,
         )
 
-    def get_sido_codes(self, dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
+    def get_sido_codes(self, code: int) -> UserInfoCodeValueEntity:
         result = session.query(SidoCodeModel).all()
-        return self._make_sido_codes_object(result, dto)
+        return self._make_sido_codes_object(result, code)
 
     def _make_sido_codes_object(
-            self, result: List[SidoCodeModel], dto: GetUserInfoDetailDto
+            self, result: List[SidoCodeModel], code: int
     ) -> UserInfoCodeValueEntity:
         code_list = []
         name_list = []
 
         for data in result:
-            if dto.code == CodeEnum.ADDRESS.value:
+            if code == CodeEnum.ADDRESS.value:
                 code_list.append(data.sido_code)
                 name_list.append(data.sido_name)
             else:

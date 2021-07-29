@@ -32,7 +32,7 @@ from tests.seeder.factory import (
     PublicSaleFactory,
     PublicSalePhotoFactory,
     PublicSaleDetailFactory,
-    PublicSaleDetailPhotoFactory, SurveyResultMFactory, UserInfoFactory, TicketUsageResultFactory,
+    PublicSaleDetailPhotoFactory, SurveyResultFactory, UserInfoFactory, TicketUsageResultFactory,
     TicketUsageResultDetailFactory,
 )
 
@@ -59,7 +59,7 @@ MODEL_FACTORIES = [
     PublicSalePhotoFactory,
     PublicSaleDetailFactory,
     PublicSaleDetailPhotoFactory,
-    SurveyResultMFactory,
+    SurveyResultFactory,
     UserInfoFactory,
     TicketUsageResultDetailFactory,
     TicketUsageResultFactory
