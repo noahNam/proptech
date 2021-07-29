@@ -167,6 +167,7 @@ def get_ticket_usage_result_view():
 @api.route("/v1/houses/map/search", methods=["GET"])
 @jwt_required
 @auth_required
+@swag_from("get_search_house_list_view.yml", methods=["GET"])
 def get_search_house_list_view():
     dto = GetSearchHouseListRequestSchema(
         keywords=request.args.get("keywords"),
@@ -180,6 +181,7 @@ def get_search_house_list_view():
 @api.route("/v1/houses/<int:house_id>/map", methods=["GET"])
 @jwt_required
 @auth_required
+@swag_from("get_bounding_within_radius_view.yml", methods=["GET"])
 def get_bounding_within_radius_view(house_id):
     dto = GetBoundingWithinRadiusRequestSchema(
         house_id=house_id,
