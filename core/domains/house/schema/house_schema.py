@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
 from pydantic import BaseModel, StrictStr
 
@@ -6,7 +6,9 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
     HousePublicDetailEntity,
-    CalenderInfoEntity, GetTicketUsageResultEntity,
+    GetSearchHouseListEntity,
+    CalenderInfoEntity,
+    GetTicketUsageResultEntity,
 )
 
 
@@ -56,3 +58,7 @@ class GetRecentViewListResponseSchema(BaseModel):
 
 class GetTicketUsageResultResponseSchema(BaseModel):
     houses: List[GetTicketUsageResultEntity]
+
+
+class GetSearchHouseListResponseSchema(BaseModel):
+    houses: Optional[GetSearchHouseListEntity]
