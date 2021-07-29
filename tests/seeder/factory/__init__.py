@@ -401,6 +401,7 @@ class PublicSaleFactory(BaseFactory):
 
     real_estate_id = factory.Sequence(lambda n: n + 1)
     name = factory.Sequence(lambda n: f"아파트_{n}")
+    name_ts = factory.Sequence(lambda n: f"아파트_{n}")
     region = "경기"
     housing_category = HousingCategoryEnum.PUBLIC.value
     rent_type = RentTypeEnum.PRE_SALE.value
@@ -461,6 +462,8 @@ class RealEstateFactory(BaseFactory):
     name = faker.building_name()
     road_address = faker.road_address()
     jibun_address = faker.land_address()
+    road_address_ts = faker.land_address()
+    jibun_address_ts = faker.land_address()
     si_do = faker.province()
     si_gun_gu = faker.city() + faker.borough()
     dong_myun = "XX동"
@@ -500,6 +503,7 @@ class AdministrativeDivisionFactory(BaseFactory):
         model = AdministrativeDivisionModel
 
     name = factory.Sequence(lambda n: f"XX시 XX구 읍면동_{n}")
+    name_ts = factory.Sequence(lambda n: f"XX시 XX구 읍면동_{n}")
     short_name = factory.Sequence(lambda n: f"읍면동_{n}")
     real_trade_price = random.randint(10_000_000, 50_000_000)
     real_rent_price = random.randint(10_000_000, 50_000_000)
