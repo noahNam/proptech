@@ -28,10 +28,14 @@ class UserProfileModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    user_infos = relationship("UserInfoModel", backref=backref("user_profiles"), uselist=True)
+    user_infos = relationship(
+        "UserInfoModel", backref=backref("user_profiles"), uselist=True
+    )
     survey_result = relationship(
-        "SurveyResultModel", backref=backref("user_profiles"), uselist=False,
-        primaryjoin='foreign(UserProfileModel.user_id)== SurveyResultModel.user_id'
+        "SurveyResultModel",
+        backref=backref("user_profiles"),
+        uselist=False,
+        primaryjoin="foreign(UserProfileModel.user_id)== SurveyResultModel.user_id",
     )
 
     def to_entity(self) -> UserProfileEntity:
@@ -42,6 +46,12 @@ class UserProfileModel(db.Model):
             last_update_code=self.last_update_code,
             created_at=self.created_at,
             updated_at=self.updated_at,
-            user_infos=[user_info.to_entity() for user_info in self.user_infos if self.user_infos],
-            survey_result=self.survey_result.to_entity() if self.survey_result else None
+            user_infos=[
+                user_info.to_entity()
+                for user_info in self.user_infos
+                if self.user_infos
+            ],
+            survey_result=self.survey_result.to_entity()
+            if self.survey_result
+            else None,
         )

@@ -113,8 +113,8 @@ def house_calender_list_view():
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
                 message=f"Invalid Parameter input, "
-                        f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
-                        f"month: 1 ~ 12 required",
+                f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
+                f"month: 1 ~ 12 required",
             )
         )
     return GetCalenderInfoPresenter().transform(
@@ -184,10 +184,7 @@ def get_search_house_list_view():
 @swag_from("get_bounding_within_radius_view.yml", methods=["GET"])
 def get_bounding_within_radius_view(house_id):
     dto = GetBoundingWithinRadiusRequestSchema(
-        house_id=house_id,
-        search_type=request.args.get("search_type")
+        house_id=house_id, search_type=request.args.get("search_type")
     ).validate_request_and_make_dto()
 
-    return BoundingPresenter().transform(
-        BoundingWithinRadiusUseCase().execute(dto=dto)
-    )
+    return BoundingPresenter().transform(BoundingWithinRadiusUseCase().execute(dto=dto))
