@@ -44,8 +44,8 @@ class RealEstateModel(db.Model):
         nullable=True,
     )
 
-    jibun_address_ts = Column(TSVECTOR, nullable=True)
-    road_address_ts = Column(TSVECTOR, nullable=True)
+    jibun_address_ts = Column(TSVECTOR().with_variant(String, "sqlite"), nullable=True)
+    road_address_ts = Column(TSVECTOR().with_variant(String, "sqlite"), nullable=True)
 
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())

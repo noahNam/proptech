@@ -42,7 +42,7 @@ class AdministrativeDivisionModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    name_ts = Column(TSVECTOR, nullable=True)
+    name_ts = Column(TSVECTOR().with_variant(String, "sqlite"), nullable=True)
 
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())
