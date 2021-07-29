@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 
 from pydantic import BaseModel, StrictStr
 
@@ -61,4 +61,4 @@ class GetTicketUsageResultResponseSchema(BaseModel):
 
 
 class GetSearchHouseListResponseSchema(BaseModel):
-    houses: Union[GetSearchHouseListEntity, str]
+    houses: Optional[GetSearchHouseListEntity]
