@@ -1,0 +1,44 @@
+house_search_info:
+  properties:
+    data:
+      type: object
+      properties:
+        houses:
+          type: object
+          properties:
+            administrative_divisions:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: "서울특별시 구로구 개봉동"
+            real_estates:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  road_address:
+                    type: string
+                    example: "서울특별시 구로구 개봉동 어딘가길 10"
+                  jibun_address:
+                    type: string
+                    example: "서울특별시 구로구 개봉동 478 개봉동한진아파트"
+            public_sales:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 1
+                  name:
+                    type: string
+                    example: "XX 개봉 벨리"

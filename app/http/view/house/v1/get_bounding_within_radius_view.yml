@@ -1,0 +1,70 @@
+openapi: "3.0.2"
+tags:
+  - House
+security:
+  - userAuth: []
+parameters:
+  - name: Authorization
+    in: header
+    required: true
+    description: User's OAuth access_token
+    schema:
+      type: string
+      example: Bearer eyJ0eXAiOiJKV1QiLC....JWT...values
+  - name: search_type
+    in: path
+    required: true
+    description: 1 or 2 or 3
+    schema:
+      type: int
+      example: 1
+  - name: house_id
+    in: path
+    required: true
+    description: real_estates or public_sales or administrative_divisions pk
+    schema:
+      type: integer
+      example: 1
+responses:
+  '200 #1':
+    description: real_estate with public_sales
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/bounding_public'
+  '200 #2':
+    description: real_estate with private_sales
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/bounding_private'
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'
