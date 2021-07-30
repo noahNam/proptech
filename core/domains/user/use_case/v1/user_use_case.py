@@ -24,6 +24,7 @@ from core.domains.user.dto.user_dto import (
     GetUserDto,
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
+    UpdateUserProfileDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
@@ -489,3 +490,72 @@ class GetSurveyResultUseCase(UserBaseUseCase):
         today = get_server_timestamp()
 
         return today.year - birth.year
+
+
+class GetUserProfileUseCase(UserBaseUseCase):
+    def execute(
+        self, dto: GetUserDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
+            dto=dto
+        )
+        return UseCaseSuccessOutput(value=user_profile)
+
+
+class GetUserProfileUseCase(UserBaseUseCase):
+    def execute(
+        self, dto: GetUserDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
+            dto=dto
+        )
+        return UseCaseSuccessOutput(value=user_profile)
+
+
+class UpdateUserProfileUseCase(UserBaseUseCase):
+    def execute(
+        self, dto: UpdateUserProfileDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        # 기존 함수 사용 위해 dto 변환
+        upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
+            user_id=dto.user_id, code=CodeEnum.NICKNAME.value, value=dto.nickname
+        )
+
+        user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(
+            dto=upsert_user_info_detail_dto
+        )
+        if not user_profile_id:
+            return UseCaseFailureOutput(
+                type="user_profile_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        upsert_user_info_detail_dto.user_profile_id = user_profile_id
+
+        # 닉네임 업데이트
+        self._user_repo.update_user_nickname_of_profile_setting(
+            dto=upsert_user_info_detail_dto
+        )
+        return UseCaseSuccessOutput()

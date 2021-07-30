@@ -16,8 +16,9 @@ from core.domains.user.dto.user_dto import (
     GetUserInfoDto,
     GetUserDto,
     UpsertUserInfoDetailDto,
+    UpdateUserProfileDto,
 )
-from core.domains.user.entity.user_entity import UserInfoResultEntity
+from core.domains.user.entity.user_entity import UserInfoResultEntity, UserProfileEntity
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import (
     CodeEnum,
@@ -35,6 +36,8 @@ from core.domains.user.use_case.v1.user_use_case import (
     UserOutUseCase,
     GetUserMainUseCase,
     GetSurveyResultUseCase,
+    GetUserProfileUseCase,
+    UpdateUserProfileUseCase,
 )
 from core.exceptions import NotUniqueErrorException
 from core.use_case_output import UseCaseSuccessOutput
@@ -468,3 +471,32 @@ def test_get_survey_result_use_case_then_return_survey_result_is_none(
     assert result.value["user_profile_entity"].nickname == "noah"
     assert result.value["user_profile_entity"].user_infos[0].user_value == "19850509"
     assert result.value["user_profile_entity"].survey_result is None
+
+
+def test_get_user_profile_use_case_when_enter_setting_page_return_success(
+    session, create_users
+):
+    user_1 = GetUserDto(user_id=create_users[1].id)
+    user_2 = GetUserDto(user_id=4)
+
+    result_1 = GetUserProfileUseCase().execute(dto=user_1)
+    result_2 = GetUserProfileUseCase().execute(dto=user_2)
+
+    assert isinstance(result_1, UseCaseSuccessOutput)
+    assert isinstance(result_2, UseCaseSuccessOutput)
+    assert isinstance(result_1.value, UserProfileEntity)
+    assert result_2.value is None
+
+
+def test_update_user_profile_use_case_when_enter_setting_page_return_success(
+    session, create_users
+):
+    dto = UpdateUserProfileDto(user_id=create_users[0].id, nickname="harry")
+    result_1 = UpdateUserProfileUseCase().execute(dto=dto)
+
+    dto = GetUserDto(user_id=create_users[0].id)
+    result_2 = GetUserProfileUseCase().execute(dto=dto)
+
+    assert isinstance(result_1, UseCaseSuccessOutput)
+    assert result_1.type == "success"
+    assert result_2.value.nickname == "harry"
