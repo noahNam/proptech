@@ -44,7 +44,7 @@ class UpsertUserInfoSchema(BaseModel):
 
 class GetUserInfoSchema(BaseModel):
     user_id: StrictInt
-    codes: list
+    survey_step: StrictInt
 
 
 class GetUserMainSchema(BaseModel):
@@ -153,14 +153,16 @@ class UpsertUserInfoRequestSchema:
 
 class GetUserInfoRequestSchema:
     def __init__(
-        self, user_id, codes,
+        self, user_id, survey_step,
     ):
         self.user_id = int(user_id) if user_id else None
-        self.codes = codes
+        self.survey_step = int(survey_step)
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserInfoSchema(user_id=self.user_id, codes=self.codes,).dict()
+            schema = GetUserInfoSchema(
+                user_id=self.user_id, survey_step=self.survey_step,
+            ).dict()
             return GetUserInfoDto(**schema)
         except ValidationError as e:
             logger.error(

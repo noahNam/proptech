@@ -15,13 +15,16 @@ from core.domains.user.dto.user_dto import (
     UpsertUserInfoDto,
     GetUserInfoDto,
     GetUserDto,
+    UpsertUserInfoDetailDto,
 )
-from core.domains.user.entity.user_entity import (
-    UserInfoCodeValueEntity,
-    UserProfileEntity,
-)
+from core.domains.user.entity.user_entity import UserInfoResultEntity
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
-from core.domains.user.enum.user_info_enum import IsHouseOwnerCodeEnum, CodeEnum
+from core.domains.user.enum.user_info_enum import (
+    CodeEnum,
+    MonthlyIncomeEnum,
+    CodeStepEnum,
+    IsHouseHolderCodeEnum,
+)
 from core.domains.user.repository.user_repository import UserRepository
 from core.domains.user.use_case.v1.user_use_case import (
     CreateUserUseCase,
@@ -273,19 +276,22 @@ def test_upsert_user_info_when_update_user_data_then_success(
     assert user_info.value == upsert_user_info_dto.values[0]
 
 
-def test_get_user_info_when_first_input_nickname_then_get_none_user_data(
+def test_get_user_info_when_first_input_surveys_then_get_none_user_data(
     session, create_users
 ):
     get_user_info_dto = GetUserInfoDto(
-        user_id=create_users[0].id, user_profile_id=None, codes=[1000],
+        user_id=create_users[0].id, user_profile_id=None, survey_step=1,
     )
     result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
-    assert result.value[0].code == get_user_info_dto.codes[0]
-    assert result.value[0].code_values is None
-    assert result.value[0].user_value is None
+    assert len(result.value) == len(CodeStepEnum.ONE.value)
+
+    for value in result.value:
+        if value.code == 1000:
+            assert value.code_values is None
+            assert value.user_value is None
 
 
 @patch(
@@ -302,36 +308,38 @@ def test_get_user_info_when_secondary_input_nickname_then_get_user_data(
     UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
 
     get_user_info_dto = GetUserInfoDto(
-        user_id=user_id, user_profile_id=None, codes=[1000],
+        user_id=user_id, user_profile_id=None, survey_step=1,
     )
     result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
-    assert result.value[0].code_values is None
-    assert result.value[0].code == get_user_info_dto.codes[0]
-    assert result.value[0].user_value == upsert_user_info_dto.values[0]
+    assert len(result.value) == len(CodeStepEnum.ONE.value)
+
+    for value in result.value:
+        if value.code == upsert_user_info_dto.codes[0]:
+            assert value.code_values is None
+            assert value.user_value == upsert_user_info_dto.values[0]
 
 
 def test_get_user_info_when_first_input_data_then_get_none_user_data(
     session, create_users
 ):
     get_user_info_dto = GetUserInfoDto(
-        user_id=create_users[0].id, user_profile_id=None, codes=[1005],
+        user_id=create_users[0].id, user_profile_id=None, survey_step=1,
     )
     result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
-    assert isinstance(result.value[0].code_values, UserInfoCodeValueEntity)
-    assert result.value[0].code == get_user_info_dto.codes[0]
-    assert result.value[0].user_value is None
-    assert len(result.value[0].code_values.detail_code) == len(
-        IsHouseOwnerCodeEnum.COND_CD.value
-    )
-    assert len(result.value[0].code_values.name) == len(
-        IsHouseOwnerCodeEnum.COND_NM.value
-    )
+    assert len(result.value) == len(CodeStepEnum.ONE.value)
+
+    for value in result.value:
+        if value.code == CodeEnum.IS_HOUSE_HOLDER.value:
+            assert len(value.code_values.detail_code) == len(
+                IsHouseHolderCodeEnum.COND_CD.value
+            )
+            assert value.user_value is None
 
 
 @patch(
@@ -348,21 +356,14 @@ def test_get_user_info_when_secondary_input_data_then_get_user_data(
     UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
 
     get_user_info_dto = GetUserInfoDto(
-        user_id=user_id, user_profile_id=None, codes=[1005],
+        user_id=user_id, user_profile_id=None, survey_step=1,
     )
     result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
-    assert isinstance(result.value[0].code_values, UserInfoCodeValueEntity)
-    assert result.value[0].code == get_user_info_dto.codes[0]
-    assert result.value[0].user_value == upsert_user_info_dto.values[0]
-    assert len(result.value[0].code_values.detail_code) == len(
-        IsHouseOwnerCodeEnum.COND_CD.value
-    )
-    assert len(result.value[0].code_values.name) == len(
-        IsHouseOwnerCodeEnum.COND_NM.value
-    )
+    assert isinstance(result.value[0], UserInfoResultEntity)
+    assert len(result.value) == len(CodeStepEnum.ONE.value)
 
 
 @patch(
@@ -378,7 +379,7 @@ def test_get_user_info_when_monthly_income_then_success(
 
     # 외벌이, 맞벌이 확인
     # 외벌이 -> 1,3,4 / 맞벌이 -> 2
-    upsert_user_info_dto = UpsertUserInfoDto(
+    upsert_user_info_dto = UpsertUserInfoDetailDto(
         user_id=create_users[0].id,
         user_profile_id=create_users[0].id,
         code=CodeEnum.IS_MARRIED.value,
@@ -388,7 +389,7 @@ def test_get_user_info_when_monthly_income_then_success(
 
     # 부양가족 수
     # 3인 이하->1,2,3 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8 / 없어요->9
-    upsert_user_info_dto = UpsertUserInfoDto(
+    upsert_user_info_dto = UpsertUserInfoDetailDto(
         user_id=create_users[0].id,
         user_profile_id=create_users[0].id,
         code=CodeEnum.NUMBER_DEPENDENTS.value,
@@ -398,49 +399,28 @@ def test_get_user_info_when_monthly_income_then_success(
 
     # Data 조회
     get_user_info_dto = GetUserInfoDto(
-        user_id=create_users[0].id,
-        user_profile_id=create_users[0].id,
-        code=CodeEnum.MONTHLY_INCOME.value,
+        user_id=create_users[0].id, user_profile_id=create_users[0].id, survey_step=2,
     )
     result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert len(result.value.code_values[0].detail_code) == len(
-        result.value.code_values[0].name
-    )
-    # 맞벌이, 부양가족 5인
-    assert result.value.code_values[0].name == [
-        3547102,
-        5675364,
-        7803626,
-        8513046,
-        9222466,
-        9931887,
-    ]
+    for value in result.value:
+        if value.code == CodeEnum.MONTHLY_INCOME.value:
+            assert len(value.code_values.detail_code) == len(
+                MonthlyIncomeEnum.COND_CD_2.value
+            )
+            assert value.user_value is None
 
-
-@patch(
-    "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
-    return_value=True,
-)
-def test_get_user_info_when_monthly_income_then_success(
-    _send_sqs_message, session, create_users, create_sido_codes
-):
-    get_user_info_dto = GetUserInfoDto(
-        user_id=create_users[0].id,
-        user_profile_id=create_users[0].id,
-        codes=[CodeEnum.ADDRESS.value],
-    )
-    result = GetUserInfoUseCase().execute(dto=get_user_info_dto)
-
-    assert isinstance(result, UseCaseSuccessOutput)
-    assert len(result.value) == 1
-    assert len(result.value[0].code_values.detail_code) == len(
-        result.value[0].code_values.name
-    )
-    assert len(result.value[0].code_values.detail_code) == len(
-        result.value[0].code_values.name
-    )
+            # 맞벌이, 부양가족 5인
+            assert value.code_values.name == [
+                3547102,
+                5675364,
+                7803626,
+                8513046,
+                9222466,
+                9931887,
+                11350728,
+            ]
 
 
 def test_patch_user_out_info_when_user_request_then_success(session, create_users):

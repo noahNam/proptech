@@ -3,21 +3,17 @@ tags:
   - Notification
 security:
   - userAuth: []
-requestBody:
-  required: true
-  content:
-    application/json:
-      schema:
-        type: object
-        required:
-          - category
-        properties:
-          category:
-            type: string
-            example: offical or my
+parameters:
+  - name: badge_type
+    in: query
+    required: true
+    description: all or in or out -> mvp all 고정
+    schema:
+      type: string
+      example: all
 responses:
   '200':
-    description: badge를 보여줘야할 경우 True 아니면 False
+    description: all or in or out -> mvp는 all
     content:
       application/json:
         schema:

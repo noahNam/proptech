@@ -1,7 +1,6 @@
 from sqlalchemy import (
     Column,
     BigInteger,
-    Boolean,
     DateTime,
     Integer,
     ForeignKey,
@@ -47,7 +46,7 @@ class UserProfileModel(db.Model):
             created_at=self.created_at,
             updated_at=self.updated_at,
             user_infos=[
-                user_info.to_entity()
+                user_info.to_result_entity()
                 for user_info in self.user_infos
                 if self.user_infos
             ],

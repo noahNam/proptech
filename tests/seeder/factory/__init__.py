@@ -90,7 +90,7 @@ class DeviceFactory(BaseFactory):
     device_token = factory.SubFactory(DeviceTokenFactory)
 
 
-class SurveyResultMFactory(BaseFactory):
+class SurveyResultFactory(BaseFactory):
     class Meta:
         model = SurveyResultModel
 
@@ -132,7 +132,7 @@ class UserProfileFactory(BaseFactory):
     last_update_code = 1000
 
     user_infos = factory.List([factory.SubFactory(UserInfoFactory)])
-    survey_result = factory.SubFactory(SurveyResultMFactory)
+    survey_result = factory.SubFactory(SurveyResultFactory)
 
 
 class ReceivePushTypeFactory(BaseFactory):

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -53,14 +53,8 @@ class UpsertUserInfoDetailDto(BaseModel):
 
 class GetUserInfoDto(BaseModel):
     user_id: int
-    user_profile_id: int = None
-    codes: list
-
-
-class GetUserInfoDetailDto(BaseModel):
-    user_id: int
-    user_profile_id: int = None
-    code: int
+    user_profile_id: Optional[int]
+    survey_step: int
 
 
 class SendUserInfoToLakeDto(BaseModel):

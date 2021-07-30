@@ -1,0 +1,1 @@
+INSERT INTO avg_monthly_income_workers ("year", three, four, five, six, seven, eight, is_active) VALUES('2021',6030160, 7094205, 7094205, 7393647, 7778023, 8162399, true);
