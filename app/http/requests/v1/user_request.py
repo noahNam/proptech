@@ -7,6 +7,7 @@ from core.domains.user.dto.user_dto import (
     UpsertUserInfoDto,
     GetUserInfoDto,
     GetUserDto,
+    UpdateUserProfileDto,
 )
 from core.exceptions import InvalidRequestException
 
@@ -53,6 +54,11 @@ class GetUserMainSchema(BaseModel):
 
 class GetSurveyResultSchema(BaseModel):
     user_id: StrictInt
+
+
+class UpdateUserProfileSchema(BaseModel):
+    user_id: StrictInt
+    nickname: str
 
 
 class GetUserRequestSchema:
@@ -197,5 +203,23 @@ class GetSurveyResultRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetSurveyResultRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class UpdateUserProfileRequestSchema:
+    def __init__(self, user_id, nickname):
+        self.user_id = int(user_id) if user_id else None
+        self.nickname = nickname
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = UpdateUserProfileSchema(
+                user_id=self.user_id, nickname=self.nickname
+            ).dict()
+            return UpdateUserProfileDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[UpdateUserProfileRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

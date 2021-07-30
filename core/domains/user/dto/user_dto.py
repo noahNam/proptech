@@ -51,6 +51,11 @@ class UpsertUserInfoDetailDto(BaseModel):
     value: str = None
 
 
+class UpdateUserProfileDto(BaseModel):
+    user_id: int
+    nickname: str
+
+
 class GetUserInfoDto(BaseModel):
     user_id: int
     user_profile_id: Optional[int]

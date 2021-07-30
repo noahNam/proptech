@@ -843,3 +843,27 @@ def test_get_user_profile_view_when_enter_setting_page_return_success(
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert data["user"]["nickname"] == "noah"
+
+
+def test_update_user_profile_view_when_enter_setting_page_then_success(
+    client, session, test_request_context, make_header, make_authorization, create_users
+):
+    authorization = make_authorization(user_id=create_users[0].id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+    dict_ = dict(nickname="harry")
+
+    with test_request_context:
+        response = client.patch(
+            url_for("api/tanos.update_user_profile_view"),
+            data=json.dumps(dict_),
+            headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"] == "success"
+    assert isinstance(data["result"], str)

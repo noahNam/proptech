@@ -58,3 +58,7 @@ class GetSurveyResultResponseSchema(BaseModel):
 
 class GetUserProfileResponseSchema(BaseModel):
     user: GetUserProfileBaseSchema
+
+
+class UpdateUserProfileResponseSchema(BaseModel):
+    result: StrictStr
