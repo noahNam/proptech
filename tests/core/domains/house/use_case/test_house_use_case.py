@@ -18,7 +18,8 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetHousePublicDetailUseCase,
     GetCalenderInfoUseCase,
     GetInterestHouseListUseCase,
-    GetRecentViewListUseCase, GetTicketUsageResultUseCase,
+    GetRecentViewListUseCase,
+    GetTicketUsageResultUseCase,
 )
 from core.domains.user.dto.user_dto import GetUserDto
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -56,7 +57,7 @@ def test_upsert_interest_house_use_case_when_like_public_sales_then_success(sess
 
 
 def test_upsert_interest_house_use_case_when_unlike_public_sales_then_success(
-        session, interest_house_factory
+    session, interest_house_factory
 ):
     interest_house = interest_house_factory.build()
     session.add(interest_house)
@@ -77,7 +78,7 @@ def test_upsert_interest_house_use_case_when_unlike_public_sales_then_success(
 
 
 def test_bounding_use_case_when_get_wrong_level_then_400_error(
-        session, create_real_estate_with_bounding
+    session, create_real_estate_with_bounding
 ):
     """
         level 값이 범위 밖이면 400 에러
@@ -94,7 +95,7 @@ def test_bounding_use_case_when_get_wrong_level_then_400_error(
 
 
 def test_bounding_use_case_when_get_no_coordinates_then_404_error(
-        session, create_real_estate_with_bounding
+    session, create_real_estate_with_bounding
 ):
     """
         좌표 값이 없으면(0이면) 404 에러
@@ -111,14 +112,14 @@ def test_bounding_use_case_when_get_no_coordinates_then_404_error(
 
 
 def test_bounding_use_case_when_level_is_grater_than_queryset_flag_then_call_get_bounding(
-        session, create_real_estate_with_bounding
+    session, create_real_estate_with_bounding
 ):
     """
         level 값이 BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value 이상이면
         HouseRepository().get_bounding_by_coordinates_range_dto 호출
     """
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_bounding"
+        "core.domains.house.repository.house_repository.HouseRepository.get_bounding"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
         result = BoundingUseCase().execute(dto=coordinates_dto)
@@ -129,7 +130,7 @@ def test_bounding_use_case_when_level_is_grater_than_queryset_flag_then_call_get
 
 
 def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_administrative(
-        session, create_real_estate_with_bounding
+    session, create_real_estate_with_bounding
 ):
     """
         level 값이 BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value 미만이면
@@ -143,7 +144,7 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
         level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value - 1,
     )
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
+        "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
         result = BoundingUseCase().execute(dto=lower_dto)
@@ -154,7 +155,7 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
 
 
 def test_get_house_public_detail_use_case_when_enable_public_sale_house(
-        session, create_interest_house, create_real_estate_with_public_sale
+    session, create_interest_house, create_real_estate_with_public_sale
 ):
     """
         사용 가능한 분양 매물이면
@@ -164,11 +165,11 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
     get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)
 
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.is_enable_public_sale_house"
+        "core.domains.house.repository.house_repository.HouseRepository.is_enable_public_sale_house"
     ) as mock_enable:
         mock_enable.return_value = True
         with patch(
-                "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
+            "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
         ) as mock_house_public_detail:
             mock_house_public_detail.return_value = create_real_estate_with_public_sale[
                 0
@@ -187,7 +188,7 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
 
 
 def test_get_house_public_detail_use_case_when_disable_public_sale_house(
-        session, create_interest_house, create_real_estate_with_public_sale
+    session, create_interest_house, create_real_estate_with_public_sale
 ):
     """
         사용 불가능한 분양 매물이면 404 에러
@@ -195,11 +196,11 @@ def test_get_house_public_detail_use_case_when_disable_public_sale_house(
     get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)
 
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.is_enable_public_sale_house"
+        "core.domains.house.repository.house_repository.HouseRepository.is_enable_public_sale_house"
     ) as mock_disable:
         mock_disable.return_value = False
         with patch(
-                "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
+            "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
         ) as mock_house_public_detail:
             mock_house_public_detail.return_value = create_real_estate_with_public_sale[
                 0
@@ -215,7 +216,7 @@ def test_get_house_public_detail_use_case_when_disable_public_sale_house(
 
 
 def test_get_calender_info_use_case_when_included_request_date(
-        session, create_real_estate_with_public_sale
+    session, create_real_estate_with_public_sale
 ):
     """
         get_calender_info_by_get_calender_info_dto -> return mocking
@@ -250,7 +251,7 @@ def test_get_calender_info_use_case_when_included_request_date(
     )
 
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
     ) as mock_calender_info:
         mock_calender_info.return_value = sample_calender_info
         result = GetCalenderInfoUseCase().execute(dto=get_calender_info_dto)
@@ -260,14 +261,14 @@ def test_get_calender_info_use_case_when_included_request_date(
 
 
 def test_get_calender_info_use_case_when_no_included_request_date(
-        session, create_real_estate_with_public_sale
+    session, create_real_estate_with_public_sale
 ):
     """
         get_calender_info_by_get_calender_info_dto -> return mocking
         요청 받은 년월에 속한 매물이 없으면 null 리턴
     """
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
     ) as mock_calender_info:
         mock_calender_info.return_value = None
         result = GetCalenderInfoUseCase().execute(dto=get_calender_info_dto)
@@ -278,7 +279,7 @@ def test_get_calender_info_use_case_when_no_included_request_date(
 
 
 def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_one(
-        session, create_users, create_real_estate_with_public_sale
+    session, create_users, create_real_estate_with_public_sale
 ):
     dto = GetUserDto(user_id=create_users[0].id)
     result = GetInterestHouseListUseCase().execute(dto=dto)
@@ -290,7 +291,7 @@ def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_
 
 
 def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_zero(
-        session, create_users
+    session, create_users
 ):
     dto = GetUserDto(user_id=create_users[0].id)
     result = GetInterestHouseListUseCase().execute(dto=dto)
@@ -301,10 +302,10 @@ def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_
 
 
 def test_get_recent_view_list_use_case_when_watch_recently_view_then_result_one(
-        session,
-        create_users,
-        create_real_estate_with_public_sale,
-        public_sale_photo_factory,
+    session,
+    create_users,
+    create_real_estate_with_public_sale,
+    public_sale_photo_factory,
 ):
     public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
     session.add(public_sale_photo)
@@ -320,11 +321,11 @@ def test_get_recent_view_list_use_case_when_watch_recently_view_then_result_one(
 
 
 def test_get_ticket_usage_result_use_case_then_success(
-        session,
-        create_users,
-        create_real_estate_with_public_sale,
-        create_ticket_usage_results,
-        public_sale_photo_factory,
+    session,
+    create_users,
+    create_real_estate_with_public_sale,
+    create_ticket_usage_results,
+    public_sale_photo_factory,
 ):
     public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
     session.add(public_sale_photo)

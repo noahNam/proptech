@@ -2,8 +2,12 @@ from typing import Optional, List
 
 from pydantic import BaseModel, StrictStr, StrictInt
 
-from core.domains.user.entity.user_entity import UserInfoCodeValueEntity, SurveyResultEntity, UserProfileEntity, \
-    UserInfoResultEntity
+from core.domains.user.entity.user_entity import (
+    UserInfoCodeValueEntity,
+    SurveyResultEntity,
+    UserProfileEntity,
+    UserInfoResultEntity,
+)
 
 
 class GetUserBaseSchema(BaseModel):

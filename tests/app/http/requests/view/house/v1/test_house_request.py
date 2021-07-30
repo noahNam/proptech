@@ -85,8 +85,7 @@ def test_get_bounding_within_radius_request_when_valid_value_then_success():
     house_id = 1
     search_type = "2"
     result = GetBoundingWithinRadiusRequestSchema(
-        house_id=house_id,
-        search_type=search_type
+        house_id=house_id, search_type=search_type
     ).validate_request_and_make_dto()
 
     assert result.house_id == house_id
@@ -98,8 +97,7 @@ def test_get_bounding_within_radius_request_when_no_house_id_then_fail():
     search_type = "2"
     with pytest.raises(InvalidRequestException):
         GetBoundingWithinRadiusRequestSchema(
-            house_id=house_id,
-            search_type=search_type
+            house_id=house_id, search_type=search_type
         ).validate_request_and_make_dto()
 
 
@@ -108,6 +106,5 @@ def test_get_bounding_within_radius_request_when_wrong_search_type_then_fail():
     search_type = "5"
     with pytest.raises(InvalidRequestException):
         GetBoundingWithinRadiusRequestSchema(
-            house_id=house_id,
-            search_type=search_type
+            house_id=house_id, search_type=search_type
         ).validate_request_and_make_dto()

@@ -10,7 +10,8 @@ from app.http.requests.v1.user_request import (
     UpsertUserInfoRequestSchema,
     GetUserInfoRequestSchema,
     GetUserRequestSchema,
-    GetUserMainRequestSchema, GetSurveyResultRequestSchema,
+    GetUserMainRequestSchema,
+    GetSurveyResultRequestSchema,
 )
 from app.http.responses.presenters.v1.user_presenter import (
     CreateUserPresenter,
@@ -19,7 +20,8 @@ from app.http.responses.presenters.v1.user_presenter import (
     GetUserInfoPresenter,
     GetUserPresenter,
     PatchUserOutPresenter,
-    GetUserMainPresenter, GetSurveyResultPresenter,
+    GetUserMainPresenter,
+    GetSurveyResultPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.user.enum.user_enum import UserProviderCallEnum
@@ -30,7 +32,8 @@ from core.domains.user.use_case.v1.user_use_case import (
     GetUserInfoUseCase,
     GetUserUseCase,
     UserOutUseCase,
-    GetUserMainUseCase, GetSurveyResultUseCase,
+    GetUserMainUseCase,
+    GetSurveyResultUseCase,
 )
 
 
@@ -39,7 +42,7 @@ from core.domains.user.use_case.v1.user_use_case import (
 @auth_required
 @swag_from("get_user.yml", methods=["GET"])
 def get_user_view():
-    dto = GetUserRequestSchema(user_id=current_user.id, ).validate_request_and_make_dto()
+    dto = GetUserRequestSchema(user_id=current_user.id,).validate_request_and_make_dto()
 
     return GetUserPresenter().transform(GetUserUseCase().execute(dto=dto))
 
@@ -104,7 +107,7 @@ def get_user_provider_view():
     try:
         response = requests.get(
             url=UserProviderCallEnum.CAPTAIN_BASE_URL.value
-                + UserProviderCallEnum.CALL_END_POINT.value,
+            + UserProviderCallEnum.CALL_END_POINT.value,
             headers={
                 "Content-Type": "application/json",
                 "Cache-Control": "no-cache",
@@ -123,7 +126,7 @@ def get_user_provider_view():
 @auth_required
 @swag_from("patch_user_out.yml", methods=["PATCH"])
 def patch_user_out_view():
-    dto = GetUserRequestSchema(user_id=current_user.id, ).validate_request_and_make_dto()
+    dto = GetUserRequestSchema(user_id=current_user.id,).validate_request_and_make_dto()
 
     return PatchUserOutPresenter().transform(UserOutUseCase().execute(dto=dto))
 
@@ -149,4 +152,6 @@ def get_survey_result_view():
         user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return GetSurveyResultPresenter().transform(GetSurveyResultUseCase().execute(dto=dto))
+    return GetSurveyResultPresenter().transform(
+        GetSurveyResultUseCase().execute(dto=dto)
+    )

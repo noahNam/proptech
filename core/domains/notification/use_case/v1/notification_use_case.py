@@ -37,7 +37,7 @@ class NotificationBaseUseCase:
 
 class GetNotificationUseCase(NotificationBaseUseCase):
     def execute(
-            self, dto: GetNotificationDto
+        self, dto: GetNotificationDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -72,7 +72,7 @@ class GetNotificationUseCase(NotificationBaseUseCase):
         dto.topics = topics
 
     def _make_history_entitiy(
-            self, notifications: List[NotificationEntity], dto: GetNotificationDto
+        self, notifications: List[NotificationEntity], dto: GetNotificationDto
     ) -> List[NotificationHistoryEntity]:
         result = list()
 
@@ -104,7 +104,7 @@ class GetNotificationUseCase(NotificationBaseUseCase):
 
 class UpdateNotificationUseCase(NotificationBaseUseCase):
     def execute(
-            self, dto: UpdateNotificationDto
+        self, dto: UpdateNotificationDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -119,7 +119,7 @@ class UpdateNotificationUseCase(NotificationBaseUseCase):
 
 class GetBadgeUseCase(NotificationBaseUseCase):
     def execute(
-            self, dto: GetBadgeDto
+        self, dto: GetBadgeDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -134,7 +134,7 @@ class GetBadgeUseCase(NotificationBaseUseCase):
 
 class GetReceiveNotificationSettingUseCase(NotificationBaseUseCase):
     def execute(
-            self, user_id: int
+        self, user_id: int
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not user_id:
             return UseCaseFailureOutput(
@@ -160,7 +160,7 @@ class GetReceiveNotificationSettingUseCase(NotificationBaseUseCase):
 
 class UpdateReceiveNotificationSettingUseCase(NotificationBaseUseCase):
     def execute(
-            self, dto: UpdateReceiveNotificationSettingDto
+        self, dto: UpdateReceiveNotificationSettingDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -179,7 +179,7 @@ class UpdateReceiveNotificationSettingUseCase(NotificationBaseUseCase):
         return UseCaseSuccessOutput()
 
     def _update_app_agree_terms_to_receive_marketing(
-            self, dto: UpdateReceiveNotificationSettingDto
+        self, dto: UpdateReceiveNotificationSettingDto
     ) -> None:
         send_message(
             topic_name=UserTopicEnum.UPDATE_APP_AGREE_TERMS_TO_RECEIVE_MARKETING,

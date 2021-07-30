@@ -102,6 +102,7 @@ class SearchTypeEnum(Enum):
                GetBoundingWithinRadiusSchema
         목적 : 파라미터 search_type 값의 범위 제한
     """
+
     FROM_REAL_ESTATE = 1
     FROM_PUBLIC_SALE = 2
     FROM_ADMINISTRATIVE_DIVISION = 3

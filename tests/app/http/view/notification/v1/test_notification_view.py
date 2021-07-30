@@ -13,13 +13,13 @@ from core.domains.notification.use_case.v1.notification_use_case import (
 
 
 def test_get_notification_view_then_two_message(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-        create_notifications,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -44,13 +44,13 @@ def test_get_notification_view_then_two_message(
 
 
 def test_get_notification_view_then_no_message(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-        create_notifications,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    create_notifications,
 ):
     user_id = create_users[1].id
     authorization = make_authorization(user_id=user_id)
@@ -74,13 +74,13 @@ def test_get_notification_view_then_no_message(
 
 
 def test_get_badge_view_then_return_true(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-        create_notifications,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -105,13 +105,13 @@ def test_get_badge_view_then_return_true(
 
 
 def test_get_badge_view_then_return_false(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-        create_notifications,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    create_notifications,
 ):
     user_id = create_users[1].id
     authorization = make_authorization(user_id=user_id)
@@ -123,7 +123,10 @@ def test_get_badge_view_then_return_false(
 
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_badge_view", badge_type=NotificationBadgeTypeEnum.ALL.value),
+            url_for(
+                "api/tanos.get_badge_view",
+                badge_type=NotificationBadgeTypeEnum.ALL.value,
+            ),
             headers=headers,
         )
 
@@ -133,13 +136,13 @@ def test_get_badge_view_then_return_false(
 
 
 def test_update_notification_view_then_return_success(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-        create_notifications,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -160,7 +163,10 @@ def test_update_notification_view_then_return_success(
 
     with test_request_context:
         response2 = client.get(
-            url_for("api/tanos.get_notification_view", category=NotificationHistoryCategoryEnum.MY.value),
+            url_for(
+                "api/tanos.get_notification_view",
+                category=NotificationHistoryCategoryEnum.MY.value,
+            ),
             headers=headers,
         )
 
@@ -174,13 +180,13 @@ def test_update_notification_view_then_return_success(
 
 
 def test_get_receive_notification_settings_view_then_success(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-        create_notifications,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -204,13 +210,13 @@ def test_get_receive_notification_settings_view_then_success(
 
 
 def test_update_receive_notification_settings_view_when_change_push_type_then_official_is_false(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-        create_notifications,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -235,8 +241,8 @@ def test_update_receive_notification_settings_view_when_change_push_type_then_of
     result = GetReceiveNotificationSettingUseCase().execute(user_id=create_users[0].id)
     history_result = (
         session.query(ReceivePushTypeHistoryModel)
-            .filter_by(user_id=create_users[0].id)
-            .all()
+        .filter_by(user_id=create_users[0].id)
+        .all()
     )
 
     assert result.value["official"] is False
