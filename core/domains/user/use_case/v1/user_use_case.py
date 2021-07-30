@@ -28,7 +28,9 @@ from core.domains.user.dto.user_dto import (
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
     UserInfoCodeValueEntity,
-    UserEntity, UserProfileEntity, UserInfoResultEntity,
+    UserEntity,
+    UserProfileEntity,
+    UserInfoResultEntity,
 )
 from core.domains.user.enum.user_enum import UserSqsTypeEnum
 from core.domains.user.enum.user_info_enum import (
@@ -45,7 +47,9 @@ from core.domains.user.enum.user_info_enum import (
     SpecialCondEnum,
     CodeEnum,
     AddressCodeEnum,
-    AddressDetailCodeEnum, CodeStepEnum, IsSupportParentCodeEnum,
+    AddressDetailCodeEnum,
+    CodeStepEnum,
+    IsSupportParentCodeEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -99,7 +103,7 @@ class UserBaseUseCase:
 
 class GetUserUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         user: UserEntity = self._user_repo.get_user(user_id=dto.user_id)
 
@@ -108,7 +112,7 @@ class GetUserUseCase(UserBaseUseCase):
 
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateUserDto
+        self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -146,7 +150,7 @@ class CreateUserUseCase(UserBaseUseCase):
 
 class CreateAppAgreeTermsUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateAppAgreeTermsDto
+        self, dto: CreateAppAgreeTermsDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -166,7 +170,7 @@ class CreateAppAgreeTermsUseCase(UserBaseUseCase):
 
 class UpsertUserInfoUseCase(UserBaseUseCase):
     def execute(
-            self, dto: UpsertUserInfoDto
+        self, dto: UpsertUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -238,7 +242,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
 class GetUserInfoUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserInfoDto
+        self, dto: GetUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -250,16 +254,21 @@ class GetUserInfoUseCase(UserBaseUseCase):
         user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(dto=dto)
         dto.user_profile_id = user_profile_id
 
-        user_info_entity: List[UserInfoEntity] = self._user_repo.get_user_multi_data_info(dto=dto)
+        user_info_entity: List[
+            UserInfoEntity
+        ] = self._user_repo.get_user_multi_data_info(dto=dto)
 
         # 유저 설문이 작성되지 않은 object 생성
         self._make_empty_object(user_infos=user_info_entity, dto=dto)
-        user_info_result_entity: List[UserInfoResultEntity] = self._bind_detail_code_values(
-            user_infos=user_info_entity)
+        user_info_result_entity: List[
+            UserInfoResultEntity
+        ] = self._bind_detail_code_values(user_infos=user_info_entity)
 
         return UseCaseSuccessOutput(value=user_info_result_entity)
 
-    def _make_empty_object(self, user_infos: List[UserInfoEntity], dto: GetUserInfoDto) -> None:
+    def _make_empty_object(
+        self, user_infos: List[UserInfoEntity], dto: GetUserInfoDto
+    ) -> None:
         if dto.survey_step == 1:
             # 1단계 설문 데이터 조회
             survey_step_codes = CodeStepEnum.ONE.value
@@ -270,24 +279,22 @@ class GetUserInfoUseCase(UserBaseUseCase):
         user_info_codes = [user_info.code for user_info in user_infos]
         empty_codes: list = list(set(survey_step_codes) - set(user_info_codes))
 
-        empty_user_info_entity = [UserInfoEntity(
-            user_profile_id=dto.user_profile_id,
-            code=empty_code,
-            value=None,
-        ) for empty_code in empty_codes]
+        empty_user_info_entity = [
+            UserInfoEntity(
+                user_profile_id=dto.user_profile_id, code=empty_code, value=None,
+            )
+            for empty_code in empty_codes
+        ]
 
         user_infos.extend(empty_user_info_entity)
 
     def _bind_detail_code_values(
-            self,
-            user_infos: List[UserInfoEntity],
+        self, user_infos: List[UserInfoEntity],
     ) -> List[UserInfoResultEntity]:
         results = list()
         for user_info in user_infos:
             user_info_result_entity = UserInfoResultEntity(
-                code=user_info.code,
-                code_values=None,
-                user_value=user_info.value
+                code=user_info.code, code_values=None, user_value=user_info.value
             )
 
             bind_detail_code_dict = {
@@ -324,7 +331,8 @@ class GetUserInfoUseCase(UserBaseUseCase):
                 # 외벌이, 맞벌이 확인
                 # 외벌이 -> 1,3,4 / 맞벌이 -> 2
                 is_married_result: UserInfoEntity = UserRepository().get_user_info_by_code(
-                    user_profile_id=user_info.user_profile_id, code=CodeEnum.IS_MARRIED.value
+                    user_profile_id=user_info.user_profile_id,
+                    code=CodeEnum.IS_MARRIED.value,
                 )
 
                 # 부양가족 수
@@ -351,7 +359,9 @@ class GetUserInfoUseCase(UserBaseUseCase):
                 calc_result_list = []
 
                 if number_dependents_result:
-                    my_basic_income = income_result_dict.get(number_dependents_result.value)
+                    my_basic_income = income_result_dict.get(
+                        number_dependents_result.value
+                    )
                     monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if is_married_result.value != "2" else MonthlyIncomeEnum.COND_CD_2.value
                 else:
                     # 설문 1단계를 완료 안하고 들어오지 못하지만 가드 코드 추가
@@ -386,7 +396,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
 
 class UserOutUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -402,7 +412,7 @@ class UserOutUseCase(UserBaseUseCase):
 
 class GetUserMainUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
         ticket은 tickets 스키마의 sum(amount)로 가져온다. -> 안정성을 위해
@@ -440,7 +450,7 @@ class GetUserMainUseCase(UserBaseUseCase):
 
 class GetSurveyResultUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -449,7 +459,9 @@ class GetSurveyResultUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        user_profile_entity: Optional[UserProfileEntity] = self._user_repo.get_survey_result(dto=dto)
+        user_profile_entity: Optional[
+            UserProfileEntity
+        ] = self._user_repo.get_survey_result(dto=dto)
 
         if not user_profile_entity:
             return UseCaseFailureOutput(
@@ -466,12 +478,14 @@ class GetSurveyResultUseCase(UserBaseUseCase):
             )
 
         age: int = self._calc_age(user_profile_entity=user_profile_entity)
-        return UseCaseSuccessOutput(value=dict(age=age, user_profile_entity=user_profile_entity))
+        return UseCaseSuccessOutput(
+            value=dict(age=age, user_profile_entity=user_profile_entity)
+        )
 
     def _calc_age(self, user_profile_entity: UserProfileEntity) -> int:
         # 생일로 나이 계산
         birth = user_profile_entity.user_infos[0].user_value
-        birth = datetime.strptime(birth, '%Y%m%d')
+        birth = datetime.strptime(birth, "%Y%m%d")
         today = get_server_timestamp()
 
         return today.year - birth.year

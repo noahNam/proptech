@@ -12,7 +12,8 @@ from core.domains.user.schema.user_schema import (
     GetUserInfoResponseSchema,
     GetUserResponseSchema,
     PatchUserOutResponseSchema,
-    GetUserMainResponseSchema, GetSurveyResultResponseSchema,
+    GetUserMainResponseSchema,
+    GetSurveyResultResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -184,8 +185,10 @@ class GetSurveyResultPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                age = output.value['age']
-                schema = GetSurveyResultResponseSchema(result=output.value['user_profile_entity'])
+                age = output.value["age"]
+                schema = GetSurveyResultResponseSchema(
+                    result=output.value["user_profile_entity"]
+                )
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
@@ -196,11 +199,14 @@ class GetSurveyResultPresenter:
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
             user_dict = schema.result.dict(include={"nickname"})
-            user_dict['age'] = age
-            survey_result_dict = schema.result.dict(include={'survey_result'})
+            user_dict["age"] = age
+            survey_result_dict = schema.result.dict(include={"survey_result"})
 
             result = {
-                "data": {'user': user_dict, 'survey_result': survey_result_dict['survey_result']},
+                "data": {
+                    "user": user_dict,
+                    "survey_result": survey_result_dict["survey_result"],
+                },
                 "meta": output.meta,
             }
             return success_response(result=result)

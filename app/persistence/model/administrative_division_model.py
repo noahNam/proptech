@@ -20,9 +20,7 @@ class AdministrativeDivisionModel(db.Model):
     __tablename__ = "administrative_divisions"
 
     id = Column(
-        BigInteger().with_variant(Integer, "sqlite"),
-        primary_key=True,
-        nullable=False,
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
 
     name = Column(String(100), nullable=False)

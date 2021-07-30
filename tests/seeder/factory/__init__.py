@@ -32,7 +32,11 @@ from app.persistence.model import (
     PublicSaleDetailPhotoModel,
     PublicSaleDetailModel,
     PublicSalePhotoModel,
-    AdministrativeDivisionModel, SurveyResultModel, UserInfoModel, TicketUsageResultModel, TicketUsageResultDetailModel,
+    AdministrativeDivisionModel,
+    SurveyResultModel,
+    UserInfoModel,
+    TicketUsageResultModel,
+    TicketUsageResultDetailModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -191,7 +195,9 @@ class TicketUsageResultFactory(BaseFactory):
     is_active = True
     created_at = get_server_timestamp()
 
-    ticket_usage_result_details = factory.List([factory.SubFactory(TicketUsageResultDetailFactory)])
+    ticket_usage_result_details = factory.List(
+        [factory.SubFactory(TicketUsageResultDetailFactory)]
+    )
 
 
 class UserFactory(BaseFactory):

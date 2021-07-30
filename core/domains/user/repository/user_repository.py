@@ -17,7 +17,8 @@ from app.persistence.model import (
     ReceivePushTypeModel,
     TicketModel,
     UserModel,
-    RecentlyViewModel, SurveyResultModel,
+    RecentlyViewModel,
+    SurveyResultModel,
 )
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
 from core.domains.notification.dto.notification_dto import (
@@ -36,7 +37,9 @@ from core.domains.user.dto.user_dto import (
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
     UserEntity,
-    UserInfoCodeValueEntity, UserProfileEntity, UserInfoResultEntity,
+    UserInfoCodeValueEntity,
+    UserProfileEntity,
+    UserInfoResultEntity,
 )
 from core.domains.user.enum.user_info_enum import CodeEnum, CodeStepEnum
 from core.exceptions import NotUniqueErrorException
@@ -93,7 +96,7 @@ class UserRepository:
 
     def create_device_token(self, dto: CreateUserDto, device_id) -> None:
         try:
-            device_token = DeviceTokenModel(device_id=device_id, token=dto.token, )
+            device_token = DeviceTokenModel(device_id=device_id, token=dto.token,)
             session.add(device_token)
             session.commit()
         except exc.IntegrityError as e:
@@ -190,8 +193,8 @@ class UserRepository:
     def is_user_info(self, dto: UpsertUserInfoDto) -> Optional[UserInfoEntity]:
         return session.query(
             exists()
-                .where(UserInfoModel.user_profile_id == dto.user_profile_id)
-                .where(UserInfoModel.code == dto.code)
+            .where(UserInfoModel.user_profile_id == dto.user_profile_id)
+            .where(UserInfoModel.code == dto.code)
         ).scalar()
 
     def create_user_nickname(self, dto: UpsertUserInfoDetailDto) -> int:
@@ -248,15 +251,12 @@ class UserRepository:
         try:
             user_info = (
                 session.query(UserInfoModel)
-                    .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-                    .update({"value": dto.value, "updated_at": get_server_timestamp()})
+                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
+                .update({"value": dto.value, "updated_at": get_server_timestamp()})
             )
             session.commit()
 
-            return UserInfoResultEntity(
-                code=dto.code,
-                user_value=dto.value,
-            )
+            return UserInfoResultEntity(code=dto.code, user_value=dto.value,)
         except Exception as e:
             session.rollback()
             logger.error(
@@ -277,9 +277,7 @@ class UserRepository:
             )
             raise Exception
 
-    def get_user_multi_data_info(
-            self, dto: GetUserInfoDto
-    ) -> List[UserInfoEntity]:
+    def get_user_multi_data_info(self, dto: GetUserInfoDto) -> List[UserInfoEntity]:
         filters = list()
         filters.append(UserInfoModel.user_profile_id == dto.user_profile_id)
 
@@ -295,19 +293,22 @@ class UserRepository:
         if not user_infos:
             return []
 
-        return [UserInfoEntity(
-            user_profile_id=user_info.user_profile_id,
-            code=user_info.code,
-            value=user_info.value,
-        ) for user_info in user_infos]
+        return [
+            UserInfoEntity(
+                user_profile_id=user_info.user_profile_id,
+                code=user_info.code,
+                value=user_info.value,
+            )
+            for user_info in user_infos
+        ]
 
     def get_user_info_by_code(
-            self, user_profile_id: int, code: int
+        self, user_profile_id: int, code: int
     ) -> Optional[UserInfoEntity]:
         user_info = (
             session.query(UserInfoModel)
-                .filter_by(user_profile_id=user_profile_id, code=code)
-                .first()
+            .filter_by(user_profile_id=user_profile_id, code=code)
+            .first()
         )
         if not user_info:
             return None
@@ -321,7 +322,7 @@ class UserRepository:
         return self._make_avg_monthly_income_worker_object(result)
 
     def _make_avg_monthly_income_worker_object(
-            self, result: AvgMonthlyIncomeWokrerModel
+        self, result: AvgMonthlyIncomeWokrerModel
     ) -> AvgMonthlyIncomeWokrerDto:
         return AvgMonthlyIncomeWokrerDto(
             three=result.three,
@@ -337,7 +338,7 @@ class UserRepository:
         return self._make_sido_codes_object(result, code)
 
     def _make_sido_codes_object(
-            self, result: List[SidoCodeModel], code: int
+        self, result: List[SidoCodeModel], code: int
     ) -> UserInfoCodeValueEntity:
         code_list = []
         name_list = []
@@ -369,7 +370,7 @@ class UserRepository:
             )
 
     def update_app_agree_terms_to_receive_marketing(
-            self, dto: UpdateReceiveNotificationSettingDto
+        self, dto: UpdateReceiveNotificationSettingDto
     ) -> None:
         try:
             session.query(AppAgreeTermsModel).filter_by(user_id=dto.user_id).update(
@@ -389,9 +390,9 @@ class UserRepository:
     def get_user_survey_step_and_ticket(self, dto: GetUserDto) -> UserEntity:
         query = (
             session.query(UserModel)
-                .options(joinedload(UserModel.user_profile))
-                .options(joinedload(UserModel.tickets).joinedload(TicketModel.ticket_type))
-                .filter(UserModel.id == dto.user_id)
+            .options(joinedload(UserModel.user_profile))
+            .options(joinedload(UserModel.tickets).joinedload(TicketModel.ticket_type))
+            .filter(UserModel.id == dto.user_id)
         )
         user = query.first()
         return user.to_entity()
@@ -413,12 +414,13 @@ class UserRepository:
     def get_survey_result(self, dto: GetUserDto) -> UserProfileEntity:
         query = (
             session.query(UserProfileModel)
-                .options(joinedload(UserProfileModel.survey_result))
-                .join(
+            .options(joinedload(UserProfileModel.survey_result))
+            .join(
                 UserInfoModel,
                 (UserProfileModel.id == UserInfoModel.user_profile_id)
-                & (UserInfoModel.code == CodeEnum.BIRTHDAY.value))
-                .filter(UserProfileModel.user_id == dto.user_id)
+                & (UserInfoModel.code == CodeEnum.BIRTHDAY.value),
+            )
+            .filter(UserProfileModel.user_id == dto.user_id)
         )
 
         user_profile = query.first()

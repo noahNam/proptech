@@ -61,7 +61,7 @@ class GetUserRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserSchema(user_id=self.user_id, ).dict()
+            schema = GetUserSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -72,7 +72,7 @@ class GetUserRequestSchema:
 
 class CreateUserRequestSchema:
     def __init__(
-            self, user_id, uuid, os, token,
+        self, user_id, uuid, os, token,
     ):
         self.user_id = int(user_id) if user_id else None
         self.is_required_agree_terms = False
@@ -107,7 +107,7 @@ class CreateUserRequestSchema:
 
 class CreateAppAgreeTermsRequestSchema:
     def __init__(
-            self, user_id, receive_marketing_yn,
+        self, user_id, receive_marketing_yn,
     ):
         self.user_id = int(user_id) if user_id else None
         self.private_user_info_yn = True
@@ -132,7 +132,7 @@ class CreateAppAgreeTermsRequestSchema:
 
 class UpsertUserInfoRequestSchema:
     def __init__(
-            self, user_id, codes, values,
+        self, user_id, codes, values,
     ):
         self.user_id = int(user_id) if user_id else None
         self.codes = codes
@@ -153,14 +153,16 @@ class UpsertUserInfoRequestSchema:
 
 class GetUserInfoRequestSchema:
     def __init__(
-            self, user_id, survey_step,
+        self, user_id, survey_step,
     ):
         self.user_id = int(user_id) if user_id else None
         self.survey_step = int(survey_step)
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserInfoSchema(user_id=self.user_id, survey_step=self.survey_step, ).dict()
+            schema = GetUserInfoSchema(
+                user_id=self.user_id, survey_step=self.survey_step,
+            ).dict()
             return GetUserInfoDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -175,7 +177,7 @@ class GetUserMainRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserMainSchema(user_id=self.user_id, ).dict()
+            schema = GetUserMainSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -190,7 +192,7 @@ class GetSurveyResultRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetSurveyResultSchema(user_id=self.user_id, ).dict()
+            schema = GetSurveyResultSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
