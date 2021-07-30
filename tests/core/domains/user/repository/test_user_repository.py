@@ -25,6 +25,7 @@ from core.domains.user.entity.user_entity import (
     UserEntity,
     UserInfoCodeValueEntity,
     UserInfoResultEntity,
+    UserProfileEntity,
 )
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import (
@@ -461,3 +462,37 @@ def test_get_survey_result_then_return_user_nickname_and_birth_survey_results(
         result.survey_result.hope_town_phase_one
         == create_users[0].user_profile.survey_result.hope_town_phase_one
     )
+
+
+def test_get_user_profile_when_enter_setting_page_return_nickname(
+    session, create_users
+):
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = UserRepository().get_user_profile(dto=dto)
+
+    assert isinstance(result, UserProfileEntity)
+    assert result.nickname == "noah"
+
+
+def test_get_user_profile_when_enter_setting_page_return_none(session):
+    dto = GetUserDto(user_id=1)
+    result = UserRepository().get_user_profile(dto=dto)
+
+    assert result is None
+
+
+def test_update_user_profile_when_enter_setting_page_then_success(
+    session, create_users
+):
+    dto = UpsertUserInfoDetailDto(
+        user_id=create_users[0].id,
+        user_profile_id=create_users[0].user_profile.id,
+        code=CodeEnum.NICKNAME.value,
+        value="harry",
+    )
+    UserRepository().update_user_nickname_of_profile_setting(dto=dto)
+
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = UserRepository().get_user_profile(dto=dto)
+
+    assert result.nickname == "harry"

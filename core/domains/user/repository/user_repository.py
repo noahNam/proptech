@@ -1,4 +1,4 @@
-from typing import Optional, List, Union
+from typing import Optional, List
 
 from sqlalchemy import exc, exists
 from sqlalchemy.orm import joinedload
@@ -18,7 +18,6 @@ from app.persistence.model import (
     TicketModel,
     UserModel,
     RecentlyViewModel,
-    SurveyResultModel,
 )
 from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
 from core.domains.notification.dto.notification_dto import (
@@ -249,11 +248,9 @@ class UserRepository:
 
     def update_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoResultEntity:
         try:
-            user_info = (
-                session.query(UserInfoModel)
-                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-                .update({"value": dto.value, "updated_at": get_server_timestamp()})
-            )
+            session.query(UserInfoModel).filter_by(
+                user_profile_id=dto.user_profile_id, code=dto.code
+            ).update({"value": dto.value, "updated_at": get_server_timestamp()})
             session.commit()
 
             return UserInfoResultEntity(code=dto.code, user_value=dto.value,)
@@ -429,3 +426,36 @@ class UserRepository:
             return None
 
         return user_profile.to_entity()
+
+    def get_user_profile(self, dto: GetUserDto) -> Optional[UserProfileEntity]:
+        user_profile = (
+            session.query(UserProfileModel).filter_by(user_id=dto.user_id).first()
+        )
+
+        if not user_profile:
+            return None
+
+        return user_profile.to_entity()
+
+    def update_user_nickname_of_profile_setting(
+        self, dto: UpsertUserInfoDetailDto
+    ) -> None:
+        try:
+            session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
+                {
+                    "nickname": dto.value,
+                    "last_update_code": dto.code,
+                    "updated_at": get_server_timestamp(),
+                }
+            )
+            session.query(UserInfoModel).filter_by(
+                user_profile_id=dto.user_profile_id, code=dto.code
+            ).update({"value": dto.value, "updated_at": get_server_timestamp()})
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_nickname_of_profile_setting] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
