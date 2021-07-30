@@ -1,10 +1,8 @@
-from typing import Optional, List
+from typing import List
 
-from pydantic import BaseModel, StrictStr, StrictInt
+from pydantic import BaseModel, StrictStr
 
 from core.domains.user.entity.user_entity import (
-    UserInfoCodeValueEntity,
-    SurveyResultEntity,
     UserProfileEntity,
     UserInfoResultEntity,
 )

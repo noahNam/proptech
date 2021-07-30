@@ -24,14 +24,13 @@ def upgrade():
 
     op.create_table(
         "administrative_divisions",
-        sa.Column(
-            "id",
-            sa.BigInteger().with_variant(sa.Integer(), "sqlite"),
-            autoincrement=True,
-            nullable=False,
-        ),
+        sa.Column("id", sa.BigInteger(), autoincrement=True, nullable=False,),
         sa.Column("name", sa.String(length=100), nullable=False),
-        sa.Column("name_ts", postgresql.TSVECTOR(), nullable=True,),
+        sa.Column(
+            "name_ts",
+            postgresql.TSVECTOR().with_variant(sa.String(), "sqlite"),
+            nullable=True,
+        ),
         sa.Column("short_name", sa.String(length=30), nullable=False),
         sa.Column("real_trade_price", sa.Integer(), nullable=False),
         sa.Column("real_rent_price", sa.Integer(), nullable=False),
@@ -64,9 +63,17 @@ def upgrade():
         ),
         sa.Column("name", sa.String(length=50), nullable=True),
         sa.Column("road_address", sa.String(length=100), nullable=False),
-        sa.Column("road_address_ts", postgresql.TSVECTOR(), nullable=True,),
+        sa.Column(
+            "road_address_ts",
+            postgresql.TSVECTOR().with_variant(sa.String(), "sqlite"),
+            nullable=True,
+        ),
         sa.Column("jibun_address", sa.String(length=100), nullable=False),
-        sa.Column("jibun_address_ts", postgresql.TSVECTOR(), nullable=True,),
+        sa.Column(
+            "jibun_address_ts",
+            postgresql.TSVECTOR().with_variant(sa.String(), "sqlite"),
+            nullable=True,
+        ),
         sa.Column("si_do", sa.String(length=20), nullable=False),
         sa.Column("si_gun_gu", sa.String(length=16), nullable=False),
         sa.Column("dong_myun", sa.String(length=16), nullable=False),
@@ -131,7 +138,11 @@ def upgrade():
         ),
         sa.Column("real_estate_id", sa.BigInteger(), nullable=False),
         sa.Column("name", sa.String(length=50), nullable=False),
-        sa.Column("name_ts", postgresql.TSVECTOR(), nullable=True,),
+        sa.Column(
+            "name_ts",
+            postgresql.TSVECTOR().with_variant(sa.String(), "sqlite"),
+            nullable=True,
+        ),
         sa.Column("region", sa.String(length=20), nullable=False),
         sa.Column(
             "housing_category",

@@ -29,7 +29,7 @@ class GetRecentViewListBaseSchema(BaseModel):
 
 
 class BoundingResponseSchema(BaseModel):
-    houses: Union[List[BoundingRealEstateEntity], str]
+    houses: Optional[List[BoundingRealEstateEntity]]
 
 
 class BoundingAdministrativeResponseSchema(BaseModel):
@@ -41,7 +41,7 @@ class GetHousePublicDetailResponseSchema(BaseModel):
 
 
 class GetCalenderInfoResponseSchema(BaseModel):
-    houses: Union[List[CalenderInfoEntity], str]
+    houses: Optional[List[CalenderInfoEntity]]
 
 
 class UpsertInterestHouseResponseSchema(BaseModel):
