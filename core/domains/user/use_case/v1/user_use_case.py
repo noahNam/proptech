@@ -489,3 +489,20 @@ class GetSurveyResultUseCase(UserBaseUseCase):
         today = get_server_timestamp()
 
         return today.year - birth.year
+
+
+class GetUserProfileUseCase(UserBaseUseCase):
+    def execute(
+        self, dto: GetUserDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
+            dto=dto
+        )
+        return UseCaseSuccessOutput(value=user_profile)

@@ -20,6 +20,10 @@ class GetUserMainBaseSchema(BaseModel):
     is_badge: bool
 
 
+class GetUserProfileBaseSchema(BaseModel):
+    nickname: str
+
+
 class GetUserResponseSchema(BaseModel):
     user: GetUserBaseSchema
 
@@ -50,3 +54,7 @@ class GetUserMainResponseSchema(BaseModel):
 
 class GetSurveyResultResponseSchema(BaseModel):
     result: UserProfileEntity
+
+
+class GetUserProfileResponseSchema(BaseModel):
+    user: GetUserProfileBaseSchema
