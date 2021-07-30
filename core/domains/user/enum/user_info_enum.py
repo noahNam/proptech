@@ -17,7 +17,7 @@ class CodeEnum(Enum):
     CHILD_AGE_SIX = 1012
     CHILD_AGE_NINETEEN = 1013
     CHILD_AGE_TWENTY = 1014
-    CHILD_OVER_THREE = 1015
+    # CHILD_OVER_THREE = 1015
     IS_SUB_ACCOUNT = 1016
     SUB_ACCOUNT_DATE = 1017
     SUB_ACCOUNT_TIMES = 1018
@@ -49,7 +49,6 @@ class CodeStepEnum(Enum):
         1012,
         1013,
         1014,
-        1015,
         1016,
         1017,
         1018,
@@ -90,8 +89,8 @@ class NumberDependentsEnum(Enum):
 
 
 class IsChildEnum(Enum):
-    COND_CD = [1, 2]
-    COND_NM = ["예", "아니요"]
+    COND_CD = [1, 2, 3]
+    COND_NM = ["있어요(자녀 2명 이하)", "있어요(자녀 3명 이상)", "없어요"]
 
 
 class IsSubAccountEnum(Enum):

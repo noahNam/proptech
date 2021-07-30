@@ -651,9 +651,8 @@ def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_
             CodeEnum.CHILD_AGE_SIX.value,
             CodeEnum.CHILD_AGE_NINETEEN.value,
             CodeEnum.CHILD_AGE_TWENTY.value,
-            CodeEnum.CHILD_OVER_THREE.value,
         ],
-        values=["1", "2", "3", True],
+        values=["1", "2", "3"],
     )
 
     with test_request_context:
@@ -679,8 +678,6 @@ def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_
             assert survay["user_value"] == dict_["values"][1]
         elif survay["code"] == CodeEnum.CHILD_AGE_TWENTY.value:
             assert survay["user_value"] == dict_["values"][2]
-        elif survay["code"] == CodeEnum.CHILD_OVER_THREE.value:
-            assert survay["user_value"] == dict_["values"][3]
 
 
 @pytest.mark.skip(reason="local에서 환경변수 미설정 시 에러나므로 skip")
