@@ -31,7 +31,8 @@ from core.domains.user.entity.user_entity import (
     UserInfoEntity,
     UserInfoCodeValueEntity,
     UserInfoEmptyEntity,
-    UserEntity, UserProfileEntity,
+    UserEntity,
+    UserProfileEntity,
 )
 from core.domains.user.enum.user_enum import UserSqsTypeEnum
 from core.domains.user.enum.user_info_enum import (
@@ -102,7 +103,7 @@ class UserBaseUseCase:
 
 class GetUserUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         user: UserEntity = self._user_repo.get_user(user_id=dto.user_id)
 
@@ -111,7 +112,7 @@ class GetUserUseCase(UserBaseUseCase):
 
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateUserDto
+        self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -149,7 +150,7 @@ class CreateUserUseCase(UserBaseUseCase):
 
 class CreateAppAgreeTermsUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateAppAgreeTermsDto
+        self, dto: CreateAppAgreeTermsDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -169,7 +170,7 @@ class CreateAppAgreeTermsUseCase(UserBaseUseCase):
 
 class UpsertUserInfoUseCase(UserBaseUseCase):
     def execute(
-            self, dto: UpsertUserInfoDto
+        self, dto: UpsertUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -241,7 +242,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
 class GetUserInfoUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserInfoDto
+        self, dto: GetUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -277,14 +278,14 @@ class GetUserInfoUseCase(UserBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _make_empty_user_info_entity(
-            self, dto: GetUserInfoDetailDto
+        self, dto: GetUserInfoDetailDto
     ) -> UserInfoEmptyEntity:
         return UserInfoEmptyEntity(code=dto.code)
 
     def _bind_detail_code_values(
-            self,
-            user_info: Union[UserInfoEntity, UserInfoEmptyEntity],
-            dto: GetUserInfoDetailDto,
+        self,
+        user_info: Union[UserInfoEntity, UserInfoEmptyEntity],
+        dto: GetUserInfoDetailDto,
     ):
         bind_detail_code_dict = {
             "1002": AddressCodeEnum,
@@ -368,7 +369,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
 
 class UserOutUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -384,7 +385,7 @@ class UserOutUseCase(UserBaseUseCase):
 
 class GetUserMainUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
         ticket은 tickets 스키마의 sum(amount)로 가져온다. -> 안정성을 위해
@@ -422,7 +423,7 @@ class GetUserMainUseCase(UserBaseUseCase):
 
 class GetSurveyResultUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -431,7 +432,9 @@ class GetSurveyResultUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        user_profile_entity: Optional[UserProfileEntity] = self._user_repo.get_survey_result(dto=dto)
+        user_profile_entity: Optional[
+            UserProfileEntity
+        ] = self._user_repo.get_survey_result(dto=dto)
 
         if not user_profile_entity:
             return UseCaseFailureOutput(
@@ -448,12 +451,14 @@ class GetSurveyResultUseCase(UserBaseUseCase):
             )
 
         age: int = self._calc_age(user_profile_entity=user_profile_entity)
-        return UseCaseSuccessOutput(value=dict(age=age, user_profile_entity=user_profile_entity))
+        return UseCaseSuccessOutput(
+            value=dict(age=age, user_profile_entity=user_profile_entity)
+        )
 
     def _calc_age(self, user_profile_entity: UserProfileEntity) -> int:
         # 생일로 나이 계산
         birth = user_profile_entity.user_infos[0].user_value
-        birth = datetime.strptime(birth, '%Y%m%d')
+        birth = datetime.strptime(birth, "%Y%m%d")
         today = get_server_timestamp()
 
         return today.year - birth.year

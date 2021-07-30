@@ -5,7 +5,8 @@ from sqlalchemy import (
     String,
     ForeignKey,
     DateTime,
-    SmallInteger, Boolean,
+    SmallInteger,
+    Boolean,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -47,5 +48,9 @@ class TicketModel(db.Model):
             created_by=self.created_by,
             created_at=self.created_at,
             ticket_type=self.ticket_type.to_entity() if self.ticket_type else None,
-            ticket_targets=[ticket_target.to_entity() for ticket_target in self.ticket_targets] if self.ticket_targets else None,
+            ticket_targets=[
+                ticket_target.to_entity() for ticket_target in self.ticket_targets
+            ]
+            if self.ticket_targets
+            else None,
         )

@@ -21,7 +21,5 @@ class TicketTargetModel(db.Model):
 
     def to_entity(self) -> TicketTargetEntity:
         return TicketTargetEntity(
-            id=self.id,
-            ticket_id=self.ticket_id,
-            public_house_id=self.public_house_id,
+            id=self.id, ticket_id=self.ticket_id, public_house_id=self.public_house_id,
         )

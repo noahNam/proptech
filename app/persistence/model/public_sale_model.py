@@ -31,9 +31,7 @@ class PublicSaleModel(db.Model):
     __tablename__ = "public_sales"
 
     id = Column(
-        BigInteger().with_variant(Integer, "sqlite"),
-        primary_key=True,
-        nullable=False,
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     real_estate_id = Column(
         BigInteger, ForeignKey(RealEstateModel.id, ondelete="CASCADE"), nullable=False

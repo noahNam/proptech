@@ -22,7 +22,11 @@ from core.domains.house.entity.house_entity import (
     PublicSaleEntity,
     GetTicketUsageResultEntity,
 )
-from core.domains.house.enum.house_enum import BoundingLevelEnum, HouseTypeEnum, SearchTypeEnum
+from core.domains.house.enum.house_enum import (
+    BoundingLevelEnum,
+    HouseTypeEnum,
+    SearchTypeEnum,
+)
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import RecentlyViewDto, GetUserDto
 from core.domains.user.enum import UserTopicEnum
@@ -37,7 +41,7 @@ class HouseBaseUseCase:
 
 class UpsertInterestHouseUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: UpsertInterestHouseDto
+        self, dto: UpsertInterestHouseDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -46,7 +50,9 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        interest_house: InterestHouseModel = self._house_repo.update_interest_house(dto=dto)
+        interest_house: InterestHouseModel = self._house_repo.update_interest_house(
+            dto=dto
+        )
         if not interest_house:
             self._house_repo.create_interest_house(dto=dto)
 
@@ -55,7 +61,7 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
 
 class BoundingUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: CoordinatesRangeDto
+        self, dto: CoordinatesRangeDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
             <dto.level condition>
@@ -71,8 +77,8 @@ class BoundingUseCase(HouseBaseUseCase):
             )
         # dto.level range check
         if (
-                dto.level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
-                or dto.level > BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value
+            dto.level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
+            or dto.level > BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value
         ):
             return UseCaseFailureOutput(
                 type="level",
@@ -81,19 +87,21 @@ class BoundingUseCase(HouseBaseUseCase):
             )
         # dto.level condition
         if dto.level >= BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
-            bounding_filter = self._house_repo.get_bounding_filter_with_two_points(dto=dto)
-            bounding_entities = self._house_repo.get_bounding(bounding_filter=bounding_filter)
+            bounding_filter = self._house_repo.get_bounding_filter_with_two_points(
+                dto=dto
+            )
+            bounding_entities = self._house_repo.get_bounding(
+                bounding_filter=bounding_filter
+            )
         else:
             bounding_entities = self._house_repo.get_administrative_divisions(dto=dto)
 
-        if not bounding_entities:
-            return UseCaseSuccessOutput(value="null")
         return UseCaseSuccessOutput(value=bounding_entities)
 
 
 class GetHousePublicDetailUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetHousePublicDetailDto
+        self, dto: GetHousePublicDetailDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not self._house_repo.is_enable_public_sale_house(dto=dto):
             return UseCaseFailureOutput(
@@ -129,17 +137,16 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
 
 class GetCalenderInfoUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetCalenderInfoDto
+        self, dto: GetCalenderInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         calender_entities = self._house_repo.get_calender_info(dto=dto)
-        if not calender_entities:
-            return UseCaseSuccessOutput(value="null")
+
         return UseCaseSuccessOutput(value=calender_entities)
 
 
 class GetInterestHouseListUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -157,7 +164,7 @@ class GetInterestHouseListUseCase(HouseBaseUseCase):
 
 class GetRecentViewListUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -175,7 +182,7 @@ class GetRecentViewListUseCase(HouseBaseUseCase):
 
 class GetTicketUsageResultUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -184,32 +191,38 @@ class GetTicketUsageResultUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        result: List[GetTicketUsageResultEntity] = self._house_repo.get_ticket_usage_results(
-            dto=dto
-        )
+        result: List[
+            GetTicketUsageResultEntity
+        ] = self._house_repo.get_ticket_usage_results(dto=dto)
 
         return UseCaseSuccessOutput(value=result)
 
 
 class GetSearchHouseListUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetSearchHouseListDto
+        self, dto: GetSearchHouseListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        if not dto.keywords or dto.keywords == "":
+        if not dto.keywords or dto.keywords == "" or len(dto.keywords) < 2:
             result = None
             return UseCaseSuccessOutput(value=result)
 
-        result: Optional[GetSearchHouseListEntity] = self._house_repo.get_search_house_list(dto=dto)
+        result: Optional[
+            GetSearchHouseListEntity
+        ] = self._house_repo.get_search_house_list(dto=dto)
 
         return UseCaseSuccessOutput(value=result)
 
 
 class BoundingWithinRadiusUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: BoundingWithinRadiusDto
+        self, dto: BoundingWithinRadiusDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
 
-        if not dto.house_id or not dto.search_type:
+        if (
+            not dto
+            or dto.search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
+            or dto.search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
+        ):
             return UseCaseFailureOutput(
                 type="BoundingWithinRadiusDto",
                 message=FailureType.NOT_FOUND_ERROR,
@@ -217,11 +230,17 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
             )
         coordinates = None
         if dto.search_type == SearchTypeEnum.FROM_REAL_ESTATE.value:
-            coordinates = self._house_repo.get_geometry_coordinates_from_real_estate(dto.house_id)
+            coordinates = self._house_repo.get_geometry_coordinates_from_real_estate(
+                dto.house_id
+            )
         elif dto.search_type == SearchTypeEnum.FROM_PUBLIC_SALE.value:
-            coordinates = self._house_repo.get_geometry_coordinates_from_public_sale(dto.house_id)
+            coordinates = self._house_repo.get_geometry_coordinates_from_public_sale(
+                dto.house_id
+            )
         elif dto.search_type == SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value:
-            coordinates = self._house_repo.get_geometry_coordinates_from_administrative_division(dto.house_id)
+            coordinates = self._house_repo.get_geometry_coordinates_from_administrative_division(
+                dto.house_id
+            )
 
         if not coordinates:
             return UseCaseFailureOutput(
@@ -230,10 +249,11 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
         # degree 테스트 필요: app에 나오는 반경 범위를 보면서 degree 조절 필요합니다.
-        bounding_filter = self._house_repo.get_bounding_filter_with_radius(geometry_coordinates=coordinates,
-                                                                           degree=1)
-        bounding_entities = self._house_repo.get_bounding(bounding_filter=bounding_filter)
+        bounding_filter = self._house_repo.get_bounding_filter_with_radius(
+            geometry_coordinates=coordinates, degree=1
+        )
+        bounding_entities = self._house_repo.get_bounding(
+            bounding_filter=bounding_filter
+        )
 
-        if not bounding_entities:
-            return UseCaseSuccessOutput(value="null")
         return UseCaseSuccessOutput(value=bounding_entities)
