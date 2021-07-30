@@ -14,16 +14,14 @@ from core.domains.user.dto.user_dto import (
     CreateAppAgreeTermsDto,
     UpsertUserInfoDto,
     GetUserInfoDto,
-    GetUserDto,
-    UpsertUserInfoDetailDto,
+    GetUserDto, UpsertUserInfoDetailDto,
 )
-from core.domains.user.entity.user_entity import UserInfoResultEntity
+from core.domains.user.entity.user_entity import (
+    UserInfoResultEntity,
+)
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import (
-    CodeEnum,
-    CodeStepEnum,
-    IsHouseHolderCodeEnum,
-    MonthlyIncomeEnum,
+    CodeEnum, MonthlyIncomeEnum, CodeStepEnum, IsHouseHolderCodeEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
 from core.domains.user.use_case.v1.user_use_case import (
