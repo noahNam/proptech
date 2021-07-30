@@ -22,7 +22,9 @@ from core.domains.post.use_case.v1.post_use_case import (
 @swag_from("get_post_list.yml", methods=["GET"])
 def get_post_list_view():
     dto = GetPostListRequestSchema(
-        **request.get_json(), user_id=current_user.id,
+        post_category=request.args.get("post_category"),
+        previous_post_id=request.args.get("previous_post_id"),
+        user_id=current_user.id,
     ).validate_request_and_make_dto()
 
     return GetPostListPresenter().transform(GetPostListUseCase().execute(dto=dto))

@@ -3,18 +3,14 @@ tags:
   - Notification
 security:
   - userAuth: []
-requestBody:
-  required: true
-  content:
-    application/json:
-      schema:
-        type: object
-        required:
-          - category
-        properties:
-          category:
-            type: string
-            example: offical or my
+parameters:
+  - name: category
+    in: query
+    required: true
+    description: official or my
+    schema:
+      type: string
+      example: official
 responses:
   '200':
     description:

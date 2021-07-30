@@ -13,13 +13,13 @@ from core.domains.notification.use_case.v1.notification_use_case import (
 
 
 def test_get_notification_view_then_two_message(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_notifications,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -29,30 +29,28 @@ def test_get_notification_view_then_two_message(
         accept="application/json",
     )
 
-    dict_ = dict(category=NotificationHistoryCategoryEnum.MY.value)
-
+    category = NotificationHistoryCategoryEnum.MY.value
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_notification_view"),
-            data=json.dumps(dict_),
+            url_for("api/tanos.get_notification_view", category=category),
             headers=headers,
         )
 
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert len(data["messages"]) == 2
-    assert data["messages"][0]["category"] == dict_.get("category")
-    assert data["messages"][1]["category"] == dict_.get("category")
+    assert data["messages"][0]["category"] == category
+    assert data["messages"][1]["category"] == category
 
 
 def test_get_notification_view_then_no_message(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_notifications,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_notifications,
 ):
     user_id = create_users[1].id
     authorization = make_authorization(user_id=user_id)
@@ -62,12 +60,11 @@ def test_get_notification_view_then_no_message(
         accept="application/json",
     )
 
-    dict_ = dict(category=NotificationHistoryCategoryEnum.MY.value)
+    category = NotificationHistoryCategoryEnum.MY.value
 
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_notification_view"),
-            data=json.dumps(dict_),
+            url_for("api/tanos.get_notification_view", category=category),
             headers=headers,
         )
 
@@ -77,13 +74,13 @@ def test_get_notification_view_then_no_message(
 
 
 def test_get_badge_view_then_return_true(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_notifications,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -107,14 +104,14 @@ def test_get_badge_view_then_return_true(
     assert data["result"] is True
 
 
-def test_get_badge_view_then_return_fasle(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_notifications,
+def test_get_badge_view_then_return_false(
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_notifications,
 ):
     user_id = create_users[1].id
     authorization = make_authorization(user_id=user_id)
@@ -124,12 +121,9 @@ def test_get_badge_view_then_return_fasle(
         accept="application/json",
     )
 
-    dict_ = dict(badge_type=NotificationBadgeTypeEnum.ALL.value)
-
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_badge_view"),
-            data=json.dumps(dict_),
+            url_for("api/tanos.get_badge_view", badge_type=NotificationBadgeTypeEnum.ALL.value),
             headers=headers,
         )
 
@@ -139,13 +133,13 @@ def test_get_badge_view_then_return_fasle(
 
 
 def test_update_notification_view_then_return_success(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_notifications,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -164,11 +158,9 @@ def test_update_notification_view_then_return_success(
             headers=headers,
         )
 
-    dict_ = dict(category=NotificationHistoryCategoryEnum.MY.value)
     with test_request_context:
         response2 = client.get(
-            url_for("api/tanos.get_notification_view"),
-            data=json.dumps(dict_),
+            url_for("api/tanos.get_notification_view", category=NotificationHistoryCategoryEnum.MY.value),
             headers=headers,
         )
 
@@ -182,13 +174,13 @@ def test_update_notification_view_then_return_success(
 
 
 def test_get_receive_notification_settings_view_then_success(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_notifications,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -212,13 +204,13 @@ def test_get_receive_notification_settings_view_then_success(
 
 
 def test_update_receive_notification_settings_view_when_change_push_type_then_official_is_false(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_notifications,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -243,8 +235,8 @@ def test_update_receive_notification_settings_view_when_change_push_type_then_of
     result = GetReceiveNotificationSettingUseCase().execute(user_id=create_users[0].id)
     history_result = (
         session.query(ReceivePushTypeHistoryModel)
-        .filter_by(user_id=create_users[0].id)
-        .all()
+            .filter_by(user_id=create_users[0].id)
+            .all()
     )
 
     assert result.value["official"] is False
