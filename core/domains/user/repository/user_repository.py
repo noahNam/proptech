@@ -429,3 +429,13 @@ class UserRepository:
             return None
 
         return user_profile.to_entity()
+
+    def get_user_profile(self, dto: GetUserDto) -> Optional[UserProfileEntity]:
+        user_profile = (
+            session.query(UserProfileModel).filter_by(user_id=dto.user_id).first()
+        )
+
+        if not user_profile:
+            return None
+
+        return user_profile.to_entity()

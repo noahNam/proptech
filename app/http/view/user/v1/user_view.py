@@ -22,6 +22,7 @@ from app.http.responses.presenters.v1.user_presenter import (
     PatchUserOutPresenter,
     GetUserMainPresenter,
     GetSurveyResultPresenter,
+    GetUserProfilePresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.user.enum.user_enum import UserProviderCallEnum
@@ -34,6 +35,7 @@ from core.domains.user.use_case.v1.user_use_case import (
     UserOutUseCase,
     GetUserMainUseCase,
     GetSurveyResultUseCase,
+    GetUserProfileUseCase,
 )
 
 
@@ -155,3 +157,13 @@ def get_survey_result_view():
     return GetSurveyResultPresenter().transform(
         GetSurveyResultUseCase().execute(dto=dto)
     )
+
+
+@api.route("/v1/users/profile", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_user_profile.yml", methods=["GET"])
+def get_user_profile_view():
+    dto = GetUserRequestSchema(user_id=current_user.id,).validate_request_and_make_dto()
+
+    return GetUserProfilePresenter().transform(GetUserProfileUseCase().execute(dto=dto))

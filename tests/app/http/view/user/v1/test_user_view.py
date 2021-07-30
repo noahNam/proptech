@@ -823,3 +823,23 @@ def test_get_survey_result_view_then_return_survey_result_is_none(
     assert data["user"]["nickname"] == "noah"
     assert data["user"]["age"] == 36
     assert data["survey_result"] is None
+
+
+def test_get_user_profile_view_when_enter_setting_page_return_success(
+    client, session, test_request_context, make_header, make_authorization, create_users
+):
+    authorization = make_authorization(user_id=create_users[1].id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_user_profile_view"), headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["user"]["nickname"] == "noah"
