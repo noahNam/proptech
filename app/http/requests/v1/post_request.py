@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, StrictInt, ValidationError
 
 from app.extensions.utils.log_helper import logger_
@@ -10,7 +12,7 @@ logger = logger_.getLogger(__name__)
 class GetPostListSchema(BaseModel):
     user_id: StrictInt
     post_category: int
-    previous_post_id: int = None
+    previous_post_id: Optional[int]
 
 
 class UpdatePostReadCountSchema(BaseModel):
@@ -21,8 +23,8 @@ class UpdatePostReadCountSchema(BaseModel):
 class GetPostListRequestSchema:
     def __init__(self, user_id, post_category, previous_post_id):
         self.user_id = int(user_id) if user_id else None
-        self.post_category = post_category
-        self.previous_post_id = previous_post_id
+        self.post_category = int(post_category)
+        self.previous_post_id = int(previous_post_id) if previous_post_id else None
 
     def validate_request_and_make_dto(self):
         try:

@@ -14,16 +14,16 @@ class UserInfoCodeValueEntity(BaseModel):
     name: list = []
 
 
+class UserInfoResultEntity(BaseModel):
+    code: int
+    code_values: Optional[UserInfoCodeValueEntity]
+    user_value: Optional[str]
+
+
 class UserInfoEntity(BaseModel):
+    user_profile_id: Optional[int]
     code: int
-    code_values: UserInfoCodeValueEntity = None
-    user_value: str = None
-
-
-class UserInfoEmptyEntity(BaseModel):
-    code: int
-    code_values: UserInfoCodeValueEntity = None
-    user_value: str = None
+    value: Optional[str]
 
 
 class DeviceTokenEntity(BaseModel):
@@ -78,7 +78,7 @@ class UserProfileEntity(BaseModel):
     last_update_code: int
     created_at: datetime
     updated_at: datetime
-    user_infos: List[UserInfoEntity] = []
+    user_infos: List[UserInfoResultEntity] = []
     survey_result: Optional[SurveyResultEntity]
 
 
@@ -139,12 +139,13 @@ class UserEntity(BaseModel):
         if not self.user_profile:
             return UserSurveyStepEnum.STEP_NO.value
 
+        if self.user_profile.last_update_code == CodeStepEnum.COMPLETE.value:
+            return UserSurveyStepEnum.STEP_COMPLETE.value
+
         if self.user_profile.last_update_code in CodeStepEnum.ONE.value:
             return UserSurveyStepEnum.STEP_ONE.value
         elif self.user_profile.last_update_code in CodeStepEnum.TWO.value:
             return UserSurveyStepEnum.STEP_TWO.value
-        else:
-            return UserSurveyStepEnum.STEP_COMPLETE.value
 
 
 class RecentlyViewEntity(BaseModel):

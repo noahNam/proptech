@@ -17,12 +17,12 @@ class CodeEnum(Enum):
     CHILD_AGE_SIX = 1012
     CHILD_AGE_NINETEEN = 1013
     CHILD_AGE_TWENTY = 1014
-    CHILD_OVER_THREE = 1015
-
+    # CHILD_OVER_THREE = 1015
     IS_SUB_ACCOUNT = 1016
     SUB_ACCOUNT_DATE = 1017
     SUB_ACCOUNT_TIMES = 1018
     SUB_ACCOUNT_TOTAL_PRICE = 1019
+
     MONTHLY_INCOME = 1020
     ASSETS_REAL_ESTATE = 1021
     ASSETS_CAR = 1022
@@ -49,13 +49,12 @@ class CodeStepEnum(Enum):
         1012,
         1013,
         1014,
-        1015,
         1016,
         1017,
         1018,
         1019,
     ]
-    TWO = [1020, 1021, 1022, 1023, 1024, 1025]
+    TWO = [1020, 1021, 1022, 1023, 1024, 1025, 1026]
     COMPLETE = 1026
 
 
@@ -90,8 +89,8 @@ class NumberDependentsEnum(Enum):
 
 
 class IsChildEnum(Enum):
-    COND_CD = [1, 2]
-    COND_NM = ["있어요", "없어요"]
+    COND_CD = [1, 2, 3]
+    COND_NM = ["있어요(자녀 2명 이하)", "있어요(자녀 3명 이상)", "없어요"]
 
 
 class IsSubAccountEnum(Enum):
@@ -119,17 +118,22 @@ class MonthlyIncomeEnum(Enum):
 
 class AssetsRealEstateEnum(Enum):
     COND_CD = [1, 2, 3, 4]
-    COND_NM = ["12,600만원 이하", "21,550만원 이하", "21,550만원 초과", "없음"]
+    COND_NM = ["12,600만원 이하", "21,550만원 이하", "21,550만원 초과", "없어요"]
 
 
 class AssetsCarEnum(Enum):
     COND_CD = [1, 2, 3, 4]
-    COND_NM = ["2,494만원 이하", "2,797만원 이하", "2,797만원 초과", "없음"]
+    COND_NM = ["2,494만원 이하", "2,797만원 이하", "2,797만원 초과", "없어요"]
 
 
 class AssetsTotalEnum(Enum):
     COND_CD = [1, 2, 3, 4, 5]
-    COND_NM = ["21,500만원 이하", "25,400만원 이하", "29,200만원 이하", "29,200만원 초과", "없음"]
+    COND_NM = ["21,500만원 이하", "25,400만원 이하", "29,200만원 이하", "29,200만원 초과", "없어요"]
+
+
+class IsSupportParentCodeEnum(Enum):
+    COND_CD = [1, 2]
+    COND_NM = ["예", "아니요"]
 
 
 class SpecialCondEnum(Enum):

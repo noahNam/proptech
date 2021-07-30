@@ -35,11 +35,13 @@ def test_get_post_list_include_article_view_when_watch_notice_and_faq_then_retur
     )
 
     # 첫 페이징
-    dict_ = dict(post_category=PostCategoryEnum.NOTICE.value, previous_post_id=None)
     with test_request_context:
         response1 = client.get(
-            url_for("api/tanos.get_post_list_view"),
-            data=json.dumps(dict_),
+            url_for(
+                "api/tanos.get_post_list_view",
+                post_category=PostCategoryEnum.NOTICE.value,
+                previous_post_id=None,
+            ),
             headers=headers,
         )
 
@@ -50,11 +52,13 @@ def test_get_post_list_include_article_view_when_watch_notice_and_faq_then_retur
     assert meta["cursor"]["last_post_id"] == 6
 
     # 두번째 페이징
-    dict_ = dict(post_category=PostCategoryEnum.NOTICE.value, previous_post_id=6)
     with test_request_context:
         response2 = client.get(
-            url_for("api/tanos.get_post_list_view"),
-            data=json.dumps(dict_),
+            url_for(
+                "api/tanos.get_post_list_view",
+                post_category=PostCategoryEnum.NOTICE.value,
+                previous_post_id=6,
+            ),
             headers=headers,
         )
 
@@ -101,11 +105,13 @@ def test_update_post_read_count_view_when_watch_notice_and_faq_then_return_succe
     assert response.status_code == 200
     assert data["result"] == "success"
 
-    dict_ = dict(post_category=PostCategoryEnum.NOTICE.value, previous_post_id=None)
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_post_list_view"),
-            data=json.dumps(dict_),
+            url_for(
+                "api/tanos.get_post_list_view",
+                post_category=PostCategoryEnum.NOTICE.value,
+                previous_post_id=None,
+            ),
             headers=headers,
         )
 

@@ -31,7 +31,7 @@ from core.domains.notification.use_case.v1.notification_use_case import (
 @swag_from("get_notification.yml", methods=["GET"])
 def get_notification_view():
     dto = GetNotificationRequestSchema(
-        **request.get_json(), user_id=current_user.id,
+        category=request.args.get("category"), user_id=current_user.id,
     ).validate_request_and_make_dto()
 
     return GetNotificationPresenter().transform(
@@ -45,7 +45,7 @@ def get_notification_view():
 @swag_from("get_badge.yml", methods=["GET"])
 def get_badge_view():
     dto = GetBadgeRequestSchema(
-        **request.get_json(), user_id=current_user.id,
+        badge_type=request.args.get("badge_type"), user_id=current_user.id,
     ).validate_request_and_make_dto()
 
     return GetBadgePresenter().transform(GetBadgeUseCase().execute(dto=dto))
