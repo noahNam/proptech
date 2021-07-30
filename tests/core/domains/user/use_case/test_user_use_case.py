@@ -286,7 +286,7 @@ def test_get_user_info_when_first_input_surveys_then_get_none_user_data(
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
-    assert len(result.value) == 20
+    assert len(result.value) == len(CodeStepEnum.ONE.value)
 
     for value in result.value:
         if value.code == 1000:
@@ -314,7 +314,7 @@ def test_get_user_info_when_secondary_input_nickname_then_get_user_data(
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
-    assert len(result.value) == 20
+    assert len(result.value) == len(CodeStepEnum.ONE.value)
 
     for value in result.value:
         if value.code == upsert_user_info_dto.codes[0]:
@@ -332,7 +332,7 @@ def test_get_user_info_when_first_input_data_then_get_none_user_data(
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
-    assert len(result.value) == 20
+    assert len(result.value) == len(CodeStepEnum.ONE.value)
 
     for value in result.value:
         if value.code == CodeEnum.IS_HOUSE_HOLDER.value:
