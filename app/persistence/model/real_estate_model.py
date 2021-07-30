@@ -24,9 +24,7 @@ class RealEstateModel(db.Model):
     __tablename__ = "real_estates"
 
     id = Column(
-        BigInteger().with_variant(Integer, "sqlite"),
-        primary_key=True,
-        nullable=False,
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     name = Column(String(50), nullable=True)
     road_address = Column(String(100), nullable=False)
@@ -44,8 +42,12 @@ class RealEstateModel(db.Model):
         nullable=True,
     )
 
-    jibun_address_ts = Column(TSVECTOR().with_variant(String(100), "sqlite"), nullable=False)
-    road_address_ts = Column(TSVECTOR().with_variant(String(100), "sqlite"), nullable=False)
+    jibun_address_ts = Column(
+        TSVECTOR().with_variant(String(100), "sqlite"), nullable=False
+    )
+    road_address_ts = Column(
+        TSVECTOR().with_variant(String(100), "sqlite"), nullable=False
+    )
 
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())
@@ -62,13 +64,13 @@ class RealEstateModel(db.Model):
     )
 
     def to_bounding_entity(
-            self,
-            avg_trade: Optional[float],
-            avg_deposit: Optional[float],
-            avg_rent: Optional[float],
-            avg_supply: Optional[float],
-            avg_private_pyoung: Optional[float],
-            avg_public_pyoung: Optional[float],
+        self,
+        avg_trade: Optional[float],
+        avg_deposit: Optional[float],
+        avg_rent: Optional[float],
+        avg_supply: Optional[float],
+        avg_private_pyoung: Optional[float],
+        avg_public_pyoung: Optional[float],
     ) -> BoundingRealEstateEntity:
         return BoundingRealEstateEntity(
             id=self.id,
@@ -98,7 +100,7 @@ class RealEstateModel(db.Model):
         )
 
     def to_estate_with_private_sales_entity(
-            self, avg_trade: Optional[float], avg_private_pyoung: Optional[float]
+        self, avg_trade: Optional[float], avg_private_pyoung: Optional[float]
     ) -> RealEstateWithPrivateSaleEntity:
         return RealEstateWithPrivateSaleEntity(
             id=self.id,
@@ -123,17 +125,17 @@ class RealEstateModel(db.Model):
         )
 
     def to_house_with_public_detail_entity(
-            self,
-            is_like: bool,
-            min_pyoung_number: Optional[float],
-            max_pyoung_number: Optional[float],
-            min_supply_area: Optional[float],
-            max_supply_area: Optional[float],
-            avg_supply_price: Optional[float],
-            supply_price_per_pyoung: Optional[float],
-            min_acquisition_tax: int,
-            max_acquisition_tax: int,
-            near_houses: Optional[list],
+        self,
+        is_like: bool,
+        min_pyoung_number: Optional[float],
+        max_pyoung_number: Optional[float],
+        min_supply_area: Optional[float],
+        max_supply_area: Optional[float],
+        avg_supply_price: Optional[float],
+        supply_price_per_pyoung: Optional[float],
+        min_acquisition_tax: int,
+        max_acquisition_tax: int,
+        near_houses: Optional[list],
     ) -> HousePublicDetailEntity:
         return HousePublicDetailEntity(
             id=self.id,
