@@ -545,6 +545,13 @@ class UpdateUserProfileUseCase(UserBaseUseCase):
         user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(
             dto=upsert_user_info_detail_dto
         )
+        if not user_profile_id:
+            return UseCaseFailureOutput(
+                type="user_profile_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
         upsert_user_info_detail_dto.user_profile_id = user_profile_id
 
         # 닉네임 업데이트
