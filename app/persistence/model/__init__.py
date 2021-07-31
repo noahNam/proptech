@@ -28,3 +28,6 @@ from .survey_result_model import SurveyResultModel
 from .ticket_usage_result_model import TicketUsageResultModel
 from .ticket_usage_result_detail_model import TicketUsageResultDetailModel
 from .ticket_target_model import TicketTargetModel
+from .promotion_model import PromotionModel
+from .promotion_house_model import PromotionHouseModel
+from .promotion_usage_count_model import PromotionUsageCountModel
