@@ -29,7 +29,6 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetCalenderInfoUseCase,
     GetInterestHouseListUseCase,
     GetRecentViewListUseCase,
-    GetTicketUsageResultUseCase,
     GetSearchHouseListUseCase,
     BoundingWithinRadiusUseCase,
 )
@@ -330,25 +329,6 @@ def test_get_recent_view_list_use_case_when_watch_recently_view_then_result_one(
     assert isinstance(result.value, list)
     assert len(result.value) == 1
     assert result.value[0].image_path == public_sale_photo.path
-
-
-def test_get_ticket_usage_result_use_case_then_success(
-    session,
-    create_users,
-    create_real_estate_with_public_sale,
-    create_ticket_usage_results,
-    public_sale_photo_factory,
-):
-    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
-    session.add(public_sale_photo)
-    session.commit()
-
-    dto = GetUserDto(user_id=create_users[0].id)
-    result = GetTicketUsageResultUseCase().execute(dto=dto)
-
-    assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, list)
-    assert len(result.value) == 1
 
 
 def test_get_search_house_list_use_case_when_no_keywords_then_return_none(session):

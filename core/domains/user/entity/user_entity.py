@@ -5,7 +5,9 @@ from pydantic import BaseModel
 
 from core.domains.house.entity.house_entity import InterestHouseEntity
 from core.domains.notification.entity.notification_entity import ReceivePushTypeEntity
-from core.domains.user.enum.user_enum import UserTicketSignEnum, UserSurveyStepEnum
+from core.domains.payment.entity.payment_entity import TicketEntity
+from core.domains.payment.enum.payment_enum import TicketSignEnum
+from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import CodeStepEnum
 
 
@@ -82,30 +84,6 @@ class UserProfileEntity(BaseModel):
     survey_result: Optional[SurveyResultEntity]
 
 
-class TicketTypeEntity(BaseModel):
-    id: int
-    division: str
-
-
-class TicketTargetEntity(BaseModel):
-    id: int
-    ticket_id: int
-    public_house_id: int
-
-
-class TicketEntity(BaseModel):
-    id: int
-    user_id: int
-    type: int
-    amount: int
-    sign: str
-    is_active: bool
-    created_by: str
-    created_at: datetime
-    ticket_type: Optional[TicketTypeEntity]
-    ticket_targets: Optional[List[TicketTargetEntity]]
-
-
 class UserEntity(BaseModel):
     id: int
     is_required_agree_terms: bool
@@ -127,7 +105,7 @@ class UserEntity(BaseModel):
 
         for ticket in self.tickets:
             if ticket.is_active:
-                if ticket.sign == UserTicketSignEnum.PLUS.value:
+                if ticket.sign == TicketSignEnum.PLUS.value:
                     total_amount += ticket.amount
                 else:
                     total_amount -= ticket.amount
@@ -154,21 +132,3 @@ class RecentlyViewEntity(BaseModel):
     house_id: int
     type: int
     created_at: datetime
-
-
-class TicketUsageResultDetailEntity(BaseModel):
-    id: int
-    ticket_usage_result_id: int
-    house_type: str
-    subscription_type: str
-    rank: int
-
-
-class TicketUsageResultEntity(BaseModel):
-    id: int
-    user_id: int
-    house_id: int
-    ticket_id: int
-    is_active: bool
-    created_at: datetime
-    ticket_usage_result_details: TicketUsageResultDetailEntity

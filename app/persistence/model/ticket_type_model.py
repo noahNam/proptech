@@ -6,7 +6,7 @@ from sqlalchemy import (
 )
 
 from app import db
-from core.domains.user.entity.user_entity import TicketTypeEntity
+from core.domains.payment.entity.payment_entity import TicketTypeEntity
 
 
 class TicketTypeModel(db.Model):

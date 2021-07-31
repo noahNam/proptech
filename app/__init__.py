@@ -21,6 +21,7 @@ from app.http.view import api
 # event listener initialization
 from core.domains.user import event
 from core.domains.notification import event
+from core.domains.house import event
 
 
 def init_config(

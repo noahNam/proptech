@@ -8,7 +8,7 @@ from sqlalchemy import (
 
 from app import db
 from app.persistence.model.promotion_model import PromotionModel
-from core.domains.house.entity.house_entity import PromotionHouseEntity
+from core.domains.payment.entity.payment_entity import PromotionHouseEntity
 
 
 class PromotionHouseModel(db.Model):
