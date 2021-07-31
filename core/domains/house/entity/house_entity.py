@@ -294,3 +294,26 @@ class GetSearchHouseListEntity(BaseModel):
     real_estates: List[SearchRealEstateEntity] = None
     public_sales: List[SearchPublicSaleEntity] = None
     administrative_divisions: List[SearchAdministrativeDivisionEntity] = None
+
+
+class PromotionHouseEntity(BaseModel):
+    id: int
+    promotion_id: int
+    house_id: int
+
+
+class PromotionUsageCountEntity(BaseModel):
+    id: int
+    promotion_id: int
+    user_id: int
+    usage_count: int
+
+
+class PromotionEntity(BaseModel):
+    id: int
+    max_count: int
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    promotion_houses: List[PromotionHouseEntity]
+    promotion_usage_count: PromotionUsageCountEntity
