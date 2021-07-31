@@ -7,7 +7,7 @@ from sqlalchemy import (
 )
 
 from app import db
-from core.domains.user.entity.user_entity import TicketUsageResultDetailEntity
+from core.domains.payment.entity.payment_entity import TicketUsageResultDetailEntity
 
 
 class TicketUsageResultDetailModel(db.Model):

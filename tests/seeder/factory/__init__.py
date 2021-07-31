@@ -54,11 +54,11 @@ from core.domains.notification.enum.notification_enum import (
     NotificationBadgeTypeEnum,
     NotificationStatusEnum,
 )
+from core.domains.payment.enum.payment_enum import TicketSignEnum
 from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
 from core.domains.user.enum.user_enum import (
     UserTicketTypeDivisionEnum,
     UserTicketCreatedByEnum,
-    UserTicketSignEnum,
 )
 
 faker = FakerFactory.create(locale="ko_KR")
@@ -167,7 +167,7 @@ class TicketFactory(BaseFactory):
         model = TicketModel
 
     amount = 1
-    sign = UserTicketSignEnum.PLUS.value
+    sign = TicketSignEnum.PLUS.value
     is_active = True
     created_by = UserTicketCreatedByEnum.SYSTEM.value
     created_at = get_server_timestamp()

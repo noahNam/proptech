@@ -21,15 +21,6 @@ class UserTicketTypeDivisionEnum(Enum):
     REFUND = "refund"
 
 
-class UserTicketSignEnum(Enum):
-    """
-    tickets.sign 테이블에서 사용
-    """
-
-    PLUS = "plus"
-    MINUS = "minus"
-
-
 class UserTicketCreatedByEnum(Enum):
     """
     tickets.created_by 테이블에서 사용

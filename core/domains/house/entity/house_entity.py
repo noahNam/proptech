@@ -268,12 +268,6 @@ class GetRecentViewListEntity(BaseModel):
     image_path: Optional[str]
 
 
-class GetTicketUsageResultEntity(BaseModel):
-    house_id: int
-    name: str
-    image_path: Optional[str]
-
-
 class SearchRealEstateEntity(BaseModel):
     id: int
     jibun_address: str
@@ -296,24 +290,7 @@ class GetSearchHouseListEntity(BaseModel):
     administrative_divisions: List[SearchAdministrativeDivisionEntity] = None
 
 
-class PromotionHouseEntity(BaseModel):
-    id: int
-    promotion_id: int
+class GetPublicSaleOfTicketUsageEntity(BaseModel):
     house_id: int
-
-
-class PromotionUsageCountEntity(BaseModel):
-    id: int
-    promotion_id: int
-    user_id: int
-    usage_count: int
-
-
-class PromotionEntity(BaseModel):
-    id: int
-    max_count: int
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
-    promotion_houses: List[PromotionHouseEntity]
-    promotion_usage_count: PromotionUsageCountEntity
+    name: str
+    image_path: Optional[str]
