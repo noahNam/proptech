@@ -1,0 +1,109 @@
+openapi: "3.0.2"
+tags:
+  - Payment
+security:
+  - userAuth: []
+requestBody:
+  required: true
+  description: use_ticket_type -> mvp는 basic 고정 / 추후에 3기 신도시 붙이면 추가 예정
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - house_id
+          - use_ticket_type
+        properties:
+          house_id:
+            type: integer
+            example: 1
+          use_ticket_type:
+            type: string
+            example: basic
+responses:
+  '200':
+    description:
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                ticket_usage_result:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      example: success
+                    message:
+                      type: string
+                      example: ticket used
+            meta:
+              type: null
+  '400 #1':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: integer
+              example: 400
+            message:
+              type: string
+              example: insufficient number of tickets
+  '400 #2':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'
+  '500 #3':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: integer
+              example: 500
+            message:
+              type: string
+              example: error on jarvis (usage_charged_ticket)
+  '500 #4':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: integer
+              example: 500
+            message:
+              type: string
+              example: error on jarvis (usage_promotion_ticket)

@@ -1,12 +1,13 @@
 from flasgger import swag_from
 
-from app.http.requests.v1.payment_request import GetTicketUsageResultRequestSchema
+from app.http.requests.v1.payment_request import GetTicketUsageResultRequestSchema, \
+    UseBasicTicketRequestSchema
 from app.http.responses.presenters.v1.payment_presenter import (
-    GetTicketUsageResultPresenter, GetTicketUsageResultPresenter2,
+    GetTicketUsageResultPresenter, UseBasicTicketPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.payment.use_case.v1.payment_use_case import (
-    GetTicketUsageResultUseCase, UseTicketUseCase,
+    GetTicketUsageResultUseCase, UseBasicTicketUseCase,
 )
 
 
@@ -24,19 +25,15 @@ def get_ticket_usage_result_view():
     )
 
 
-@api.route("/v1/payments/ticket2", methods=["GET"])
+@api.route("/v1/payments/ticket", methods=["POST"])
 # @jwt_required
 # @auth_required
-@swag_from("get_ticket_usage_result.yml", methods=["GET"])
-def get_ticket_usage_result_view2():
-    dto = GetTicketUsageResultRequestSchema(
+@swag_from("use_ticket.yml", methods=["POST"])
+def use_basic_ticket_view():
+    dto = UseBasicTicketRequestSchema(
         user_id=1,
     ).validate_request_and_make_dto()
 
-    try:
-        test = GetTicketUsageResultPresenter2().transform(
-            UseTicketUseCase().execute(dto=dto)
-        )
-    except Exception as e:
-        pass
-    return test
+    return UseBasicTicketPresenter().transform(
+        UseBasicTicketUseCase().execute(dto=dto)
+    )
