@@ -419,7 +419,7 @@ def test_get_user_ticket_and_survey_step_then_user_ticket_is_0_and_survey_step_i
         interest_houses=True,
         tickets=False,
     )
-    user.user_profile.last_update_code = CodeStepEnum.COMPLETE.value
+    user.user_profile.last_update_code = CodeStepEnum.COMPLETE_TWO.value
     session.add(user)
     session.commit()
 

@@ -40,7 +40,7 @@ def upgrade():
         ),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column("public_house_id", sa.BigInteger(), nullable=False),
-        sa.Column("ticket_id", sa.BigInteger(), nullable=False),
+        sa.Column("ticket_id", sa.BigInteger(), nullable=True),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),

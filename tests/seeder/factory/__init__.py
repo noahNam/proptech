@@ -36,7 +36,7 @@ from app.persistence.model import (
     SurveyResultModel,
     UserInfoModel,
     TicketUsageResultModel,
-    TicketUsageResultDetailModel,
+    TicketUsageResultDetailModel, PromotionModel, PromotionHouseModel, PromotionUsageCountModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -522,3 +522,40 @@ class AdministrativeDivisionFactory(BaseFactory):
     longitude = random.uniform(125.0666666, 131.8722222)
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
+
+
+class PromotionUsageCountFactory(BaseFactory):
+    class Meta:
+        model = PromotionUsageCountModel
+
+    user_id = 1
+    usage_count = 0
+
+
+class PromotionHouseFactory(BaseFactory):
+    class Meta:
+        model = PromotionHouseModel
+
+    house_id = True
+    house_id = factory.Sequence(lambda n: n + 1)
+
+
+class PromotionFactory(BaseFactory):
+    class Meta:
+        model = PromotionModel
+
+    type = "some"
+    max_count = 3
+    is_active = True
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+    @factory.post_generation
+    def promotion_houses(obj, create, extracted, **kwargs):
+        if extracted:
+            PromotionHouseFactory(promotions=obj, **kwargs)
+
+    @factory.post_generation
+    def promotion_usage_count(obj, create, extracted, **kwargs):
+        if extracted:
+            PromotionUsageCountFactory(promotions=obj, **kwargs)

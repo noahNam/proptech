@@ -13,3 +13,7 @@ class GetTicketUsageResultBaseSchema(BaseModel):
 
 class GetTicketUsageResultResponseSchema(BaseModel):
     houses: List[GetTicketUsageResultBaseSchema]
+
+
+class UseTicketResponseSchema(BaseModel):
+    result: dict

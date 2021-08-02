@@ -36,7 +36,7 @@ class UserSurveyStepEnum(Enum):
     UserEntity 의 survey_step property
     """
 
-    STEP_NO = 0
-    STEP_ONE = 1
-    STEP_TWO = 2
-    STEP_COMPLETE = 3
+    STEP_NO = 0  # 미진행
+    STEP_ONE = 1  # 1단계 진행중
+    STEP_TWO = 2  # 2단계 진행중
+    STEP_COMPLETE = 3  # 완료

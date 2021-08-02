@@ -15,7 +15,7 @@ class TicketTypeModel(db.Model):
     id = Column(
         SmallInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
-    division = Column(String(10), nullable=False)
+    division = Column(String(20), nullable=False)
 
     def to_entity(self) -> TicketTypeEntity:
         return TicketTypeEntity(id=self.id, division=self.division,)

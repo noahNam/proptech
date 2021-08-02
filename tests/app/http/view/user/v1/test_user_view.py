@@ -760,7 +760,7 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_ste
         interest_houses=True,
         tickets=True,
     )
-    user.user_profile.last_update_code = CodeStepEnum.COMPLETE.value
+    user.user_profile.last_update_code = CodeStepEnum.COMPLETE_ONE.value
     session.add(user)
     session.commit()
 
@@ -776,7 +776,7 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_ste
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_COMPLETE.value
+    assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_TWO.value
     assert data["result"]["tickets"] == 1
     assert data["result"]["is_badge"] is False
 
