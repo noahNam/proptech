@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
 from app.persistence.model import TicketUsageResultModel, PromotionModel, PromotionUsageCountModel, \
-    TicketModel
+    TicketModel, TicketTargetModel
 from core.domains.payment.dto.payment_dto import PaymentUserDto, UseTicketDto, CreateUseTicketDto, \
     UpdateTicketUsageResultDto
 from core.domains.payment.entity.payment_entity import PromotionEntity
@@ -121,3 +121,19 @@ class PaymentRepository:
                 f"[PaymentRepository][update_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {dto.promotion_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T300")
+
+    def create_ticket_target(self, dto: UseTicketDto, ticket_id: int) -> None:
+        try:
+            ticket = TicketTargetModel(
+                ticket_id=ticket_id,
+                public_house_id=dto.house_id,
+            )
+
+            session.add(ticket)
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[PaymentRepository][create_ticket_target] user_id : {dto.user_id}, error : {e}"
+            )
+            raise NotUniqueErrorException(type_="T400")

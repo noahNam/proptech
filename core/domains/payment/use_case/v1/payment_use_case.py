@@ -56,7 +56,7 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
         )
 
 
-class UseTicketUseCase(PaymentBaseUseCase):
+class UseBasicTicketUseCase(PaymentBaseUseCase):
     def execute(
             self, dto: PaymentUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
@@ -160,16 +160,17 @@ class UseTicketUseCase(PaymentBaseUseCase):
 
                     else:
                         # 프로모션 횟수가 남아있는 경우
-                        result: Optional[UseCaseFailureOutput] = self._usage_promotion_ticket(dto=dto, promotion=promotion)
+                        result: Optional[UseCaseFailureOutput] = self._usage_promotion_ticket(dto=dto,
+                                                                                              promotion=promotion)
                         if isinstance(result, UseCaseFailureOutput):
                             return result
-        return UseCaseSuccessOutput(value=dict(result="success", message="ticket used"))
+        return UseCaseSuccessOutput(value=dict(type="success", message="ticket used"))
 
     def _is_promotion_available(self, promotion: PromotionEntity) -> bool:
         return True if promotion.max_count > promotion.promotion_usage_count.usage_count else False
 
     def _make_failure_dict(self, message: str) -> dict:
-        return dict(result="failure", message=message)
+        return dict(type="failure", message=message)
 
     def _make_create_use_ticket_dto(self, dto: UseTicketDto, type_: int, amount: int, sign: TicketSignEnum):
         return CreateUseTicketDto(
@@ -195,14 +196,17 @@ class UseTicketUseCase(PaymentBaseUseCase):
         response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
         response = HTTPStatus.OK
         if response == HTTPStatus.OK:
-            # 티켓 사용 히스토리 생성
+            # 티켓 사용 히스토리 생성 (promotions 스키마)
             create_use_ticket_dto: CreateUseTicketDto = self._make_create_use_ticket_dto(dto=dto,
                                                                                          type_=TicketTypeDivisionEnum.USED_TICKET.value,
                                                                                          amount=1,
                                                                                          sign=TicketSignEnum.MINUS.value)
             ticket_id: int = self._payment_repo.create_ticket(dto=create_use_ticket_dto)
 
-            # 티켓 사용 결과 업데이트
+            # 사용한 티켓 타겟 생성 (ticket_targets 스키마)
+            self._payment_repo.create_ticket_target(dto=dto, ticket_id=ticket_id)
+
+            # 티켓 사용 결과 ticket_id 업데이트 (ticket_usage_results 스키마)
             update_ticket_usage_result_dto: UpdateTicketUsageResultDto = self._make_update_ticket_usage_result_dto(
                 dto=dto, ticket_id=ticket_id)
             self._payment_repo.update_ticket_usage_result(dto=update_ticket_usage_result_dto)
@@ -219,21 +223,23 @@ class UseTicketUseCase(PaymentBaseUseCase):
         response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
         response = HTTPStatus.OK
         if response == HTTPStatus.OK:
-            # 티켓 사용 히스토리 생성
+            # 티켓 사용 히스토리 생성 (promotions 스키마)
             create_use_ticket_dto: CreateUseTicketDto = self._make_create_use_ticket_dto(dto=dto,
                                                                                          type_=TicketTypeDivisionEnum.USED_PROMOTION.value,
                                                                                          amount=0,
                                                                                          sign=TicketSignEnum.MINUS.value)
             ticket_id: int = self._payment_repo.create_ticket(dto=create_use_ticket_dto)
 
-            # 티켓 사용 결과 업데이트
+            # 사용한 티켓 타겟 생성 (ticket_targets 스키마)
+            self._payment_repo.create_ticket_target(dto=dto, ticket_id=ticket_id)
+
+            # 티켓 사용 결과 ticket_id 업데이트 (ticket_usage_results 스키마)
             update_ticket_usage_result_dto: UpdateTicketUsageResultDto = self._make_update_ticket_usage_result_dto(
                 dto=dto, ticket_id=ticket_id)
             self._payment_repo.update_ticket_usage_result(dto=update_ticket_usage_result_dto)
 
-            #  프로모션 사용횟수 업데이트
+            #  프로모션 사용횟수 업데이트 (promotion_usage_counts 스키마)
             self._payment_repo.update_promotion_usage_count(dto=dto, promotion_id=promotion_id)
-
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
             return UseCaseFailureOutput(

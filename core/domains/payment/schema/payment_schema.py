@@ -11,9 +11,14 @@ class GetTicketUsageResultBaseSchema(BaseModel):
     image_path: Optional[str]
 
 
+class UseBasicTicketBaseSchema(BaseModel):
+    type: str
+    message: str
+
+
 class GetTicketUsageResultResponseSchema(BaseModel):
     houses: List[GetTicketUsageResultBaseSchema]
 
 
-class UseTicketResponseSchema(BaseModel):
-    result: dict
+class UseBasicTicketResponseSchema(BaseModel):
+    ticket_usage_result: UseBasicTicketBaseSchema

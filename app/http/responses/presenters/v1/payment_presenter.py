@@ -4,7 +4,7 @@ from typing import Union
 from pydantic import ValidationError
 from app.http.responses import failure_response, success_response
 from core.domains.payment.schema.payment_schema import (
-    GetTicketUsageResultResponseSchema, UseTicketResponseSchema,
+    GetTicketUsageResultResponseSchema, UseBasicTicketResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -32,12 +32,11 @@ class GetTicketUsageResultPresenter:
             return failure_response(output=output, status_code=output.code)
 
 
-class GetTicketUsageResultPresenter2:
+class UseBasicTicketPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
-        test = 1
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = UseTicketResponseSchema(result=output.value)
+                schema = UseBasicTicketResponseSchema(ticket_usage_result=output.value)
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(

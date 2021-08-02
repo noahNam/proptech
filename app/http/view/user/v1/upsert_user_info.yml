@@ -25,11 +25,17 @@ requestBody:
               example: 11, 11010
 responses:
   '200':
-    description: A upsert_user_info object
+    description:
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/only_result'
+          type: object
+          properties:
+            data:
+              type: object
+              items:
+                type: integer
+                example: 1002, 1003
   '400':
     description: invalid_request_error
     content:
