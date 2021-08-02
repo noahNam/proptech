@@ -36,7 +36,10 @@ from app.persistence.model import (
     SurveyResultModel,
     UserInfoModel,
     TicketUsageResultModel,
-    TicketUsageResultDetailModel, PromotionModel, PromotionHouseModel, PromotionUsageCountModel,
+    TicketUsageResultDetailModel,
+    PromotionModel,
+    PromotionHouseModel,
+    PromotionUsageCountModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
