@@ -5,10 +5,19 @@ from sqlalchemy.orm import selectinload
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
-from app.persistence.model import TicketUsageResultModel, PromotionModel, PromotionUsageCountModel, \
-    TicketModel, TicketTargetModel
-from core.domains.payment.dto.payment_dto import PaymentUserDto, UseTicketDto, CreateUseTicketDto, \
-    UpdateTicketUsageResultDto
+from app.persistence.model import (
+    TicketUsageResultModel,
+    PromotionModel,
+    PromotionUsageCountModel,
+    TicketModel,
+    TicketTargetModel,
+)
+from core.domains.payment.dto.payment_dto import (
+    PaymentUserDto,
+    UseTicketDto,
+    CreateUseTicketDto,
+    UpdateTicketUsageResultDto,
+)
 from core.domains.payment.entity.payment_entity import PromotionEntity
 from core.domains.payment.enum.payment_enum import TicketSignEnum
 from core.exceptions import NotUniqueErrorException
@@ -34,9 +43,9 @@ class PaymentRepository:
 
         query = (
             session.query(PromotionModel)
-                .options(selectinload(PromotionModel.promotion_houses))
-                .options(selectinload(PromotionModel.promotion_usage_count))
-                .filter(*filters)
+            .options(selectinload(PromotionModel.promotion_houses))
+            .options(selectinload(PromotionModel.promotion_usage_count))
+            .filter(*filters)
         )
         promotion = query.first()
 
@@ -45,10 +54,7 @@ class PaymentRepository:
         return promotion.to_entity()
 
     def get_number_of_ticket(self, dto: UseTicketDto) -> int:
-        query = (
-            session.query(TicketModel)
-                .filter_by(user_id=dto.user_id)
-        )
+        query = session.query(TicketModel).filter_by(user_id=dto.user_id)
         tickets = query.all()
         return self._calc_total_amount(tickets=tickets)
 
@@ -92,7 +98,9 @@ class PaymentRepository:
         try:
             filters = list()
             filters.append(TicketUsageResultModel.user_id == dto.user_id)
-            filters.append(TicketUsageResultModel.public_house_id == dto.public_house_id)
+            filters.append(
+                TicketUsageResultModel.public_house_id == dto.public_house_id
+            )
 
             session.query(TicketUsageResultModel).filter(*filters).update(
                 {"ticket_id": dto.ticket_id}
@@ -125,8 +133,7 @@ class PaymentRepository:
     def create_ticket_target(self, dto: UseTicketDto, ticket_id: int) -> None:
         try:
             ticket = TicketTargetModel(
-                ticket_id=ticket_id,
-                public_house_id=dto.house_id,
+                ticket_id=ticket_id, public_house_id=dto.house_id,
             )
 
             session.add(ticket)

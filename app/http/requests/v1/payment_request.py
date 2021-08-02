@@ -26,7 +26,7 @@ class GetTicketUsageResultRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetTicketUsageResultSchema(user_id=self.user_id, ).dict()
+            schema = GetTicketUsageResultSchema(user_id=self.user_id,).dict()
             return PaymentUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -42,7 +42,9 @@ class UseBasicTicketRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = UseTicketSchema(user_id=self.user_id, house_id=self.house_id).dict()
+            schema = UseTicketSchema(
+                user_id=self.user_id, house_id=self.house_id
+            ).dict()
             return UseTicketDto(**schema)
         except ValidationError as e:
             logger.error(
