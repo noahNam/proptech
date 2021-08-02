@@ -35,10 +35,11 @@ class PromotionModel(db.Model):
     def to_entity(self) -> PromotionEntity:
         return PromotionEntity(
             id=self.id,
-            max_count=self.user_id,
-            is_active=self.type,
-            created_at=self.amount,
-            updated_at=self.sign,
+            type=self.type,
+            max_count=self.max_count,
+            is_active=self.is_active,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
             promotion_houses=[
                 promotion_house.to_entity() for promotion_house in self.promotion_houses
             ]

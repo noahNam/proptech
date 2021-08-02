@@ -21,7 +21,7 @@ class PromotionUsageCountModel(db.Model):
         SmallInteger, ForeignKey(PromotionModel.id), nullable=False, unique=True
     )
     user_id = Column(BigInteger, nullable=False, index=True)
-    usage_count = Column(SmallInteger, nullable=False)
+    usage_count = Column(SmallInteger, nullable=False, default=0)
 
     def to_entity(self) -> PromotionUsageCountEntity:
         return PromotionUsageCountEntity(

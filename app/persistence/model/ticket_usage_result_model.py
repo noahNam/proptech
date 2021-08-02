@@ -20,7 +20,7 @@ class TicketUsageResultModel(db.Model):
     )
     user_id = Column(BigInteger, nullable=False, index=True)
     public_house_id = Column(BigInteger, nullable=False, index=True)
-    ticket_id = Column(BigInteger, nullable=False)
+    ticket_id = Column(BigInteger, nullable=True)
     is_active = Column(Boolean, nullable=False)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 

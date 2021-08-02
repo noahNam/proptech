@@ -61,9 +61,10 @@ class PromotionUsageCountEntity(BaseModel):
 
 class PromotionEntity(BaseModel):
     id: int
+    type: str
     max_count: int
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    promotion_houses: List[PromotionHouseEntity]
-    promotion_usage_count: PromotionUsageCountEntity
+    promotion_houses: Optional[List[PromotionHouseEntity]]
+    promotion_usage_count: Optional[PromotionUsageCountEntity]
