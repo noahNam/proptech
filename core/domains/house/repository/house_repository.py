@@ -2,9 +2,9 @@ from typing import Optional, List, Any
 
 from geoalchemy2 import Geometry
 from sqlalchemy import and_, func, or_, literal, String
-from sqlalchemy.orm import joinedload
 
 from sqlalchemy import exc
+from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
@@ -20,7 +20,6 @@ from app.persistence.model import (
     PrivateSaleDetailModel,
     RecentlyViewModel,
     PublicSalePhotoModel,
-    TicketUsageResultModel,
 )
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
@@ -28,7 +27,6 @@ from core.domains.house.dto.house_dto import (
     GetCalenderInfoDto,
     UpsertInterestHouseDto,
     GetSearchHouseListDto,
-    BoundingWithinRadiusDto,
 )
 from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
@@ -43,7 +41,7 @@ from core.domains.house.entity.house_entity import (
     SearchPublicSaleEntity,
     SearchAdministrativeDivisionEntity,
     PublicSaleEntity,
-    GetTicketUsageResultEntity,
+    GetPublicSaleOfTicketUsageEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -74,7 +72,7 @@ class HouseRepository:
             )
             raise NotUniqueErrorException
 
-    def update_interest_house(self, dto: UpsertInterestHouseDto) -> int:
+    def update_interest_house(self, dto: InterestHouseModel) -> int:
         filters = list()
         filters.append(InterestHouseModel.user_id == dto.user_id)
         filters.append(InterestHouseModel.house_id == dto.house_id)
@@ -611,40 +609,6 @@ class HouseRepository:
 
         return result
 
-    def get_ticket_usage_results(
-        self, dto: GetUserDto
-    ) -> List[GetTicketUsageResultEntity]:
-        subquery = (
-            session.query(TicketUsageResultModel.public_house_id)
-            .filter_by(user_id=dto.user_id, is_active=True)
-            .subquery()
-        )
-
-        query = (
-            session.query(PublicSaleModel)
-            .options(joinedload(PublicSaleModel.public_sale_photos))
-            .filter(PublicSaleModel.id == subquery.c.public_house_id)
-        )
-
-        query_set = query.all()
-        return self._make_get_ticket_usage_result_entity(query_set=query_set)
-
-    def _make_get_ticket_usage_result_entity(
-        self, query_set: Optional[List]
-    ) -> List[GetTicketUsageResultEntity]:
-        result = list()
-
-        if query_set:
-            for query in query_set:
-                result.append(
-                    GetTicketUsageResultEntity(
-                        house_id=query.id,
-                        name=query.name,
-                        image_path=query.public_sale_photos.path,
-                    )
-                )
-        return result
-
     def _make_get_search_house_list_entity(
         self,
         real_estates: Optional[List],
@@ -771,3 +735,33 @@ class HouseRepository:
         if division:
             return division.coordinates
         return None
+
+    def get_public_sales_of_ticket_usage(
+        self, public_house_ids: int
+    ) -> List[GetPublicSaleOfTicketUsageEntity]:
+        query = (
+            session.query(PublicSaleModel)
+            .options(joinedload(PublicSaleModel.public_sale_photos))
+            .filter(PublicSaleModel.id.in_(public_house_ids))
+        )
+
+        query_set = query.all()
+        return self._make_get_ticket_usage_result_entity(query_set=query_set)
+
+    def _make_get_ticket_usage_result_entity(
+        self, query_set: Optional[List]
+    ) -> List[GetPublicSaleOfTicketUsageEntity]:
+        result = list()
+
+        if query_set:
+            for query in query_set:
+                result.append(
+                    GetPublicSaleOfTicketUsageEntity(
+                        house_id=query.id,
+                        name=query.name,
+                        image_path=query.public_sale_photos.path
+                        if query.public_sale_photos
+                        else None,
+                    )
+                )
+        return result

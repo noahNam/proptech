@@ -7,7 +7,7 @@ from sqlalchemy import (
 
 from app import db
 from app.persistence.model import TicketModel
-from core.domains.user.entity.user_entity import TicketTargetEntity
+from core.domains.payment.entity.payment_entity import TicketTargetEntity
 
 
 class TicketTargetModel(db.Model):
