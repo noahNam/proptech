@@ -1,19 +1,28 @@
 from datetime import datetime
+from typing import List
+
 from pydantic import BaseModel
-from core.domains.user.entity.user_entity import UserEntity
+
+
+class PostAttachmentEntity(BaseModel):
+    id: int
+    post_id: int
+    type: int
+    file_name: str
+    path: str
+    extension: str
+    created_at: datetime
+    updated_at: datetime
 
 
 class PostEntity(BaseModel):
     id: int
-    user_id: int
+    category_id: int
+    category_detail_id: int
     title: str
     body: str = None
-    type: str
     is_deleted: bool
     read_count: int
-    last_admin_action: str = None
-    last_admin_action_at: datetime = None
+    post_attachments: List[PostAttachmentEntity] = None
     created_at: str
     updated_at: str
-    user: UserEntity
-    category_id: int
