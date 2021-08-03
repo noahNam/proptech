@@ -8,7 +8,6 @@ from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
     GetSearchHouseListEntity,
     CalenderInfoEntity,
-    GetTicketUsageResultEntity,
 )
 
 
@@ -54,10 +53,6 @@ class GetInterestHouseListResponseSchema(BaseModel):
 
 class GetRecentViewListResponseSchema(BaseModel):
     houses: List[GetRecentViewListBaseSchema]
-
-
-class GetTicketUsageResultResponseSchema(BaseModel):
-    houses: List[GetTicketUsageResultEntity]
 
 
 class GetSearchHouseListResponseSchema(BaseModel):
