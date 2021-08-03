@@ -40,10 +40,6 @@ class GetRecentViewListSchema(BaseModel):
     user_id: StrictInt
 
 
-class GetTicketUsageResultSchema(BaseModel):
-    user_id: StrictInt
-
-
 class UpsertInterestHouseRequestSchema:
     def __init__(self, user_id, house_id, type_, is_like):
         self.user_id = int(user_id) if user_id else None
@@ -279,21 +275,6 @@ class GetCalenderInfoRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetCalenderInfoRequestSchema][validate_request_and_make_dto] error : {e}"
-            )
-            raise InvalidRequestException(message=e.errors())
-
-
-class GetTicketUsageResultRequestSchema:
-    def __init__(self, user_id):
-        self.user_id = int(user_id) if user_id else None
-
-    def validate_request_and_make_dto(self):
-        try:
-            schema = GetTicketUsageResultSchema(user_id=self.user_id,).dict()
-            return GetUserDto(**schema)
-        except ValidationError as e:
-            logger.error(
-                f"[GetTicketUsageResultRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 
