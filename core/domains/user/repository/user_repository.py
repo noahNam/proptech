@@ -189,7 +189,7 @@ class UserRepository:
 
         return user_profile.id
 
-    def is_user_info(self, dto: UpsertUserInfoDto) -> Optional[UserInfoEntity]:
+    def is_user_info(self, dto: UpsertUserInfoDto) -> bool:
         return session.query(
             exists()
             .where(UserInfoModel.user_profile_id == dto.user_profile_id)

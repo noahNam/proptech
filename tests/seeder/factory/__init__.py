@@ -40,6 +40,7 @@ from app.persistence.model import (
     PromotionModel,
     PromotionHouseModel,
     PromotionUsageCountModel,
+    TicketTargetModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -57,7 +58,7 @@ from core.domains.notification.enum.notification_enum import (
     NotificationBadgeTypeEnum,
     NotificationStatusEnum,
 )
-from core.domains.payment.enum.payment_enum import TicketSignEnum
+from core.domains.payment.enum.payment_enum import TicketSignEnum, PromotionTypeEnum
 from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
 from core.domains.user.enum.user_enum import (
     UserTicketTypeDivisionEnum,
@@ -158,6 +159,13 @@ class InterestHouseFactory(BaseFactory):
     is_like = True
 
 
+class TicketTargetFactory(BaseFactory):
+    class Meta:
+        model = TicketTargetModel
+
+    public_house_id = factory.Sequence(lambda n: n + 1)
+
+
 class TicketTypeFactory(BaseFactory):
     class Meta:
         model = TicketTypeModel
@@ -169,13 +177,23 @@ class TicketFactory(BaseFactory):
     class Meta:
         model = TicketModel
 
+    type = 1
     amount = 1
     sign = TicketSignEnum.PLUS.value
     is_active = True
     created_by = UserTicketCreatedByEnum.SYSTEM.value
     created_at = get_server_timestamp()
 
-    ticket_type = factory.SubFactory(TicketTypeFactory)
+    @factory.post_generation
+    def ticket_type(obj, create, extracted, **kwargs):
+        if extracted:
+            TicketTypeFactory(users=obj, **kwargs)
+
+    @factory.post_generation
+    def ticket_targets(obj, create, extracted, **kwargs):
+        if extracted:
+            for _ in range(3):
+                TicketTargetFactory(users=obj, **kwargs)
 
 
 class TicketUsageResultDetailFactory(BaseFactory):
@@ -194,7 +212,7 @@ class TicketUsageResultFactory(BaseFactory):
 
     user_id = 1
     public_house_id = 1
-    ticket_id = 1
+    ticket_id = None
     is_active = True
     created_at = get_server_timestamp()
 
@@ -527,28 +545,27 @@ class AdministrativeDivisionFactory(BaseFactory):
     updated_at = get_server_timestamp()
 
 
+class PromotionHouseFactory(BaseFactory):
+    class Meta:
+        model = PromotionHouseModel
+
+    house_id = factory.Sequence(lambda n: n + 1)
+
+
 class PromotionUsageCountFactory(BaseFactory):
     class Meta:
         model = PromotionUsageCountModel
 
     user_id = 1
-    usage_count = 0
-
-
-class PromotionHouseFactory(BaseFactory):
-    class Meta:
-        model = PromotionHouseModel
-
-    house_id = True
-    house_id = factory.Sequence(lambda n: n + 1)
+    usage_count = 1
 
 
 class PromotionFactory(BaseFactory):
     class Meta:
         model = PromotionModel
 
-    type = "some"
-    max_count = 3
+    type = PromotionTypeEnum.ALL.value
+    max_count = 1
     is_active = True
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
@@ -556,7 +573,8 @@ class PromotionFactory(BaseFactory):
     @factory.post_generation
     def promotion_houses(obj, create, extracted, **kwargs):
         if extracted:
-            PromotionHouseFactory(promotions=obj, **kwargs)
+            for _ in range(3):
+                PromotionHouseFactory(promotions=obj, **kwargs)
 
     @factory.post_generation
     def promotion_usage_count(obj, create, extracted, **kwargs):

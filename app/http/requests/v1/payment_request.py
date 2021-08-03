@@ -15,7 +15,7 @@ class GetTicketUsageResultSchema(BaseModel):
     user_id: StrictInt
 
 
-class UseTicketSchema(BaseModel):
+class UseBasicTicketSchema(BaseModel):
     user_id: StrictInt
     house_id: StrictInt
 
@@ -42,7 +42,7 @@ class UseBasicTicketRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = UseTicketSchema(
+            schema = UseBasicTicketSchema(
                 user_id=self.user_id, house_id=self.house_id
             ).dict()
             return UseTicketDto(**schema)
