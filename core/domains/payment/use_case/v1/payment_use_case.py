@@ -75,7 +75,14 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        dto = UseTicketDto(user_id=dto.user_id, house_id=1)
+        # 이미 티켓을 사용한 분양건인 경우 사용 X
+        if self._payment_repo.is_ticket_usage(dto=dto):
+            return UseCaseFailureOutput(
+                type=HTTPStatus.BAD_REQUEST,
+                message="this is product where tickets have already been used",
+                code=HTTPStatus.BAD_REQUEST,
+            )
+
         promotion: Optional[PromotionEntity] = self._payment_repo.get_promotion(dto=dto)
         if not promotion:
             # 프로모션은 없지만 유료 티켓을 사용하는 경우
@@ -128,11 +135,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
 
                 else:
                     # 프로모션 횟수가 남아있는 경우
-                    result: Optional[
-                        UseCaseFailureOutput
-                    ] = self._usage_promotion_ticket(dto=dto, promotion_id=promotion.id)
-                    if isinstance(result, UseCaseFailureOutput):
-                        return result
+                    return self._usage_promotion_ticket(dto=dto, promotion=promotion)
             elif promotion.type == PromotionTypeEnum.SOME.value:
                 """
                 특정 분양에 프로모션을 적용하는 경우
@@ -148,6 +151,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                     promotion_houses.house_id
                     for promotion_houses in promotion.promotion_houses
                 ]
+
                 if dto.house_id not in promotion_house_id:
                     # 프로모션에 속하지 않은 분양건이면 유료티켓 사용
                     number_of_ticket: int = self._payment_repo.get_number_of_ticket(
@@ -194,14 +198,15 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
 
                     else:
                         # 프로모션 횟수가 남아있는 경우
-                        result: Optional[
-                            UseCaseFailureOutput
-                        ] = self._usage_promotion_ticket(dto=dto, promotion=promotion)
-                        if isinstance(result, UseCaseFailureOutput):
-                            return result
+                        return self._usage_promotion_ticket(
+                            dto=dto, promotion=promotion
+                        )
         return UseCaseSuccessOutput(value=dict(type="success", message="ticket used"))
 
     def _is_promotion_available(self, promotion: PromotionEntity) -> bool:
+        if not promotion.promotion_usage_count:
+            return True
+
         return (
             True
             if promotion.max_count > promotion.promotion_usage_count.usage_count
@@ -235,9 +240,8 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
         self, dto: UseTicketDto
     ) -> Optional[UseCaseFailureOutput]:
         response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
-        response = HTTPStatus.OK
         if response == HTTPStatus.OK:
-            # 티켓 사용 히스토리 생성 (promotions 스키마)
+            # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateUseTicketDto = self._make_create_use_ticket_dto(
                 dto=dto,
                 type_=TicketTypeDivisionEnum.USED_TICKET.value,
@@ -266,12 +270,11 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
         return None
 
     def _usage_promotion_ticket(
-        self, dto: UseTicketDto, promotion_id: int
+        self, dto: UseTicketDto, promotion: PromotionEntity
     ) -> Optional[UseCaseFailureOutput]:
         response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
-        response = HTTPStatus.OK
         if response == HTTPStatus.OK:
-            # 티켓 사용 히스토리 생성 (promotions 스키마)
+            # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateUseTicketDto = self._make_create_use_ticket_dto(
                 dto=dto,
                 type_=TicketTypeDivisionEnum.USED_PROMOTION.value,
@@ -291,10 +294,15 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                 dto=update_ticket_usage_result_dto
             )
 
-            #  프로모션 사용횟수 업데이트 (promotion_usage_counts 스키마)
-            self._payment_repo.update_promotion_usage_count(
-                dto=dto, promotion_id=promotion_id
-            )
+            #  프로모션 사용횟수 생성 (promotion_usage_counts 스키마)
+            if promotion.promotion_usage_count:
+                self._payment_repo.update_promotion_usage_count(
+                    dto=dto, promotion_id=promotion.id
+                )
+            else:
+                self._payment_repo.create_promotion_usage_count(
+                    dto=dto, promotion_id=promotion.id
+                )
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
             return UseCaseFailureOutput(
@@ -302,4 +310,6 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                 message="error on jarvis (usage_promotion_ticket)",
                 code=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
-        return None
+        return UseCaseSuccessOutput(
+            value=dict(type="success", message="promotion used")
+        )

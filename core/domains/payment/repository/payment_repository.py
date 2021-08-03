@@ -1,7 +1,7 @@
 from typing import Optional, List
 
-from sqlalchemy import exc
-from sqlalchemy.orm import selectinload
+from sqlalchemy import exc, exists
+from sqlalchemy.orm import selectinload, joinedload
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
@@ -11,6 +11,7 @@ from app.persistence.model import (
     PromotionUsageCountModel,
     TicketModel,
     TicketTargetModel,
+    PromotionHouseModel,
 )
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
@@ -36,13 +37,30 @@ class PaymentRepository:
             return []
         return [public_house.id for public_house in public_houses]
 
+    def is_ticket_usage(self, dto: UseTicketDto) -> bool:
+        return session.query(
+            exists()
+            .where(TicketUsageResultModel.public_house_id == dto.house_id)
+            .where(TicketUsageResultModel.user_id == dto.user_id)
+        ).scalar()
+
     def get_promotion(self, dto: UseTicketDto) -> Optional[PromotionEntity]:
         filters = list()
         filters.append(PromotionModel.is_active == True)
-        filters.append(PromotionUsageCountModel.user_id == dto.user_id)
 
         query = (
             session.query(PromotionModel)
+            .join(
+                PromotionHouseModel,
+                PromotionModel.id == PromotionHouseModel.promotion_id,
+                isouter=True,
+            )
+            .join(
+                PromotionUsageCountModel,
+                (PromotionModel.id == PromotionUsageCountModel.promotion_id)
+                & (PromotionUsageCountModel.user_id == dto.user_id),
+                isouter=True,
+            )
             .options(selectinload(PromotionModel.promotion_houses))
             .options(selectinload(PromotionModel.promotion_usage_count))
             .filter(*filters)
@@ -113,6 +131,20 @@ class PaymentRepository:
             )
             raise NotUniqueErrorException(type_="T200")
 
+    def create_promotion_usage_count(self, dto: UseTicketDto, promotion_id: int):
+        try:
+            promotion_usage_count = PromotionUsageCountModel(
+                promotion_id=promotion_id, user_id=dto.user_id, usage_count=1
+            )
+            session.add(promotion_usage_count)
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[PaymentRepository][create_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {dto.promotion_id}, error : {e}"
+            )
+            raise NotUniqueErrorException(type_="T300")
+
     def update_promotion_usage_count(self, dto: UseTicketDto, promotion_id: int):
         try:
             filters = list()
@@ -128,7 +160,7 @@ class PaymentRepository:
             logger.error(
                 f"[PaymentRepository][update_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {dto.promotion_id}, error : {e}"
             )
-            raise NotUniqueErrorException(type_="T300")
+            raise NotUniqueErrorException(type_="T400")
 
     def create_ticket_target(self, dto: UseTicketDto, ticket_id: int) -> None:
         try:
@@ -143,4 +175,4 @@ class PaymentRepository:
             logger.error(
                 f"[PaymentRepository][create_ticket_target] user_id : {dto.user_id}, error : {e}"
             )
-            raise NotUniqueErrorException(type_="T400")
+            raise NotUniqueErrorException(type_="T500")

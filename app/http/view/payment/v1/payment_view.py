@@ -1,4 +1,5 @@
 from flasgger import swag_from
+from flask import request
 
 from app.http.requests.v1.payment_request import (
     GetTicketUsageResultRequestSchema,
@@ -30,10 +31,12 @@ def get_ticket_usage_result_view():
 
 
 @api.route("/v1/payments/ticket", methods=["POST"])
-# @jwt_required
-# @auth_required
+@jwt_required
+@auth_required
 @swag_from("use_ticket.yml", methods=["POST"])
 def use_basic_ticket_view():
-    dto = UseBasicTicketRequestSchema(user_id=1,).validate_request_and_make_dto()
+    dto = UseBasicTicketRequestSchema(
+        **request.get_json(), user_id=current_user.id,
+    ).validate_request_and_make_dto()
 
     return UseBasicTicketPresenter().transform(UseBasicTicketUseCase().execute(dto=dto))

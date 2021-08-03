@@ -18,9 +18,7 @@ from app.persistence.model import (
 from core.domains.user.dto.user_dto import UpsertUserInfoDetailDto
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import (
-    IsHouseOwnerCodeEnum,
     CodeEnum,
-    MonthlyIncomeEnum,
     CodeStepEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository

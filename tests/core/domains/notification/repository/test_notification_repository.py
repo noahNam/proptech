@@ -1,8 +1,6 @@
 from app.persistence.model import ReceivePushTypeHistoryModel
 from core.domains.notification.dto.notification_dto import (
-    GetBadgeDto,
     GetNotificationDto,
-    UpdateNotificationDto,
     UpdateReceiveNotificationSettingDto,
 )
 from core.domains.notification.entity.notification_entity import (
@@ -11,7 +9,6 @@ from core.domains.notification.entity.notification_entity import (
 )
 from core.domains.notification.enum.notification_enum import (
     NotificationTopicEnum,
-    NotificationBadgeTypeEnum,
     NotificationHistoryCategoryEnum,
 )
 from core.domains.notification.repository.notification_repository import (

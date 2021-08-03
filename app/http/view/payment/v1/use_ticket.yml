@@ -12,17 +12,13 @@ requestBody:
         type: object
         required:
           - house_id
-          - use_ticket_type
         properties:
           house_id:
             type: integer
             example: 1
-          use_ticket_type:
-            type: string
-            example: basic
 responses:
   '200':
-    description:
+    description: 참고링크 -> https://www.notion.so/apartalk/tanos-v1-payments-ticket-749e9cef60a64347a0ec6afd698a47f8
     content:
       application/json:
         schema:
@@ -54,6 +50,18 @@ responses:
               type: string
               example: insufficient number of tickets
   '400 #2':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: integer
+              example: 400
+            message:
+              type: string
+              example: this is product where tickets have already been used
+  '400 #3':
     description: invalid_request_error
     content:
       application/json:
