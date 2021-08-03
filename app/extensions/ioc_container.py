@@ -6,6 +6,7 @@ from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.notification.repository.notification_repository import (
     NotificationRepository,
 )
+from core.domains.payment.repository.payment_repository import PaymentRepository
 from core.domains.post.repository.post_repository import PostRepository
 from core.domains.user.repository.user_repository import UserRepository
 
@@ -15,6 +16,7 @@ def bind(binder, app):
     binder.bind_to_provider(HouseRepository, HouseRepository)
     binder.bind_to_provider(NotificationRepository, NotificationRepository)
     binder.bind_to_provider(PostRepository, PostRepository)
+    binder.bind_to_provider(PaymentRepository, PaymentRepository)
     binder.bind_to_provider(QueueMessageSender, SqsMessageSender)
 
 

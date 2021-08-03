@@ -21,15 +21,6 @@ class UserTicketTypeDivisionEnum(Enum):
     REFUND = "refund"
 
 
-class UserTicketSignEnum(Enum):
-    """
-    tickets.sign 테이블에서 사용
-    """
-
-    PLUS = "plus"
-    MINUS = "minus"
-
-
 class UserTicketCreatedByEnum(Enum):
     """
     tickets.created_by 테이블에서 사용
@@ -45,7 +36,7 @@ class UserSurveyStepEnum(Enum):
     UserEntity 의 survey_step property
     """
 
-    STEP_NO = 0
-    STEP_ONE = 1
-    STEP_TWO = 2
-    STEP_COMPLETE = 3
+    STEP_NO = 0  # 미진행
+    STEP_ONE = 1  # 1단계 진행중
+    STEP_TWO = 2  # 2단계 진행중
+    STEP_COMPLETE = 3  # 완료

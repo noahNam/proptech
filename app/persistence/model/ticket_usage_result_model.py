@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.user.entity.user_entity import TicketUsageResultEntity
+from core.domains.payment.entity.payment_entity import TicketUsageResultEntity
 
 
 class TicketUsageResultModel(db.Model):
@@ -20,7 +20,7 @@ class TicketUsageResultModel(db.Model):
     )
     user_id = Column(BigInteger, nullable=False, index=True)
     public_house_id = Column(BigInteger, nullable=False, index=True)
-    ticket_id = Column(BigInteger, nullable=False)
+    ticket_id = Column(BigInteger, nullable=True)
     is_active = Column(Boolean, nullable=False)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 

@@ -55,7 +55,8 @@ class CodeStepEnum(Enum):
         1019,
     ]
     TWO = [1020, 1021, 1022, 1023, 1024, 1025, 1026]
-    COMPLETE = 1026
+    COMPLETE_ONE = 1019
+    COMPLETE_TWO = 1026
 
 
 class AddressCodeEnum(Enum):

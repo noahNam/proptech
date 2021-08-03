@@ -11,16 +11,11 @@ from core.domains.house.dto.house_dto import (
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
 )
-from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
-    GetRecentViewListEntity,
-    BoundingRealEstateEntity,
     GetSearchHouseListEntity,
     GetRecentViewListEntity,
-    PublicSaleEntity,
-    GetTicketUsageResultEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -50,9 +45,7 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        interest_house: InterestHouseModel = self._house_repo.update_interest_house(
-            dto=dto
-        )
+        interest_house: int = self._house_repo.update_interest_house(dto=dto)
         if not interest_house:
             self._house_repo.create_interest_house(dto=dto)
 
@@ -176,24 +169,6 @@ class GetRecentViewListUseCase(HouseBaseUseCase):
         result: List[GetRecentViewListEntity] = self._house_repo.get_recent_view_list(
             dto=dto
         )
-
-        return UseCaseSuccessOutput(value=result)
-
-
-class GetTicketUsageResultUseCase(HouseBaseUseCase):
-    def execute(
-        self, dto: GetUserDto
-    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        if not dto.user_id:
-            return UseCaseFailureOutput(
-                type="user_id",
-                message=FailureType.NOT_FOUND_ERROR,
-                code=HTTPStatus.NOT_FOUND,
-            )
-
-        result: List[
-            GetTicketUsageResultEntity
-        ] = self._house_repo.get_ticket_usage_results(dto=dto)
 
         return UseCaseSuccessOutput(value=result)
 
