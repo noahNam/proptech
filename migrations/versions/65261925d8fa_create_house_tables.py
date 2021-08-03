@@ -20,7 +20,7 @@ depends_on = None
 
 def upgrade():
     # 로컬 사용시 postgis 주석 처리 필요
-    # op.execute("create extension postgis;")
+    op.execute("create extension postgis;")
 
     op.create_table(
         "administrative_divisions",
@@ -53,6 +53,21 @@ def upgrade():
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(
+        "administrative_name_gin_varchar_idx",
+        "administrative_divisions",
+        ["name"],
+        unique=False,
+        postgresql_using="btree",
+    )
+    op.create_index(
+        "administrative_name_gin_ts_idx",
+        "administrative_divisions",
+        ["name_ts"],
+        unique=False,
+        postgresql_using="gin",
+    )
+
     op.create_table(
         "real_estates",
         sa.Column(
@@ -94,6 +109,36 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+
+    op.create_index(
+        "jubun_address_gin_varchar_idx",
+        "real_estates",
+        ["jibun_address"],
+        unique=False,
+        postgresql_using="btree",
+    )
+    op.create_index(
+        "jubun_address_gin_ts_idx",
+        "real_estates",
+        ["jibun_address_ts"],
+        unique=False,
+        postgresql_using="gin",
+    )
+    op.create_index(
+        "road_address_gin_varchar_idx",
+        "real_estates",
+        ["road_address"],
+        unique=False,
+        postgresql_using="btree",
+    )
+    op.create_index(
+        "road_address_gin_ts_idx",
+        "real_estates",
+        ["road_address_ts"],
+        unique=False,
+        postgresql_using="gin",
+    )
+
     op.create_table(
         "private_sales",
         sa.Column(
@@ -103,24 +148,12 @@ def upgrade():
             nullable=False,
         ),
         sa.Column("real_estate_id", sa.BigInteger(), nullable=False),
-        sa.Column("private_area", sa.Float(), nullable=False),
-        sa.Column("supply_area", sa.Float(), nullable=False),
-        sa.Column("contract_date", sa.String(length=8), nullable=True),
-        sa.Column("deposit_price", sa.Integer(), nullable=False),
-        sa.Column("rent_price", sa.Integer(), nullable=False),
-        sa.Column("trade_price", sa.Integer(), nullable=False),
-        sa.Column("floor", sa.SmallInteger(), nullable=False),
-        sa.Column(
-            "trade_type",
-            sa.Enum("매매", "전세", "월세", name="realtradetypeenum"),
-            nullable=False,
-        ),
+        sa.Column("name", sa.String(length=50), nullable=True),
         sa.Column(
             "building_type",
             sa.Enum("아파트", "오피스텔", "연립다세대", name="buildtypeenum"),
             nullable=False,
         ),
-        sa.Column("is_available", sa.Boolean(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
@@ -176,6 +209,7 @@ def upgrade():
         sa.Column("max_down_payment", sa.Integer(), nullable=False),
         sa.Column("down_payment_ratio", sa.Integer(), nullable=False),
         sa.Column("reference_url", sa.String(length=50), nullable=True),
+        sa.Column("offer_notice_url", sa.String(length=100), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
@@ -183,6 +217,21 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(
+        "public_sales_name_gin_varcher_idx",
+        "public_sales",
+        ["name"],
+        unique=False,
+        postgresql_using="btree",
+    )
+    op.create_index(
+        "public_sales_name_gin_ts_idx",
+        "public_sales",
+        ["name_ts"],
+        unique=False,
+        postgresql_using="gin",
+    )
+
     op.create_table(
         "public_sale_details",
         sa.Column(
@@ -196,6 +245,7 @@ def upgrade():
         sa.Column("supply_area", sa.Float(), nullable=False),
         sa.Column("supply_price", sa.Integer(), nullable=False),
         sa.Column("acquisition_tax", sa.Integer(), nullable=False),
+        sa.Column("area_type", sa.String(length=5), nullable=True),
         sa.ForeignKeyConstraint(
             ["public_sales_id"], ["public_sales.id"], ondelete="CASCADE"
         ),
@@ -232,8 +282,15 @@ def downgrade():
     op.drop_table("private_sales")
     op.drop_table("real_estates")
     op.drop_table("administrative_divisions")
+    op.drop_index(op.f("administrative_name_gin_varchar_idx"), table_name="administrative_divisions")
+    op.drop_index(op.f("administrative_name_gin_ts_idx"), table_name="administrative_divisions")
+    op.drop_index(op.f("jubun_address_gin_varchar_idx"), table_name="real_estates")
+    op.drop_index(op.f("jubun_address_gin_ts_idx"), table_name="real_estates")
+    op.drop_index(op.f("road_address_gin_varchar_idx"), table_name="real_estates")
+    op.drop_index(op.f("road_address_gin_ts_idx"), table_name="real_estates")
+    op.drop_index(op.f("public_sales_name_gin_varcher_idx"), table_name="public_sales")
+    op.drop_index(op.f("public_sales_name_gin_ts_idx"), table_name="public_sales")
     op.execute("drop type renttypeenum;")
-    op.execute("drop type realtradetypeenum;")
     op.execute("drop type presaletypeenum;")
     op.execute("drop type housingcategoryenum;")
     op.execute("drop type divisionlevelenum;")
