@@ -43,10 +43,10 @@ class RealEstateModel(db.Model):
     )
 
     jibun_address_ts = Column(
-        TSVECTOR().with_variant(String(100), "sqlite"), nullable=False
+        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
     )
     road_address_ts = Column(
-        TSVECTOR().with_variant(String(100), "sqlite"), nullable=False
+        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
     )
 
     latitude = column_property(coordinates.ST_Y())

@@ -41,6 +41,7 @@ from app.persistence.model import (
     PromotionHouseModel,
     PromotionUsageCountModel,
     TicketTargetModel,
+    PostAttachmentModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -59,7 +60,7 @@ from core.domains.notification.enum.notification_enum import (
     NotificationStatusEnum,
 )
 from core.domains.payment.enum.payment_enum import TicketSignEnum, PromotionTypeEnum
-from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
+from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum, PostCategoryDetailEnum
 from core.domains.user.enum.user_enum import (
     UserTicketTypeDivisionEnum,
     UserTicketCreatedByEnum,
@@ -317,31 +318,54 @@ class AppAgreeTermsFactory(BaseFactory):
     receive_marketing_date = get_server_timestamp()
 
 
-class PostFactory(BaseFactory):
-    class Meta:
-        model = PostModel
-
-    user_id = 1
-    title = "떡볶이 나눠 먹어요"
-    type = PostTypeEnum.ARTICLE.value
-    is_deleted = False
-    read_count = 0
-    category_id = PostCategoryEnum.NOTICE.value
-    created_at = get_server_timestamp()
-    updated_at = get_server_timestamp()
-
-    @factory.post_generation
-    def Article(obj, create, extracted, **kwargs):
-        if extracted:
-            ArticleFactory(post=obj, **kwargs)
-
-
 class ArticleFactory(BaseFactory):
     class Meta:
         model = ArticleModel
 
     post_id = 1
     body = factory.Sequence(lambda n: "body_게시글 입니다:) {}".format(n + 1))
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+
+class PostAttachmentFactory(BaseFactory):
+    class Meta:
+        model = PostAttachmentModel
+
+    post_id = 1
+    file_name = "photo_file"
+    path = (
+        "https://sample.s3.sample.amazonaws.com"
+        "/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
+    )
+    extension = "jpeg"
+    type = 0
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+
+class PostFactory(BaseFactory):
+    class Meta:
+        model = PostModel
+
+    title = "회원가입 관련 안내사항"
+    desc = "회원 가입 기준은?"
+    is_deleted = False
+    read_count = 0
+    category_id = PostCategoryEnum.NOTICE.value
+    category_detail_id = PostCategoryDetailEnum.NO_DETAIL.value
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+    @factory.post_generation
+    def article(obj, create, extracted, **kwargs):
+        if extracted:
+            ArticleFactory(post=obj, **kwargs)
+
+    @factory.post_generation
+    def post_attachments(obj, create, extracted, **kwargs):
+        if extracted:
+            PostAttachmentFactory(post=obj, **kwargs)
 
 
 class PrivateSaleDetailFactory(BaseFactory):
