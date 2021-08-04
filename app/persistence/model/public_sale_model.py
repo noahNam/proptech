@@ -75,7 +75,7 @@ class PublicSaleModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    name_ts = Column(TSVECTOR().with_variant(String(150), "sqlite"), nullable=False)
+    name_ts = Column(TSVECTOR().with_variant(String(150), "sqlite"), nullable=True)
 
     # 1:1 relationship
     public_sale_photos = relationship(

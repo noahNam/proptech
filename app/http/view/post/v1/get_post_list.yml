@@ -11,9 +11,9 @@ parameters:
     schema:
       type: integer
       example: 1
-  - name: previous_post_id
+  - name: post_category_detail
     in: query
-    required: false
+    required: true
     description: null(처음 글 진입시) or 10(페이지 더 넘길때 마지막 post_id = response.meta의 last_post_id)
     schema:
       type: integer

@@ -21,6 +21,7 @@ class PostModel(db.Model):
     category_id = Column(SmallInteger, nullable=False, index=True)
     category_detail_id = Column(SmallInteger, nullable=False, index=True)
     title = Column(String(50), nullable=False)
+    desc = Column(String(200), nullable=False)
     is_deleted = Column(Boolean, nullable=False, default=False)
     read_count = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
@@ -33,6 +34,7 @@ class PostModel(db.Model):
         return PostEntity(
             id=self.id,
             title=self.title,
+            desc=self.desc,
             category_id=self.category_id,
             category_detail_id=self.category_detail_id,
             body=self.article.body if self.article else None,

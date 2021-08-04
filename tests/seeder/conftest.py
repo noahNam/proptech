@@ -40,6 +40,7 @@ from tests.seeder.factory import (
     PromotionFactory,
     PromotionHouseFactory,
     PromotionUsageCountFactory,
+    PostAttachmentFactory,
 )
 
 MODEL_FACTORIES = [
@@ -72,6 +73,7 @@ MODEL_FACTORIES = [
     PromotionHouseFactory,
     PromotionUsageCountFactory,
     PromotionFactory,
+    PostAttachmentFactory,
 ]
 
 faker = Faker()
