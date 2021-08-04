@@ -2,7 +2,6 @@ from http import HTTPStatus
 from random import randint
 from typing import Union
 
-from app.extensions.utils.event_observer import send_message, get_event_object
 from app.extensions.utils.enum.cache_enum import RedisKeyPrefix, RedisExpire
 from app.extensions.utils.enum.ncp_enum import SmsMessageEnum
 from core.domains.authentication.dto.sms_dto import (
@@ -10,7 +9,6 @@ from core.domains.authentication.dto.sms_dto import (
     SendSmsDto,
     MobileAuthConfirmSmsDto,
 )
-from core.domains.user.enum import UserTopicEnum
 from core.exceptions import RedisErrorException
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput
 from app import sms, redis
@@ -99,14 +97,10 @@ class MobileAuthConfirmSmsUseCase:
 
         # 인증 성공
         # DB에 phone_number, is_auth update
-        self._update_user_mobile_auth_info(dto=dto)
+        # 기획 변경으로 삭제
+        # self._update_user_mobile_auth_info(dto=dto)
 
         return UseCaseSuccessOutput(value="success")
-
-    def _update_user_mobile_auth_info(self, dto: MobileAuthConfirmSmsDto) -> None:
-        send_message(topic_name=UserTopicEnum.UPDATE_USER_MOBILE_AUTH_INFO, dto=dto)
-
-        return get_event_object(topic_name=UserTopicEnum.UPDATE_USER_MOBILE_AUTH_INFO)
 
 
 class AuthenticationUseCase:

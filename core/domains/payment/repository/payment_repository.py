@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from sqlalchemy import exc, exists
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import selectinload
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
@@ -141,7 +141,7 @@ class PaymentRepository:
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[PaymentRepository][create_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {dto.promotion_id}, error : {e}"
+                f"[PaymentRepository][create_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {promotion_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T300")
 
@@ -158,7 +158,7 @@ class PaymentRepository:
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[PaymentRepository][update_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {dto.promotion_id}, error : {e}"
+                f"[PaymentRepository][update_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {promotion_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T400")
 

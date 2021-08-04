@@ -14,6 +14,7 @@ from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.notification.dto.notification_dto import GetBadgeDto
 from core.domains.notification.enum import NotificationTopicEnum
+from core.domains.payment.enum import PaymentTopicEnum
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateUserProfileImgDto,
@@ -130,7 +131,7 @@ class CreateUserUseCase(UserBaseUseCase):
         self._user_repo.create_receive_push_types(dto=dto)
 
         # 추천인 코드 생성
-        # self._user_repo.create_recommend_code(dto=dto)
+        # self._create_recommend_code(dto=dto)
 
         # 프로필 이미지 등록은 사용 X -> 다만 추후 사용 가능성 있기 때문에 주석으로 남겨둠
         # if dto.file:
@@ -150,6 +151,10 @@ class CreateUserUseCase(UserBaseUseCase):
         #             )
 
         return UseCaseSuccessOutput()
+
+    def _create_recommend_code(self, dto: CreateUserDto) -> bool:
+        send_message(topic_name=PaymentTopicEnum.CREATE_RECOMMEND_CODE.value, dto=dto)
+        return get_event_object(topic_name=PaymentTopicEnum.CREATE_RECOMMEND_CODE.value)
 
 
 class CreateAppAgreeTermsUseCase(UserBaseUseCase):

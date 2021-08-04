@@ -236,7 +236,7 @@ def test_update_last_code_to_user_info_when_input_user_data_then_success(session
 def test_get_user_profile_id_when_input_user_data_then_success(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
     get_user_profile_id = UserRepository().get_user_profile_id(
-        dto=upsert_user_info_detail_dto
+        user_id=upsert_user_info_detail_dto.user_id
     )
 
     assert get_user_profile_id == 1
@@ -247,7 +247,7 @@ def test_get_user_profile_id_when_input_user_data_then_none(session):
 
     upsert_user_info_detail_dto.user_id = upsert_user_info_detail_dto.user_id + 1
     get_user_profile_id = UserRepository().get_user_profile_id(
-        dto=upsert_user_info_detail_dto
+        user_id=upsert_user_info_detail_dto.user_id
     )
 
     assert get_user_profile_id is None
