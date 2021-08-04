@@ -7,14 +7,14 @@ parameters:
   - name: post_category
     in: query
     required: true
-    description: notice(1), faq(2)
+    description: 공지사항(0), FAQ(1), 청약FAQ(2), 청약가이드(3), 청약용어(4)
     schema:
       type: integer
       example: 1
   - name: post_category_detail
     in: query
     required: true
-    description: null(처음 글 진입시) or 10(페이지 더 넘길때 마지막 post_id = response.meta의 last_post_id)
+    description: <공지사항,청약용어>-디테일없음(0), <FAQ>-계정/인증(1),개인정보(2),사용법(3),환경설정(4), <청약_FAQ, 청약가이드>-자격조건(5),특별공급(6),일반공급(7),소득기준(8)
     schema:
       type: integer
       example: null
@@ -32,12 +32,33 @@ responses:
                   type: array
                   items:
                     $ref: '#/components/schemas/post'
-            meta:
-              $ref: '#/components/schemas/post_meta'
-
   '400':
-    description: unauthorized_error, invalid_request_error, not_found_error, system_error
+    description: invalid_request_error
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/error'
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'
