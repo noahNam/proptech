@@ -66,7 +66,7 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
 
 class UseBasicTicketUseCase(PaymentBaseUseCase):
     def execute(
-        self, dto: PaymentUserDto
+        self, dto: UseTicketDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -78,7 +78,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
         # 이미 티켓을 사용한 분양건인 경우 사용 X
         if self._payment_repo.is_ticket_usage(dto=dto):
             return UseCaseFailureOutput(
-                type=HTTPStatus.BAD_REQUEST,
+                type=str(HTTPStatus.BAD_REQUEST),
                 message="this is product where tickets have already been used",
                 code=HTTPStatus.BAD_REQUEST,
             )
@@ -90,7 +90,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
             if not number_of_ticket:
                 # 티켓 수가 부족할 때
                 return UseCaseFailureOutput(
-                    type=HTTPStatus.BAD_REQUEST,
+                    type=str(HTTPStatus.BAD_REQUEST),
                     message="insufficient number of tickets",
                     code=HTTPStatus.BAD_REQUEST,
                 )
@@ -160,7 +160,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                     if not number_of_ticket:
                         # 티켓 수가 부족할 때
                         return UseCaseFailureOutput(
-                            type=HTTPStatus.BAD_REQUEST,
+                            type=str(HTTPStatus.BAD_REQUEST),
                             message="insufficient number of tickets",
                             code=HTTPStatus.BAD_REQUEST,
                         )
@@ -263,7 +263,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
             return UseCaseFailureOutput(
-                type=HTTPStatus.INTERNAL_SERVER_ERROR,
+                type=str(HTTPStatus.INTERNAL_SERVER_ERROR),
                 message="error on jarvis (usage_charged_ticket)",
                 code=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
@@ -271,7 +271,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
 
     def _usage_promotion_ticket(
         self, dto: UseTicketDto, promotion: PromotionEntity
-    ) -> Optional[UseCaseFailureOutput]:
+    ) -> Optional[UseCaseSuccessOutput, UseCaseFailureOutput]:
         response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
             # 티켓 사용 히스토리 생성 (tickets 스키마)
@@ -306,7 +306,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
             return UseCaseFailureOutput(
-                type=HTTPStatus.INTERNAL_SERVER_ERROR,
+                type=str(HTTPStatus.INTERNAL_SERVER_ERROR),
                 message="error on jarvis (usage_promotion_ticket)",
                 code=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
