@@ -68,3 +68,11 @@ class PromotionEntity(BaseModel):
     updated_at: datetime
     promotion_houses: Optional[List[PromotionHouseEntity]]
     promotion_usage_count: Optional[PromotionUsageCountEntity]
+
+
+class RecommendCodeEntity(BaseModel):
+    id: int
+    user_id: int
+    code: str
+    code_count: int
+    is_used: bool

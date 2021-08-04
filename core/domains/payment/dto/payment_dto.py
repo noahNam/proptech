@@ -22,3 +22,8 @@ class UpdateTicketUsageResultDto(BaseModel):
     user_id: int
     public_house_id: int
     ticket_id: int
+
+
+class UseRecommendCodeDto(BaseModel):
+    user_id: int
+    code: str
