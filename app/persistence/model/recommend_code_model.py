@@ -16,7 +16,8 @@ class RecommendCodeModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     user_id = Column(BigInteger, nullable=False, index=True)
-    code = Column(String(4), nullable=False)
+    code_group = Column(SmallInteger, nullable=False, index=True)
+    code = Column(String(6), nullable=False)
     code_count = Column(SmallInteger, nullable=False, default=0)
     is_used = Column(Boolean, nullable=False, default=0)
 
@@ -25,6 +26,6 @@ class RecommendCodeModel(db.Model):
             id=self.id,
             user_id=self.user_id,
             code=self.code,
-            code_count=self.last_update_code,
+            code_count=self.code_count,
             is_used=self.is_used,
         )

@@ -130,9 +130,6 @@ class CreateUserUseCase(UserBaseUseCase):
 
         self._user_repo.create_receive_push_types(dto=dto)
 
-        # 추천인 코드 생성
-        # self._create_recommend_code(dto=dto)
-
         # 프로필 이미지 등록은 사용 X -> 다만 추후 사용 가능성 있기 때문에 주석으로 남겨둠
         # if dto.file:
         #     create_user_profile_img_dto = self._get_file_split_object(dto=dto)
@@ -151,10 +148,6 @@ class CreateUserUseCase(UserBaseUseCase):
         #             )
 
         return UseCaseSuccessOutput()
-
-    def _create_recommend_code(self, dto: CreateUserDto) -> bool:
-        send_message(topic_name=PaymentTopicEnum.CREATE_RECOMMEND_CODE.value, dto=dto)
-        return get_event_object(topic_name=PaymentTopicEnum.CREATE_RECOMMEND_CODE.value)
 
 
 class CreateAppAgreeTermsUseCase(UserBaseUseCase):

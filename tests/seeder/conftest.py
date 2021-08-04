@@ -39,7 +39,7 @@ from tests.seeder.factory import (
     TicketUsageResultDetailFactory,
     PromotionFactory,
     PromotionHouseFactory,
-    PromotionUsageCountFactory,
+    PromotionUsageCountFactory, RecommendCodeFactory,
 )
 
 MODEL_FACTORIES = [
@@ -72,6 +72,7 @@ MODEL_FACTORIES = [
     PromotionHouseFactory,
     PromotionUsageCountFactory,
     PromotionFactory,
+    RecommendCodeFactory
 ]
 
 faker = Faker()
