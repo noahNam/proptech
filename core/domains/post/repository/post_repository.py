@@ -1,11 +1,13 @@
 from typing import List, Union
+
+from sqlalchemy import and_
+
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.post_model import PostModel
 from core.domains.post.dto.post_dto import GetPostListDto
 from core.domains.post.entity.post_entity import PostEntity
-from core.domains.post.enum.post_enum import PostLimitEnum
 
 logger = logger_.getLogger(__name__)
 
@@ -16,31 +18,25 @@ class PostRepository:
             session.query(PostModel).filter_by(id=post_id).exists()
         ).scalar()
 
-    def get_post_list_include_article(
-        self, dto: GetPostListDto
+    def get_post_list_include_contents(
+            self, dto: GetPostListDto
     ) -> Union[List[PostEntity], List]:
         search_filter = list()
-        search_filter.append(PostModel.is_deleted == False)
-        search_filter.append(PostModel.category_id == dto.post_category)
-
-        previous_post_id_filter = list()
-        if dto.previous_post_id:
-            previous_post_id_filter.append(PostModel.id < dto.previous_post_id)
+        search_filter.append(
+            and_(
+                PostModel.is_deleted == False,
+                PostModel.category_id == dto.post_category,
+                PostModel.category_detail_id == dto.post_category_detail
+            )
+        )
 
         try:
-            query = session.query(PostModel).filter(
-                *search_filter, *previous_post_id_filter,
-            )
-
-            post_list = (
-                query.order_by(PostModel.id.desc())
-                .limit(PostLimitEnum.LIMIT.value)
-                .all()
-            )
+            query = session.query(PostModel).filter(*search_filter).order_by(PostModel.id.desc())
+            post_list = query.all()
 
             return [post.to_entity() for post in post_list]
         except Exception as e:
-            logger.error(f"[PostRepository][get_post_list_include_article] error : {e}")
+            logger.error(f"[PostRepository][get_post_list_include_contents] error : {e}")
             return []
 
     def update_read_count(self, post_id: int) -> None:

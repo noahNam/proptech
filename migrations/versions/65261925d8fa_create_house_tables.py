@@ -170,7 +170,7 @@ def upgrade():
             nullable=False,
         ),
         sa.Column("real_estate_id", sa.BigInteger(), nullable=False),
-        sa.Column("name", sa.String(length=50), nullable=False),
+        sa.Column("name", sa.String(length=150), nullable=False),
         sa.Column(
             "name_ts",
             postgresql.TSVECTOR().with_variant(sa.String(), "sqlite"),
