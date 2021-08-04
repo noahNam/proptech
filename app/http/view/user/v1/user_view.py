@@ -173,8 +173,8 @@ def get_user_profile_view():
 
 
 @api.route("/v1/users/profile", methods=["PATCH"])
-# @jwt_required
-# @auth_required
+@jwt_required
+@auth_required
 @swag_from("update_user_profile.yml", methods=["PATCH"])
 def update_user_profile_view():
     dto = UpdateUserProfileRequestSchema(
