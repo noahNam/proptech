@@ -29,24 +29,7 @@ def upgrade():
                     sa.PrimaryKeyConstraint('id'),
                     sa.UniqueConstraint('post_id')
                     )
-    op.add_column('posts', sa.Column('category_detail_id', sa.SmallInteger(), nullable=False))
-    op.add_column('posts', sa.Column('desc', sa.String(length=200), nullable=False))
-    op.create_index(op.f('ix_posts_category_detail_id'), 'posts', ['category_detail_id'], unique=False)
-    op.drop_constraint('posts_user_id_fkey', 'posts', type_='foreignkey')
-    op.drop_column('posts', 'user_id')
-    op.drop_column('posts', 'type')
-    op.drop_column('posts', 'last_admin_action_at')
-    op.drop_column('posts', 'last_admin_action')
 
 
 def downgrade():
-    op.add_column('posts', sa.Column('last_admin_action', sa.VARCHAR(length=10), autoincrement=False, nullable=True))
-    op.add_column('posts',
-                  sa.Column('last_admin_action_at', postgresql.TIMESTAMP(), autoincrement=False, nullable=True))
-    op.add_column('posts', sa.Column('type', sa.VARCHAR(length=10), autoincrement=False, nullable=False))
-    op.add_column('posts', sa.Column('user_id', sa.BIGINT(), autoincrement=False, nullable=False))
-    op.create_foreign_key('posts_user_id_fkey', 'posts', 'users', ['user_id'], ['id'])
-    op.drop_index(op.f('ix_posts_category_detail_id'), table_name='posts')
-    op.drop_column('posts', 'desc')
-    op.drop_column('posts', 'category_detail_id')
     op.drop_table('post_attachments')
