@@ -4,6 +4,7 @@ from datetime import datetime
 
 import factory
 from faker import Factory as FakerFactory
+from strgen import StringGenerator
 
 from app.extensions.utils.time_helper import (
     get_server_timestamp,
@@ -40,7 +41,7 @@ from app.persistence.model import (
     PromotionModel,
     PromotionHouseModel,
     PromotionUsageCountModel,
-    TicketTargetModel,
+    TicketTargetModel, RecommendCodeModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -580,3 +581,14 @@ class PromotionFactory(BaseFactory):
     def promotion_usage_count(obj, create, extracted, **kwargs):
         if extracted:
             PromotionUsageCountFactory(promotions=obj, **kwargs)
+
+
+class RecommendCodeFactory(BaseFactory):
+    class Meta:
+        model = RecommendCodeModel
+
+    user_id = 1
+    code_group = user_id / 1000
+    code = StringGenerator("[\l]{6}").render_list(1, unique=True)[0]
+    code_count = 0
+    is_used = False
