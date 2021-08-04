@@ -26,7 +26,6 @@ from core.domains.notification.dto.notification_dto import (
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
-    UpsertUserInfoDto,
     GetUserInfoDto,
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
@@ -180,16 +179,16 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T006")
 
-    def get_user_profile_id(self, dto: UpsertUserInfoDto) -> Optional[int]:
+    def get_user_profile_id(self, user_id: int) -> Optional[int]:
         user_profile = (
-            session.query(UserProfileModel.id).filter_by(user_id=dto.user_id).first()
+            session.query(UserProfileModel.id).filter_by(user_id=user_id).first()
         )
         if not user_profile:
             return None
 
         return user_profile.id
 
-    def is_user_info(self, dto: UpsertUserInfoDto) -> bool:
+    def is_user_info(self, dto: UpsertUserInfoDetailDto) -> bool:
         return session.query(
             exists()
             .where(UserInfoModel.user_profile_id == dto.user_profile_id)
