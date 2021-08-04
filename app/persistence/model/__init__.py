@@ -31,3 +31,4 @@ from .ticket_target_model import TicketTargetModel
 from .promotion_model import PromotionModel
 from .promotion_house_model import PromotionHouseModel
 from .promotion_usage_count_model import PromotionUsageCountModel
+from .post_attachment_model import PostAttachmentModel

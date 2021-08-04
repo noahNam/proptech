@@ -29,7 +29,7 @@ class PublicSaleDetailModel(db.Model):
     supply_area = Column(Float, nullable=False)
     supply_price = Column(Integer, nullable=False)
     acquisition_tax = Column(Integer, nullable=False)
-    area_type = Column(String(5), nullable=False)
+    area_type = Column(String(5), nullable=True)
 
     # 1:1 relationship
     public_sale_detail_photos = relationship(

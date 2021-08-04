@@ -36,7 +36,7 @@ class PublicSaleModel(db.Model):
     real_estate_id = Column(
         BigInteger, ForeignKey(RealEstateModel.id, ondelete="CASCADE"), nullable=False
     )
-    name = Column(String(50), nullable=False)
+    name = Column(String(150), nullable=False)
     region = Column(String(20), nullable=False)
     housing_category = Column(
         Enum(HousingCategoryEnum, values_callable=lambda obj: [e.value for e in obj]),
@@ -75,7 +75,7 @@ class PublicSaleModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    name_ts = Column(TSVECTOR().with_variant(String(50), "sqlite"), nullable=False)
+    name_ts = Column(TSVECTOR().with_variant(String(150), "sqlite"), nullable=True)
 
     # 1:1 relationship
     public_sale_photos = relationship(
