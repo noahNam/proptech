@@ -72,7 +72,7 @@ class HouseRepository:
             )
             raise NotUniqueErrorException
 
-    def update_interest_house(self, dto: InterestHouseModel) -> int:
+    def update_interest_house(self, dto: UpsertInterestHouseDto) -> int:
         filters = list()
         filters.append(InterestHouseModel.user_id == dto.user_id)
         filters.append(InterestHouseModel.house_id == dto.house_id)

@@ -130,7 +130,7 @@ class CreateUserUseCase(UserBaseUseCase):
         self._user_repo.create_receive_push_types(dto=dto)
 
         # 추천인 코드 생성
-        self._user_repo.create_recommend_code(dto=dto)
+        # self._user_repo.create_recommend_code(dto=dto)
 
         # 프로필 이미지 등록은 사용 X -> 다만 추후 사용 가능성 있기 때문에 주석으로 남겨둠
         # if dto.file:
