@@ -21,6 +21,7 @@ class PostEntity(BaseModel):
     category_detail_id: int
     title: str
     body: str = None
+    desc: str = None
     is_deleted: bool
     read_count: int
     post_attachments: List[PostAttachmentEntity] = None
