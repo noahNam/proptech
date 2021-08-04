@@ -41,6 +41,7 @@ from tests.seeder.factory import (
     PromotionHouseFactory,
     PromotionUsageCountFactory,
     PostAttachmentFactory,
+    RecommendCodeFactory,
 )
 
 MODEL_FACTORIES = [
@@ -73,6 +74,7 @@ MODEL_FACTORIES = [
     PromotionHouseFactory,
     PromotionUsageCountFactory,
     PromotionFactory,
+    RecommendCodeFactory,
     PostAttachmentFactory,
 ]
 

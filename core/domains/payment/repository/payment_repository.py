@@ -1,7 +1,8 @@
 from typing import Optional, List
 
 from sqlalchemy import exc, exists
-from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.orm import selectinload
+from strgen import StringGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
@@ -11,16 +12,17 @@ from app.persistence.model import (
     PromotionUsageCountModel,
     TicketModel,
     TicketTargetModel,
-    PromotionHouseModel,
+    PromotionHouseModel, RecommendCodeModel,
 )
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
     UseTicketDto,
     CreateUseTicketDto,
-    UpdateTicketUsageResultDto,
+    UpdateTicketUsageResultDto, UseRecommendCodeDto,
 )
-from core.domains.payment.entity.payment_entity import PromotionEntity
+from core.domains.payment.entity.payment_entity import PromotionEntity, RecommendCodeEntity
 from core.domains.payment.enum.payment_enum import TicketSignEnum
+from core.domains.user.dto.user_dto import CreateUserDto
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -40,8 +42,8 @@ class PaymentRepository:
     def is_ticket_usage(self, dto: UseTicketDto) -> bool:
         return session.query(
             exists()
-            .where(TicketUsageResultModel.public_house_id == dto.house_id)
-            .where(TicketUsageResultModel.user_id == dto.user_id)
+                .where(TicketUsageResultModel.public_house_id == dto.house_id)
+                .where(TicketUsageResultModel.user_id == dto.user_id)
         ).scalar()
 
     def get_promotion(self, dto: UseTicketDto) -> Optional[PromotionEntity]:
@@ -50,20 +52,20 @@ class PaymentRepository:
 
         query = (
             session.query(PromotionModel)
-            .join(
+                .join(
                 PromotionHouseModel,
                 PromotionModel.id == PromotionHouseModel.promotion_id,
                 isouter=True,
             )
-            .join(
+                .join(
                 PromotionUsageCountModel,
                 (PromotionModel.id == PromotionUsageCountModel.promotion_id)
                 & (PromotionUsageCountModel.user_id == dto.user_id),
                 isouter=True,
             )
-            .options(selectinload(PromotionModel.promotion_houses))
-            .options(selectinload(PromotionModel.promotion_usage_count))
-            .filter(*filters)
+                .options(selectinload(PromotionModel.promotion_houses))
+                .options(selectinload(PromotionModel.promotion_usage_count))
+                .filter(*filters)
         )
         promotion = query.first()
 
@@ -141,7 +143,7 @@ class PaymentRepository:
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[PaymentRepository][create_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {dto.promotion_id}, error : {e}"
+                f"[PaymentRepository][create_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {promotion_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T300")
 
@@ -158,7 +160,7 @@ class PaymentRepository:
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[PaymentRepository][update_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {dto.promotion_id}, error : {e}"
+                f"[PaymentRepository][update_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {promotion_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T400")
 
@@ -176,3 +178,55 @@ class PaymentRepository:
                 f"[PaymentRepository][create_ticket_target] user_id : {dto.user_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T500")
+
+    def create_recommend_code(self, dto: PaymentUserDto) -> str:
+        try:
+            code: str = self._make_recommend_code()
+            code_group = int(dto.user_id / 1000)
+
+            recommend_code = RecommendCodeModel(
+                user_id=dto.user_id, code_group=code_group, code=code, code_count=0, is_used=False,
+            )
+            session.add(recommend_code)
+            session.commit()
+
+            return str(code_group) + code
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[PaymentRepository][create_recommend_code] user_id : {dto.user_id}, error : {e}"
+            )
+            raise NotUniqueErrorException(type_="T009")
+
+    def _make_recommend_code(self):
+        return StringGenerator("[\l]{6}").render_list(1, unique=True)[0]
+
+    def get_recommend_code_by_user_id(self, dto: PaymentUserDto) -> Optional[RecommendCodeEntity]:
+        recommend_code = session.query(RecommendCodeModel).filter_by(user_id=dto.user_id).first()
+        if not recommend_code:
+            return None
+
+        return recommend_code.to_entity()
+
+    def get_recommend_code_by_code(self, code: str, code_group: int) -> Optional[RecommendCodeEntity]:
+        recommend_code = session.query(RecommendCodeModel).filter_by(code=code, code_group=code_group).first()
+        if not recommend_code:
+            return None
+
+        return recommend_code.to_entity()
+
+    def update_recommend_code(self, recommend_code: RecommendCodeEntity):
+        try:
+            filters = list()
+            filters.append(RecommendCodeModel.id == recommend_code.id)
+
+            session.query(RecommendCodeModel).filter(*filters).update(
+                {"code_count": RecommendCodeModel.code_count + 1}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[PaymentRepository][update_recommend_code] user_id : {recommend_code.user_id}, error : {e}"
+            )
+            raise Exception

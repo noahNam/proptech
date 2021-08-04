@@ -66,7 +66,7 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
 
 class UseBasicTicketUseCase(PaymentBaseUseCase):
     def execute(
-        self, dto: PaymentUserDto
+        self, dto: UseTicketDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -271,7 +271,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
 
     def _usage_promotion_ticket(
         self, dto: UseTicketDto, promotion: PromotionEntity
-    ) -> Optional[UseCaseFailureOutput]:
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
             # 티켓 사용 히스토리 생성 (tickets 스키마)
