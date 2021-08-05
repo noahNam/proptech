@@ -96,7 +96,7 @@ class GetRecommendCodeRequestSchema:
 class UseRecommendCodeRequestSchema:
     def __init__(self, user_id, code):
         self.user_id = int(user_id) if user_id else None
-        self.code = code.lower()
+        self.code = code.upper()
 
     def validate_request_and_make_dto(self):
         try:
