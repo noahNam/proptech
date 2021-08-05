@@ -33,3 +33,6 @@ from .promotion_house_model import PromotionHouseModel
 from .promotion_usage_count_model import PromotionUsageCountModel
 from .post_attachment_model import PostAttachmentModel
 from .recommend_code_model import RecommendCodeModel
+from .banner_model import BannerModel
+from .banner_image_model import BannerImageModel
+from .button_link_model import ButtonLinkModel
