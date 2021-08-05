@@ -190,7 +190,7 @@ class PaymentRepository:
             recommend_code = RecommendCodeModel(
                 user_id=user_id,
                 code_group=code_group,
-                code=code,
+                code=code.lower(),
                 code_count=0,
                 is_used=False,
             )
