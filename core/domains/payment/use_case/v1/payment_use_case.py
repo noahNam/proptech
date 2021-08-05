@@ -399,6 +399,14 @@ class UseRecommendCodeUseCase(PaymentBaseUseCase):
         # full_code -> code_group + code
         code_dict: dict = self._split_code_by_code_group(full_code=dto.code)
 
+        # 본인의 코드를 입력한 유저
+        if receiver_recommend_code.code == code_dict["code"]:
+            return UseCaseFailureOutput(
+                type="not available code",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
+            )
+
         provider_recommend_code: RecommendCodeEntity = self._payment_repo.get_recommend_code_by_code(
             code=code_dict["code"], code_group=code_dict["code_group"]
         )
