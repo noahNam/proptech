@@ -919,7 +919,7 @@ def test_use_recommend_code_when_code_already_been_all_used_then_return_failure_
     """
         만료된 코드(사용횟수가 2회 전부 사용)
     """
-    # 쿠폰 제공자, 수신자 set
+    # 쿠폰 제공자 set
     recommend_code = recommend_code_factory.build(
         user_id=create_users[0].id, is_used=True, code_count=2
     )
@@ -963,3 +963,29 @@ def test_use_recommend_code_when_code_already_been_all_used_then_return_failure_
     assert len(receiver_user.code) == 6
     assert receiver_user.code_group == 0
     assert receiver_user.code_count == 0
+
+
+def test_use_recommend_code_when_not_available_code_then_return_failure_output(
+    session, create_users, recommend_code_factory
+):
+    """
+        본인의 코드를 스스로 입력한 경우
+    """
+    # 쿠폰 제공자 set
+    recommend_code = recommend_code_factory.build(
+        user_id=create_users[0].id, is_used=False, code_count=0
+    )
+    session.add(recommend_code)
+    session.commit()
+
+    ##########################################################################
+
+    use_recommend_code_dto = UseRecommendCodeDto(
+        user_id=create_users[0].id,
+        code=str(recommend_code.code_group) + recommend_code.code,
+    )
+    result = UseRecommendCodeUseCase().execute(dto=use_recommend_code_dto)
+
+    assert isinstance(result, UseCaseFailureOutput)
+    assert result.value["type"] == "not available code"
+    assert result.value["message"] == "invalid_request_error"

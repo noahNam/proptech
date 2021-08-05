@@ -4,6 +4,14 @@ from unittest.mock import patch
 
 from flask import url_for
 
+from app.persistence.model import RecommendCodeModel, TicketModel
+from core.domains.payment.dto.payment_dto import PaymentUserDto
+from core.domains.payment.enum.payment_enum import (
+    TicketSignEnum,
+    TicketTypeDivisionEnum,
+)
+from core.domains.payment.use_case.v1.payment_use_case import CreateRecommendCodeUseCase
+
 
 def test_get_ticket_usage_result_view_then_return_usage_ticket_list(
     client,
@@ -240,3 +248,290 @@ def test_use_ticket_when_error_on_jarvis_then_failure(
     assert response.status_code == 500
     assert data["detail"] == 500
     assert data["message"] == "error on jarvis (usage_charged_ticket)"
+
+
+def test_create_recommend_code_view_then_return_recommend_code(
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+):
+    authorization = make_authorization(user_id=create_users[0].id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.post(
+            url_for("api/tanos.create_recommend_code_view"), headers=headers,
+        )
+
+    # data 검증 #############################################################
+    recommend_code = (
+        session.query(RecommendCodeModel)
+        .filter(RecommendCodeModel.user_id == create_users[0].id)
+        .first()
+    )
+    ########################################################################
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert len(data["recommend_code"]) == 7
+    assert (
+        data["recommend_code"] == str(recommend_code.code_group) + recommend_code.code
+    )
+
+
+def test_get_recommend_code_view_then_success(
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    recommend_code_factory,
+):
+    # 쿠폰 제공자 set
+    recommend_code = recommend_code_factory.build(
+        user_id=create_users[0].id, is_used=False, code_count=0
+    )
+    session.add(recommend_code)
+    session.commit()
+
+    authorization = make_authorization(user_id=create_users[0].id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_recommend_code_view"), headers=headers,
+        )
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert len(data["recommend_code"]) == 7
+    assert (
+        data["recommend_code"] == str(recommend_code.code_group) + recommend_code.code
+    )
+
+
+def test_get_recommend_code_view_then_failure(
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+):
+    authorization = make_authorization(user_id=create_users[0].id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    with test_request_context:
+        response = client.get(
+            url_for("api/tanos.get_recommend_code_view"), headers=headers,
+        )
+
+    data = response.get_json()
+    assert data["detail"] == "recommend code"
+    assert data["message"] == "not_found_error"
+
+
+def test_use_recommend_code_view_then_success(
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    recommend_code_factory,
+):
+    # 쿠폰 제공자 set
+    recommend_code = recommend_code_factory.build(
+        user_id=create_users[0].id, is_used=False, code_count=0
+    )
+    session.add(recommend_code)
+    session.commit()
+
+    authorization = make_authorization(user_id=create_users[1].id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    full_code = str(recommend_code.code_group) + recommend_code.code
+    with test_request_context:
+        response = client.post(
+            url_for("api/tanos.use_recommend_code_view", code=full_code),
+            headers=headers,
+        )
+
+    # data 검증 #############################################################
+    # 무료쿠폰 제공자
+    provider_user = (
+        session.query(RecommendCodeModel)
+        .filter(RecommendCodeModel.user_id == create_users[0].id)
+        .first()
+    )
+
+    # 무료쿠폰 사용자
+    receiver_user = (
+        session.query(RecommendCodeModel)
+        .filter(RecommendCodeModel.user_id == create_users[1].id)
+        .first()
+    )
+
+    # 티켓 히스토리
+    receiver_ticket = (
+        session.query(TicketModel)
+        .filter(TicketModel.user_id == create_users[1].id)
+        .first()
+    )
+    ########################################################################
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"] == "success"
+
+    assert provider_user.is_used is False
+    assert len(provider_user.code) == 6
+    assert provider_user.code_group == 0
+
+    assert receiver_user.code_count == 0
+    assert receiver_user.is_used is True
+    assert len(receiver_user.code) == 6
+    assert receiver_user.code_group == 0
+
+    assert provider_user.code != receiver_user.code
+
+    assert receiver_ticket.sign == TicketSignEnum.PLUS.value
+    assert receiver_ticket.type == TicketTypeDivisionEnum.SHARE_PROMOTION.value
+    assert receiver_ticket.amount == 1
+    assert receiver_ticket.is_active is True
+
+
+def test_use_recommend_code_view_when_user_already_used_code_then_failure(
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    recommend_code_factory,
+):
+    """
+        추천코드 입력하는 유저가 이미 추천 코드를 입력한 유저
+    """
+    # 쿠폰 제공자, 수신자 set
+    payment_provider_dto = PaymentUserDto(user_id=create_users[0].id)
+    CreateRecommendCodeUseCase().execute(dto=payment_provider_dto)
+
+    recommend_code = recommend_code_factory.build(
+        user_id=create_users[1].id, is_used=True
+    )
+    session.add(recommend_code)
+    session.commit()
+
+    authorization = make_authorization(user_id=create_users[1].id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    full_code = str(recommend_code.code_group) + recommend_code.code
+    with test_request_context:
+        response = client.post(
+            url_for("api/tanos.use_recommend_code_view", code=full_code),
+            headers=headers,
+        )
+
+    data = response.get_json()
+    assert response.status_code == 400
+    assert data["detail"] == "user already used code"
+    assert data["message"] == "invalid_request_error"
+
+
+def test_use_recommend_code_view_when_when_code_does_not_exist_user_already_used_code_then_failure(
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+):
+    """
+        존재하지 않는 추천 코드를 입력한 경우
+    """
+    # 쿠폰 제공자 set
+    payment_provider_dto = PaymentUserDto(user_id=create_users[0].id)
+    CreateRecommendCodeUseCase().execute(dto=payment_provider_dto)
+
+    authorization = make_authorization(user_id=create_users[1].id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    full_code = "0ABCDEF"
+    with test_request_context:
+        response = client.post(
+            url_for("api/tanos.use_recommend_code_view", code=full_code),
+            headers=headers,
+        )
+
+    data = response.get_json()
+    assert response.status_code == 404
+    assert data["detail"] == "code does not exist"
+    assert data["message"] == "not_found_error"
+
+
+def test_use_recommend_code_view_when_when_code_already_been_all_used_then_failure(
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    recommend_code_factory,
+):
+    """
+        만료된 코드(사용횟수가 2회 전부 사용)
+    """
+    # 쿠폰 제공자 set
+    recommend_code = recommend_code_factory.build(
+        user_id=create_users[0].id, is_used=True, code_count=2
+    )
+    session.add(recommend_code)
+    session.commit()
+
+    authorization = make_authorization(user_id=create_users[1].id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+
+    full_code = str(recommend_code.code_group) + recommend_code.code
+    with test_request_context:
+        response = client.post(
+            url_for("api/tanos.use_recommend_code_view", code=full_code),
+            headers=headers,
+        )
+
+    data = response.get_json()
+    assert response.status_code == 400
+    assert data["detail"] == "code already been all used"
+    assert data["message"] == "invalid_request_error"
