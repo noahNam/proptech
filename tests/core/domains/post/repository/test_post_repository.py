@@ -53,7 +53,7 @@ def test_get_post_list_repo_then_return_post_list(session, post_factory):
 
 
 def test_update_read_count_repo_when_read_post_then_read_count_plus_one(
-        session, create_users, post_factory
+    session, create_users, post_factory
 ):
     post = post_factory(
         article=True,

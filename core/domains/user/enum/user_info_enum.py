@@ -90,8 +90,8 @@ class NumberDependentsEnum(Enum):
 
 
 class IsChildEnum(Enum):
-    COND_CD = [1, 2, 3]
-    COND_NM = ["있어요(자녀 2명 이하)", "있어요(자녀 3명 이상)", "없어요"]
+    COND_CD = [1, 2, 3, 4]
+    COND_NM = ["자녀 1명", "자녀 2명", "자녀 3명 이상", "없어요"]
 
 
 class IsSubAccountEnum(Enum):

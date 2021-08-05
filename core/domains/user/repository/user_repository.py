@@ -93,7 +93,7 @@ class UserRepository:
 
     def create_device_token(self, dto: CreateUserDto, device_id) -> None:
         try:
-            device_token = DeviceTokenModel(device_id=device_id, token=dto.token, )
+            device_token = DeviceTokenModel(device_id=device_id, token=dto.token,)
             session.add(device_token)
             session.commit()
         except exc.IntegrityError as e:
@@ -174,8 +174,8 @@ class UserRepository:
     def is_user_info(self, dto: UpsertUserInfoDetailDto) -> bool:
         return session.query(
             exists()
-                .where(UserInfoModel.user_profile_id == dto.user_profile_id)
-                .where(UserInfoModel.code == dto.code)
+            .where(UserInfoModel.user_profile_id == dto.user_profile_id)
+            .where(UserInfoModel.code == dto.code)
         ).scalar()
 
     def create_user_nickname(self, dto: UpsertUserInfoDetailDto) -> int:
@@ -235,7 +235,7 @@ class UserRepository:
             ).update({"value": dto.value, "updated_at": get_server_timestamp()})
             session.commit()
 
-            return UserInfoResultEntity(code=dto.code, user_value=dto.value, )
+            return UserInfoResultEntity(code=dto.code, user_value=dto.value,)
         except Exception as e:
             session.rollback()
             logger.error(
@@ -282,12 +282,12 @@ class UserRepository:
         ]
 
     def get_user_info_by_code(
-            self, user_profile_id: int, code: int
+        self, user_profile_id: int, code: int
     ) -> Optional[UserInfoEntity]:
         user_info = (
             session.query(UserInfoModel)
-                .filter_by(user_profile_id=user_profile_id, code=code)
-                .first()
+            .filter_by(user_profile_id=user_profile_id, code=code)
+            .first()
         )
         if not user_info:
             return None
@@ -301,7 +301,7 @@ class UserRepository:
         return self._make_avg_monthly_income_worker_object(result)
 
     def _make_avg_monthly_income_worker_object(
-            self, result: AvgMonthlyIncomeWokrerModel
+        self, result: AvgMonthlyIncomeWokrerModel
     ) -> AvgMonthlyIncomeWokrerDto:
         return AvgMonthlyIncomeWokrerDto(
             three=result.three,
@@ -317,7 +317,7 @@ class UserRepository:
         return self._make_sido_codes_object(result, code)
 
     def _make_sido_codes_object(
-            self, result: List[SidoCodeModel], code: int
+        self, result: List[SidoCodeModel], code: int
     ) -> UserInfoCodeValueEntity:
         code_list = []
         name_list = []
@@ -349,7 +349,7 @@ class UserRepository:
             )
 
     def update_app_agree_terms_to_receive_marketing(
-            self, dto: UpdateReceiveNotificationSettingDto
+        self, dto: UpdateReceiveNotificationSettingDto
     ) -> None:
         try:
             session.query(AppAgreeTermsModel).filter_by(user_id=dto.user_id).update(
@@ -369,9 +369,9 @@ class UserRepository:
     def get_user_survey_step_and_ticket(self, dto: GetUserDto) -> UserEntity:
         query = (
             session.query(UserModel)
-                .options(joinedload(UserModel.user_profile))
-                .options(joinedload(UserModel.tickets).joinedload(TicketModel.ticket_type))
-                .filter(UserModel.id == dto.user_id)
+            .options(joinedload(UserModel.user_profile))
+            .options(joinedload(UserModel.tickets).joinedload(TicketModel.ticket_type))
+            .filter(UserModel.id == dto.user_id)
         )
         user = query.first()
         return user.to_entity()
@@ -393,13 +393,13 @@ class UserRepository:
     def get_survey_result(self, dto: GetUserDto) -> UserProfileEntity:
         query = (
             session.query(UserProfileModel)
-                .options(joinedload(UserProfileModel.survey_result))
-                .join(
+            .options(joinedload(UserProfileModel.survey_result))
+            .join(
                 UserInfoModel,
                 (UserProfileModel.id == UserInfoModel.user_profile_id)
                 & (UserInfoModel.code == CodeEnum.BIRTHDAY.value),
             )
-                .filter(UserProfileModel.user_id == dto.user_id)
+            .filter(UserProfileModel.user_id == dto.user_id)
         )
 
         user_profile = query.first()
@@ -420,7 +420,7 @@ class UserRepository:
         return user_profile.to_entity()
 
     def update_user_nickname_of_profile_setting(
-            self, dto: UpsertUserInfoDetailDto
+        self, dto: UpsertUserInfoDetailDto
     ) -> None:
         try:
             session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(

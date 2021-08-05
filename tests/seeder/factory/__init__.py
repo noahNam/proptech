@@ -62,7 +62,11 @@ from core.domains.notification.enum.notification_enum import (
     NotificationStatusEnum,
 )
 from core.domains.payment.enum.payment_enum import TicketSignEnum, PromotionTypeEnum
-from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum, PostCategoryDetailEnum
+from core.domains.post.enum.post_enum import (
+    PostTypeEnum,
+    PostCategoryEnum,
+    PostCategoryDetailEnum,
+)
 from core.domains.user.enum.user_enum import (
     UserTicketTypeDivisionEnum,
     UserTicketCreatedByEnum,

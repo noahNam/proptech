@@ -3,7 +3,9 @@ from typing import Dict, Union
 
 
 class UseCaseFailureOutput:
-    def __init__(self, type: Union[str, int], message: str = None, code: int = None) -> None:
+    def __init__(
+        self, type: Union[str, int], message: str = None, code: int = None
+    ) -> None:
         self.type = type
         self.message = self._format_message(message)
         self.code = code
