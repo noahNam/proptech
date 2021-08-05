@@ -19,24 +19,30 @@ class PostRepository:
         ).scalar()
 
     def get_post_list_include_contents(
-            self, dto: GetPostListDto
+        self, dto: GetPostListDto
     ) -> Union[List[PostEntity], List]:
         search_filter = list()
         search_filter.append(
             and_(
                 PostModel.is_deleted == False,
                 PostModel.category_id == dto.post_category,
-                PostModel.category_detail_id == dto.post_category_detail
+                PostModel.category_detail_id == dto.post_category_detail,
             )
         )
 
         try:
-            query = session.query(PostModel).filter(*search_filter).order_by(PostModel.id.desc())
+            query = (
+                session.query(PostModel)
+                .filter(*search_filter)
+                .order_by(PostModel.id.desc())
+            )
             post_list = query.all()
 
             return [post.to_entity() for post in post_list]
         except Exception as e:
-            logger.error(f"[PostRepository][get_post_list_include_contents] error : {e}")
+            logger.error(
+                f"[PostRepository][get_post_list_include_contents] error : {e}"
+            )
             return []
 
     def update_read_count(self, post_id: int) -> None:

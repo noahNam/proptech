@@ -282,8 +282,13 @@ def downgrade():
     op.drop_table("private_sales")
     op.drop_table("real_estates")
     op.drop_table("administrative_divisions")
-    op.drop_index(op.f("administrative_name_gin_varchar_idx"), table_name="administrative_divisions")
-    op.drop_index(op.f("administrative_name_gin_ts_idx"), table_name="administrative_divisions")
+    op.drop_index(
+        op.f("administrative_name_gin_varchar_idx"),
+        table_name="administrative_divisions",
+    )
+    op.drop_index(
+        op.f("administrative_name_gin_ts_idx"), table_name="administrative_divisions"
+    )
     op.drop_index(op.f("jubun_address_gin_varchar_idx"), table_name="real_estates")
     op.drop_index(op.f("jubun_address_gin_ts_idx"), table_name="real_estates")
     op.drop_index(op.f("road_address_gin_varchar_idx"), table_name="real_estates")

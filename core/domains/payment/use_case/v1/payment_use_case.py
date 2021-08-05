@@ -11,13 +11,18 @@ from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
     UseTicketDto,
     CreateTicketDto,
-    UpdateTicketUsageResultDto, UseRecommendCodeDto,
+    UpdateTicketUsageResultDto,
+    UseRecommendCodeDto,
 )
-from core.domains.payment.entity.payment_entity import PromotionEntity, RecommendCodeEntity
+from core.domains.payment.entity.payment_entity import (
+    PromotionEntity,
+    RecommendCodeEntity,
+)
 from core.domains.payment.enum.payment_enum import (
     TicketTypeDivisionEnum,
     TicketSignEnum,
-    PromotionTypeEnum, RecommendCodeMaxCountEnum,
+    PromotionTypeEnum,
+    RecommendCodeMaxCountEnum,
 )
 from core.domains.payment.repository.payment_repository import PaymentRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -31,7 +36,7 @@ class PaymentBaseUseCase:
 
 class GetTicketUsageResultUseCase(PaymentBaseUseCase):
     def execute(
-            self, dto: PaymentUserDto
+        self, dto: PaymentUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -54,7 +59,7 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _get_public_sales_of_ticket_usage(
-            self, public_house_ids: List[int]
+        self, public_house_ids: List[int]
     ) -> List[GetPublicSaleOfTicketUsageEntity]:
         send_message(
             topic_name=HouseTopicEnum.GET_PUBLIC_SALES_TO_TICKET_USAGE,
@@ -67,7 +72,7 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
 
 class UseBasicTicketUseCase(PaymentBaseUseCase):
     def execute(
-            self, dto: UseTicketDto
+        self, dto: UseTicketDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -218,7 +223,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
         return dict(type="failure", message=message)
 
     def _make_create_use_ticket_dto(
-            self, dto: UseTicketDto, type_: int, amount: int, sign: TicketSignEnum
+        self, dto: UseTicketDto, type_: int, amount: int, sign: TicketSignEnum
     ) -> CreateTicketDto:
         return CreateTicketDto(
             user_id=dto.user_id,
@@ -238,7 +243,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
         pass
 
     def _usage_charged_ticket(
-            self, dto: UseTicketDto
+        self, dto: UseTicketDto
     ) -> Optional[UseCaseFailureOutput]:
         response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
@@ -271,7 +276,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
         return None
 
     def _usage_promotion_ticket(
-            self, dto: UseTicketDto, promotion: PromotionEntity
+        self, dto: UseTicketDto, promotion: PromotionEntity
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
@@ -318,7 +323,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
 
 class CreateRecommendCodeUseCase(PaymentBaseUseCase):
     def execute(
-            self, dto: PaymentUserDto
+        self, dto: PaymentUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -339,7 +344,7 @@ class CreateRecommendCodeUseCase(PaymentBaseUseCase):
 
 class GetRecommendCodeUseCase(PaymentBaseUseCase):
     def execute(
-            self, dto: PaymentUserDto
+        self, dto: PaymentUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -364,7 +369,7 @@ class GetRecommendCodeUseCase(PaymentBaseUseCase):
 
 class UseRecommendCodeUseCase(PaymentBaseUseCase):
     def execute(
-            self, dto: UseRecommendCodeDto
+        self, dto: UseRecommendCodeDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -374,7 +379,8 @@ class UseRecommendCodeUseCase(PaymentBaseUseCase):
             )
 
         receiver_recommend_code: RecommendCodeEntity = self._payment_repo.get_recommend_code_by_user_id(
-            user_id=dto.user_id)
+            user_id=dto.user_id
+        )
 
         # 추천코드 입력하는 유저가 본인의 코드 정보가 없다면 recommend_codes 스키마를 생성해준다. -> recommend_codes 에서 추천코드 관리를 하기 때문에
         if not receiver_recommend_code:
@@ -394,7 +400,7 @@ class UseRecommendCodeUseCase(PaymentBaseUseCase):
         code_dict: dict = self._split_code_by_code_group(full_code=dto.code)
 
         provider_recommend_code: RecommendCodeEntity = self._payment_repo.get_recommend_code_by_code(
-            code=code_dict['code'], code_group=code_dict['code_group']
+            code=code_dict["code"], code_group=code_dict["code_group"]
         )
 
         # 존재하지 않는 추천 코드
@@ -406,7 +412,10 @@ class UseRecommendCodeUseCase(PaymentBaseUseCase):
             )
 
         # 만료된 코드(사용횟수가 2회 전부 사용)
-        if provider_recommend_code.code_count >= RecommendCodeMaxCountEnum.MAX_COUNT.value:
+        if (
+            provider_recommend_code.code_count
+            >= RecommendCodeMaxCountEnum.MAX_COUNT.value
+        ):
             return UseCaseFailureOutput(
                 type="code already been all used",
                 message=FailureType.INVALID_REQUEST_ERROR,
@@ -423,10 +432,14 @@ class UseRecommendCodeUseCase(PaymentBaseUseCase):
         self._payment_repo.create_ticket(dto=create_use_ticket_dto)
 
         # 추천 티켓 사용 카운트 +1
-        self._payment_repo.update_recommend_code_count(recommend_code=provider_recommend_code)
+        self._payment_repo.update_recommend_code_count(
+            recommend_code=provider_recommend_code
+        )
 
         # 무료 코드 사용 상태 업데이트(Receiver)
-        self._payment_repo.update_recommend_code_is_used(recommend_code=receiver_recommend_code)
+        self._payment_repo.update_recommend_code_is_used(
+            recommend_code=receiver_recommend_code
+        )
 
         return UseCaseSuccessOutput()
 
@@ -436,7 +449,7 @@ class UseRecommendCodeUseCase(PaymentBaseUseCase):
         return dict(code=full_code.split(code_group)[1], code_group=code_group)
 
     def _make_create_use_ticket_dto(
-            self, dto: UseRecommendCodeDto, type_: int, amount: int, sign: TicketSignEnum
+        self, dto: UseRecommendCodeDto, type_: int, amount: int, sign: TicketSignEnum
     ) -> CreateTicketDto:
         return CreateTicketDto(
             user_id=dto.user_id,
