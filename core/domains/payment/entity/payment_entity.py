@@ -73,6 +73,7 @@ class PromotionEntity(BaseModel):
 class RecommendCodeEntity(BaseModel):
     id: int
     user_id: int
+    code_group: int
     code: str
     code_count: int
     is_used: bool

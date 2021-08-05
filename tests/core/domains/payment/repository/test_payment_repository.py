@@ -12,7 +12,7 @@ from app.persistence.model import (
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
     UseTicketDto,
-    CreateUseTicketDto,
+    CreateTicketDto,
     UpdateTicketUsageResultDto,
 )
 from core.domains.payment.entity.payment_entity import PromotionEntity, RecommendCodeEntity
@@ -118,7 +118,7 @@ def test_get_number_of_ticket_then_return_0(session, create_users):
 
 
 def test_create_ticket_then_return_ticket_id_is_1(session, create_users):
-    dto = CreateUseTicketDto(
+    dto = CreateTicketDto(
         user_id=create_users[0].id,
         type=2,
         amount=1,
@@ -214,11 +214,11 @@ def test_create_recommend_code_then_return_code_group_is_0_and_code_length_is_6(
         user_id=1
     )
 
-    code = PaymentRepository().create_recommend_code(dto=dto)
+    recommend_code: RecommendCodeEntity = PaymentRepository().create_recommend_code(user_id=dto.user_id)
     result = session.query(RecommendCodeModel).filter_by(user_id=dto.user_id).first()
 
-    assert len(code) == 7
-    assert isinstance(code, str)
+    assert len(recommend_code.code) == 6
+    assert isinstance(recommend_code.code, str)
     assert result.code_group == 0
     assert len(result.code) == 6
 
@@ -228,8 +228,8 @@ def test_get_recommend_code_when_by_user_id_then_return_recommend_code_entity(se
         user_id=1
     )
 
-    PaymentRepository().create_recommend_code(dto=dto)
-    result: RecommendCodeEntity = PaymentRepository().get_recommend_code_by_user_id(dto=dto)
+    PaymentRepository().create_recommend_code(user_id=dto.user_id)
+    result: RecommendCodeEntity = PaymentRepository().get_recommend_code_by_user_id(user_id=dto.user_id)
     assert isinstance(result, RecommendCodeEntity)
 
 
@@ -242,7 +242,7 @@ def test_get_recommend_code_when_by_code_then_return_recommend_code_entity(sessi
         user_id=recommend_code.user_id
     )
 
-    PaymentRepository().create_recommend_code(dto=dto)
+    PaymentRepository().create_recommend_code(user_id=dto.user_id)
 
     result: RecommendCodeEntity = PaymentRepository().get_recommend_code_by_code(code=recommend_code.code,
                                                                                  code_group=recommend_code.code_group)
@@ -257,21 +257,12 @@ def test_update_recommend_code_then_code_count_plus_one(session, recommend_code_
     recommend_code = RecommendCodeEntity(
         id=recommend_code.id,
         user_id=recommend_code.user_id,
+        code_group=recommend_code.code_group,
         code=recommend_code.code,
         code_count=recommend_code.code_count,
         is_used=True
     )
-    PaymentRepository().update_recommend_code(recommend_code=recommend_code)
+    PaymentRepository().update_recommend_code_count(recommend_code=recommend_code)
     result = session.query(RecommendCodeModel).filter_by(user_id=recommend_code.user_id).first()
 
     assert result.code_count == recommend_code.code_count + 1
-
-    # code_group = int(1110000 / 1000)
-    # code = StringGenerator("[\l]{6}").render_list(1, unique=True)[0]
-    #
-    # result = str(code_group) + code
-    # print(type(result))
-    #
-    # a = re.findall("\d", result)
-    # print(code_group)
-    # print(a)
