@@ -613,7 +613,7 @@ class RecommendCodeFactory(BaseFactory):
         model = RecommendCodeModel
 
     user_id = 1
-    code_group = user_id / 1000
+    code_group = int(user_id / 1000)
     code = StringGenerator("[\l]{6}").render_list(1, unique=True)[0]
     code_count = 0
     is_used = False

@@ -17,12 +17,11 @@ from app.persistence.model import (
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
     UseTicketDto,
-    CreateUseTicketDto,
-    UpdateTicketUsageResultDto, UseRecommendCodeDto,
+    CreateTicketDto,
+    UpdateTicketUsageResultDto,
 )
 from core.domains.payment.entity.payment_entity import PromotionEntity, RecommendCodeEntity
 from core.domains.payment.enum.payment_enum import TicketSignEnum
-from core.domains.user.dto.user_dto import CreateUserDto
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -92,7 +91,7 @@ class PaymentRepository:
 
         return 0 if total_amount < 0 else total_amount
 
-    def create_ticket(self, dto: CreateUseTicketDto) -> int:
+    def create_ticket(self, dto: CreateTicketDto) -> int:
         try:
             ticket = TicketModel(
                 user_id=dto.user_id,
@@ -179,30 +178,30 @@ class PaymentRepository:
             )
             raise NotUniqueErrorException(type_="T500")
 
-    def create_recommend_code(self, dto: PaymentUserDto) -> str:
+    def create_recommend_code(self, user_id: int) -> RecommendCodeEntity:
         try:
             code: str = self._make_recommend_code()
-            code_group = int(dto.user_id / 1000)
+            code_group = int(user_id / 1000)
 
             recommend_code = RecommendCodeModel(
-                user_id=dto.user_id, code_group=code_group, code=code, code_count=0, is_used=False,
+                user_id=user_id, code_group=code_group, code=code, code_count=0, is_used=False,
             )
             session.add(recommend_code)
             session.commit()
 
-            return str(code_group) + code
+            return recommend_code.to_entity()
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
-                f"[PaymentRepository][create_recommend_code] user_id : {dto.user_id}, error : {e}"
+                f"[PaymentRepository][create_recommend_code] user_id : {user_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T009")
 
     def _make_recommend_code(self):
         return StringGenerator("[\l]{6}").render_list(1, unique=True)[0]
 
-    def get_recommend_code_by_user_id(self, dto: PaymentUserDto) -> Optional[RecommendCodeEntity]:
-        recommend_code = session.query(RecommendCodeModel).filter_by(user_id=dto.user_id).first()
+    def get_recommend_code_by_user_id(self, user_id: int) -> Optional[RecommendCodeEntity]:
+        recommend_code = session.query(RecommendCodeModel).filter_by(user_id=user_id).first()
         if not recommend_code:
             return None
 
@@ -215,7 +214,7 @@ class PaymentRepository:
 
         return recommend_code.to_entity()
 
-    def update_recommend_code(self, recommend_code: RecommendCodeEntity):
+    def update_recommend_code_count(self, recommend_code: RecommendCodeEntity):
         try:
             filters = list()
             filters.append(RecommendCodeModel.id == recommend_code.id)
@@ -227,6 +226,22 @@ class PaymentRepository:
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[PaymentRepository][update_recommend_code] user_id : {recommend_code.user_id}, error : {e}"
+                f"[PaymentRepository][update_recommend_code_count] user_id : {recommend_code.user_id}, error : {e}"
+            )
+            raise Exception
+
+    def update_recommend_code_is_used(self, recommend_code: RecommendCodeEntity):
+        try:
+            filters = list()
+            filters.append(RecommendCodeModel.id == recommend_code.id)
+
+            session.query(RecommendCodeModel).filter(*filters).update(
+                {"is_used": True}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[PaymentRepository][update_recommend_code_is_used] user_id : {recommend_code.user_id}, error : {e}"
             )
             raise Exception

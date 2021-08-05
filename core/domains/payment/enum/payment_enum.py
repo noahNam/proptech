@@ -23,7 +23,7 @@ class TicketTypeDivisionEnum(Enum):
     """
         사용모델 : TicketTypeModel
         sign (+)
-            JOIN_PROMOTION -> 회원가입 시 티켓을 공짜로 주는 프로모션
+            SHARE_PROMOTION -> 추천 코드 공유시 티켓을 공짜로 주는 프로모션
             CHARGED -> 결제로 인해 쌓이는 티켓
         sign (-)
             REFUND -> 티켓 환불
@@ -35,8 +35,17 @@ class TicketTypeDivisionEnum(Enum):
                 -> ticket_usage_results.ticket_id update에 필요
     """
 
-    JOIN_PROMOTION = 1
+    SHARE_PROMOTION = 1
     CHARGED = 2
     REFUND = 3
     USED_TICKET = 4
     USED_PROMOTION = 5
+
+
+class RecommendCodeMaxCountEnum(Enum):
+    """
+        사용모델 : RecommendCodeModel
+        추천코드 만료 사용 횟수
+    """
+
+    MAX_COUNT = 2

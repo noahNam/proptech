@@ -25,6 +25,7 @@ class RecommendCodeModel(db.Model):
         return RecommendCodeEntity(
             id=self.id,
             user_id=self.user_id,
+            code_group=self.code_group,
             code=self.code,
             code_count=self.code_count,
             is_used=self.is_used,

@@ -10,7 +10,7 @@ class UseTicketDto(BaseModel):
     house_id: int
 
 
-class CreateUseTicketDto(BaseModel):
+class CreateTicketDto(BaseModel):
     user_id: int
     type: int
     amount: int
