@@ -3,7 +3,8 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    SmallInteger, Boolean,
+    SmallInteger,
+    Boolean,
 )
 from app import db
 from core.domains.payment.entity.payment_entity import RecommendCodeEntity
