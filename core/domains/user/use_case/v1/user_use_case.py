@@ -104,7 +104,7 @@ class UserBaseUseCase:
 
 class GetUserUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         user: UserEntity = self._user_repo.get_user(user_id=dto.user_id)
 
@@ -113,7 +113,7 @@ class GetUserUseCase(UserBaseUseCase):
 
 class CreateUserUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateUserDto
+        self, dto: CreateUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -151,7 +151,7 @@ class CreateUserUseCase(UserBaseUseCase):
 
 class CreateAppAgreeTermsUseCase(UserBaseUseCase):
     def execute(
-            self, dto: CreateAppAgreeTermsDto
+        self, dto: CreateAppAgreeTermsDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -171,7 +171,7 @@ class CreateAppAgreeTermsUseCase(UserBaseUseCase):
 
 class UpsertUserInfoUseCase(UserBaseUseCase):
     def execute(
-            self, dto: UpsertUserInfoDto
+        self, dto: UpsertUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -215,9 +215,13 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                 self._user_repo.update_user_info(dto=detail_dto)
 
                 # chain update (하위 질문 초기화)
-                chain_codes: List[int] = self._make_chain_update_user_info(dto=detail_dto)
+                chain_codes: List[int] = self._make_chain_update_user_info(
+                    dto=detail_dto
+                )
                 if chain_codes:
-                    self._user_repo.update_chain_user_info(user_profile_id=detail_dto.user_profile_id, codes=chain_codes)
+                    self._user_repo.update_chain_user_info(
+                        user_profile_id=detail_dto.user_profile_id, codes=chain_codes
+                    )
 
             # 마지막으로 진행한 설문 단계 저장
             self._user_repo.update_last_code_to_user_info(dto=detail_dto)
@@ -242,9 +246,16 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
         return UseCaseSuccessOutput()
 
-    def _make_chain_update_user_info(self, dto: UpsertUserInfoDetailDto) -> Optional[List[int]]:
-        chain_parent = [CodeEnum.IS_HOUSE_OWNER.value, CodeEnum.IS_MARRIED.value, CodeEnum.IS_CHILD.value,
-                        CodeEnum.IS_SUB_ACCOUNT.value, CodeEnum.IS_SUPPORT_PARENT.value]
+    def _make_chain_update_user_info(
+        self, dto: UpsertUserInfoDetailDto
+    ) -> Optional[List[int]]:
+        chain_parent = [
+            CodeEnum.IS_HOUSE_OWNER.value,
+            CodeEnum.IS_MARRIED.value,
+            CodeEnum.IS_CHILD.value,
+            CodeEnum.IS_SUB_ACCOUNT.value,
+            CodeEnum.IS_SUPPORT_PARENT.value,
+        ]
         if dto.code not in chain_parent:
             return None
 
@@ -262,9 +273,16 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
         chain_child_dict = {
             "1005": [CodeEnum.SELL_HOUSE_DATE.value],
             "1008": [CodeEnum.MARRIAGE_REG_DATE.value],
-            "1011": [CodeEnum.CHILD_AGE_SIX.value, CodeEnum.CHILD_AGE_NINETEEN.value, CodeEnum.CHILD_AGE_TWENTY.value],
-            "1016": [CodeEnum.SUB_ACCOUNT_DATE.value, CodeEnum.SUB_ACCOUNT_TIMES.value,
-                     CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value],
+            "1011": [
+                CodeEnum.CHILD_AGE_SIX.value,
+                CodeEnum.CHILD_AGE_NINETEEN.value,
+                CodeEnum.CHILD_AGE_TWENTY.value,
+            ],
+            "1016": [
+                CodeEnum.SUB_ACCOUNT_DATE.value,
+                CodeEnum.SUB_ACCOUNT_TIMES.value,
+                CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value,
+            ],
             "1024": [CodeEnum.SUPPORT_PARENT_DATE.value],
         }
 
@@ -289,7 +307,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
 class GetUserInfoUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserInfoDto
+        self, dto: GetUserInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -316,7 +334,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
         return UseCaseSuccessOutput(value=user_info_result_entity)
 
     def _make_empty_object(
-            self, user_infos: List[UserInfoEntity], dto: GetUserInfoDto
+        self, user_infos: List[UserInfoEntity], dto: GetUserInfoDto
     ) -> None:
         if dto.survey_step == 1:
             # 1단계 설문 데이터 조회
@@ -338,7 +356,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
         user_infos.extend(empty_user_info_entity)
 
     def _bind_detail_code_values(
-            self, user_infos: List[UserInfoEntity],
+        self, user_infos: List[UserInfoEntity],
     ) -> List[UserInfoResultEntity]:
         results = list()
         for user_info in user_infos:
@@ -445,7 +463,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
 
 class UserOutUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -461,7 +479,7 @@ class UserOutUseCase(UserBaseUseCase):
 
 class GetUserMainUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
         ticket은 tickets 스키마의 sum(amount)로 가져온다. -> 안정성을 위해
@@ -499,7 +517,7 @@ class GetUserMainUseCase(UserBaseUseCase):
 
 class GetSurveyResultUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -542,7 +560,7 @@ class GetSurveyResultUseCase(UserBaseUseCase):
 
 class GetUserProfileUseCase(UserBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -559,7 +577,7 @@ class GetUserProfileUseCase(UserBaseUseCase):
 
 class UpdateUserProfileUseCase(UserBaseUseCase):
     def execute(
-            self, dto: UpdateUserProfileDto
+        self, dto: UpdateUserProfileDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
