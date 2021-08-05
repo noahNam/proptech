@@ -1,19 +1,21 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
-
-from core.domains.house.entity.house_entity import GetPublicSaleOfTicketUsageEntity
+from pydantic import BaseModel, StrictStr, StrictInt
 
 
 class GetTicketUsageResultBaseSchema(BaseModel):
-    house_id: int
-    name: str
-    image_path: Optional[str]
+    house_id: StrictInt
+    name: StrictStr
+    image_path: Optional[StrictStr]
 
 
 class UseBasicTicketBaseSchema(BaseModel):
-    type: str
-    message: str
+    type: StrictStr
+    message: StrictStr
+
+
+class GetRecommendCodeBaseSchema(BaseModel):
+    code: StrictStr
 
 
 class GetTicketUsageResultResponseSchema(BaseModel):
@@ -22,3 +24,15 @@ class GetTicketUsageResultResponseSchema(BaseModel):
 
 class UseBasicTicketResponseSchema(BaseModel):
     ticket_usage_result: UseBasicTicketBaseSchema
+
+
+class CreateRecommendCodeResponseSchema(BaseModel):
+    recommend_code: StrictStr
+
+
+class GetRecommendCodeResponseSchema(BaseModel):
+    recommend_code: StrictStr
+
+
+class UseRecommendCodeResponseSchema(BaseModel):
+    result: StrictStr
