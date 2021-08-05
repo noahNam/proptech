@@ -212,15 +212,13 @@ class UserRepository:
             )
             raise Exception
 
-    def create_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoResultEntity:
+    def create_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
             user_info = UserInfoModel(
                 user_profile_id=dto.user_profile_id, code=dto.code, value=dto.value
             )
             session.add(user_info)
             session.commit()
-
-            return user_info.to_result_entity()
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
@@ -228,18 +226,30 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T008")
 
-    def update_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoResultEntity:
+    def update_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
             session.query(UserInfoModel).filter_by(
                 user_profile_id=dto.user_profile_id, code=dto.code
             ).update({"value": dto.value, "updated_at": get_server_timestamp()})
             session.commit()
-
-            return UserInfoResultEntity(code=dto.code, user_value=dto.value,)
         except Exception as e:
             session.rollback()
             logger.error(
                 f"[UserRepository][update_user_info] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
+
+    def update_chain_user_info(self, user_profile_id: int, codes: list) -> None:
+        try:
+            session.query(UserInfoModel).filter(
+                UserInfoModel.user_profile_id == user_profile_id,
+                UserInfoModel.code.in_(codes),
+            ).update({"value": None, "updated_at": get_server_timestamp()})
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_chain_user_info] user_profile_id : {user_profile_id} error : {e}"
             )
             raise Exception
 

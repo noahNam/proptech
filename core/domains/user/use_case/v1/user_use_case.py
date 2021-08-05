@@ -14,7 +14,6 @@ from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.notification.dto.notification_dto import GetBadgeDto
 from core.domains.notification.enum import NotificationTopicEnum
-from core.domains.payment.enum import PaymentTopicEnum
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateUserProfileImgDto,
@@ -208,26 +207,88 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                     self._user_repo.update_user_nickname(dto=detail_dto)
 
             detail_dto.user_profile_id = user_profile_id
+            chain_codes = list()
+
             if not self._user_repo.is_user_info(dto=detail_dto):
-                user_info: UserInfoResultEntity = self._user_repo.create_user_info(
-                    dto=detail_dto
-                )
+                self._user_repo.create_user_info(dto=detail_dto)
             else:
-                user_info: UserInfoResultEntity = self._user_repo.update_user_info(
+                self._user_repo.update_user_info(dto=detail_dto)
+
+                # chain update (하위 질문 초기화)
+                chain_codes: List[int] = self._make_chain_update_user_info(
                     dto=detail_dto
                 )
+                if chain_codes:
+                    self._user_repo.update_chain_user_info(
+                        user_profile_id=detail_dto.user_profile_id, codes=chain_codes
+                    )
 
             # 마지막으로 진행한 설문 단계 저장
             self._user_repo.update_last_code_to_user_info(dto=detail_dto)
 
             # SQS Data 전송 -> Data Lake
-            if user_info.user_value:
+            if detail_dto.value:
                 msg: SenderDto = self._make_sqs_send_message(dto=detail_dto)
                 self._send_sqs_message(
                     queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg
                 )
 
+            if chain_codes:
+                for code in chain_codes:
+                    # chain update (하위 질문 초기화)
+                    detail_dto.code = code
+                    detail_dto.value = None
+
+                    msg: SenderDto = self._make_sqs_send_message(dto=detail_dto)
+                    self._send_sqs_message(
+                        queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg
+                    )
+
         return UseCaseSuccessOutput()
+
+    def _make_chain_update_user_info(
+        self, dto: UpsertUserInfoDetailDto
+    ) -> Optional[List[int]]:
+        chain_parent = [
+            CodeEnum.IS_HOUSE_OWNER.value,
+            CodeEnum.IS_MARRIED.value,
+            CodeEnum.IS_CHILD.value,
+            CodeEnum.IS_SUB_ACCOUNT.value,
+            CodeEnum.IS_SUPPORT_PARENT.value,
+        ]
+        if dto.code not in chain_parent:
+            return None
+
+        update_value_dict = {
+            "1005": ["1", "2"],  # "있어요", "없어요", "과거에 있었지만 현재는 처분했어요"
+            "1008": ["3", "4"],  # "기혼(외벌이)", "기혼(맞벌이)", "미혼", "한부모"
+            "1011": ["4"],  # "자녀 1명", "자녀 2명", "자녀 3명 이상", "없어요"
+            "1016": ["2"],  # "있어요", "없어요"
+            "1024": ["2"],  # "예", "아니요"
+        }
+        update_value_bind_code = update_value_dict.get(str(dto.code))
+        if dto.value not in update_value_bind_code:
+            return None
+
+        chain_child_dict = {
+            "1005": [CodeEnum.SELL_HOUSE_DATE.value],
+            "1008": [CodeEnum.MARRIAGE_REG_DATE.value],
+            "1011": [
+                CodeEnum.CHILD_AGE_SIX.value,
+                CodeEnum.CHILD_AGE_NINETEEN.value,
+                CodeEnum.CHILD_AGE_TWENTY.value,
+            ],
+            "1016": [
+                CodeEnum.SUB_ACCOUNT_DATE.value,
+                CodeEnum.SUB_ACCOUNT_TIMES.value,
+                CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value,
+            ],
+            "1024": [CodeEnum.SUPPORT_PARENT_DATE.value],
+        }
+
+        codes = chain_child_dict.get(str(dto.code))
+
+        return codes
 
     def _make_sqs_send_message(self, dto: UpsertUserInfoDetailDto) -> SenderDto:
         send_user_info_to_lake_dto = SendUserInfoToLakeDto(
