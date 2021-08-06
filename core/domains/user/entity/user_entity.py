@@ -113,26 +113,6 @@ class UserEntity(BaseModel):
 
         return 0 if total_amount < 0 else total_amount
 
-    @property
-    def survey_step(self) -> int:
-        if not self.user_profile:
-            return UserSurveyStepEnum.STEP_NO.value
-
-        if self.user_profile.last_update_code == CodeStepEnum.COMPLETE_ONE.value:
-            # 1단계 마지막 설문 완료 시 설문단계 = 2단계 진행중으로 내려줌
-            return UserSurveyStepEnum.STEP_TWO.value
-
-        if self.user_profile.last_update_code == CodeStepEnum.COMPLETE_TWO.value:
-            # 2단계 마지막 설문 완료 시 설문단계 = 설문완료로 내려줌
-            return UserSurveyStepEnum.STEP_COMPLETE.value
-
-        if self.user_profile.last_update_code in CodeStepEnum.ONE.value:
-            # 1단계 진행중
-            return UserSurveyStepEnum.STEP_ONE.value
-        elif self.user_profile.last_update_code in CodeStepEnum.TWO.value:
-            # 2단계 진행중
-            return UserSurveyStepEnum.STEP_TWO.value
-
 
 class RecentlyViewEntity(BaseModel):
     id: int

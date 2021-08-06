@@ -543,8 +543,9 @@ class GetUserMainUseCase(UserBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _make_result_object(self, user: UserEntity, is_badge: bool):
+        survey_step = user.user_profile.survey_step if user.user_profile else UserSurveyStepEnum.STEP_NO.value
         return dict(
-            survey_step=user.survey_step, tickets=user.total_amount, is_badge=is_badge
+            survey_step=survey_step, tickets=user.total_amount, is_badge=is_badge
         )
 
     def _get_badge(self, dto: GetUserDto) -> bool:
