@@ -33,7 +33,7 @@ from core.domains.user.entity.user_entity import (
     UserProfileEntity,
     UserInfoResultEntity,
 )
-from core.domains.user.enum.user_enum import UserSqsTypeEnum
+from core.domains.user.enum.user_enum import UserSqsTypeEnum, UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import (
     IsHouseOwnerCodeEnum,
     IsHouseHolderCodeEnum,
@@ -180,7 +180,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
             user_id=dto.user_id
         )
 
@@ -192,21 +192,21 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
         for idx in range(len(dto.codes)):
             detail_dto = UpsertUserInfoDetailDto(
                 user_id=dto.user_id,
-                user_profile_id=user_profile_id,
+                user_profile_id=user_profile.id if user_profile else None,
                 code=dto.codes[idx],
                 value=dto.values[idx] if dto.values else None,
             )
 
             if detail_dto.code == CodeEnum.NICKNAME.value:
                 # code==1000 (설문 시작 후 닉네임 생성 시) -> user_profiles 갱신
-                if not user_profile_id:
+                if not user_profile:
                     user_profile_id: int = self._user_repo.create_user_nickname(
                         dto=detail_dto
                     )
+                    detail_dto.user_profile_id = user_profile_id
                 else:
                     self._user_repo.update_user_nickname(dto=detail_dto)
 
-            detail_dto.user_profile_id = user_profile_id
             chain_codes = list()
 
             if not self._user_repo.is_user_info(dto=detail_dto):
@@ -223,8 +223,15 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                         user_profile_id=detail_dto.user_profile_id, codes=chain_codes
                     )
 
-            # 마지막으로 진행한 설문 단계 저장
-            self._user_repo.update_last_code_to_user_info(dto=detail_dto)
+            # 설문 단계 조회
+            survey_step: Optional[int] = self._get_survey_step(
+                dto=detail_dto, user_profile=user_profile
+            )
+
+            # 마지막으로 진행한 설문 질문 저장
+            self._user_repo.update_last_code_to_user_info(
+                dto=detail_dto, survey_step=survey_step
+            )
 
             # SQS Data 전송 -> Data Lake
             if detail_dto.value:
@@ -245,6 +252,42 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                     )
 
         return UseCaseSuccessOutput()
+
+    def _get_survey_step(
+        self, dto: UpsertUserInfoDetailDto, user_profile: Optional[UserProfileEntity]
+    ) -> Optional[int]:
+        """
+            ** 큰 틀은 2단계 설문 진행중이 유저가 1단계 설문의 어떤 질문을 재 수정하더라도 survey_step은 최종단계를 유지. 즉, 작아질 수는 없다.
+            1. get_user_profile -> survey_step 가져옴
+            2. survey_step이 null 이면 설문작성을 이제 시작했으므로 UserSurveyStepEnum.STEP_ONE(1 단계 진행중)로 변경
+
+            3. survey_step이 1이고, dto.code가 1016, dto.value가 2(없어요)이면 UserSurveyStepEnum.STEP_TWO(2 단계 진행중)로 변경
+            4. survey_step이 1이고, dto.code가 1016, dto.value가 1(있어요)이면 UserSurveyStepEnum.STEP_ONE(1 단계 진행중)을 유지
+            5. survey_step이 1이고, dto.code가 1019 이면 UserSurveyStepEnum.STEP_TWO(2 단계 진행중)로 변경
+
+            6. survey_step가 2이고 dto.code가 1026이면 설문 완료
+            7. survey_step이 이미 설문완료이면 변화 없음
+        """
+        if not user_profile:
+            return UserSurveyStepEnum.STEP_ONE.value
+
+        survey_step = user_profile.survey_step
+
+        if survey_step == UserSurveyStepEnum.STEP_ONE.value:
+            # survey_step이 1이고, dto.code가 1016, dto.value가 2(없어요)이면 UserSurveyStepEnum.STEP_TWO(2 단계 진행중)로 변경
+            if dto.code == CodeEnum.IS_SUB_ACCOUNT.value and dto.value == "2":
+                return UserSurveyStepEnum.STEP_TWO.value
+
+            # survey_step이 1이고, dto.code가 1019 이면 UserSurveyStepEnum.STEP_TWO(2 단계 진행중)로 변경
+            if dto.code == CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value:
+                return UserSurveyStepEnum.STEP_TWO.value
+
+        elif survey_step == UserSurveyStepEnum.STEP_TWO.value:
+            # survey_step가 2이고 dto.code가 1026이면 설문 완료
+            if dto.code == CodeEnum.SPECIAL_COND.value:
+                return UserSurveyStepEnum.STEP_COMPLETE.value
+
+        return None
 
     def _make_chain_update_user_info(
         self, dto: UpsertUserInfoDetailDto
@@ -316,10 +359,10 @@ class GetUserInfoUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
             user_id=dto.user_id
         )
-        dto.user_profile_id = user_profile_id
+        dto.user_profile_id = user_profile.id if user_profile else None
 
         user_info_entity: List[
             UserInfoEntity
@@ -437,10 +480,18 @@ class GetUserInfoUseCase(UserBaseUseCase):
                     my_basic_income = income_result_dict.get("1")
                     monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value
 
-                for percentage_num in monthly_income_enum:
-                    income_by_segment = (int(my_basic_income) * percentage_num) / 100
-                    income_by_segment = round(income_by_segment)
-                    calc_result_list.append(income_by_segment)
+                income_by_segment = None
+                for idx_, percentage_num in enumerate(monthly_income_enum):
+                    if idx_ == len(monthly_income_enum) - 1:
+                        income_by_segment = str(income_by_segment) + "원 초과"
+                        calc_result_list.append(income_by_segment)
+                    else:
+                        income_by_segment = (
+                            int(my_basic_income) * percentage_num
+                        ) / 100
+                        income_by_segment = format(round(income_by_segment), ",d")
+                        result_income_by_segment = str(income_by_segment) + "원 이하"
+                        calc_result_list.append(result_income_by_segment)
 
                 user_info_code_value_entity = UserInfoCodeValueEntity()
 
@@ -505,8 +556,18 @@ class GetUserMainUseCase(UserBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _make_result_object(self, user: UserEntity, is_badge: bool):
+        survey_step = (
+            user.user_profile.survey_step
+            if user.user_profile
+            else UserSurveyStepEnum.STEP_NO.value
+        )
+        nickname = user.user_profile.nickname if user.user_profile else None
+
         return dict(
-            survey_step=user.survey_step, tickets=user.total_amount, is_badge=is_badge
+            survey_step=survey_step,
+            tickets=user.total_amount,
+            is_badge=is_badge,
+            nickname=nickname,
         )
 
     def _get_badge(self, dto: GetUserDto) -> bool:
@@ -570,7 +631,7 @@ class GetUserProfileUseCase(UserBaseUseCase):
             )
 
         user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
-            dto=dto
+            user_id=dto.user_id
         )
         return UseCaseSuccessOutput(value=user_profile)
 
@@ -590,18 +651,18 @@ class UpdateUserProfileUseCase(UserBaseUseCase):
         upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
             user_id=dto.user_id, code=CodeEnum.NICKNAME.value, value=dto.nickname
         )
-
-        user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
             user_id=dto.user_id
         )
-        if not user_profile_id:
+
+        if not user_profile:
             return UseCaseFailureOutput(
                 type="user_profile_id",
                 message=FailureType.NOT_FOUND_ERROR,
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        upsert_user_info_detail_dto.user_profile_id = user_profile_id
+        upsert_user_info_detail_dto.user_profile_id = user_profile.id
 
         # 닉네임 업데이트
         self._user_repo.update_user_nickname_of_profile_setting(

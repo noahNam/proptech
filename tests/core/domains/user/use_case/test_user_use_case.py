@@ -416,13 +416,14 @@ def test_get_user_info_when_monthly_income_then_success(
 
             # 맞벌이, 부양가족 5인
             assert value.code_values.name == [
-                3547102,
-                5675364,
-                7803626,
-                8513046,
-                9222466,
-                9931887,
-                11350728,
+                "3,547,102원 이하",
+                "5,675,364원 이하",
+                "7,803,626원 이하",
+                "8,513,046원 이하",
+                "9,222,466원 이하",
+                "9,931,887원 이하",
+                "11,350,728원 이하",
+                "11,350,728원 초과",
             ]
 
 
@@ -545,6 +546,7 @@ def test_upsert_user_info_when_update_is_house_owner_then_chain_update_user_data
         .all()
     )
 
+    assert user_profile.survey_step == UserSurveyStepEnum.STEP_ONE.value
     for user_info in user_infos:
         if user_info.code == 1006:
             assert user_info.value is None
@@ -595,8 +597,96 @@ def test_upsert_user_info_when_update_is_sub_account_then_chain_update_user_data
         .all()
     )
 
+    assert user_profile.survey_step == UserSurveyStepEnum.STEP_TWO.value
     for user_info in user_infos:
         if user_info.code == 1016:
             assert user_info.value == "2"
         else:
             assert user_info.value is None
+
+
+@patch(
+    "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
+    return_value=True,
+)
+def test_upsert_user_info_when_update_is_sub_account_then_survey_step_is_two(
+    _send_sqs_message, session, create_users
+):
+    """
+        1. 1016: 청약 통장 여부 질문 (2) -> "있어요", "없어요"
+        Then. survey_step == 2
+    """
+    # 1
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=create_users[0].id, user_profile_id=None, codes=[1016], values=["2"],
+    )
+    UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
+
+    # Then
+    user_profile = (
+        session.query(UserProfileModel)
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
+    )
+
+    assert user_profile.survey_step == UserSurveyStepEnum.STEP_TWO.value
+
+
+@patch(
+    "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
+    return_value=True,
+)
+def test_upsert_user_info_when_update_is_sub_account_then_survey_step_is_one(
+    _send_sqs_message, session, create_users
+):
+    """
+        1. 1016: 청약 통장 여부 질문 (1) -> "있어요", "없어요"
+        Then. survey_step == 1
+    """
+    # 1
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=create_users[0].id, user_profile_id=None, codes=[1016], values=["1"],
+    )
+    UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
+
+    # Then
+    user_profile = (
+        session.query(UserProfileModel)
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
+    )
+
+    assert user_profile.survey_step == UserSurveyStepEnum.STEP_ONE.value
+
+
+@patch(
+    "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
+    return_value=True,
+)
+def test_upsert_user_info_when_update_speical_cond_then_survey_step_is_comepte(
+    _send_sqs_message, session, create_users
+):
+    """
+        1. code == 1026
+        Then. survey_step == 3
+    """
+    # 설문 2단계 set
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=create_users[0].id, user_profile_id=None, codes=[1016], values=["2"],
+    )
+    UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
+
+    # 1
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=create_users[0].id, user_profile_id=None, codes=[1026], values=["2"],
+    )
+    UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
+
+    # Then
+    user_profile = (
+        session.query(UserProfileModel)
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
+    )
+
+    assert user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value

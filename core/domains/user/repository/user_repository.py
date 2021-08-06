@@ -162,14 +162,14 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T006")
 
-    def get_user_profile_id(self, user_id: int) -> Optional[int]:
+    def get_user_profile(self, user_id: int) -> Optional[UserProfileEntity]:
         user_profile = (
-            session.query(UserProfileModel.id).filter_by(user_id=user_id).first()
+            session.query(UserProfileModel).filter_by(user_id=user_id).first()
         )
         if not user_profile:
             return None
 
-        return user_profile.id
+        return user_profile.to_entity()
 
     def is_user_info(self, dto: UpsertUserInfoDetailDto) -> bool:
         return session.query(
@@ -253,10 +253,18 @@ class UserRepository:
             )
             raise Exception
 
-    def update_last_code_to_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
+    def update_last_code_to_user_info(
+        self, dto: UpsertUserInfoDetailDto, survey_step: Optional[int]
+    ) -> None:
         try:
+            update_variable = dict()
+            update_variable["last_update_code"] = dto.code
+            update_variable["updated_at"] = get_server_timestamp()
+            if survey_step:
+                update_variable["survey_step"] = survey_step
+
             session.query(UserProfileModel).filter_by(user_id=dto.user_id).update(
-                {"last_update_code": dto.code, "updated_at": get_server_timestamp()}
+                update_variable
             )
             session.commit()
         except Exception as e:
@@ -413,16 +421,6 @@ class UserRepository:
         )
 
         user_profile = query.first()
-
-        if not user_profile:
-            return None
-
-        return user_profile.to_entity()
-
-    def get_user_profile(self, dto: GetUserDto) -> Optional[UserProfileEntity]:
-        user_profile = (
-            session.query(UserProfileModel).filter_by(user_id=dto.user_id).first()
-        )
 
         if not user_profile:
             return None

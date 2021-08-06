@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, StrictStr
 
@@ -18,6 +18,7 @@ class GetUserMainBaseSchema(BaseModel):
     survey_step: int
     tickets: int
     is_badge: bool
+    nickname: Optional[str]
 
 
 class GetUserProfileBaseSchema(BaseModel):
