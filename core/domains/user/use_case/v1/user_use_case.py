@@ -249,7 +249,8 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
         return UseCaseSuccessOutput()
 
-    def _get_survey_step(self, dto: UpsertUserInfoDetailDto, user_profile: Optional[UserProfileEntity]) -> Optional[int]:
+    def _get_survey_step(self, dto: UpsertUserInfoDetailDto, user_profile: Optional[UserProfileEntity]) -> Optional[
+        int]:
         """
             ** 큰 틀은 2단계 설문 진행중이 유저가 1단계 설문의 어떤 질문을 재 수정하더라도 survey_step은 최종단계를 유지. 즉, 작아질 수는 없다.
             1. get_user_profile -> survey_step 가져옴
@@ -474,11 +475,16 @@ class GetUserInfoUseCase(UserBaseUseCase):
                     my_basic_income = income_result_dict.get("1")
                     monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value
 
-                for percentage_num in monthly_income_enum:
-                    income_by_segment = (int(my_basic_income) * percentage_num) / 100
-                    income_by_segment = format(round(income_by_segment), ',d')
-                    income_by_segment = str(income_by_segment) + "원 이하"
-                    calc_result_list.append(income_by_segment)
+                income_by_segment = None
+                for idx_, percentage_num in enumerate(monthly_income_enum):
+                    if idx_ == len(monthly_income_enum) - 1:
+                        income_by_segment = str(income_by_segment) + "원 초과"
+                        calc_result_list.append(income_by_segment)
+                    else:
+                        income_by_segment = (int(my_basic_income) * percentage_num) / 100
+                        income_by_segment = format(round(income_by_segment), ',d')
+                        result_income_by_segment = str(income_by_segment) + "원 이하"
+                        calc_result_list.append(result_income_by_segment)
 
                 user_info_code_value_entity = UserInfoCodeValueEntity()
 
