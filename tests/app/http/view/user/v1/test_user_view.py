@@ -746,19 +746,19 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_ste
     assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_ONE.value
     assert data["result"]["tickets"] == 0
     assert data["result"]["is_badge"] is True
+    assert data["result"]["nickname"] == create_users[0].user_profile.nickname
 
 
-def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_step_one_and_badge_is_false(
+def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_zero_step_and_badge_is_false(
     client, session, test_request_context, make_header, make_authorization, user_factory
 ):
     user = user_factory.create(
         device=True,
         receive_push_type=True,
-        user_profile=True,
+        user_profile=False,
         interest_houses=True,
         tickets=True,
     )
-    user.user_profile.survey_step = UserSurveyStepEnum.STEP_ONE.value
     session.add(user)
     session.commit()
 
@@ -774,9 +774,10 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_ste
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_ONE.value
+    assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_NO.value
     assert data["result"]["tickets"] == 1
     assert data["result"]["is_badge"] is False
+    assert data["result"]["nickname"] is None
 
 
 def test_get_survey_result_view_then_return_survey_result(
