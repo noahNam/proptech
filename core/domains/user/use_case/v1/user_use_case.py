@@ -183,6 +183,13 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
+        if dto.codes[0] == CodeEnum.NICKNAME.value and self._check_nickname_for_duplicate(nickname=dto.values[0]):
+            return UseCaseFailureOutput(
+                type="duplicate nickname",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
+            )
+
         user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
             user_id=dto.user_id
         )
