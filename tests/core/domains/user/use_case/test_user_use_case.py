@@ -701,3 +701,19 @@ def test_upsert_user_info_when_update_speical_cond_then_survey_step_is_comepte(
     )
 
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
+
+
+def test_upsert_user_info_when_update_duplicate_nickname_then_failure(
+        session, create_users
+):
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=create_users[0].id,
+        user_profile_id=None,
+        codes=[1000],
+        values=["noah"],
+    )
+    result = UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
+
+    assert isinstance(result, UseCaseFailureOutput)
+    assert result.type == "duplicate nickname"
+    assert result.message == "invalid_request_error"
