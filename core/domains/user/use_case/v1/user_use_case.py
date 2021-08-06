@@ -65,6 +65,9 @@ class UserBaseUseCase:
     def _send_sqs_message(self, queue_type: SqsTypeEnum, msg: SenderDto) -> bool:
         return self._sqs.send_message(queue_type=queue_type, msg=msg, logging=True)
 
+    def _check_nickname_for_duplicate(self, nickname: str) -> bool:
+        return self._user_repo.is_duplicate_nickname(nickname=nickname)
+
     def _upload_user_profile_img(self, dto: CreateUserProfileImgDto) -> bool:
         """
              프로필 이미지 등록은 사용 X -> 다만 추후 사용 가능성 있기 때문에 남겨둠
@@ -178,6 +181,17 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                 type="user_id",
                 message=FailureType.NOT_FOUND_ERROR,
                 code=HTTPStatus.NOT_FOUND,
+            )
+
+        if dto.codes[
+            0
+        ] == CodeEnum.NICKNAME.value and self._check_nickname_for_duplicate(
+            nickname=dto.values[0]
+        ):
+            return UseCaseFailureOutput(
+                type="duplicate nickname",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
             )
 
         user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
@@ -564,7 +578,9 @@ class GetUserMainUseCase(UserBaseUseCase):
         nickname = user.user_profile.nickname if user.user_profile else None
 
         return dict(
-            survey_step=survey_step,
+            survey_step=survey_step
+            if survey_step
+            else UserSurveyStepEnum.STEP_NO.value,
             tickets=user.total_amount,
             is_badge=is_badge,
             nickname=nickname,
@@ -645,6 +661,13 @@ class UpdateUserProfileUseCase(UserBaseUseCase):
                 type="user_id",
                 message=FailureType.NOT_FOUND_ERROR,
                 code=HTTPStatus.NOT_FOUND,
+            )
+
+        if self._check_nickname_for_duplicate(nickname=dto.nickname):
+            return UseCaseFailureOutput(
+                type="duplicate nickname",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
             )
 
         # 기존 함수 사용 위해 dto 변환

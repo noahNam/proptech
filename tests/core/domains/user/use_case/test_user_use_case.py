@@ -40,7 +40,7 @@ from core.domains.user.use_case.v1.user_use_case import (
     UpdateUserProfileUseCase,
 )
 from core.exceptions import NotUniqueErrorException
-from core.use_case_output import UseCaseSuccessOutput
+from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput
 
 
 def test_get_user_use_case_then_success(session, create_users):
@@ -503,6 +503,17 @@ def test_update_user_profile_use_case_when_enter_setting_page_return_success(
     assert result_2.value.nickname == "harry"
 
 
+def test_update_user_profile_use_case_when_enter_duplicate_nickname_return_failure(
+    session, create_users
+):
+    dto = UpdateUserProfileDto(user_id=create_users[0].id, nickname="noah")
+    result = UpdateUserProfileUseCase().execute(dto=dto)
+
+    assert isinstance(result, UseCaseFailureOutput)
+    assert result.type == "duplicate nickname"
+    assert result.message == "invalid_request_error"
+
+
 @patch(
     "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
     return_value=True,
@@ -690,3 +701,16 @@ def test_upsert_user_info_when_update_speical_cond_then_survey_step_is_comepte(
     )
 
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
+
+
+def test_upsert_user_info_when_update_duplicate_nickname_then_failure(
+    session, create_users
+):
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=create_users[0].id, user_profile_id=None, codes=[1000], values=["noah"],
+    )
+    result = UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
+
+    assert isinstance(result, UseCaseFailureOutput)
+    assert result.type == "duplicate nickname"
+    assert result.message == "invalid_request_error"
