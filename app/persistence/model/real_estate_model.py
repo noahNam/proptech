@@ -8,6 +8,7 @@ from sqlalchemy import (
     String,
     Boolean,
 )
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, backref, column_property
 
 from app import db
@@ -23,10 +24,7 @@ class RealEstateModel(db.Model):
     __tablename__ = "real_estates"
 
     id = Column(
-        BigInteger().with_variant(Integer, "sqlite"),
-        primary_key=True,
-        nullable=False,
-        autoincrement=True,
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     name = Column(String(50), nullable=True)
     road_address = Column(String(100), nullable=False)
@@ -42,6 +40,13 @@ class RealEstateModel(db.Model):
     coordinates = Column(
         Geometry(geometry_type="POINT", srid=4326).with_variant(String, "sqlite"),
         nullable=True,
+    )
+
+    jibun_address_ts = Column(
+        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
+    )
+    road_address_ts = Column(
+        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
     )
 
     latitude = column_property(coordinates.ST_Y())

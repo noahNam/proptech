@@ -1,15 +1,24 @@
 from typing import Tuple
 
-from pydantic import BaseModel, StrictFloat, validator, ValidationError, StrictInt
+from pydantic import (
+    BaseModel,
+    StrictFloat,
+    validator,
+    ValidationError,
+    StrictInt,
+    StrictStr,
+)
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
     GetCalenderInfoDto,
+    GetSearchHouseListDto,
+    BoundingWithinRadiusDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
-from core.domains.house.enum.house_enum import CalenderYearThreshHold
+from core.domains.house.enum.house_enum import CalenderYearThreshHold, SearchTypeEnum
 from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import InvalidRequestException
 
@@ -266,5 +275,56 @@ class GetCalenderInfoRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetCalenderInfoRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetSearchHouseListSchema(BaseModel):
+    keywords: StrictStr = None
+
+
+class GetSearchHouseListRequestSchema:
+    def __init__(self, keywords):
+        self.keywords = keywords
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetSearchHouseListSchema(keywords=self.keywords).dict()
+            return GetSearchHouseListDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetSearchHouseRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetBoundingWithinRadiusSchema(BaseModel):
+    house_id: StrictInt
+    search_type: StrictInt
+
+    @validator("search_type")
+    def check_search_type(cls, search_type) -> int:
+        if (
+            search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
+            or search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
+        ):
+            raise ValidationError("Out of range: Available search_type - (1, 2, 3) ")
+        return search_type
+
+
+class GetBoundingWithinRadiusRequestSchema:
+    def __init__(self, house_id, search_type):
+        self.house_id = house_id
+        self.search_type = int(search_type) if search_type else None
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetBoundingWithinRadiusSchema(
+                house_id=self.house_id, search_type=self.search_type
+            ).dict()
+            return BoundingWithinRadiusDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetBoundingWithinRadiusRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

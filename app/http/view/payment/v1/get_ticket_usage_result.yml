@@ -1,0 +1,58 @@
+openapi: "3.0.2"
+tags:
+  - Payment
+security:
+  - userAuth: []
+responses:
+  '200':
+    description:
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                houses:
+                  type: array
+                  items:
+                    properties:
+                      house_id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: 동탄 레미안 원베일리
+                      image_path:
+                        type: string
+                        example: https://sample.s3.sample.amazonaws.com/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

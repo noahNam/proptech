@@ -1,6 +1,11 @@
-from pydantic import BaseModel, StrictStr, StrictInt
+from typing import List, Optional
 
-from core.domains.user.entity.user_entity import UserInfoCodeValueEntity
+from pydantic import BaseModel, StrictStr
+
+from core.domains.user.entity.user_entity import (
+    UserProfileEntity,
+    UserInfoResultEntity,
+)
 
 
 class GetUserBaseSchema(BaseModel):
@@ -11,8 +16,13 @@ class GetUserBaseSchema(BaseModel):
 
 class GetUserMainBaseSchema(BaseModel):
     survey_step: int
-    point: int
+    tickets: int
     is_badge: bool
+    nickname: Optional[str]
+
+
+class GetUserProfileBaseSchema(BaseModel):
+    nickname: str
 
 
 class GetUserResponseSchema(BaseModel):
@@ -32,7 +42,7 @@ class UpsertUserInfoResponseSchema(BaseModel):
 
 
 class GetUserInfoResponseSchema(BaseModel):
-    result: list
+    surveys: List[UserInfoResultEntity]
 
 
 class PatchUserOutResponseSchema(BaseModel):
@@ -41,3 +51,15 @@ class PatchUserOutResponseSchema(BaseModel):
 
 class GetUserMainResponseSchema(BaseModel):
     result: GetUserMainBaseSchema
+
+
+class GetSurveyResultResponseSchema(BaseModel):
+    result: UserProfileEntity
+
+
+class GetUserProfileResponseSchema(BaseModel):
+    user: GetUserProfileBaseSchema
+
+
+class UpdateUserProfileResponseSchema(BaseModel):
+    result: StrictStr

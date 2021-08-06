@@ -8,7 +8,6 @@ Create Date: 2021-07-07 19:39:09.094880
 from alembic import op
 import sqlalchemy as sa
 
-# revision identifiers, used by Alembic.
 revision = "2a885636a082"
 down_revision = None
 branch_labels = None
@@ -19,13 +18,16 @@ def upgrade():
     op.create_table(
         "users",
         sa.Column(
-            "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
+            "id",
+            sa.BigInteger().with_variant(sa.Integer(), "sqlite"),
+            nullable=False,
+            autoincrement=False,
         ),
         sa.Column("is_required_agree_terms", sa.Boolean(), nullable=False),
         sa.Column("join_date", sa.String(length=8), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("is_out", sa.Boolean(), nullable=False),
-        sa.Column("point", sa.Integer(), nullable=False),
+        sa.Column("number_ticket", sa.SmallInteger(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=True),
         sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
@@ -76,6 +78,7 @@ def upgrade():
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column("nickname", sa.String(length=12), nullable=True),
         sa.Column("last_update_code", sa.SmallInteger(), nullable=True),
+        sa.Column("survey_step", sa.SmallInteger(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
@@ -133,30 +136,46 @@ def upgrade():
     )
 
     op.create_table(
-        "point_types",
+        "ticket_types",
         sa.Column(
-            "id", sa.SmallInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
+            "id",
+            sa.SmallInteger().with_variant(sa.SmallInteger(), "sqlite"),
+            nullable=False,
         ),
-        sa.Column("name", sa.String(length=20), nullable=False),
-        sa.Column("division", sa.String(length=7), nullable=False),
+        sa.Column("division", sa.String(length=20), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
 
     op.create_table(
-        "points",
+        "tickets",
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column("type", sa.SmallInteger(), nullable=False),
-        sa.Column("amount", sa.Integer(), nullable=False),
+        sa.Column("amount", sa.SmallInteger(), nullable=False),
         sa.Column("sign", sa.String(length=5), nullable=False),
+        sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("created_by", sa.String(length=6), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["type"], ["point_types.id"],),
+        sa.ForeignKeyConstraint(["type"], ["ticket_types.id"],),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
         sa.PrimaryKeyConstraint("id"),
     )
+
+    op.create_table(
+        "ticket_targets",
+        sa.Column(
+            "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
+        ),
+        sa.Column("ticket_id", sa.BigInteger(), nullable=False),
+        sa.Column("public_house_id", sa.BigInteger(), nullable=False),
+        sa.ForeignKeyConstraint(["ticket_id"], ["tickets.id"],),
+        sa.PrimaryKeyConstraint("id"),
+    )
+
+    with open("./migrations/seeds/default_ticket_types.sql") as fp:
+        op.execute(fp.read())
 
 
 def downgrade():
@@ -165,8 +184,9 @@ def downgrade():
     op.drop_table("user_profiles")
     op.drop_table("receive_push_types")
     op.drop_table("devices")
-    op.drop_table("users")
     op.drop_index(op.f("ix_interest_houses_house_id"), table_name="interest_houses")
     op.drop_table("interest_houses")
-    op.drop_table("points")
-    op.drop_table("point_types")
+    op.drop_table("ticket_targets")
+    op.drop_table("tickets")
+    op.drop_table("ticket_types")
+    op.drop_table("users")

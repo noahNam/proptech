@@ -6,6 +6,8 @@ from app.http.requests.v1.house_request import (
     GetHousePublicDetailRequestSchema,
     GetCalenderInfoRequestSchema,
     GetInterestHouseListRequestSchema,
+    GetSearchHouseListRequestSchema,
+    GetBoundingWithinRadiusRequestSchema,
     GetRecentViewListRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
@@ -18,6 +20,7 @@ from app.http.responses.presenters.v1.house_presenter import (
     UpsertInterestHousePresenter,
     GetInterestHouseListPresenter,
     GetRecentViewListPresenter,
+    GetSearchHouseListPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
@@ -26,6 +29,8 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetHousePublicDetailUseCase,
     GetCalenderInfoUseCase,
     GetInterestHouseListUseCase,
+    GetSearchHouseListUseCase,
+    BoundingWithinRadiusUseCase,
     GetRecentViewListUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
@@ -140,3 +145,29 @@ def get_recent_view_list_view():
     return GetRecentViewListPresenter().transform(
         GetRecentViewListUseCase().execute(dto=dto)
     )
+
+
+@api.route("/v1/houses/map/search", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_search_house_list_view.yml", methods=["GET"])
+def get_search_house_list_view():
+    dto = GetSearchHouseListRequestSchema(
+        keywords=request.args.get("keywords"),
+    ).validate_request_and_make_dto()
+
+    return GetSearchHouseListPresenter().transform(
+        GetSearchHouseListUseCase().execute(dto=dto)
+    )
+
+
+@api.route("/v1/houses/<int:house_id>/map", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_bounding_within_radius_view.yml", methods=["GET"])
+def get_bounding_within_radius_view(house_id):
+    dto = GetBoundingWithinRadiusRequestSchema(
+        house_id=house_id, search_type=request.args.get("search_type")
+    ).validate_request_and_make_dto()
+
+    return BoundingPresenter().transform(BoundingWithinRadiusUseCase().execute(dto=dto))

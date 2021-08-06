@@ -12,7 +12,10 @@ from sqlalchemy import (
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.user_profile_model import UserProfileModel
-from core.domains.user.entity.user_entity import UserInfoEntity, UserInfoCodeValueEntity
+from core.domains.user.entity.user_entity import (
+    UserInfoEntity,
+    UserInfoResultEntity,
+)
 
 
 class UserInfoModel(db.Model):
@@ -31,4 +34,9 @@ class UserInfoModel(db.Model):
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
     def to_entity(self) -> UserInfoEntity:
-        return UserInfoEntity(code=self.code, user_value=self.value,)
+        return UserInfoEntity(
+            user_profile_id=self.user_profile_id, code=self.code, value=self.value,
+        )
+
+    def to_result_entity(self) -> UserInfoResultEntity:
+        return UserInfoResultEntity(code=self.code, user_value=self.value,)

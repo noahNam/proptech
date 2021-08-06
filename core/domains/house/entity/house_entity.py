@@ -266,3 +266,31 @@ class GetRecentViewListEntity(BaseModel):
     type: int
     name: str
     image_path: Optional[str]
+
+
+class SearchRealEstateEntity(BaseModel):
+    id: int
+    jibun_address: str
+    road_address: str
+
+
+class SearchPublicSaleEntity(BaseModel):
+    id: int
+    name: str
+
+
+class SearchAdministrativeDivisionEntity(BaseModel):
+    id: int
+    name: str
+
+
+class GetSearchHouseListEntity(BaseModel):
+    real_estates: List[SearchRealEstateEntity] = None
+    public_sales: List[SearchPublicSaleEntity] = None
+    administrative_divisions: List[SearchAdministrativeDivisionEntity] = None
+
+
+class GetPublicSaleOfTicketUsageEntity(BaseModel):
+    house_id: int
+    name: str
+    image_path: Optional[str]

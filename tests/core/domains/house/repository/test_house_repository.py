@@ -6,8 +6,14 @@ from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
     GetCalenderInfoDto,
+    GetSearchHouseListDto,
 )
-from core.domains.house.entity.house_entity import InterestHouseListEntity
+from core.domains.house.entity.house_entity import (
+    SearchRealEstateEntity,
+    SearchPublicSaleEntity,
+    SearchAdministrativeDivisionEntity,
+    GetSearchHouseListEntity,
+)
 from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import GetUserDto
@@ -123,7 +129,7 @@ def test_get_house_public_detail_when_get_house_public_detail_dto(
     ) as mock_house_public_detail:
         mock_house_public_detail.return_value = create_real_estate_with_public_sale[0]
         result = HouseRepository().get_house_public_detail(
-            dto=dto, degrees=1, is_like=True
+            dto=dto, degree=1, is_like=True
         )
     assert result == mock_house_public_detail.return_value
     assert mock_house_public_detail.called is True
@@ -174,3 +180,32 @@ def test_get_recent_view_list_then_entity_result(
     assert isinstance(result, list)
     assert len(result) == 1
     assert result[0].image_path == public_sale_photo_factory.path
+
+
+def test_get_search_house_list_when_get_keywords(
+    session, create_real_estate_with_public_sale
+):
+    dto = GetSearchHouseListDto(keywords="서울")
+    real_estates = [
+        SearchRealEstateEntity(
+            id=1, jibun_address="서울시 서초구 어딘가", road_address="서울시 서초구 어딘가길"
+        )
+    ]
+    public_sales = [SearchPublicSaleEntity(id=2, name="서울숲아파트")]
+    administrative_divisions = [
+        SearchAdministrativeDivisionEntity(id=3, name="서울특별시 서초구")
+    ]
+
+    mock_result = GetSearchHouseListEntity(
+        real_estates=real_estates,
+        public_sales=public_sales,
+        administrative_divisions=administrative_divisions,
+    )
+
+    with patch(
+        "core.domains.house.repository.house_repository.HouseRepository.get_search_house_list"
+    ) as mock_search:
+        mock_search.return_value = mock_result
+        result = HouseRepository().get_search_house_list(dto=dto)
+
+    assert isinstance(result, GetSearchHouseListEntity)

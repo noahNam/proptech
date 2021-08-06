@@ -7,6 +7,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
 )
+from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import column_property
 
 from app import db
@@ -19,10 +20,7 @@ class AdministrativeDivisionModel(db.Model):
     __tablename__ = "administrative_divisions"
 
     id = Column(
-        BigInteger().with_variant(Integer, "sqlite"),
-        primary_key=True,
-        nullable=False,
-        autoincrement=True,
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
 
     name = Column(String(100), nullable=False)
@@ -41,6 +39,8 @@ class AdministrativeDivisionModel(db.Model):
     )
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+
+    name_ts = Column(TSVECTOR().with_variant(String(100), "sqlite"), nullable=True)
 
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())

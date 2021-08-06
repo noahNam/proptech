@@ -1,0 +1,63 @@
+openapi: "3.0.2"
+tags:
+  - User
+security:
+  - userAuth: []
+responses:
+  '200':
+    description:
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    nickname:
+                      type: string
+                      example: "veronica"
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404 #1':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '404 #2':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: string
+              example: survey_result
+            message:
+              type: string
+              example: not_found_error
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

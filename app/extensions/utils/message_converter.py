@@ -35,5 +35,5 @@ class MessageConverter:
         )
 
     @staticmethod
-    def get_message(message: str):
+    def get_message(message: dict):
         return json.loads(message["GCM"])["data"]

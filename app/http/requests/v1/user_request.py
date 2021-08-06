@@ -7,6 +7,7 @@ from core.domains.user.dto.user_dto import (
     UpsertUserInfoDto,
     GetUserInfoDto,
     GetUserDto,
+    UpdateUserProfileDto,
 )
 from core.exceptions import InvalidRequestException
 
@@ -44,11 +45,20 @@ class UpsertUserInfoSchema(BaseModel):
 
 class GetUserInfoSchema(BaseModel):
     user_id: StrictInt
-    codes: list
+    survey_step: StrictInt
 
 
 class GetUserMainSchema(BaseModel):
     user_id: StrictInt
+
+
+class GetSurveyResultSchema(BaseModel):
+    user_id: StrictInt
+
+
+class UpdateUserProfileSchema(BaseModel):
+    user_id: StrictInt
+    nickname: str
 
 
 class GetUserRequestSchema:
@@ -149,14 +159,16 @@ class UpsertUserInfoRequestSchema:
 
 class GetUserInfoRequestSchema:
     def __init__(
-        self, user_id, codes,
+        self, user_id, survey_step,
     ):
         self.user_id = int(user_id) if user_id else None
-        self.codes = codes
+        self.survey_step = int(survey_step)
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserInfoSchema(user_id=self.user_id, codes=self.codes,).dict()
+            schema = GetUserInfoSchema(
+                user_id=self.user_id, survey_step=self.survey_step,
+            ).dict()
             return GetUserInfoDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -176,5 +188,38 @@ class GetUserMainRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetUserMainRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetSurveyResultRequestSchema:
+    def __init__(self, user_id):
+        self.user_id = int(user_id) if user_id else None
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetSurveyResultSchema(user_id=self.user_id,).dict()
+            return GetUserDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetSurveyResultRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class UpdateUserProfileRequestSchema:
+    def __init__(self, user_id, nickname):
+        self.user_id = int(user_id) if user_id else None
+        self.nickname = nickname
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = UpdateUserProfileSchema(
+                user_id=self.user_id, nickname=self.nickname
+            ).dict()
+            return UpdateUserProfileDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[UpdateUserProfileRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

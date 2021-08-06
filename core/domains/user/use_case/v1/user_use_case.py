@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime
 from http import HTTPStatus
 from typing import Union, Optional, List
 
@@ -23,15 +24,16 @@ from core.domains.user.dto.user_dto import (
     GetUserDto,
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
-    GetUserInfoDetailDto,
+    UpdateUserProfileDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
     UserInfoCodeValueEntity,
-    UserInfoEmptyEntity,
     UserEntity,
+    UserProfileEntity,
+    UserInfoResultEntity,
 )
-from core.domains.user.enum.user_enum import UserSqsTypeEnum
+from core.domains.user.enum.user_enum import UserSqsTypeEnum, UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import (
     IsHouseOwnerCodeEnum,
     IsHouseHolderCodeEnum,
@@ -47,6 +49,8 @@ from core.domains.user.enum.user_info_enum import (
     CodeEnum,
     AddressCodeEnum,
     AddressDetailCodeEnum,
+    CodeStepEnum,
+    IsSupportParentCodeEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -60,6 +64,9 @@ class UserBaseUseCase:
 
     def _send_sqs_message(self, queue_type: SqsTypeEnum, msg: SenderDto) -> bool:
         return self._sqs.send_message(queue_type=queue_type, msg=msg, logging=True)
+
+    def _check_nickname_for_duplicate(self, nickname: str) -> bool:
+        return self._user_repo.is_duplicate_nickname(nickname=nickname)
 
     def _upload_user_profile_img(self, dto: CreateUserProfileImgDto) -> bool:
         """
@@ -176,7 +183,20 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        user_profile_id: Optional[int] = self._user_repo.get_user_profile_id(dto=dto)
+        if dto.codes[
+            0
+        ] == CodeEnum.NICKNAME.value and self._check_nickname_for_duplicate(
+            nickname=dto.values[0]
+        ):
+            return UseCaseFailureOutput(
+                type="duplicate nickname",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
+            )
+
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
+            user_id=dto.user_id
+        )
 
         """
             upsert 사용 X
@@ -186,41 +206,146 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
         for idx in range(len(dto.codes)):
             detail_dto = UpsertUserInfoDetailDto(
                 user_id=dto.user_id,
-                user_profile_id=user_profile_id,
+                user_profile_id=user_profile.id if user_profile else None,
                 code=dto.codes[idx],
                 value=dto.values[idx] if dto.values else None,
             )
 
             if detail_dto.code == CodeEnum.NICKNAME.value:
                 # code==1000 (설문 시작 후 닉네임 생성 시) -> user_profiles 갱신
-                if not user_profile_id:
+                if not user_profile:
                     user_profile_id: int = self._user_repo.create_user_nickname(
                         dto=detail_dto
                     )
+                    detail_dto.user_profile_id = user_profile_id
                 else:
                     self._user_repo.update_user_nickname(dto=detail_dto)
 
-            detail_dto.user_profile_id = user_profile_id
-            if not self._user_repo.is_user_info(dto=detail_dto):
-                user_info: UserInfoEntity = self._user_repo.create_user_info(
-                    dto=detail_dto
-                )
-            else:
-                user_info: UserInfoEntity = self._user_repo.update_user_info(
-                    dto=detail_dto
-                )
+            chain_codes = list()
 
-            # 마지막으로 진행한 설문 단계 저장
-            self._user_repo.update_last_code_to_user_info(dto=detail_dto)
+            if not self._user_repo.is_user_info(dto=detail_dto):
+                self._user_repo.create_user_info(dto=detail_dto)
+            else:
+                self._user_repo.update_user_info(dto=detail_dto)
+
+                # chain update (하위 질문 초기화)
+                chain_codes: List[int] = self._make_chain_update_user_info(
+                    dto=detail_dto
+                )
+                if chain_codes:
+                    self._user_repo.update_chain_user_info(
+                        user_profile_id=detail_dto.user_profile_id, codes=chain_codes
+                    )
+
+            # 설문 단계 조회
+            survey_step: Optional[int] = self._get_survey_step(
+                dto=detail_dto, user_profile=user_profile
+            )
+
+            # 마지막으로 진행한 설문 질문 저장
+            self._user_repo.update_last_code_to_user_info(
+                dto=detail_dto, survey_step=survey_step
+            )
 
             # SQS Data 전송 -> Data Lake
-            if user_info.user_value:
+            if detail_dto.value:
                 msg: SenderDto = self._make_sqs_send_message(dto=detail_dto)
                 self._send_sqs_message(
                     queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg
                 )
 
+            if chain_codes:
+                for code in chain_codes:
+                    # chain update (하위 질문 초기화)
+                    detail_dto.code = code
+                    detail_dto.value = None
+
+                    msg: SenderDto = self._make_sqs_send_message(dto=detail_dto)
+                    self._send_sqs_message(
+                        queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg
+                    )
+
         return UseCaseSuccessOutput()
+
+    def _get_survey_step(
+        self, dto: UpsertUserInfoDetailDto, user_profile: Optional[UserProfileEntity]
+    ) -> Optional[int]:
+        """
+            ** 큰 틀은 2단계 설문 진행중이 유저가 1단계 설문의 어떤 질문을 재 수정하더라도 survey_step은 최종단계를 유지. 즉, 작아질 수는 없다.
+            1. get_user_profile -> survey_step 가져옴
+            2. survey_step이 null 이면 설문작성을 이제 시작했으므로 UserSurveyStepEnum.STEP_ONE(1 단계 진행중)로 변경
+
+            3. survey_step이 1이고, dto.code가 1016, dto.value가 2(없어요)이면 UserSurveyStepEnum.STEP_TWO(2 단계 진행중)로 변경
+            4. survey_step이 1이고, dto.code가 1016, dto.value가 1(있어요)이면 UserSurveyStepEnum.STEP_ONE(1 단계 진행중)을 유지
+            5. survey_step이 1이고, dto.code가 1019 이면 UserSurveyStepEnum.STEP_TWO(2 단계 진행중)로 변경
+
+            6. survey_step가 2이고 dto.code가 1026이면 설문 완료
+            7. survey_step이 이미 설문완료이면 변화 없음
+        """
+        if not user_profile:
+            return UserSurveyStepEnum.STEP_ONE.value
+
+        survey_step = user_profile.survey_step
+
+        if survey_step == UserSurveyStepEnum.STEP_ONE.value:
+            # survey_step이 1이고, dto.code가 1016, dto.value가 2(없어요)이면 UserSurveyStepEnum.STEP_TWO(2 단계 진행중)로 변경
+            if dto.code == CodeEnum.IS_SUB_ACCOUNT.value and dto.value == "2":
+                return UserSurveyStepEnum.STEP_TWO.value
+
+            # survey_step이 1이고, dto.code가 1019 이면 UserSurveyStepEnum.STEP_TWO(2 단계 진행중)로 변경
+            if dto.code == CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value:
+                return UserSurveyStepEnum.STEP_TWO.value
+
+        elif survey_step == UserSurveyStepEnum.STEP_TWO.value:
+            # survey_step가 2이고 dto.code가 1026이면 설문 완료
+            if dto.code == CodeEnum.SPECIAL_COND.value:
+                return UserSurveyStepEnum.STEP_COMPLETE.value
+
+        return None
+
+    def _make_chain_update_user_info(
+        self, dto: UpsertUserInfoDetailDto
+    ) -> Optional[List[int]]:
+        chain_parent = [
+            CodeEnum.IS_HOUSE_OWNER.value,
+            CodeEnum.IS_MARRIED.value,
+            CodeEnum.IS_CHILD.value,
+            CodeEnum.IS_SUB_ACCOUNT.value,
+            CodeEnum.IS_SUPPORT_PARENT.value,
+        ]
+        if dto.code not in chain_parent:
+            return None
+
+        update_value_dict = {
+            "1005": ["1", "2"],  # "있어요", "없어요", "과거에 있었지만 현재는 처분했어요"
+            "1008": ["3", "4"],  # "기혼(외벌이)", "기혼(맞벌이)", "미혼", "한부모"
+            "1011": ["4"],  # "자녀 1명", "자녀 2명", "자녀 3명 이상", "없어요"
+            "1016": ["2"],  # "있어요", "없어요"
+            "1024": ["2"],  # "예", "아니요"
+        }
+        update_value_bind_code = update_value_dict.get(str(dto.code))
+        if dto.value not in update_value_bind_code:
+            return None
+
+        chain_child_dict = {
+            "1005": [CodeEnum.SELL_HOUSE_DATE.value],
+            "1008": [CodeEnum.MARRIAGE_REG_DATE.value],
+            "1011": [
+                CodeEnum.CHILD_AGE_SIX.value,
+                CodeEnum.CHILD_AGE_NINETEEN.value,
+                CodeEnum.CHILD_AGE_TWENTY.value,
+            ],
+            "1016": [
+                CodeEnum.SUB_ACCOUNT_DATE.value,
+                CodeEnum.SUB_ACCOUNT_TIMES.value,
+                CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value,
+            ],
+            "1024": [CodeEnum.SUPPORT_PARENT_DATE.value],
+        }
+
+        codes = chain_child_dict.get(str(dto.code))
+
+        return codes
 
     def _make_sqs_send_message(self, dto: UpsertUserInfoDetailDto) -> SenderDto:
         send_user_info_to_lake_dto = SendUserInfoToLakeDto(
@@ -248,120 +373,157 @@ class GetUserInfoUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        user_profile_id: int = self._user_repo.get_user_profile_id(dto=dto)
-        dto.user_profile_id = user_profile_id
-        result = list()
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
+            user_id=dto.user_id
+        )
+        dto.user_profile_id = user_profile.id if user_profile else None
 
-        for idx in range(len(dto.codes)):
-            detail_dto = GetUserInfoDetailDto(
-                user_id=dto.user_id,
-                user_profile_id=user_profile_id,
-                code=dto.codes[idx],
+        user_info_entity: List[
+            UserInfoEntity
+        ] = self._user_repo.get_user_multi_data_info(dto=dto)
+
+        # 유저 설문이 작성되지 않은 object 생성
+        self._make_empty_object(user_infos=user_info_entity, dto=dto)
+        user_info_result_entity: List[
+            UserInfoResultEntity
+        ] = self._bind_detail_code_values(user_infos=user_info_entity)
+
+        return UseCaseSuccessOutput(value=user_info_result_entity)
+
+    def _make_empty_object(
+        self, user_infos: List[UserInfoEntity], dto: GetUserInfoDto
+    ) -> None:
+        if dto.survey_step == 1:
+            # 1단계 설문 데이터 조회
+            survey_step_codes = CodeStepEnum.ONE.value
+        else:
+            # 2단계 설문 데이터 조회
+            survey_step_codes = CodeStepEnum.TWO.value
+
+        user_info_codes = [user_info.code for user_info in user_infos]
+        empty_codes: list = list(set(survey_step_codes) - set(user_info_codes))
+
+        empty_user_info_entity = [
+            UserInfoEntity(
+                user_profile_id=dto.user_profile_id, code=empty_code, value=None,
             )
+            for empty_code in empty_codes
+        ]
 
-            if not detail_dto.user_profile_id:
-                # nickname 생성 전 (즉, 최초 설문으로 user_profile_id가 없음)
-                user_info: UserInfoEmptyEntity = self._make_empty_user_info_entity(
-                    dto=detail_dto
-                )
-            else:
-                user_info: Union[
-                    UserInfoEntity, UserInfoEmptyEntity
-                ] = self._user_repo.get_user_info(dto=detail_dto)
-
-                self._bind_detail_code_values(user_info=user_info, dto=detail_dto)
-
-            result.append(user_info)
-        return UseCaseSuccessOutput(value=result)
-
-    def _make_empty_user_info_entity(
-        self, dto: GetUserInfoDetailDto
-    ) -> UserInfoEmptyEntity:
-        return UserInfoEmptyEntity(code=dto.code)
+        user_infos.extend(empty_user_info_entity)
 
     def _bind_detail_code_values(
-        self,
-        user_info: Union[UserInfoEntity, UserInfoEmptyEntity],
-        dto: GetUserInfoDetailDto,
-    ):
-        bind_detail_code_dict = {
-            "1002": AddressCodeEnum,
-            "1003": AddressDetailCodeEnum,
-            "1005": IsHouseOwnerCodeEnum,
-            "1007": IsHouseHolderCodeEnum,
-            "1008": IsMarriedCodeEnum,
-            "1010": NumberDependentsEnum,
-            "1011": IsChildEnum,
-            "1016": IsSubAccountEnum,
-            "1020": MonthlyIncomeEnum,
-            "1021": AssetsRealEstateEnum,
-            "1022": AssetsCarEnum,
-            "1023": AssetsTotalEnum,
-            "1026": SpecialCondEnum,
-        }
-
-        bind_code = bind_detail_code_dict.get(str(dto.code))
-
-        if not bind_code:
-            return
-
-        if bind_code == AddressCodeEnum or bind_code == AddressDetailCodeEnum:
-            user_info_code_value_entity: UserInfoCodeValueEntity = self._user_repo.get_sido_codes(
-                dto=dto
-            )
-            user_info.code_values = user_info_code_value_entity
-
-        elif bind_code == MonthlyIncomeEnum:
-            # 외벌이, 맞벌이 확인
-            # 외벌이 -> 1,3,4 / 맞벌이 -> 2
-            result1: UserInfoEntity = UserRepository().get_user_info_by_code(
-                user_profile_id=dto.user_profile_id, code=CodeEnum.IS_MARRIED.value
+        self, user_infos: List[UserInfoEntity],
+    ) -> List[UserInfoResultEntity]:
+        results = list()
+        for user_info in user_infos:
+            user_info_result_entity = UserInfoResultEntity(
+                code=user_info.code, code_values=None, user_value=user_info.value
             )
 
-            # 부양가족 수
-            # 3인 이하->1,2,3,9 / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
-            result2: UserInfoEntity = UserRepository().get_user_info_by_code(
-                user_profile_id=dto.user_profile_id,
-                code=CodeEnum.NUMBER_DEPENDENTS.value,
-            )
-
-            # 부양가족별 basic 소득
-            income_result: AvgMonthlyIncomeWokrerDto = UserRepository().get_avg_monthly_income_workers()
-            income_result_dict = {
-                "1": income_result.three,
-                "2": income_result.three,
-                "3": income_result.three,
-                "4": income_result.four,
-                "5": income_result.five,
-                "6": income_result.six,
-                "7": income_result.seven,
-                "8": income_result.eight,
-                "9": income_result.three,
+            bind_detail_code_dict = {
+                "1002": AddressCodeEnum,
+                "1003": AddressDetailCodeEnum,
+                "1005": IsHouseOwnerCodeEnum,
+                "1007": IsHouseHolderCodeEnum,
+                "1008": IsMarriedCodeEnum,
+                "1010": NumberDependentsEnum,
+                "1011": IsChildEnum,
+                "1016": IsSubAccountEnum,
+                "1020": MonthlyIncomeEnum,
+                "1021": AssetsRealEstateEnum,
+                "1022": AssetsCarEnum,
+                "1023": AssetsTotalEnum,
+                "1024": IsSupportParentCodeEnum,
+                "1026": SpecialCondEnum,
             }
 
-            calc_result_list = []
-            my_basic_income = income_result_dict.get(result2.user_value)
+            bind_code = bind_detail_code_dict.get(str(user_info.code))
 
-            monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_value != "2" else MonthlyIncomeEnum.COND_CD_2.value
+            if not bind_code:
+                results.append(user_info_result_entity)
+                continue
 
-            for percentage_num in monthly_income_enum:
-                income_by_segment = (int(my_basic_income) * percentage_num) / 100
-                income_by_segment = round(income_by_segment)
-                calc_result_list.append(income_by_segment)
+            if bind_code == AddressCodeEnum or bind_code == AddressDetailCodeEnum:
+                user_info_code_value_entity: UserInfoCodeValueEntity = self._user_repo.get_sido_codes(
+                    code=user_info.code
+                )
+                user_info_result_entity.code_values = user_info_code_value_entity
+                results.append(user_info_result_entity)
 
-            user_info_code_value_entity = UserInfoCodeValueEntity()
+            elif bind_code == MonthlyIncomeEnum:
+                # 외벌이, 맞벌이 확인
+                # 외벌이 -> 1,3,4 / 맞벌이 -> 2
+                is_married_result: UserInfoEntity = UserRepository().get_user_info_by_code(
+                    user_profile_id=user_info.user_profile_id,
+                    code=CodeEnum.IS_MARRIED.value,
+                )
 
-            user_info_code_value_entity.detail_code = monthly_income_enum
-            user_info_code_value_entity.name = calc_result_list
+                # 부양가족 수
+                # 3인 이하->1,2,3,9(0명) / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
+                number_dependents_result: UserInfoEntity = UserRepository().get_user_info_by_code(
+                    user_profile_id=user_info.user_profile_id,
+                    code=CodeEnum.NUMBER_DEPENDENTS.value,
+                )
 
-            user_info.code_values = user_info_code_value_entity
-        else:
-            user_info_code_value_entity = UserInfoCodeValueEntity()
+                # 부양가족별 basic 소득
+                income_result: AvgMonthlyIncomeWokrerDto = UserRepository().get_avg_monthly_income_workers()
+                income_result_dict = {
+                    "1": income_result.three,
+                    "2": income_result.three,
+                    "3": income_result.three,
+                    "4": income_result.four,
+                    "5": income_result.five,
+                    "6": income_result.six,
+                    "7": income_result.seven,
+                    "8": income_result.eight,
+                    "9": income_result.three,  # 0명
+                }
 
-            user_info_code_value_entity.detail_code = bind_code.COND_CD.value
-            user_info_code_value_entity.name = bind_code.COND_NM.value
+                calc_result_list = []
 
-            user_info.code_values = user_info_code_value_entity
+                if number_dependents_result:
+                    my_basic_income = income_result_dict.get(
+                        number_dependents_result.value
+                    )
+                    monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if is_married_result.value != "2" else MonthlyIncomeEnum.COND_CD_2.value
+                else:
+                    # 설문 1단계를 완료 안하고 들어오지 못하지만 가드 코드 추가
+                    # my_basic_income = 부양가족 3인 기본 값
+                    # monthly_income_enum = 외벌이 기준
+                    my_basic_income = income_result_dict.get("1")
+                    monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value
+
+                income_by_segment = None
+                for idx_, percentage_num in enumerate(monthly_income_enum):
+                    if idx_ == len(monthly_income_enum) - 1:
+                        income_by_segment = str(income_by_segment) + "원 초과"
+                        calc_result_list.append(income_by_segment)
+                    else:
+                        income_by_segment = (
+                            int(my_basic_income) * percentage_num
+                        ) / 100
+                        income_by_segment = format(round(income_by_segment), ",d")
+                        result_income_by_segment = str(income_by_segment) + "원 이하"
+                        calc_result_list.append(result_income_by_segment)
+
+                user_info_code_value_entity = UserInfoCodeValueEntity()
+
+                user_info_code_value_entity.detail_code = monthly_income_enum
+                user_info_code_value_entity.name = calc_result_list
+
+                user_info_result_entity.code_values = user_info_code_value_entity
+                results.append(user_info_result_entity)
+            else:
+                user_info_code_value_entity = UserInfoCodeValueEntity()
+
+                user_info_code_value_entity.detail_code = bind_code.COND_CD.value
+                user_info_code_value_entity.name = bind_code.COND_NM.value
+
+                user_info_result_entity.code_values = user_info_code_value_entity
+                results.append(user_info_result_entity)
+
+        return results
 
 
 class UserOutUseCase(UserBaseUseCase):
@@ -385,10 +547,10 @@ class GetUserMainUseCase(UserBaseUseCase):
         self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
-        point는 points 스키마의 sum(amount)로 가져온다. -> 안정성을 위해
-        즉, user 스키마의 포인트는 현재로서는 사용안하고, 포인트의 변화가 있을 때 업데이트 용도로만 사용한다.
-        추후에, 사용자가 많아지고 point 합산으로 인한 퍼포먼스 문제가 발생할 시에 user.point를 가져오는 것으로 수정 한다.
-        그 전까지는 sum(point.amount) == user.point 가 맞는지 꾸준히 확인하여 로직이 세는 곳이 있는지 트래킹한다.
+        ticket은 tickets 스키마의 sum(amount)로 가져온다. -> 안정성을 위해
+        즉, user 스키마의 number_ticket은 현재로서는 사용안하고, 티켓의 변화가 있을 때 업데이트 용도로만 사용한다.
+        추후에, 사용자가 많아지고 ticket 합산으로 인한 퍼포먼스 문제가 발생할 시에 user.number_ticket에서 가져오는 것으로 수정 한다.
+        그 전까지는 sum(tickets.amount) == user.number_ticket 이 맞는지 꾸준히 확인하여 로직이 세는 곳이 있는지 트래킹한다.
         """
 
         if not dto.user_id:
@@ -398,8 +560,8 @@ class GetUserMainUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        # survey_step(설문 단계) + point 조회
-        user: UserEntity = self._user_repo.get_user_survey_step_and_point(dto=dto)
+        # survey_step(설문 단계) + ticket 조회
+        user: UserEntity = self._user_repo.get_user_survey_step_and_ticket(dto=dto)
 
         # badge 여부 조회
         is_badge: bool = self._get_badge(dto=dto)
@@ -408,11 +570,125 @@ class GetUserMainUseCase(UserBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _make_result_object(self, user: UserEntity, is_badge: bool):
+        survey_step = (
+            user.user_profile.survey_step
+            if user.user_profile
+            else UserSurveyStepEnum.STEP_NO.value
+        )
+        nickname = user.user_profile.nickname if user.user_profile else None
+
         return dict(
-            survey_step=user.survey_step, point=user.total_amount, is_badge=is_badge
+            survey_step=survey_step
+            if survey_step
+            else UserSurveyStepEnum.STEP_NO.value,
+            tickets=user.total_amount,
+            is_badge=is_badge,
+            nickname=nickname,
         )
 
     def _get_badge(self, dto: GetUserDto) -> bool:
         dto = GetBadgeDto(user_id=dto.user_id)
         send_message(topic_name=NotificationTopicEnum.GET_BADGE, dto=dto)
         return get_event_object(topic_name=NotificationTopicEnum.GET_BADGE)
+
+
+class GetSurveyResultUseCase(UserBaseUseCase):
+    def execute(
+        self, dto: GetUserDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        user_profile_entity: Optional[
+            UserProfileEntity
+        ] = self._user_repo.get_survey_result(dto=dto)
+
+        if not user_profile_entity:
+            return UseCaseFailureOutput(
+                type="survey_result",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        if not user_profile_entity.user_infos:
+            return UseCaseFailureOutput(
+                type="wrong_survey_step",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        age: int = self._calc_age(user_profile_entity=user_profile_entity)
+        return UseCaseSuccessOutput(
+            value=dict(age=age, user_profile_entity=user_profile_entity)
+        )
+
+    def _calc_age(self, user_profile_entity: UserProfileEntity) -> int:
+        # 생일로 나이 계산
+        birth = user_profile_entity.user_infos[0].user_value
+        birth = datetime.strptime(birth, "%Y%m%d")
+        today = get_server_timestamp()
+
+        return today.year - birth.year
+
+
+class GetUserProfileUseCase(UserBaseUseCase):
+    def execute(
+        self, dto: GetUserDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
+            user_id=dto.user_id
+        )
+        return UseCaseSuccessOutput(value=user_profile)
+
+
+class UpdateUserProfileUseCase(UserBaseUseCase):
+    def execute(
+        self, dto: UpdateUserProfileDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        if self._check_nickname_for_duplicate(nickname=dto.nickname):
+            return UseCaseFailureOutput(
+                type="duplicate nickname",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
+            )
+
+        # 기존 함수 사용 위해 dto 변환
+        upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
+            user_id=dto.user_id, code=CodeEnum.NICKNAME.value, value=dto.nickname
+        )
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
+            user_id=dto.user_id
+        )
+
+        if not user_profile:
+            return UseCaseFailureOutput(
+                type="user_profile_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        upsert_user_info_detail_dto.user_profile_id = user_profile.id
+
+        # 닉네임 업데이트
+        self._user_repo.update_user_nickname_of_profile_setting(
+            dto=upsert_user_info_detail_dto
+        )
+        return UseCaseSuccessOutput()
