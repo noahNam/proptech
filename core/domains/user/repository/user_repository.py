@@ -195,7 +195,7 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T007")
 
-    def update_user_nickname(self, dto: UpsertUserInfoDetailDto):
+    def update_user_nickname(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
             session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
                 {
@@ -270,7 +270,7 @@ class UserRepository:
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[UserRepository][update_user_nickname] user_id : {dto.user_id} error : {e}"
+                f"[UserRepository][update_last_code_to_user_info] user_id : {dto.user_id} error : {e}"
             )
             raise Exception
 
@@ -449,3 +449,8 @@ class UserRepository:
                 f"[UserRepository][update_user_nickname_of_profile_setting] user_id : {dto.user_id} error : {e}"
             )
             raise Exception
+
+    def is_duplicate_nickname(self, nickname: str) -> bool:
+        return session.query(
+            session.query(UserProfileModel).filter_by(nickname=nickname).exists()
+        ).scalar()
