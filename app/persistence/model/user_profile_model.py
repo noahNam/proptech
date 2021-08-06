@@ -1,7 +1,6 @@
 from sqlalchemy import (
     Column,
     BigInteger,
-    Boolean,
     DateTime,
     Integer,
     ForeignKey,
@@ -25,10 +24,19 @@ class UserProfileModel(db.Model):
     user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True)
     nickname = Column(String(12), nullable=True)
     last_update_code = Column(SmallInteger, nullable=True)
+    survey_step = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    user_infos = relationship("UserInfoModel", backref=backref("user_profiles"))
+    user_infos = relationship(
+        "UserInfoModel", backref=backref("user_profiles"), uselist=True
+    )
+    survey_result = relationship(
+        "SurveyResultModel",
+        backref=backref("user_profiles"),
+        uselist=False,
+        primaryjoin="foreign(UserProfileModel.user_id)== SurveyResultModel.user_id",
+    )
 
     def to_entity(self) -> UserProfileEntity:
         return UserProfileEntity(
@@ -36,6 +44,15 @@ class UserProfileModel(db.Model):
             user_id=self.user_id,
             nickname=self.nickname,
             last_update_code=self.last_update_code,
+            survey_step=self.survey_step,
             created_at=self.created_at,
             updated_at=self.updated_at,
+            user_infos=[
+                user_info.to_result_entity()
+                for user_info in self.user_infos
+                if self.user_infos
+            ],
+            survey_result=self.survey_result.to_entity()
+            if self.survey_result
+            else None,
         )

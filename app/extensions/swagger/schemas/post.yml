@@ -6,10 +6,19 @@ post:
       example: 1
     title:
       type: string
-      example: 공지사항
+      example: 소득기준
+    desc:
+      type: string
+      example: Q1 전년도 도시근로자 가구당 월평균소득 기준
+    category_id:
+      type: integer
+      example: 3
+    category_detail_id:
+      type: integer
+      example: 8
     body:
       type: string
-      example: 2.0 버전이 출시되었습니다.
+      example: 배우자가 소득이 있는경우란 근로소득 또는 사업소득이 있는 맞벌이를 말함.(마크다운 들어갈 예정)
     is_deleted:
       type: boolean
       example: false
@@ -22,3 +31,30 @@ post:
     updated_at:
       type: string
       example: 2021-7-11 13:00
+    post_attachments:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        post_id:
+          type: integer
+          example: 1
+        type:
+          type: integer
+          example: 0
+        file_name:
+          type: string
+          example: "photo_name"
+        path:
+          type: string
+          example: "https://None.s3.None.amazonaws.com/public_sale_photos/2021/07/13/2c222a5b-b115-4330-8c88-9be638b14b46.png"
+        extension:
+          type: string
+          example: "png"
+        created_at:
+          type: string
+          example: "Mon, 12 Jul 2021 15:00:00 GMT"
+        updated_at:
+          type: string
+          example: "Mon, 12 Jul 2021 15:00:00 GMT"

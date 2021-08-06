@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, StrictInt, ValidationError
 
 from app.extensions.utils.log_helper import logger_
@@ -8,28 +10,24 @@ logger = logger_.getLogger(__name__)
 
 
 class GetPostListSchema(BaseModel):
-    user_id: StrictInt
     post_category: int
-    previous_post_id: int = None
+    post_category_detail: int
 
 
 class UpdatePostReadCountSchema(BaseModel):
-    user_id: StrictInt
     post_id: int
 
 
 class GetPostListRequestSchema:
-    def __init__(self, user_id, post_category, previous_post_id):
-        self.user_id = int(user_id) if user_id else None
-        self.post_category = post_category
-        self.previous_post_id = previous_post_id
+    def __init__(self, post_category, post_category_detail):
+        self.post_category = int(post_category)
+        self.post_category_detail = int(post_category_detail)
 
     def validate_request_and_make_dto(self):
         try:
             schema = GetPostListSchema(
-                user_id=self.user_id,
                 post_category=self.post_category,
-                previous_post_id=self.previous_post_id,
+                post_category_detail=self.post_category_detail,
             ).dict()
             return GetPostListDto(**schema)
         except ValidationError as e:
@@ -40,15 +38,12 @@ class GetPostListRequestSchema:
 
 
 class UpdatePostReadCountRequestSchema:
-    def __init__(self, user_id, post_id):
-        self.user_id = int(user_id) if user_id else None
+    def __init__(self, post_id):
         self.post_id = post_id
 
     def validate_request_and_make_dto(self):
         try:
-            schema = UpdatePostReadCountSchema(
-                user_id=self.user_id, post_id=self.post_id,
-            ).dict()
+            schema = UpdatePostReadCountSchema(post_id=self.post_id).dict()
             return UpdatePostReadCountDto(**schema)
         except ValidationError as e:
             logger.error(

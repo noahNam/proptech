@@ -1,10 +1,10 @@
 import json
 from flask import url_for
 
-from core.domains.post.enum.post_enum import PostCategoryEnum
+from core.domains.post.enum.post_enum import PostCategoryEnum, PostCategoryDetailEnum
 
 
-def test_get_post_list_include_article_view_when_watch_notice_and_faq_then_return_teb_posts(
+def test_get_post_list_include_contents_view_when_watch_notice_then_return_notice_post_lists(
     client,
     session,
     test_request_context,
@@ -17,9 +17,10 @@ def test_get_post_list_include_article_view_when_watch_notice_and_faq_then_retur
     for index in range(15):
         post_list.append(
             post_factory(
-                Article=True,
-                user_id=create_users[0].id,
+                article=True,
+                post_attachments=True,
                 category_id=PostCategoryEnum.NOTICE.value,
+                category_detail_id=PostCategoryDetailEnum.NO_DETAIL.value,
             )
         )
 
@@ -34,35 +35,19 @@ def test_get_post_list_include_article_view_when_watch_notice_and_faq_then_retur
         accept="application/json",
     )
 
-    # 첫 페이징
-    dict_ = dict(post_category=PostCategoryEnum.NOTICE.value, previous_post_id=None)
     with test_request_context:
         response1 = client.get(
-            url_for("api/tanos.get_post_list_view"),
-            data=json.dumps(dict_),
+            url_for(
+                "api/tanos.get_post_list_view",
+                post_category=PostCategoryEnum.NOTICE.value,
+                post_category_detail=PostCategoryDetailEnum.NO_DETAIL.value,
+            ),
             headers=headers,
         )
 
     data = response1.get_json()["data"]
-    meta = response1.get_json()["meta"]
     assert response1.status_code == 200
-    assert len(data["posts"]) == 10
-    assert meta["cursor"]["last_post_id"] == 6
-
-    # 두번째 페이징
-    dict_ = dict(post_category=PostCategoryEnum.NOTICE.value, previous_post_id=6)
-    with test_request_context:
-        response2 = client.get(
-            url_for("api/tanos.get_post_list_view"),
-            data=json.dumps(dict_),
-            headers=headers,
-        )
-
-    data = response2.get_json()["data"]
-    meta = response2.get_json()["meta"]
-    assert response2.status_code == 200
-    assert len(data["posts"]) == 5
-    assert meta["cursor"]["last_post_id"] == 1
+    assert len(data["posts"]) == 15
 
 
 def test_update_post_read_count_view_when_watch_notice_and_faq_then_return_success(
@@ -75,9 +60,10 @@ def test_update_post_read_count_view_when_watch_notice_and_faq_then_return_succe
     post_factory,
 ):
     post = post_factory(
-        Article=True,
-        user_id=create_users[0].id,
+        article=True,
+        post_attachments=True,
         category_id=PostCategoryEnum.NOTICE.value,
+        category_detail_id=PostCategoryDetailEnum.NO_DETAIL.value,
     )
 
     session.add(post)
@@ -101,16 +87,16 @@ def test_update_post_read_count_view_when_watch_notice_and_faq_then_return_succe
     assert response.status_code == 200
     assert data["result"] == "success"
 
-    dict_ = dict(post_category=PostCategoryEnum.NOTICE.value, previous_post_id=None)
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_post_list_view"),
-            data=json.dumps(dict_),
+            url_for(
+                "api/tanos.get_post_list_view",
+                post_category=PostCategoryEnum.NOTICE.value,
+                post_category_detail=PostCategoryDetailEnum.NO_DETAIL.value,
+            ),
             headers=headers,
         )
 
     data = response.get_json()["data"]
-    meta = response.get_json()["meta"]
     assert response.status_code == 200
     assert data["posts"][0]["read_count"] == 1
-    assert meta["cursor"]["last_post_id"] == 1

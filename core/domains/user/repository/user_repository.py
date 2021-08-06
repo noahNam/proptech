@@ -1,4 +1,4 @@
-from typing import Optional, List, Union
+from typing import Optional, List
 
 from sqlalchemy import exc, exists
 from sqlalchemy.orm import joinedload
@@ -15,32 +15,30 @@ from app.persistence.model import (
     AvgMonthlyIncomeWokrerModel,
     SidoCodeModel,
     ReceivePushTypeModel,
-    PointModel,
+    TicketModel,
     UserModel,
     RecentlyViewModel,
 )
-from core.domains.authentication.dto.sms_dto import MobileAuthConfirmSmsDto
 from core.domains.notification.dto.notification_dto import (
     UpdateReceiveNotificationSettingDto,
 )
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
-    UpsertUserInfoDto,
     GetUserInfoDto,
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
-    GetUserInfoDetailDto,
     GetUserDto,
     RecentlyViewDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
-    UserInfoEmptyEntity,
     UserEntity,
     UserInfoCodeValueEntity,
+    UserProfileEntity,
+    UserInfoResultEntity,
 )
-from core.domains.user.enum.user_info_enum import CodeEnum
+from core.domains.user.enum.user_info_enum import CodeEnum, CodeStepEnum
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -129,22 +127,6 @@ class UserRepository:
                 f"[UserRepository][update_marketing_receive_push_types] user_id : {dto.user_id} error : {e}"
             )
 
-    def update_user_mobile_auth_info(self, dto: MobileAuthConfirmSmsDto) -> None:
-        try:
-            session.query(DeviceModel).filter_by(user_id=dto.user_id).update(
-                {
-                    "phone_number": dto.phone_number,
-                    "is_auth": True,
-                    "updated_at": get_server_timestamp(),
-                }
-            )
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            logger.error(
-                f"[UserRepository][update_user_mobile_auth_info] user_id : {dto.user_id} error : {e}"
-            )
-
     def create_app_agree_terms(self, dto: CreateAppAgreeTermsDto) -> None:
         try:
             receive_marketing_date = (
@@ -180,16 +162,16 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T006")
 
-    def get_user_profile_id(self, dto: UpsertUserInfoDto) -> Optional[int]:
+    def get_user_profile(self, user_id: int) -> Optional[UserProfileEntity]:
         user_profile = (
-            session.query(UserProfileModel.id).filter_by(user_id=dto.user_id).first()
+            session.query(UserProfileModel).filter_by(user_id=user_id).first()
         )
         if not user_profile:
             return None
 
-        return user_profile.id
+        return user_profile.to_entity()
 
-    def is_user_info(self, dto: UpsertUserInfoDto) -> Optional[UserInfoEntity]:
+    def is_user_info(self, dto: UpsertUserInfoDetailDto) -> bool:
         return session.query(
             exists()
             .where(UserInfoModel.user_profile_id == dto.user_profile_id)
@@ -213,7 +195,7 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T007")
 
-    def update_user_nickname(self, dto: UpsertUserInfoDetailDto):
+    def update_user_nickname(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
             session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
                 {
@@ -230,15 +212,13 @@ class UserRepository:
             )
             raise Exception
 
-    def create_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
+    def create_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
             user_info = UserInfoModel(
                 user_profile_id=dto.user_profile_id, code=dto.code, value=dto.value
             )
             session.add(user_info)
             session.commit()
-
-            return user_info.to_entity()
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
@@ -246,21 +226,12 @@ class UserRepository:
             )
             raise NotUniqueErrorException(type_="T008")
 
-    def update_user_info(self, dto: UpsertUserInfoDetailDto) -> UserInfoEntity:
+    def update_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
-            user_info_id = (
-                session.query(UserInfoModel)
-                .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-                .update({"value": dto.value, "updated_at": get_server_timestamp()})
-            )
+            session.query(UserInfoModel).filter_by(
+                user_profile_id=dto.user_profile_id, code=dto.code
+            ).update({"value": dto.value, "updated_at": get_server_timestamp()})
             session.commit()
-
-            return UserInfoEntity(
-                id=user_info_id,
-                user_profile_id=dto.user_profile_id,
-                code=dto.code,
-                user_value=dto.value,
-            )
         except Exception as e:
             session.rollback()
             logger.error(
@@ -268,59 +239,65 @@ class UserRepository:
             )
             raise Exception
 
-    def update_last_code_to_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
+    def update_chain_user_info(self, user_profile_id: int, codes: list) -> None:
         try:
+            session.query(UserInfoModel).filter(
+                UserInfoModel.user_profile_id == user_profile_id,
+                UserInfoModel.code.in_(codes),
+            ).update({"value": None, "updated_at": get_server_timestamp()})
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_chain_user_info] user_profile_id : {user_profile_id} error : {e}"
+            )
+            raise Exception
+
+    def update_last_code_to_user_info(
+        self, dto: UpsertUserInfoDetailDto, survey_step: Optional[int]
+    ) -> None:
+        try:
+            update_variable = dict()
+            update_variable["last_update_code"] = dto.code
+            update_variable["updated_at"] = get_server_timestamp()
+            if survey_step:
+                update_variable["survey_step"] = survey_step
+
             session.query(UserProfileModel).filter_by(user_id=dto.user_id).update(
-                {"last_update_code": dto.code, "updated_at": get_server_timestamp()}
+                update_variable
             )
             session.commit()
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[UserRepository][update_user_nickname] user_id : {dto.user_id} error : {e}"
+                f"[UserRepository][update_last_code_to_user_info] user_id : {dto.user_id} error : {e}"
             )
             raise Exception
 
-    def get_user_info(
-        self, dto: GetUserInfoDetailDto
-    ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
-        user_info = (
-            session.query(UserInfoModel)
-            .filter_by(user_profile_id=dto.user_profile_id, code=dto.code)
-            .first()
-        )
+    def get_user_multi_data_info(self, dto: GetUserInfoDto) -> List[UserInfoEntity]:
+        filters = list()
+        filters.append(UserInfoModel.user_profile_id == dto.user_profile_id)
 
-        if not user_info:
-            return UserInfoEmptyEntity(code=dto.code)
+        if dto.survey_step == 1:
+            # 1단계 설문 데이터 조회
+            filters.append(UserInfoModel.code.in_(CodeStepEnum.ONE.value))
+        else:
+            # 2단계 설문 데이터 조회
+            filters.append(UserInfoModel.code.in_(CodeStepEnum.TWO.value))
 
-        return user_info.to_entity()
+        user_infos = session.query(UserInfoModel).filter(*filters).all()
 
-    def get_user_multi_data_info(
-        self, dto: GetUserInfoDto, codes: list
-    ) -> Union[UserInfoEntity, UserInfoEmptyEntity]:
-        # 복수개의 유저 결과를 리턴할 때
-        user_info = (
-            session.query(UserInfoModel)
-            .filter(
-                UserInfoModel.user_profile_id == dto.user_profile_id,
-                UserInfoModel.code.in_(codes),
+        if not user_infos:
+            return []
+
+        return [
+            UserInfoEntity(
+                user_profile_id=user_info.user_profile_id,
+                code=user_info.code,
+                value=user_info.value,
             )
-            .all()
-        )
-
-        if not user_info:
-            return UserInfoEmptyEntity(code=dto.code)
-
-        user_values = []
-        for query in user_info:
-            user_values.append(query.value)
-
-        return UserInfoEntity(
-            id=user_info[0].id,
-            user_profile_id=dto.user_profile_id,
-            code=dto.code,
-            user_values=user_values,
-        )
+            for user_info in user_infos
+        ]
 
     def get_user_info_by_code(
         self, user_profile_id: int, code: int
@@ -353,18 +330,18 @@ class UserRepository:
             eight=result.eight,
         )
 
-    def get_sido_codes(self, dto: GetUserInfoDetailDto) -> UserInfoCodeValueEntity:
+    def get_sido_codes(self, code: int) -> UserInfoCodeValueEntity:
         result = session.query(SidoCodeModel).all()
-        return self._make_sido_codes_object(result, dto)
+        return self._make_sido_codes_object(result, code)
 
     def _make_sido_codes_object(
-        self, result: List[SidoCodeModel], dto: GetUserInfoDetailDto
+        self, result: List[SidoCodeModel], code: int
     ) -> UserInfoCodeValueEntity:
         code_list = []
         name_list = []
 
         for data in result:
-            if dto.code == CodeEnum.ADDRESS.value:
+            if code == CodeEnum.ADDRESS.value:
                 code_list.append(data.sido_code)
                 name_list.append(data.sido_name)
             else:
@@ -407,11 +384,11 @@ class UserRepository:
                 f"[UserRepository][update_app_agree_terms_to_receive_marketing] user_id : {dto.user_id} error : {e}"
             )
 
-    def get_user_survey_step_and_point(self, dto: GetUserDto) -> UserEntity:
+    def get_user_survey_step_and_ticket(self, dto: GetUserDto) -> UserEntity:
         query = (
             session.query(UserModel)
             .options(joinedload(UserModel.user_profile))
-            .options(joinedload(UserModel.points).joinedload(PointModel.point_type))
+            .options(joinedload(UserModel.tickets).joinedload(TicketModel.ticket_type))
             .filter(UserModel.id == dto.user_id)
         )
         user = query.first()
@@ -431,18 +408,49 @@ class UserRepository:
                 f"[UserRepository][create_recently_view] user_id : {dto.user_id} house_id: {dto.house_id} error : {e}"
             )
 
-    # def get_recently_view_list(self, dto: GetUserDto):
-    #     """
-    #         필터 조건 : 분양 매물중
-    #     """
-    #     filters = list()
-    #     filters.append(RecentlyViewModel.user_id == dto.user_id)
-    #     filters.append(RecentlyViewModel.type == 1)
-    #     filters.append(and_(RealEstateModel.id == RecentlyViewModel.house_id,
-    #                         RealEstateModel.is_available == "True",
-    #                         PublicSaleModel.real_estate_id == RecentlyViewModel.house_id,
-    #                         PublicSaleModel.is_available == "True"))
-    #
-    #     query = session.query(RecentlyViewModel).filter(*filters).order_by(RecentlyViewModel.created_at).limit(30)
-    #
-    #     queryset = query.all()
+    def get_survey_result(self, dto: GetUserDto) -> UserProfileEntity:
+        query = (
+            session.query(UserProfileModel)
+            .options(joinedload(UserProfileModel.survey_result))
+            .join(
+                UserInfoModel,
+                (UserProfileModel.id == UserInfoModel.user_profile_id)
+                & (UserInfoModel.code == CodeEnum.BIRTHDAY.value),
+            )
+            .filter(UserProfileModel.user_id == dto.user_id)
+        )
+
+        user_profile = query.first()
+
+        if not user_profile:
+            return None
+
+        return user_profile.to_entity()
+
+    def update_user_nickname_of_profile_setting(
+        self, dto: UpsertUserInfoDetailDto
+    ) -> None:
+        try:
+            session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
+                {
+                    "nickname": dto.value,
+                    "last_update_code": dto.code,
+                    "updated_at": get_server_timestamp(),
+                }
+            )
+            session.query(UserInfoModel).filter_by(
+                user_profile_id=dto.user_profile_id, code=dto.code
+            ).update({"value": dto.value, "updated_at": get_server_timestamp()})
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_user_nickname_of_profile_setting] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception
+
+    def is_duplicate_nickname(self, nickname: str) -> bool:
+        return session.query(
+            session.query(UserProfileModel).filter_by(nickname=nickname).exists()
+        ).scalar()

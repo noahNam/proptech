@@ -8,6 +8,7 @@ from core.domains.house.schema.house_schema import (
     GetCalenderInfoResponseSchema,
     UpsertInterestHouseResponseSchema,
     GetInterestHouseListResponseSchema,
+    GetSearchHouseListResponseSchema,
     GetRecentViewListResponseSchema,
 )
 from pydantic import ValidationError
@@ -158,6 +159,29 @@ class GetCalenderInfoPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = GetCalenderInfoResponseSchema(houses=output.value)
+            except ValidationError:
+                return failure_response(
+                    UseCaseFailureOutput(
+                        type="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            result = {
+                "data": schema.dict(),
+                "meta": output.meta,
+            }
+            return success_response(result=result)
+        elif isinstance(output, UseCaseFailureOutput):
+            return failure_response(output=output, status_code=output.code)
+
+
+class GetSearchHouseListPresenter:
+    def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
+        if isinstance(output, UseCaseSuccessOutput):
+            try:
+                schema = GetSearchHouseListResponseSchema(houses=output.value)
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(

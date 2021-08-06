@@ -20,8 +20,8 @@ from tests.seeder.factory import (
     AppAgreeTermsFactory,
     PostFactory,
     ArticleFactory,
-    PointFactory,
-    PointTypeFactory,
+    TicketFactory,
+    TicketTypeFactory,
     DeviceFactory,
     DeviceTokenFactory,
     ReceivePushTypeFactory,
@@ -33,6 +33,15 @@ from tests.seeder.factory import (
     PublicSalePhotoFactory,
     PublicSaleDetailFactory,
     PublicSaleDetailPhotoFactory,
+    SurveyResultFactory,
+    UserInfoFactory,
+    TicketUsageResultFactory,
+    TicketUsageResultDetailFactory,
+    PromotionFactory,
+    PromotionHouseFactory,
+    PromotionUsageCountFactory,
+    PostAttachmentFactory,
+    RecommendCodeFactory,
 )
 
 MODEL_FACTORIES = [
@@ -45,8 +54,8 @@ MODEL_FACTORIES = [
     AppAgreeTermsFactory,
     PostFactory,
     ArticleFactory,
-    PointFactory,
-    PointTypeFactory,
+    TicketFactory,
+    TicketTypeFactory,
     DeviceFactory,
     DeviceTokenFactory,
     ReceivePushTypeFactory,
@@ -58,6 +67,15 @@ MODEL_FACTORIES = [
     PublicSalePhotoFactory,
     PublicSaleDetailFactory,
     PublicSaleDetailPhotoFactory,
+    SurveyResultFactory,
+    UserInfoFactory,
+    TicketUsageResultDetailFactory,
+    TicketUsageResultFactory,
+    PromotionHouseFactory,
+    PromotionUsageCountFactory,
+    PromotionFactory,
+    RecommendCodeFactory,
+    PostAttachmentFactory,
 ]
 
 faker = Faker()
@@ -74,13 +92,28 @@ def create_users(session, user_factory):
             user_profile=True,
             interest_houses=True,
             recently_view=True,
-            point=False,
+            tickets=False,
         )
         users.append(user)
     session.add_all(users)
     session.commit()
 
     return users
+
+
+@pytest.fixture
+def create_ticket_usage_results(
+    session, ticket_usage_result_detail_factory, ticket_usage_result_factory
+):
+    ticket_usage_result_detail = ticket_usage_result_detail_factory.build_batch(size=2)
+    session.add_all(ticket_usage_result_detail)
+    session.commit()
+
+    ticket_usage_result = ticket_usage_result_factory.build()
+    session.add(ticket_usage_result)
+    session.commit()
+
+    return ticket_usage_result
 
 
 @pytest.fixture

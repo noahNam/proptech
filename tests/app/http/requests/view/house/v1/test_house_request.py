@@ -3,6 +3,8 @@ import pytest
 from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
     GetCalenderInfoRequestSchema,
+    GetSearchHouseListRequestSchema,
+    GetBoundingWithinRadiusRequestSchema,
 )
 from core.domains.house.enum.house_enum import BoundingLevelEnum
 from core.exceptions import InvalidRequestException
@@ -60,3 +62,49 @@ def test_get_calender_info_request_when_valid_value_then_success():
     assert result.user_id == user_id
     assert result.year == str(year)
     assert result.month == "0" + str(month)
+
+
+def test_get_search_house_list_request_when_valid_keywords_then_success():
+    keywords = "서울특별시 서초구"
+    result = GetSearchHouseListRequestSchema(
+        keywords=keywords
+    ).validate_request_and_make_dto()
+
+    assert result.keywords == keywords
+
+
+def test_get_search_house_list_request_when_no_keywords_then_fail():
+    keywords = None
+    with pytest.raises(InvalidRequestException):
+        GetSearchHouseListRequestSchema(
+            keywords=keywords
+        ).validate_request_and_make_dto()
+
+
+def test_get_bounding_within_radius_request_when_valid_value_then_success():
+    house_id = 1
+    search_type = "2"
+    result = GetBoundingWithinRadiusRequestSchema(
+        house_id=house_id, search_type=search_type
+    ).validate_request_and_make_dto()
+
+    assert result.house_id == house_id
+    assert result.search_type == int(search_type)
+
+
+def test_get_bounding_within_radius_request_when_no_house_id_then_fail():
+    house_id = None
+    search_type = "2"
+    with pytest.raises(InvalidRequestException):
+        GetBoundingWithinRadiusRequestSchema(
+            house_id=house_id, search_type=search_type
+        ).validate_request_and_make_dto()
+
+
+def test_get_bounding_within_radius_request_when_wrong_search_type_then_fail():
+    house_id = 1
+    search_type = "5"
+    with pytest.raises(InvalidRequestException):
+        GetBoundingWithinRadiusRequestSchema(
+            house_id=house_id, search_type=search_type
+        ).validate_request_and_make_dto()

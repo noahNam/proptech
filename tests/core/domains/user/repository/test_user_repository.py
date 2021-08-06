@@ -17,15 +17,15 @@ from core.domains.user.dto.user_dto import (
     UpsertUserInfoDto,
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
-    GetUserInfoDetailDto,
     GetUserDto,
     RecentlyViewDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
-    UserInfoEmptyEntity,
     UserEntity,
     UserInfoCodeValueEntity,
+    UserInfoResultEntity,
+    UserProfileEntity,
 )
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import (
@@ -93,7 +93,7 @@ def test_create_user_when_first_login_then_success(session):
     user = session.query(UserModel).first()
 
     assert user.id == create_user_dto.user_id
-    assert user.point == 0
+    assert user.number_ticket == 0
     assert user.is_required_agree_terms == create_user_dto.is_required_agree_terms
     assert user.is_active == create_user_dto.is_active
     assert user.is_out == create_user_dto.is_out
@@ -226,7 +226,7 @@ def test_update_last_code_to_user_info_when_input_user_data_then_success(session
         code=1007,
         value="2",
     )
-    UserRepository().update_last_code_to_user_info(dto=dto)
+    UserRepository().update_last_code_to_user_info(dto=dto, survey_step=None)
 
     result = session.query(UserProfileModel).filter_by(user_id=dto.user_id).first()
 
@@ -235,49 +235,22 @@ def test_update_last_code_to_user_info_when_input_user_data_then_success(session
 
 def test_get_user_profile_id_when_input_user_data_then_success(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
-    get_user_profile_id = UserRepository().get_user_profile_id(
-        dto=upsert_user_info_detail_dto
+    get_user_profile = UserRepository().get_user_profile(
+        user_id=upsert_user_info_detail_dto.user_id
     )
 
-    assert get_user_profile_id == 1
+    assert get_user_profile.id == 1
 
 
 def test_get_user_profile_id_when_input_user_data_then_none(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
 
     upsert_user_info_detail_dto.user_id = upsert_user_info_detail_dto.user_id + 1
-    get_user_profile_id = UserRepository().get_user_profile_id(
-        dto=upsert_user_info_detail_dto
+    get_user_profile = UserRepository().get_user_profile(
+        user_id=upsert_user_info_detail_dto.user_id
     )
 
-    assert get_user_profile_id is None
-
-
-def test_get_user_info_when_input_user_data_then_success(session):
-    UserRepository().create_user_info(dto=upsert_user_info_detail_dto)
-    dto = GetUserInfoDetailDto(
-        user_id=upsert_user_info_detail_dto.user_id,
-        user_profile_id=upsert_user_info_detail_dto.user_profile_id,
-        code=upsert_user_info_detail_dto.code,
-    )
-
-    user_info: UserInfoEntity = UserRepository().get_user_info(dto=dto)
-
-    assert user_info.code == dto.code
-    assert user_info.user_value[0] == upsert_user_info_detail_dto.value
-
-
-def test_get_user_info_when_input_user_data_then_None(session):
-    UserRepository().create_user_info(dto=upsert_user_info_detail_dto)
-    dto = GetUserInfoDetailDto(
-        user_id=upsert_user_info_detail_dto.user_id,
-        code=upsert_user_info_detail_dto.code + 1,
-        value=upsert_user_info_detail_dto.value,
-    )
-
-    user_info: UserInfoEmptyEntity = UserRepository().get_user_info(dto=dto)
-
-    assert isinstance(user_info, UserInfoEmptyEntity)
+    assert get_user_profile is None
 
 
 def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
@@ -327,7 +300,7 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
         "1025": SpecialCondEnum,
     }
 
-    user_info = UserInfoEntity(id=1, user_profile_id=1, code=user_info_code)
+    user_info = UserInfoResultEntity(code=user_info_code)
     bind_code = bind_detail_code_dict.get(user_info_code)
     # dto.code != "1019" 일 떄로 변경
     dto_code = "1019"
@@ -367,9 +340,9 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
         }
 
         calc_result_list = []
-        my_basic_income = income_result_dict.get(result2.user_value)
+        my_basic_income = income_result_dict.get(result2.value)
 
-        monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.user_value != "2" else MonthlyIncomeEnum.COND_CD_2.value
+        monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if result1.value != "2" else MonthlyIncomeEnum.COND_CD_2.value
 
         for percentage_num in monthly_income_enum:
             income_by_segment = (int(my_basic_income) * percentage_num) / 100
@@ -383,7 +356,7 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
 
         user_info.code_values = user_info_code_value_entity
 
-        assert isinstance(user_info, UserInfoEntity)
+        assert isinstance(user_info, UserInfoResultEntity)
         assert len(user_info.code_values.detail_code) == len(user_info.code_values.name)
 
 
@@ -396,24 +369,24 @@ def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(
     assert user.is_out is True
 
 
-def test_get_user_point_and_survey_step_then_user_point_is_3000_and_survey_step_is_1(
-    session, create_users, point_factory
+def test_get_user_ticket_and_survey_step_then_user_ticket_is_3_and_survey_step_is_1(
+    session, create_users, ticket_factory
 ):
     dto = GetUserDto(user_id=create_users[0].id)
-    points = point_factory.build_batch(size=3, user_id=create_users[0].id)
-    session.add_all(points)
+    tickets = ticket_factory.build_batch(size=3, user_id=create_users[0].id)
+    session.add_all(tickets)
     session.commit()
 
-    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    result = UserRepository().get_user_survey_step_and_ticket(dto=dto)
     total_amount = result.total_amount
-    survey_step = result.survey_step
+    survey_step = result.user_profile.survey_step
 
     assert isinstance(result, UserEntity)
-    assert total_amount == 3000
+    assert total_amount == 3
     assert survey_step == UserSurveyStepEnum.STEP_ONE.value
 
 
-def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_no(
+def test_get_user_ticket_and_survey_step_then_user_ticket_is_0_and_survey_step_is_step_no(
     session, user_factory
 ):
     user = user_factory.create(
@@ -421,22 +394,26 @@ def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_
         receive_push_type=True,
         user_profile=False,
         interest_houses=True,
-        point=False,
+        tickets=False,
     )
     session.add(user)
     session.commit()
 
     dto = GetUserDto(user_id=user.id)
-    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    result = UserRepository().get_user_survey_step_and_ticket(dto=dto)
     total_amount = result.total_amount
-    survey_step = result.survey_step
+    survey_step = (
+        result.user_profile.survey_step
+        if result.user_profile
+        else UserSurveyStepEnum.STEP_NO.value
+    )
 
     assert isinstance(result, UserEntity)
     assert total_amount == 0
     assert survey_step == UserSurveyStepEnum.STEP_NO.value
 
 
-def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_step_complete(
+def test_get_user_ticket_and_survey_step_then_user_ticket_is_0_and_survey_step_is_step_complete(
     session, user_factory
 ):
     user = user_factory.create(
@@ -444,27 +421,82 @@ def test_get_user_point_and_survey_step_then_user_point_is_0_and_survey_step_is_
         receive_push_type=True,
         user_profile=True,
         interest_houses=True,
-        point=False,
+        tickets=False,
     )
-    user.user_profile.last_update_code = CodeStepEnum.COMPLETE.value
+    user.user_profile.survey_step = UserSurveyStepEnum.STEP_COMPLETE.value
     session.add(user)
     session.commit()
 
     dto = GetUserDto(user_id=user.id)
-    result = UserRepository().get_user_survey_step_and_point(dto=dto)
+    result = UserRepository().get_user_survey_step_and_ticket(dto=dto)
     total_amount = result.total_amount
-    survey_step = result.survey_step
+    survey_step = result.user_profile.survey_step
 
     assert isinstance(result, UserEntity)
     assert total_amount == 0
     assert survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
-    assert result.point == 0
+    assert result.number_ticket == 0
 
 
-def test_create_recently_view_table(session):
+def test_create_recently_view(session):
     UserRepository().create_recently_view(dto=recently_view_dto)
     view_info = session.query(RecentlyViewModel).first()
 
     assert view_info.user_id == recently_view_dto.user_id
     assert view_info.house_id == recently_view_dto.house_id
     assert view_info.type == recently_view_dto.type
+
+
+def test_get_survey_result_then_return_user_nickname_and_birth_survey_results(
+    session, create_users
+):
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = UserRepository().get_survey_result(dto=dto)
+
+    assert result.nickname == create_users[0].user_profile.nickname
+    assert (
+        result.user_infos[0].user_value
+        == create_users[0].user_profile.user_infos[0].value
+    )
+    assert (
+        result.survey_result.total_point
+        == create_users[0].user_profile.survey_result.total_point
+    )
+    assert (
+        result.survey_result.hope_town_phase_one
+        == create_users[0].user_profile.survey_result.hope_town_phase_one
+    )
+
+
+def test_get_user_profile_when_enter_setting_page_return_nickname(
+    session, create_users
+):
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = UserRepository().get_user_profile(user_id=dto.user_id)
+
+    assert isinstance(result, UserProfileEntity)
+    assert result.nickname == "noah"
+
+
+def test_get_user_profile_when_enter_setting_page_return_none(session):
+    dto = GetUserDto(user_id=1)
+    result = UserRepository().get_user_profile(user_id=dto.user_id)
+
+    assert result is None
+
+
+def test_update_user_profile_when_enter_setting_page_then_success(
+    session, create_users
+):
+    dto = UpsertUserInfoDetailDto(
+        user_id=create_users[0].id,
+        user_profile_id=create_users[0].user_profile.id,
+        code=CodeEnum.NICKNAME.value,
+        value="harry",
+    )
+    UserRepository().update_user_nickname_of_profile_setting(dto=dto)
+
+    dto = GetUserDto(user_id=create_users[0].id)
+    result = UserRepository().get_user_profile(user_id=dto.user_id)
+
+    assert result.nickname == "harry"

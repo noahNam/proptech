@@ -5,8 +5,8 @@ from .device_token_model import DeviceTokenModel
 from .receive_push_type_model import ReceivePushTypeModel
 from .user_profile_model import UserProfileModel
 from .user_info_model import UserInfoModel
-from .point_type_model import PointTypeModel
-from .point_model import PointModel
+from .ticket_type_model import TicketTypeModel
+from .ticket_model import TicketModel
 from .app_agree_terms_model import AppAgreeTermsModel
 from .avg_monthly_income_worker_model import AvgMonthlyIncomeWokrerModel
 from .sido_codes import SidoCodeModel
@@ -24,3 +24,12 @@ from .article_model import ArticleModel
 from .public_sale_detail_photo_model import PublicSaleDetailPhotoModel
 from .recently_view_model import RecentlyViewModel
 from .private_sale_detail_model import PrivateSaleDetailModel
+from .survey_result_model import SurveyResultModel
+from .ticket_usage_result_model import TicketUsageResultModel
+from .ticket_usage_result_detail_model import TicketUsageResultDetailModel
+from .ticket_target_model import TicketTargetModel
+from .promotion_model import PromotionModel
+from .promotion_house_model import PromotionHouseModel
+from .promotion_usage_count_model import PromotionUsageCountModel
+from .post_attachment_model import PostAttachmentModel
+from .recommend_code_model import RecommendCodeModel

@@ -4,6 +4,7 @@ from datetime import datetime
 
 import factory
 from faker import Factory as FakerFactory
+from strgen import StringGenerator
 
 from app.extensions.utils.time_helper import (
     get_server_timestamp,
@@ -19,8 +20,8 @@ from app.persistence.model import (
     InterestHouseModel,
     ReceivePushTypeModel,
     AppAgreeTermsModel,
-    PointTypeModel,
-    PointModel,
+    TicketTypeModel,
+    TicketModel,
     UserModel,
     ArticleModel,
     PostModel,
@@ -33,6 +34,16 @@ from app.persistence.model import (
     PublicSaleDetailModel,
     PublicSalePhotoModel,
     AdministrativeDivisionModel,
+    SurveyResultModel,
+    UserInfoModel,
+    TicketUsageResultModel,
+    TicketUsageResultDetailModel,
+    PromotionModel,
+    PromotionHouseModel,
+    PromotionUsageCountModel,
+    TicketTargetModel,
+    PostAttachmentModel,
+    RecommendCodeModel,
 )
 
 # factory에 사용해야 하는 Model을 가져온다
@@ -50,11 +61,15 @@ from core.domains.notification.enum.notification_enum import (
     NotificationBadgeTypeEnum,
     NotificationStatusEnum,
 )
-from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum
+from core.domains.payment.enum.payment_enum import TicketSignEnum, PromotionTypeEnum
+from core.domains.post.enum.post_enum import (
+    PostTypeEnum,
+    PostCategoryEnum,
+    PostCategoryDetailEnum,
+)
 from core.domains.user.enum.user_enum import (
-    UserPointTypeDivisionEnum,
-    UserPointCreatedByEnum,
-    UserPointSignEnum,
+    UserTicketTypeDivisionEnum,
+    UserTicketCreatedByEnum,
 )
 
 faker = FakerFactory.create(locale="ko_KR")
@@ -86,12 +101,50 @@ class DeviceFactory(BaseFactory):
     device_token = factory.SubFactory(DeviceTokenFactory)
 
 
+class SurveyResultFactory(BaseFactory):
+    class Meta:
+        model = SurveyResultModel
+
+    user_id = 1
+    total_point = 32
+    detail_point_house = 24
+    detail_point_family = 25
+    detail_point_bank = 26
+    public_newly_married = 10
+    public_first_life = 11
+    public_multiple_children = 12
+    public_old_parent = 13
+    public_agency_recommend = 14
+    public_normal = 15
+    private_newly_married = 16
+    private_first_life = 17
+    private_old_parent = 19
+    private_agency_recommend = 20
+    private_normal = 21
+    hope_town_phase_one = 7
+    hope_town_phase_two = 9
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+
+class UserInfoFactory(BaseFactory):
+    class Meta:
+        model = UserInfoModel
+
+    code = 1001
+    value = "19850509"
+
+
 class UserProfileFactory(BaseFactory):
     class Meta:
         model = UserProfileModel
 
     nickname = "noah"
     last_update_code = 1000
+    survey_step = 1
+
+    user_infos = factory.List([factory.SubFactory(UserInfoFactory)])
+    survey_result = factory.SubFactory(SurveyResultFactory)
 
 
 class ReceivePushTypeFactory(BaseFactory):
@@ -114,24 +167,66 @@ class InterestHouseFactory(BaseFactory):
     is_like = True
 
 
-class PointTypeFactory(BaseFactory):
+class TicketTargetFactory(BaseFactory):
     class Meta:
-        model = PointTypeModel
+        model = TicketTargetModel
 
-    name = "결제포인트 적립"
-    division = UserPointTypeDivisionEnum.CHARGED.value
+    public_house_id = factory.Sequence(lambda n: n + 1)
 
 
-class PointFactory(BaseFactory):
+class TicketTypeFactory(BaseFactory):
     class Meta:
-        model = PointModel
+        model = TicketTypeModel
 
-    amount = 1000
-    sign = UserPointSignEnum.PLUS.value
-    created_by = UserPointCreatedByEnum.SYSTEM.value
+    division = UserTicketTypeDivisionEnum.CHARGED.value
+
+
+class TicketFactory(BaseFactory):
+    class Meta:
+        model = TicketModel
+
+    type = 1
+    amount = 1
+    sign = TicketSignEnum.PLUS.value
+    is_active = True
+    created_by = UserTicketCreatedByEnum.SYSTEM.value
     created_at = get_server_timestamp()
 
-    point_type = factory.SubFactory(PointTypeFactory)
+    @factory.post_generation
+    def ticket_type(obj, create, extracted, **kwargs):
+        if extracted:
+            TicketTypeFactory(users=obj, **kwargs)
+
+    @factory.post_generation
+    def ticket_targets(obj, create, extracted, **kwargs):
+        if extracted:
+            for _ in range(3):
+                TicketTargetFactory(users=obj, **kwargs)
+
+
+class TicketUsageResultDetailFactory(BaseFactory):
+    class Meta:
+        model = TicketUsageResultDetailModel
+
+    ticket_usage_result_id = 1
+    house_structure_type = factory.Sequence(lambda n: f"59B_{n}")
+    subscription_type = factory.Sequence(lambda n: f"신혼부부_{n}")
+    rank = factory.Sequence(lambda n: n + 1)
+
+
+class TicketUsageResultFactory(BaseFactory):
+    class Meta:
+        model = TicketUsageResultModel
+
+    user_id = 1
+    public_house_id = 1
+    ticket_id = None
+    is_active = True
+    created_at = get_server_timestamp()
+
+    ticket_usage_result_details = factory.List(
+        [factory.SubFactory(TicketUsageResultDetailFactory)]
+    )
 
 
 class UserFactory(BaseFactory):
@@ -146,7 +241,7 @@ class UserFactory(BaseFactory):
     join_date = get_server_timestamp().strftime("%y%m%d")
     is_active = True
     is_out = False
-    point = 0
+    number_ticket = 0
 
     @factory.post_generation
     def device(obj, create, extracted, **kwargs):
@@ -169,9 +264,9 @@ class UserFactory(BaseFactory):
             InterestHouseFactory(users=obj, **kwargs)
 
     @factory.post_generation
-    def point(obj, create, extracted, **kwargs):
+    def tickets(obj, create, extracted, **kwargs):
         if extracted:
-            PointFactory(users=obj, **kwargs)
+            TicketFactory(users=obj, **kwargs)
 
     @factory.post_generation
     def recently_view(obj, create, extracted, **kwargs):
@@ -230,31 +325,54 @@ class AppAgreeTermsFactory(BaseFactory):
     receive_marketing_date = get_server_timestamp()
 
 
-class PostFactory(BaseFactory):
-    class Meta:
-        model = PostModel
-
-    user_id = 1
-    title = "떡볶이 나눠 먹어요"
-    type = PostTypeEnum.ARTICLE.value
-    is_deleted = False
-    read_count = 0
-    category_id = PostCategoryEnum.NOTICE.value
-    created_at = get_server_timestamp()
-    updated_at = get_server_timestamp()
-
-    @factory.post_generation
-    def Article(obj, create, extracted, **kwargs):
-        if extracted:
-            ArticleFactory(post=obj, **kwargs)
-
-
 class ArticleFactory(BaseFactory):
     class Meta:
         model = ArticleModel
 
     post_id = 1
     body = factory.Sequence(lambda n: "body_게시글 입니다:) {}".format(n + 1))
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+
+class PostAttachmentFactory(BaseFactory):
+    class Meta:
+        model = PostAttachmentModel
+
+    post_id = 1
+    file_name = "photo_file"
+    path = (
+        "https://sample.s3.sample.amazonaws.com"
+        "/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
+    )
+    extension = "jpeg"
+    type = 0
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+
+class PostFactory(BaseFactory):
+    class Meta:
+        model = PostModel
+
+    title = "회원가입 관련 안내사항"
+    desc = "회원 가입 기준은?"
+    is_deleted = False
+    read_count = 0
+    category_id = PostCategoryEnum.NOTICE.value
+    category_detail_id = PostCategoryDetailEnum.NO_DETAIL.value
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+    @factory.post_generation
+    def article(obj, create, extracted, **kwargs):
+        if extracted:
+            ArticleFactory(post=obj, **kwargs)
+
+    @factory.post_generation
+    def post_attachments(obj, create, extracted, **kwargs):
+        if extracted:
+            PostAttachmentFactory(post=obj, **kwargs)
 
 
 class PrivateSaleDetailFactory(BaseFactory):
@@ -341,6 +459,7 @@ class PublicSaleFactory(BaseFactory):
 
     real_estate_id = factory.Sequence(lambda n: n + 1)
     name = factory.Sequence(lambda n: f"아파트_{n}")
+    name_ts = factory.Sequence(lambda n: f"아파트_{n}")
     region = "경기"
     housing_category = HousingCategoryEnum.PUBLIC.value
     rent_type = RentTypeEnum.PRE_SALE.value
@@ -401,6 +520,8 @@ class RealEstateFactory(BaseFactory):
     name = faker.building_name()
     road_address = faker.road_address()
     jibun_address = faker.land_address()
+    road_address_ts = faker.land_address()
+    jibun_address_ts = faker.land_address()
     si_do = faker.province()
     si_gun_gu = faker.city() + faker.borough()
     dong_myun = "XX동"
@@ -440,6 +561,7 @@ class AdministrativeDivisionFactory(BaseFactory):
         model = AdministrativeDivisionModel
 
     name = factory.Sequence(lambda n: f"XX시 XX구 읍면동_{n}")
+    name_ts = factory.Sequence(lambda n: f"XX시 XX구 읍면동_{n}")
     short_name = factory.Sequence(lambda n: f"읍면동_{n}")
     real_trade_price = random.randint(10_000_000, 50_000_000)
     real_rent_price = random.randint(10_000_000, 50_000_000)
@@ -452,3 +574,51 @@ class AdministrativeDivisionFactory(BaseFactory):
     longitude = random.uniform(125.0666666, 131.8722222)
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
+
+
+class PromotionHouseFactory(BaseFactory):
+    class Meta:
+        model = PromotionHouseModel
+
+    house_id = factory.Sequence(lambda n: n + 1)
+
+
+class PromotionUsageCountFactory(BaseFactory):
+    class Meta:
+        model = PromotionUsageCountModel
+
+    user_id = 1
+    usage_count = 1
+
+
+class PromotionFactory(BaseFactory):
+    class Meta:
+        model = PromotionModel
+
+    type = PromotionTypeEnum.ALL.value
+    max_count = 1
+    is_active = True
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+    @factory.post_generation
+    def promotion_houses(obj, create, extracted, **kwargs):
+        if extracted:
+            for _ in range(3):
+                PromotionHouseFactory(promotions=obj, **kwargs)
+
+    @factory.post_generation
+    def promotion_usage_count(obj, create, extracted, **kwargs):
+        if extracted:
+            PromotionUsageCountFactory(promotions=obj, **kwargs)
+
+
+class RecommendCodeFactory(BaseFactory):
+    class Meta:
+        model = RecommendCodeModel
+
+    user_id = 1
+    code_group = int(user_id / 1000)
+    code = (StringGenerator("[\l]{6}").render_list(1, unique=True)[0]).upper()
+    code_count = 0
+    is_used = False
