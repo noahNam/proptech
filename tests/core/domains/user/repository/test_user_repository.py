@@ -379,7 +379,7 @@ def test_get_user_ticket_and_survey_step_then_user_ticket_is_3_and_survey_step_i
 
     result = UserRepository().get_user_survey_step_and_ticket(dto=dto)
     total_amount = result.total_amount
-    survey_step = result.survey_step
+    survey_step = result.user_profile.survey_step
 
     assert isinstance(result, UserEntity)
     assert total_amount == 3
@@ -402,7 +402,7 @@ def test_get_user_ticket_and_survey_step_then_user_ticket_is_0_and_survey_step_i
     dto = GetUserDto(user_id=user.id)
     result = UserRepository().get_user_survey_step_and_ticket(dto=dto)
     total_amount = result.total_amount
-    survey_step = result.survey_step
+    survey_step = result.user_profile.survey_step if result.user_profile else UserSurveyStepEnum.STEP_NO.value
 
     assert isinstance(result, UserEntity)
     assert total_amount == 0
@@ -419,14 +419,14 @@ def test_get_user_ticket_and_survey_step_then_user_ticket_is_0_and_survey_step_i
         interest_houses=True,
         tickets=False,
     )
-    user.user_profile.last_update_code = CodeStepEnum.COMPLETE_TWO.value
+    user.user_profile.survey_step = UserSurveyStepEnum.STEP_COMPLETE.value
     session.add(user)
     session.commit()
 
     dto = GetUserDto(user_id=user.id)
     result = UserRepository().get_user_survey_step_and_ticket(dto=dto)
     total_amount = result.total_amount
-    survey_step = result.survey_step
+    survey_step = result.user_profile.survey_step
 
     assert isinstance(result, UserEntity)
     assert total_amount == 0
