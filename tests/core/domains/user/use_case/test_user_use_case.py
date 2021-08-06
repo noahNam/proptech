@@ -423,6 +423,7 @@ def test_get_user_info_when_monthly_income_then_success(
                 "9,222,466원 이하",
                 "9,931,887원 이하",
                 "11,350,728원 이하",
+                "11,350,728원 초과",
             ]
 
 
