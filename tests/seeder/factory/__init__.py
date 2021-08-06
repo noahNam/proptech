@@ -62,7 +62,11 @@ from core.domains.notification.enum.notification_enum import (
     NotificationStatusEnum,
 )
 from core.domains.payment.enum.payment_enum import TicketSignEnum, PromotionTypeEnum
-from core.domains.post.enum.post_enum import PostTypeEnum, PostCategoryEnum, PostCategoryDetailEnum
+from core.domains.post.enum.post_enum import (
+    PostTypeEnum,
+    PostCategoryEnum,
+    PostCategoryDetailEnum,
+)
 from core.domains.user.enum.user_enum import (
     UserTicketTypeDivisionEnum,
     UserTicketCreatedByEnum,
@@ -614,6 +618,6 @@ class RecommendCodeFactory(BaseFactory):
 
     user_id = 1
     code_group = int(user_id / 1000)
-    code = StringGenerator("[\l]{6}").render_list(1, unique=True)[0]
+    code = (StringGenerator("[\l]{6}").render_list(1, unique=True)[0]).upper()
     code_count = 0
     is_used = False

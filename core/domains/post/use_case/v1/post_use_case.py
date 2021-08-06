@@ -18,18 +18,16 @@ class PostBaseUseCase:
 
 class GetPostListUseCase(PostBaseUseCase):
     def execute(
-            self, dto: GetPostListDto
+        self, dto: GetPostListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         post_list = self._post_repo.get_post_list_include_contents(dto=dto)
 
-        return UseCaseSuccessOutput(
-            value=post_list
-        )
+        return UseCaseSuccessOutput(value=post_list)
 
 
 class UpdatePostReadCountUseCase(PostBaseUseCase):
     def execute(
-            self, dto: UpdatePostReadCountDto
+        self, dto: UpdatePostReadCountDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         self._post_repo.update_read_count(post_id=dto.post_id)
         return UseCaseSuccessOutput()

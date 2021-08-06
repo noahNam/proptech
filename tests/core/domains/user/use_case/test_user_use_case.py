@@ -500,3 +500,103 @@ def test_update_user_profile_use_case_when_enter_setting_page_return_success(
     assert isinstance(result_1, UseCaseSuccessOutput)
     assert result_1.type == "success"
     assert result_2.value.nickname == "harry"
+
+
+@patch(
+    "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
+    return_value=True,
+)
+def test_upsert_user_info_when_update_is_house_owner_then_chain_update_user_data(
+    _send_sqs_message, session, create_users
+):
+    """
+        1. 1005: 주택 소유 여부 질문 (3) -> "있어요", "없어요", "과거에 있었지만 현재는 처분했어요"
+           1006: 주택 처분 날짜 -> 202107
+        2. 1005: 주택 소유 여부 질문 (1) -> "있어요", "없어요", "과거에 있었지만 현재는 처분했어요"
+        Then. 1006 value == None
+    """
+    # 1
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=create_users[0].id,
+        user_profile_id=None,
+        codes=[1005, 1006],
+        values=["3", "202107"],
+    )
+    UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
+
+    # 2
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=create_users[0].id, user_profile_id=None, codes=[1005], values=["1"]
+    )
+    UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
+
+    # Then
+    user_profile = (
+        session.query(UserProfileModel)
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
+    )
+    user_infos = (
+        session.query(UserInfoModel)
+        .filter(
+            UserInfoModel.user_profile_id == user_profile.id,
+            UserInfoModel.code.in_([1005, 1006]),
+        )
+        .all()
+    )
+
+    for user_info in user_infos:
+        if user_info.code == 1006:
+            assert user_info.value is None
+
+
+@patch(
+    "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
+    return_value=True,
+)
+def test_upsert_user_info_when_update_is_sub_account_then_chain_update_user_data(
+    _send_sqs_message, session, create_users
+):
+    """
+        1. 1016: 청약 통장 여부 질문 (1) -> "있어요", "없어요"
+           1017: 청약 가입 날짜 -> 202107
+           1019: 납입횟수 -> 24
+           1020: 총금액 -> 30000
+        2. 1016: 주택 소유 여부 질문 (2) -> "있어요", "없어요"
+        Then. 1017,1019,1020 value == None
+    """
+    # 1
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=create_users[0].id,
+        user_profile_id=None,
+        codes=[1016, 1017, 1018, 1019],
+        values=["1", "202107", "24", "30000"],
+    )
+    UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
+
+    # 2
+    upsert_user_info_dto = UpsertUserInfoDto(
+        user_id=create_users[0].id, user_profile_id=None, codes=[1016], values=["2"]
+    )
+    UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
+
+    # Then
+    user_profile = (
+        session.query(UserProfileModel)
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
+    )
+    user_infos = (
+        session.query(UserInfoModel)
+        .filter(
+            UserInfoModel.user_profile_id == user_profile.id,
+            UserInfoModel.code.in_([1016, 1017, 1018, 1019]),
+        )
+        .all()
+    )
+
+    for user_info in user_infos:
+        if user_info.code == 1016:
+            assert user_info.value == "2"
+        else:
+            assert user_info.value is None

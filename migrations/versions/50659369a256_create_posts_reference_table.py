@@ -21,9 +21,9 @@ def upgrade():
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("category_id", sa.SmallInteger(), nullable=False),
-        sa.Column('category_detail_id', sa.SmallInteger(), nullable=False),
+        sa.Column("category_detail_id", sa.SmallInteger(), nullable=False),
         sa.Column("title", sa.String(length=50), nullable=False),
-        sa.Column('desc', sa.String(length=200), nullable=False),
+        sa.Column("desc", sa.String(length=200), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
         sa.Column("read_count", sa.Integer(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
@@ -34,7 +34,10 @@ def upgrade():
         op.f("ix_posts_category_id"), "posts", ["category_id"], unique=False
     )
     op.create_index(
-        op.f('ix_posts_category_detail_id'), 'posts', ['category_detail_id'], unique=False
+        op.f("ix_posts_category_detail_id"),
+        "posts",
+        ["category_detail_id"],
+        unique=False,
     )
 
     op.create_table(

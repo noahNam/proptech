@@ -24,7 +24,7 @@ def upgrade():
         sa.Column("house_id", sa.BigInteger(), nullable=False),
         sa.Column("type", sa.SmallInteger(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
         sa.PrimaryKeyConstraint("id"),
     )
 

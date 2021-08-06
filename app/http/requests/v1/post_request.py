@@ -43,9 +43,7 @@ class UpdatePostReadCountRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = UpdatePostReadCountSchema(
-                post_id=self.post_id
-            ).dict()
+            schema = UpdatePostReadCountSchema(post_id=self.post_id).dict()
             return UpdatePostReadCountDto(**schema)
         except ValidationError as e:
             logger.error(

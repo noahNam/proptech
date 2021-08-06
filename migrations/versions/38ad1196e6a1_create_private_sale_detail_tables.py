@@ -34,9 +34,7 @@ def upgrade():
         sa.Column("floor", sa.SmallInteger(), nullable=False),
         sa.Column(
             "trade_type",
-            postgresql.ENUM(
-                "매매", "전세", "월세", name="realtradetypeenum",
-            ),
+            postgresql.ENUM("매매", "전세", "월세", name="realtradetypeenum",),
             nullable=False,
         ),
         sa.Column("is_available", sa.Boolean(), nullable=False),
