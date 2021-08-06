@@ -598,13 +598,13 @@ def test_get_user_info_view_when_monthly_income_then_success(
     for survay in data["surveys"]:
         if survay["code"] == CodeEnum.MONTHLY_INCOME.value:
             assert survay["code_values"]["name"] == [
-                3547102,
-                5675364,
-                7803626,
-                8513046,
-                9222466,
-                9931887,
-                11350728,
+                "3,547,102원 이하",
+                "5,675,364원 이하",
+                "7,803,626원 이하",
+                "8,513,046원 이하",
+                "9,222,466원 이하",
+                "9,931,887원 이하",
+                "11,350,728원 이하",
             ]
 
 

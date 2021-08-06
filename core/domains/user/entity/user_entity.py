@@ -78,6 +78,7 @@ class UserProfileEntity(BaseModel):
     user_id: int
     nickname: str
     last_update_code: int
+    survey_step: Optional[int]
     created_at: datetime
     updated_at: datetime
     user_infos: List[UserInfoResultEntity] = []

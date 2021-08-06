@@ -226,7 +226,7 @@ def test_update_last_code_to_user_info_when_input_user_data_then_success(session
         code=1007,
         value="2",
     )
-    UserRepository().update_last_code_to_user_info(dto=dto)
+    UserRepository().update_last_code_to_user_info(dto=dto, survey_step=None)
 
     result = session.query(UserProfileModel).filter_by(user_id=dto.user_id).first()
 
@@ -235,22 +235,22 @@ def test_update_last_code_to_user_info_when_input_user_data_then_success(session
 
 def test_get_user_profile_id_when_input_user_data_then_success(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
-    get_user_profile_id = UserRepository().get_user_profile_id(
+    get_user_profile = UserRepository().get_user_profile(
         user_id=upsert_user_info_detail_dto.user_id
     )
 
-    assert get_user_profile_id == 1
+    assert get_user_profile.id == 1
 
 
 def test_get_user_profile_id_when_input_user_data_then_none(session):
     UserRepository().create_user_nickname(dto=upsert_user_info_detail_dto)
 
     upsert_user_info_detail_dto.user_id = upsert_user_info_detail_dto.user_id + 1
-    get_user_profile_id = UserRepository().get_user_profile_id(
+    get_user_profile = UserRepository().get_user_profile(
         user_id=upsert_user_info_detail_dto.user_id
     )
 
-    assert get_user_profile_id is None
+    assert get_user_profile is None
 
 
 def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
@@ -468,7 +468,7 @@ def test_get_user_profile_when_enter_setting_page_return_nickname(
     session, create_users
 ):
     dto = GetUserDto(user_id=create_users[0].id)
-    result = UserRepository().get_user_profile(dto=dto)
+    result = UserRepository().get_user_profile(user_id=dto.user_id)
 
     assert isinstance(result, UserProfileEntity)
     assert result.nickname == "noah"
@@ -476,7 +476,7 @@ def test_get_user_profile_when_enter_setting_page_return_nickname(
 
 def test_get_user_profile_when_enter_setting_page_return_none(session):
     dto = GetUserDto(user_id=1)
-    result = UserRepository().get_user_profile(dto=dto)
+    result = UserRepository().get_user_profile(user_id=dto.user_id)
 
     assert result is None
 
@@ -493,6 +493,6 @@ def test_update_user_profile_when_enter_setting_page_then_success(
     UserRepository().update_user_nickname_of_profile_setting(dto=dto)
 
     dto = GetUserDto(user_id=create_users[0].id)
-    result = UserRepository().get_user_profile(dto=dto)
+    result = UserRepository().get_user_profile(user_id=dto.user_id)
 
     assert result.nickname == "harry"
