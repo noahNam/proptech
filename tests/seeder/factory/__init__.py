@@ -141,6 +141,7 @@ class UserProfileFactory(BaseFactory):
 
     nickname = "noah"
     last_update_code = 1000
+    survey_step = 1
 
     user_infos = factory.List([factory.SubFactory(UserInfoFactory)])
     survey_result = factory.SubFactory(SurveyResultFactory)
