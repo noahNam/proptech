@@ -12,7 +12,8 @@ from app.persistence.model import (
     PromotionUsageCountModel,
     TicketModel,
     TicketTargetModel,
-    PromotionHouseModel, RecommendCodeModel,
+    PromotionHouseModel,
+    RecommendCodeModel,
 )
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
@@ -20,7 +21,10 @@ from core.domains.payment.dto.payment_dto import (
     CreateTicketDto,
     UpdateTicketUsageResultDto,
 )
-from core.domains.payment.entity.payment_entity import PromotionEntity, RecommendCodeEntity
+from core.domains.payment.entity.payment_entity import (
+    PromotionEntity,
+    RecommendCodeEntity,
+)
 from core.domains.payment.enum.payment_enum import TicketSignEnum
 from core.exceptions import NotUniqueErrorException
 
@@ -41,8 +45,8 @@ class PaymentRepository:
     def is_ticket_usage(self, dto: UseTicketDto) -> bool:
         return session.query(
             exists()
-                .where(TicketUsageResultModel.public_house_id == dto.house_id)
-                .where(TicketUsageResultModel.user_id == dto.user_id)
+            .where(TicketUsageResultModel.public_house_id == dto.house_id)
+            .where(TicketUsageResultModel.user_id == dto.user_id)
         ).scalar()
 
     def get_promotion(self, dto: UseTicketDto) -> Optional[PromotionEntity]:
@@ -51,20 +55,20 @@ class PaymentRepository:
 
         query = (
             session.query(PromotionModel)
-                .join(
+            .join(
                 PromotionHouseModel,
                 PromotionModel.id == PromotionHouseModel.promotion_id,
                 isouter=True,
             )
-                .join(
+            .join(
                 PromotionUsageCountModel,
                 (PromotionModel.id == PromotionUsageCountModel.promotion_id)
                 & (PromotionUsageCountModel.user_id == dto.user_id),
                 isouter=True,
             )
-                .options(selectinload(PromotionModel.promotion_houses))
-                .options(selectinload(PromotionModel.promotion_usage_count))
-                .filter(*filters)
+            .options(selectinload(PromotionModel.promotion_houses))
+            .options(selectinload(PromotionModel.promotion_usage_count))
+            .filter(*filters)
         )
         promotion = query.first()
 
@@ -184,7 +188,11 @@ class PaymentRepository:
             code_group = int(user_id / 1000)
 
             recommend_code = RecommendCodeModel(
-                user_id=user_id, code_group=code_group, code=code, code_count=0, is_used=False,
+                user_id=user_id,
+                code_group=code_group,
+                code=code.upper(),
+                code_count=0,
+                is_used=False,
             )
             session.add(recommend_code)
             session.commit()
@@ -200,15 +208,25 @@ class PaymentRepository:
     def _make_recommend_code(self):
         return StringGenerator("[\l]{6}").render_list(1, unique=True)[0]
 
-    def get_recommend_code_by_user_id(self, user_id: int) -> Optional[RecommendCodeEntity]:
-        recommend_code = session.query(RecommendCodeModel).filter_by(user_id=user_id).first()
+    def get_recommend_code_by_user_id(
+        self, user_id: int
+    ) -> Optional[RecommendCodeEntity]:
+        recommend_code = (
+            session.query(RecommendCodeModel).filter_by(user_id=user_id).first()
+        )
         if not recommend_code:
             return None
 
         return recommend_code.to_entity()
 
-    def get_recommend_code_by_code(self, code: str, code_group: int) -> Optional[RecommendCodeEntity]:
-        recommend_code = session.query(RecommendCodeModel).filter_by(code=code, code_group=code_group).first()
+    def get_recommend_code_by_code(
+        self, code: str, code_group: int
+    ) -> Optional[RecommendCodeEntity]:
+        recommend_code = (
+            session.query(RecommendCodeModel)
+            .filter_by(code=code, code_group=code_group)
+            .first()
+        )
         if not recommend_code:
             return None
 
@@ -235,9 +253,7 @@ class PaymentRepository:
             filters = list()
             filters.append(RecommendCodeModel.id == recommend_code.id)
 
-            session.query(RecommendCodeModel).filter(*filters).update(
-                {"is_used": True}
-            )
+            session.query(RecommendCodeModel).filter(*filters).update({"is_used": True})
             session.commit()
         except Exception as e:
             session.rollback()
