@@ -402,7 +402,11 @@ def test_get_user_ticket_and_survey_step_then_user_ticket_is_0_and_survey_step_i
     dto = GetUserDto(user_id=user.id)
     result = UserRepository().get_user_survey_step_and_ticket(dto=dto)
     total_amount = result.total_amount
-    survey_step = result.user_profile.survey_step if result.user_profile else UserSurveyStepEnum.STEP_NO.value
+    survey_step = (
+        result.user_profile.survey_step
+        if result.user_profile
+        else UserSurveyStepEnum.STEP_NO.value
+    )
 
     assert isinstance(result, UserEntity)
     assert total_amount == 0
