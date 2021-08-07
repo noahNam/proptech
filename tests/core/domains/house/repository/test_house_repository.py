@@ -142,11 +142,17 @@ def test_get_calender_info_when_get_calender_info_dto(
         get_calender_info_by_get_calender_info_dto -> return mocking
     """
     dto = get_calender_info_dto
+    year_month = get_calender_info_dto.year + get_calender_info_dto.month
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
     ) as mock_calender_info:
         mock_calender_info.return_value = create_real_estate_with_public_sale[0]
-        result = HouseRepository().get_calender_info(dto=dto)
+        search_filters = HouseRepository().get_calender_info_filters(
+            year_month=year_month
+        )
+        result = HouseRepository().get_calender_info(
+            user_id=dto.user_id, search_filters=search_filters
+        )
 
     assert result == mock_calender_info.return_value
     assert mock_calender_info.called is True

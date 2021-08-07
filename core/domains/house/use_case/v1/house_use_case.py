@@ -132,7 +132,13 @@ class GetCalenderInfoUseCase(HouseBaseUseCase):
     def execute(
         self, dto: GetCalenderInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        calender_entities = self._house_repo.get_calender_info(dto=dto)
+        year_month = dto.year + dto.month
+        search_filters = self._house_repo.get_calender_info_filters(
+            year_month=year_month
+        )
+        calender_entities = self._house_repo.get_calender_info(
+            user_id=dto.user_id, search_filters=search_filters
+        )
 
         return UseCaseSuccessOutput(value=calender_entities)
 
