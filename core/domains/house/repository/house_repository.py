@@ -465,8 +465,10 @@ class HouseRepository:
 
         return result
 
-    def get_calender_info(self, dto: GetCalenderInfoDto) -> Optional[list]:
-        year_month = dto.year + dto.month
+    def get_calender_info_filters(self, year_month: str) -> list:
+        """
+            year_month example - "202108"
+        """
         filters = list()
         filters.append(
             and_(
@@ -491,16 +493,18 @@ class HouseRepository:
                 PublicSaleModel.contract_end_date.startswith(year_month),
             )
         )
+        return filters
 
+    def get_calender_info(self, user_id: int, search_filters: list) -> Optional[list]:
         query = (
             session.query(RealEstateModel)
             .join(RealEstateModel.public_sales)
-            .filter(*filters)
+            .filter(*search_filters)
         )
 
         queryset = query.all()
 
-        return self._make_calender_info_entity(queryset=queryset, user_id=dto.user_id)
+        return self._make_calender_info_entity(queryset=queryset, user_id=user_id)
 
     def get_interest_house_list(self, dto: GetUserDto) -> List[InterestHouseListEntity]:
         public_sales_query = (
