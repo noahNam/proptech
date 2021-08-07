@@ -4,7 +4,7 @@ from flask import request
 from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
     GetHousePublicDetailRequestSchema,
-    GetcalendarInfoRequestSchema,
+    GetCalendarInfoRequestSchema,
     GetInterestHouseListRequestSchema,
     GetSearchHouseListRequestSchema,
     GetBoundingWithinRadiusRequestSchema,
@@ -16,18 +16,18 @@ from app.http.responses.presenters.v1.house_presenter import (
     BoundingPresenter,
     BoundingAdministrativePresenter,
     GetHousePublicDetailPresenter,
-    GetcalendarInfoPresenter,
+    GetCalendarInfoPresenter,
     UpsertInterestHousePresenter,
     GetInterestHouseListPresenter,
     GetRecentViewListPresenter,
     GetSearchHouseListPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
-from core.domains.house.enum.house_enum import BoundingLevelEnum, calendarYearThreshHold
+from core.domains.house.enum.house_enum import BoundingLevelEnum, CalendarYearThreshHold
 from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
-    GetcalendarInfoUseCase,
+    GetCalendarInfoUseCase,
     GetInterestHouseListUseCase,
     GetSearchHouseListUseCase,
     BoundingWithinRadiusUseCase,
@@ -100,7 +100,7 @@ def house_public_detail_view(house_id: int):
 @swag_from("house_calendar_list_view.yml", methods=["GET"])
 def house_calendar_list_view():
     try:
-        dto = GetcalendarInfoRequestSchema(
+        dto = GetCalendarInfoRequestSchema(
             year=request.args.get("year"),
             month=request.args.get("month"),
             user_id=current_user.id,
@@ -110,12 +110,12 @@ def house_calendar_list_view():
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
                 message=f"Invalid Parameter input, "
-                f"year: {calendarYearThreshHold.MIN_YEAR.value} ~ {calendarYearThreshHold.MAX_YEAR.value}, "
+                f"year: {CalendarYearThreshHold.MIN_YEAR.value} ~ {CalendarYearThreshHold.MAX_YEAR.value}, "
                 f"month: 1 ~ 12 required",
             )
         )
-    return GetcalendarInfoPresenter().transform(
-        GetcalendarInfoUseCase().execute(dto=dto)
+    return GetCalendarInfoPresenter().transform(
+        GetCalendarInfoUseCase().execute(dto=dto)
     )
 
 

@@ -2,7 +2,6 @@ from typing import Optional, List, Any
 
 from geoalchemy2 import Geometry
 from sqlalchemy import and_, func, or_, literal, String
-
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload
 from sqlalchemy.sql.functions import _FunctionGenerator
@@ -24,7 +23,6 @@ from app.persistence.model import (
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetcalendarInfoDto,
     UpsertInterestHouseDto,
     GetSearchHouseListDto,
 )
@@ -33,14 +31,13 @@ from core.domains.house.entity.house_entity import (
     RealEstateWithPrivateSaleEntity,
     AdministrativeDivisionEntity,
     BoundingRealEstateEntity,
-    calendarInfoEntity,
+    CalendarInfoEntity,
     InterestHouseListEntity,
     GetRecentViewListEntity,
     GetSearchHouseListEntity,
     SearchRealEstateEntity,
     SearchPublicSaleEntity,
     SearchAdministrativeDivisionEntity,
-    PublicSaleEntity,
     GetPublicSaleOfTicketUsageEntity,
 )
 from core.domains.house.enum.house_enum import (
@@ -446,7 +443,7 @@ class HouseRepository:
 
     def _make_calendar_info_entity(
         self, queryset: Optional[list], user_id: int
-    ) -> Optional[List[calendarInfoEntity]]:
+    ) -> Optional[List[CalendarInfoEntity]]:
 
         """
             <최종 Entity 구성>

@@ -5,13 +5,13 @@ from core.domains.house.dto.house_dto import (
     UpsertInterestHouseDto,
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetcalendarInfoDto,
+    GetCalendarInfoDto,
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
 )
 from core.domains.house.entity.house_entity import (
-    PublicSalecalendarEntity,
-    calendarInfoEntity,
+    PublicSaleCalendarEntity,
+    CalendarInfoEntity,
     SearchRealEstateEntity,
     SearchPublicSaleEntity,
     SearchAdministrativeDivisionEntity,
@@ -26,7 +26,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     UpsertInterestHouseUseCase,
     BoundingUseCase,
     GetHousePublicDetailUseCase,
-    GetcalendarInfoUseCase,
+    GetCalendarInfoUseCase,
     GetInterestHouseListUseCase,
     GetRecentViewListUseCase,
     GetSearchHouseListUseCase,
@@ -47,7 +47,7 @@ coordinates_dto = CoordinatesRangeDto(
     level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value,
 )
 
-get_calendar_info_dto = GetcalendarInfoDto(year=2021, month=7, user_id=1)
+get_calendar_info_dto = GetCalendarInfoDto(year=2021, month=7, user_id=1)
 
 
 def test_upsert_interest_house_use_case_when_like_public_sales_then_success(session):
@@ -233,7 +233,7 @@ def test_get_calendar_info_use_case_when_included_request_date(
         get_calendar_info_by_get_calendar_info_dto -> return mocking
         요청 받은 년월에 속한 매물이 있으면 캘린더 정보 리턴
     """
-    public_sale_calendar = PublicSalecalendarEntity(
+    public_sale_calendar = PublicSaleCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
@@ -252,7 +252,7 @@ def test_get_calendar_info_use_case_when_included_request_date(
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calendar_info = calendarInfoEntity(
+    sample_calendar_info = CalendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
@@ -265,7 +265,7 @@ def test_get_calendar_info_use_case_when_included_request_date(
         "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = sample_calendar_info
-        result = GetcalendarInfoUseCase().execute(dto=get_calendar_info_dto)
+        result = GetCalendarInfoUseCase().execute(dto=get_calendar_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert mock_calendar_info.called is True
@@ -282,7 +282,7 @@ def test_get_calendar_info_use_case_when_no_included_request_date(
         "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = None
-        result = GetcalendarInfoUseCase().execute(dto=get_calendar_info_dto)
+        result = GetCalendarInfoUseCase().execute(dto=get_calendar_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value is None

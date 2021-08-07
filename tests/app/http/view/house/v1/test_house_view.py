@@ -10,8 +10,8 @@ from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
-    calendarInfoEntity,
-    PublicSalecalendarEntity,
+    CalendarInfoEntity,
+    PublicSaleCalendarEntity,
     HousePublicDetailEntity,
     SearchPublicSaleEntity,
     SearchRealEstateEntity,
@@ -274,7 +274,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         accept="application/json",
     )
 
-    public_sale_calendar = PublicSalecalendarEntity(
+    public_sale_calendar = PublicSaleCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
@@ -293,7 +293,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calendar_info = calendarInfoEntity(
+    sample_calendar_info = CalendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",

@@ -13,12 +13,12 @@ from app.extensions.utils.log_helper import logger_
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetcalendarInfoDto,
+    GetCalendarInfoDto,
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
-from core.domains.house.enum.house_enum import calendarYearThreshHold, SearchTypeEnum
+from core.domains.house.enum.house_enum import CalendarYearThreshHold, SearchTypeEnum
 from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import InvalidRequestException
 
@@ -232,7 +232,7 @@ class GetHousePublicDetailRequestSchema:
             raise InvalidRequestException(message=e.errors())
 
 
-class GetcalendarInfoSchema(BaseModel):
+class GetCalendarInfoSchema(BaseModel):
     year: str
     month: str
     user_id: StrictInt
@@ -241,8 +241,8 @@ class GetcalendarInfoSchema(BaseModel):
     def check_year(cls, year) -> str:
         year_to_int = int(year)
         if (
-            year_to_int < calendarYearThreshHold.MIN_YEAR.value
-            or year_to_int > calendarYearThreshHold.MAX_YEAR.value
+            year_to_int < CalendarYearThreshHold.MIN_YEAR.value
+            or year_to_int > CalendarYearThreshHold.MAX_YEAR.value
         ):
             raise ValidationError("Out of range: year is currently support 2017 ~ 2030")
         return year
@@ -260,7 +260,7 @@ class GetcalendarInfoSchema(BaseModel):
         return month
 
 
-class GetcalendarInfoRequestSchema:
+class GetCalendarInfoRequestSchema:
     def __init__(self, year, month, user_id):
         self.year = year
         self.month = month
@@ -268,13 +268,13 @@ class GetcalendarInfoRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetcalendarInfoSchema(
+            schema = GetCalendarInfoSchema(
                 year=self.year, month=self.month, user_id=self.user_id
             ).dict()
-            return GetcalendarInfoDto(**schema)
+            return GetCalendarInfoDto(**schema)
         except ValidationError as e:
             logger.error(
-                f"[GetcalendarInfoRequestSchema][validate_request_and_make_dto] error : {e}"
+                f"[GetCalendarInfoRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 
