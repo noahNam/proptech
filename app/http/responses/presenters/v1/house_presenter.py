@@ -5,7 +5,7 @@ from core.domains.house.schema.house_schema import (
     BoundingResponseSchema,
     BoundingAdministrativeResponseSchema,
     GetHousePublicDetailResponseSchema,
-    GetCalenderInfoResponseSchema,
+    GetcalendarInfoResponseSchema,
     UpsertInterestHouseResponseSchema,
     GetInterestHouseListResponseSchema,
     GetSearchHouseListResponseSchema,
@@ -154,11 +154,11 @@ class GetHousePublicDetailPresenter:
             return failure_response(output=output, status_code=output.code)
 
 
-class GetCalenderInfoPresenter:
+class GetcalendarInfoPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = GetCalenderInfoResponseSchema(houses=output.value)
+                schema = GetcalendarInfoResponseSchema(houses=output.value)
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(

@@ -10,8 +10,8 @@ from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
-    CalenderInfoEntity,
-    PublicSaleCalenderEntity,
+    calendarInfoEntity,
+    PublicSalecalendarEntity,
     HousePublicDetailEntity,
     SearchPublicSaleEntity,
     SearchRealEstateEntity,
@@ -257,7 +257,7 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
     assert mock_result.called is True
 
 
-def test_house_calender_list_view_when_included_request_date_then_show_info_list(
+def test_house_calendar_list_view_when_included_request_date_then_show_info_list(
     client,
     session,
     test_request_context,
@@ -274,7 +274,7 @@ def test_house_calender_list_view_when_included_request_date_then_show_info_list
         accept="application/json",
     )
 
-    public_sale_calender = PublicSaleCalenderEntity(
+    public_sale_calendar = PublicSalecalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
@@ -293,30 +293,30 @@ def test_house_calender_list_view_when_included_request_date_then_show_info_list
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calender_info = CalenderInfoEntity(
+    sample_calendar_info = calendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
-        public_sale=public_sale_calender,
+        public_sale=public_sale_calendar,
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
-    ) as mock_calender_info:
-        mock_calender_info.return_value = [sample_calender_info]
+        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+    ) as mock_calendar_info:
+        mock_calendar_info.return_value = [sample_calendar_info]
         with test_request_context:
             response = client.get(
-                url_for("api/tanos.house_calender_list_view", year=2021, month=7),
+                url_for("api/tanos.house_calendar_list_view", year=2021, month=7),
                 headers=headers,
             )
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert mock_calender_info.called is True
-    assert data["houses"][0]["name"] == sample_calender_info.name
-    assert data["houses"][0]["is_like"] == sample_calender_info.is_like
+    assert mock_calendar_info.called is True
+    assert data["houses"][0]["name"] == sample_calendar_info.name
+    assert data["houses"][0]["is_like"] == sample_calendar_info.is_like
 
 
 def test_house_public_detail_view_when_valid_request_id(

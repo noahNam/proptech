@@ -2,7 +2,7 @@ import pytest
 
 from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
-    GetCalenderInfoRequestSchema,
+    GetcalendarInfoRequestSchema,
     GetSearchHouseListRequestSchema,
     GetBoundingWithinRadiusRequestSchema,
 )
@@ -51,11 +51,11 @@ def test_get_coordinates_request_when_invalid_level_then_fail():
         ).validate_request_and_make_dto()
 
 
-def test_get_calender_info_request_when_valid_value_then_success():
+def test_get_calendar_info_request_when_valid_value_then_success():
     year = 2021
     month = 7
     user_id = 1
-    result = GetCalenderInfoRequestSchema(
+    result = GetcalendarInfoRequestSchema(
         year=year, month=month, user_id=user_id
     ).validate_request_and_make_dto()
 
