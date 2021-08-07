@@ -24,6 +24,7 @@ class UserProfileModel(db.Model):
     user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True)
     nickname = Column(String(12), nullable=True)
     last_update_code = Column(SmallInteger, nullable=True)
+    survey_step = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
@@ -43,6 +44,7 @@ class UserProfileModel(db.Model):
             user_id=self.user_id,
             nickname=self.nickname,
             last_update_code=self.last_update_code,
+            survey_step=self.survey_step,
             created_at=self.created_at,
             updated_at=self.updated_at,
             user_infos=[

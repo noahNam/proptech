@@ -14,7 +14,6 @@ from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.user_profile_model import UserProfileModel
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
-    UserInfoCodeValueEntity,
     UserInfoResultEntity,
 )
 
