@@ -223,7 +223,7 @@ class HousePublicDetailEntity(BaseModel):
         use_enum_values = True
 
 
-class PublicSalecalendarEntity(BaseModel):
+class PublicSaleCalendarEntity(BaseModel):
     id: int
     real_estate_id: int
     name: str
@@ -243,13 +243,13 @@ class PublicSalecalendarEntity(BaseModel):
     move_in_month: int
 
 
-class calendarInfoEntity(BaseModel):
+class CalendarInfoEntity(BaseModel):
     is_like: bool
     id: int
     name: str
     road_address: str
     jibun_address: str
-    public_sale: PublicSalecalendarEntity = None
+    public_sale: PublicSaleCalendarEntity = None
 
 
 class InterestHouseListEntity(BaseModel):

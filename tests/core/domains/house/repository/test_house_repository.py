@@ -5,7 +5,7 @@ from core.domains.house.dto.house_dto import (
     UpsertInterestHouseDto,
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetcalendarInfoDto,
+    GetCalendarInfoDto,
     GetSearchHouseListDto,
 )
 from core.domains.house.entity.house_entity import (
@@ -28,7 +28,7 @@ coordinates_dto = CoordinatesRangeDto(
 
 get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)
 
-get_calendar_info_dto = GetcalendarInfoDto(year=2021, month=7, user_id=1)
+get_calendar_info_dto = GetCalendarInfoDto(year=2021, month=7, user_id=1)
 
 
 def test_create_like_house_repo_when_like_public_sales_then_success(session):

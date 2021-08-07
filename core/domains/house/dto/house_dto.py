@@ -26,7 +26,7 @@ class GetHousePublicDetailDto(BaseModel):
     house_id: int
 
 
-class GetcalendarInfoDto(BaseModel):
+class GetCalendarInfoDto(BaseModel):
     year: str
     month: str
     user_id: int

@@ -7,7 +7,7 @@ from app.extensions.utils.event_observer import send_message, get_event_object
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetcalendarInfoDto,
+    GetCalendarInfoDto,
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
 )
@@ -128,9 +128,9 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         return get_event_object(topic_name=UserTopicEnum.CREATE_RECENTLY_VIEW)
 
 
-class GetcalendarInfoUseCase(HouseBaseUseCase):
+class GetCalendarInfoUseCase(HouseBaseUseCase):
     def execute(
-        self, dto: GetcalendarInfoDto
+        self, dto: GetCalendarInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         year_month = dto.year + dto.month
         search_filters = self._house_repo.get_calendar_info_filters(

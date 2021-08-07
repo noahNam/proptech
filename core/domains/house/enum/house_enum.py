@@ -85,10 +85,10 @@ class BoundingLevelEnum(Enum):
     MIN_NAVER_MAP_API_ZOOM_LEVEL = 6
 
 
-class calendarYearThreshHold(Enum):
+class CalendarYearThreshHold(Enum):
     """
         사용처 : house_calendar_list_view(),
-               GetcalendarInfoReqestSchema
+               GetCalendarInfoReqestSchema
         목적 : 파라미터 year 값의 범위 제한
     """
 
