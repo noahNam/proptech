@@ -5,13 +5,13 @@ from core.domains.house.dto.house_dto import (
     UpsertInterestHouseDto,
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetCalenderInfoDto,
+    GetcalendarInfoDto,
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
 )
 from core.domains.house.entity.house_entity import (
-    PublicSaleCalenderEntity,
-    CalenderInfoEntity,
+    PublicSalecalendarEntity,
+    calendarInfoEntity,
     SearchRealEstateEntity,
     SearchPublicSaleEntity,
     SearchAdministrativeDivisionEntity,
@@ -26,7 +26,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     UpsertInterestHouseUseCase,
     BoundingUseCase,
     GetHousePublicDetailUseCase,
-    GetCalenderInfoUseCase,
+    GetcalendarInfoUseCase,
     GetInterestHouseListUseCase,
     GetRecentViewListUseCase,
     GetSearchHouseListUseCase,
@@ -47,7 +47,7 @@ coordinates_dto = CoordinatesRangeDto(
     level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value,
 )
 
-get_calender_info_dto = GetCalenderInfoDto(year=2021, month=7, user_id=1)
+get_calendar_info_dto = GetcalendarInfoDto(year=2021, month=7, user_id=1)
 
 
 def test_upsert_interest_house_use_case_when_like_public_sales_then_success(session):
@@ -226,14 +226,14 @@ def test_get_house_public_detail_use_case_when_disable_public_sale_house(
     assert result.message == FailureType.NOT_FOUND_ERROR
 
 
-def test_get_calender_info_use_case_when_included_request_date(
+def test_get_calendar_info_use_case_when_included_request_date(
     session, create_real_estate_with_public_sale
 ):
     """
-        get_calender_info_by_get_calender_info_dto -> return mocking
+        get_calendar_info_by_get_calendar_info_dto -> return mocking
         요청 받은 년월에 속한 매물이 있으면 캘린더 정보 리턴
     """
-    public_sale_calender = PublicSaleCalenderEntity(
+    public_sale_calendar = PublicSalecalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
@@ -252,41 +252,41 @@ def test_get_calender_info_use_case_when_included_request_date(
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calender_info = CalenderInfoEntity(
+    sample_calendar_info = calendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
-        public_sale=public_sale_calender,
+        public_sale=public_sale_calendar,
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
-    ) as mock_calender_info:
-        mock_calender_info.return_value = sample_calender_info
-        result = GetCalenderInfoUseCase().execute(dto=get_calender_info_dto)
+        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+    ) as mock_calendar_info:
+        mock_calendar_info.return_value = sample_calendar_info
+        result = GetcalendarInfoUseCase().execute(dto=get_calendar_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert mock_calender_info.called is True
+    assert mock_calendar_info.called is True
 
 
-def test_get_calender_info_use_case_when_no_included_request_date(
+def test_get_calendar_info_use_case_when_no_included_request_date(
     session, create_real_estate_with_public_sale
 ):
     """
-        get_calender_info_by_get_calender_info_dto -> return mocking
+        get_calendar_info_by_get_calendar_info_dto -> return mocking
         요청 받은 년월에 속한 매물이 없으면 null 리턴
     """
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
-    ) as mock_calender_info:
-        mock_calender_info.return_value = None
-        result = GetCalenderInfoUseCase().execute(dto=get_calender_info_dto)
+        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+    ) as mock_calendar_info:
+        mock_calendar_info.return_value = None
+        result = GetcalendarInfoUseCase().execute(dto=get_calendar_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value is None
-    assert mock_calender_info.called is True
+    assert mock_calendar_info.called is True
 
 
 def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_one(

@@ -4,7 +4,7 @@ from flask import request
 from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
     GetHousePublicDetailRequestSchema,
-    GetCalenderInfoRequestSchema,
+    GetcalendarInfoRequestSchema,
     GetInterestHouseListRequestSchema,
     GetSearchHouseListRequestSchema,
     GetBoundingWithinRadiusRequestSchema,
@@ -16,18 +16,18 @@ from app.http.responses.presenters.v1.house_presenter import (
     BoundingPresenter,
     BoundingAdministrativePresenter,
     GetHousePublicDetailPresenter,
-    GetCalenderInfoPresenter,
+    GetcalendarInfoPresenter,
     UpsertInterestHousePresenter,
     GetInterestHouseListPresenter,
     GetRecentViewListPresenter,
     GetSearchHouseListPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
-from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
+from core.domains.house.enum.house_enum import BoundingLevelEnum, calendarYearThreshHold
 from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
-    GetCalenderInfoUseCase,
+    GetcalendarInfoUseCase,
     GetInterestHouseListUseCase,
     GetSearchHouseListUseCase,
     BoundingWithinRadiusUseCase,
@@ -94,13 +94,13 @@ def house_public_detail_view(house_id: int):
     )
 
 
-@api.route("/v1/houses/calender", methods=["GET"])
+@api.route("/v1/houses/calendar", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("house_calender_list_view.yml", methods=["GET"])
-def house_calender_list_view():
+@swag_from("house_calendar_list_view.yml", methods=["GET"])
+def house_calendar_list_view():
     try:
-        dto = GetCalenderInfoRequestSchema(
+        dto = GetcalendarInfoRequestSchema(
             year=request.args.get("year"),
             month=request.args.get("month"),
             user_id=current_user.id,
@@ -110,12 +110,12 @@ def house_calender_list_view():
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
                 message=f"Invalid Parameter input, "
-                f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
+                f"year: {calendarYearThreshHold.MIN_YEAR.value} ~ {calendarYearThreshHold.MAX_YEAR.value}, "
                 f"month: 1 ~ 12 required",
             )
         )
-    return GetCalenderInfoPresenter().transform(
-        GetCalenderInfoUseCase().execute(dto=dto)
+    return GetcalendarInfoPresenter().transform(
+        GetcalendarInfoUseCase().execute(dto=dto)
     )
 
 

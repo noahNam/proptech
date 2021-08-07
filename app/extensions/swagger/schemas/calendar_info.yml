@@ -1,4 +1,4 @@
-calender_info:
+calendar_info:
   properties:
     data:
       type: array

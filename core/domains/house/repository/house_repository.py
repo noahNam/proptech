@@ -24,7 +24,7 @@ from app.persistence.model import (
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetCalenderInfoDto,
+    GetcalendarInfoDto,
     UpsertInterestHouseDto,
     GetSearchHouseListDto,
 )
@@ -33,7 +33,7 @@ from core.domains.house.entity.house_entity import (
     RealEstateWithPrivateSaleEntity,
     AdministrativeDivisionEntity,
     BoundingRealEstateEntity,
-    CalenderInfoEntity,
+    calendarInfoEntity,
     InterestHouseListEntity,
     GetRecentViewListEntity,
     GetSearchHouseListEntity,
@@ -444,13 +444,13 @@ class HouseRepository:
             is_like=is_like,
         )
 
-    def _make_calender_info_entity(
+    def _make_calendar_info_entity(
         self, queryset: Optional[list], user_id: int
-    ) -> Optional[List[CalenderInfoEntity]]:
+    ) -> Optional[List[calendarInfoEntity]]:
 
         """
             <최종 Entity 구성>
-            : 분양 매물 + 상세 queryset + is_like -> CalenderInfoEntity
+            : 분양 매물 + 상세 queryset + is_like -> calendarInfoEntity
         """
         if not queryset:
             return None
@@ -461,11 +461,11 @@ class HouseRepository:
 
         # 사용자가 해당 분양 매물에 대해 찜하기 했는지 여부
         is_like = self.is_user_liked_house(self.get_public_interest_house(dto=dto))
-        result.append(query.to_calender_info_entity(is_like=is_like))
+        result.append(query.to_calendar_info_entity(is_like=is_like))
 
         return result
 
-    def get_calender_info_filters(self, year_month: str) -> list:
+    def get_calendar_info_filters(self, year_month: str) -> list:
         """
             year_month example - "202108"
         """
@@ -495,7 +495,7 @@ class HouseRepository:
         )
         return filters
 
-    def get_calender_info(self, user_id: int, search_filters: list) -> Optional[list]:
+    def get_calendar_info(self, user_id: int, search_filters: list) -> Optional[list]:
         query = (
             session.query(RealEstateModel)
             .join(RealEstateModel.public_sales)
@@ -504,7 +504,7 @@ class HouseRepository:
 
         queryset = query.all()
 
-        return self._make_calender_info_entity(queryset=queryset, user_id=user_id)
+        return self._make_calendar_info_entity(queryset=queryset, user_id=user_id)
 
     def get_interest_house_list(self, dto: GetUserDto) -> List[InterestHouseListEntity]:
         public_sales_query = (

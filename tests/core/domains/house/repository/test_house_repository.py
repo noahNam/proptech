@@ -5,7 +5,7 @@ from core.domains.house.dto.house_dto import (
     UpsertInterestHouseDto,
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetCalenderInfoDto,
+    GetcalendarInfoDto,
     GetSearchHouseListDto,
 )
 from core.domains.house.entity.house_entity import (
@@ -28,7 +28,7 @@ coordinates_dto = CoordinatesRangeDto(
 
 get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)
 
-get_calender_info_dto = GetCalenderInfoDto(year=2021, month=7, user_id=1)
+get_calendar_info_dto = GetcalendarInfoDto(year=2021, month=7, user_id=1)
 
 
 def test_create_like_house_repo_when_like_public_sales_then_success(session):
@@ -135,27 +135,27 @@ def test_get_house_public_detail_when_get_house_public_detail_dto(
     assert mock_house_public_detail.called is True
 
 
-def test_get_calender_info_when_get_calender_info_dto(
+def test_get_calendar_info_when_get_calendar_info_dto(
     session, create_real_estate_with_public_sale
 ):
     """
-        get_calender_info_by_get_calender_info_dto -> return mocking
+        get_calendar_info_by_get_calendar_info_dto -> return mocking
     """
-    dto = get_calender_info_dto
-    year_month = get_calender_info_dto.year + get_calender_info_dto.month
+    dto = get_calendar_info_dto
+    year_month = get_calendar_info_dto.year + get_calendar_info_dto.month
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
-    ) as mock_calender_info:
-        mock_calender_info.return_value = create_real_estate_with_public_sale[0]
-        search_filters = HouseRepository().get_calender_info_filters(
+        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+    ) as mock_calendar_info:
+        mock_calendar_info.return_value = create_real_estate_with_public_sale[0]
+        search_filters = HouseRepository().get_calendar_info_filters(
             year_month=year_month
         )
-        result = HouseRepository().get_calender_info(
+        result = HouseRepository().get_calendar_info(
             user_id=dto.user_id, search_filters=search_filters
         )
 
-    assert result == mock_calender_info.return_value
-    assert mock_calender_info.called is True
+    assert result == mock_calendar_info.return_value
+    assert mock_calendar_info.called is True
 
 
 def test_get_interest_house_list_then_entity_result(
