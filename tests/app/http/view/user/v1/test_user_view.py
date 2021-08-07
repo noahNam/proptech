@@ -598,13 +598,14 @@ def test_get_user_info_view_when_monthly_income_then_success(
     for survay in data["surveys"]:
         if survay["code"] == CodeEnum.MONTHLY_INCOME.value:
             assert survay["code_values"]["name"] == [
-                3547102,
-                5675364,
-                7803626,
-                8513046,
-                9222466,
-                9931887,
-                11350728,
+                "3,547,102원 이하",
+                "5,675,364원 이하",
+                "7,803,626원 이하",
+                "8,513,046원 이하",
+                "9,222,466원 이하",
+                "9,931,887원 이하",
+                "11,350,728원 이하",
+                "11,350,728원 초과",
             ]
 
 
@@ -746,19 +747,19 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_ste
     assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_ONE.value
     assert data["result"]["tickets"] == 0
     assert data["result"]["is_badge"] is True
+    assert data["result"]["nickname"] == create_users[0].user_profile.nickname
 
 
-def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_step_one_and_badge_is_false(
+def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_zero_step_and_badge_is_false(
     client, session, test_request_context, make_header, make_authorization, user_factory
 ):
     user = user_factory.create(
         device=True,
         receive_push_type=True,
-        user_profile=True,
+        user_profile=False,
         interest_houses=True,
         tickets=True,
     )
-    user.user_profile.last_update_code = CodeStepEnum.COMPLETE_ONE.value
     session.add(user)
     session.commit()
 
@@ -774,9 +775,10 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_ste
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_TWO.value
+    assert data["result"]["survey_step"] == UserSurveyStepEnum.STEP_NO.value
     assert data["result"]["tickets"] == 1
     assert data["result"]["is_badge"] is False
+    assert data["result"]["nickname"] is None
 
 
 def test_get_survey_result_view_then_return_survey_result(

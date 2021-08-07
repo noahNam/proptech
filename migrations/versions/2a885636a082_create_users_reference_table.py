@@ -78,6 +78,7 @@ def upgrade():
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column("nickname", sa.String(length=12), nullable=True),
         sa.Column("last_update_code", sa.SmallInteger(), nullable=True),
+        sa.Column("survey_step", sa.SmallInteger(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
