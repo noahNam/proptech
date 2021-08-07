@@ -3,14 +3,12 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    DateTime,
     Boolean,
     SmallInteger,
 )
 from sqlalchemy.orm import relationship
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.banner.entity.banner_entity import BannerEntity
 
 
@@ -36,7 +34,7 @@ class BannerModel(db.Model):
             section_type=self.section_type,
             sub_topic=self.sub_topic,
             reference_url=self.reference_url,
-            banner_image=self.banner_image if self.banner_image else None,
+            banner_image=self.banner_image.to_entity() if self.banner_image else None,
             is_active=self.is_active,
             is_event=self.is_event,
         )

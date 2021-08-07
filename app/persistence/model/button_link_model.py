@@ -26,5 +26,5 @@ class ButtonLinkModel(db.Model):
             title=self.title,
             reference_url=self.reference_url,
             section_type=self.section_type,
-            is_active=self.is_active
+            is_active=self.is_active,
         )
