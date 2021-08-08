@@ -3,16 +3,19 @@ from unittest.mock import patch
 from flask import url_for
 
 from core.domains.banner.enum.banner_enum import SectionType, BannerSubTopic
-from core.domains.house.entity.house_entity import PublicSaleCalendarEntity, CalendarInfoEntity
+from core.domains.house.entity.house_entity import (
+    PublicSaleCalendarEntity,
+    CalendarInfoEntity,
+)
 
 
 def test_get_home_banner_view_when_present_date_then_return_banner_list_with_calendar_info(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        banner_factory
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    banner_factory,
 ):
     # request header
     user_id = 1
@@ -66,12 +69,15 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     )
 
     with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
         with test_request_context:
             response = client.get(
-                url_for("api/tanos.get_home_banner_view", section_type=SectionType.HOME_SCREEN.value),
+                url_for(
+                    "api/tanos.get_home_banner_view",
+                    section_type=SectionType.HOME_SCREEN.value,
+                ),
                 headers=headers,
             )
 
@@ -81,17 +87,19 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     assert mock_calendar_info.called is True
     assert len(data["banners"]["banner_list"]) == 2
     assert data["banners"]["calendar_infos"][0]["name"] == sample_calendar_info.name
-    assert data["banners"]["calendar_infos"][0]["is_like"] == sample_calendar_info.is_like
+    assert (
+        data["banners"]["calendar_infos"][0]["is_like"] == sample_calendar_info.is_like
+    )
 
 
 def test_when_get_pre_subscription_banner_view_then_return_banner_list_with_button_link_list(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        banner_factory,
-        button_link_factory,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    banner_factory,
+    button_link_factory,
 ):
     # request header
     user_id = 1
@@ -113,20 +121,18 @@ def test_when_get_pre_subscription_banner_view_then_return_banner_list_with_butt
         sub_topic=BannerSubTopic.PRE_SUBSCRIPTION_FAQ.value,
     )
 
-    button1 = button_link_factory(
-        section_type=SectionType.PRE_SUBSCRIPTION_INFO.value
-    )
-    button2 = button_link_factory(
-        section_type=SectionType.PRE_SUBSCRIPTION_INFO.value
-    )
+    button1 = button_link_factory(section_type=SectionType.PRE_SUBSCRIPTION_INFO.value)
+    button2 = button_link_factory(section_type=SectionType.PRE_SUBSCRIPTION_INFO.value)
 
     session.add_all([banner1, banner2, button1, button2])
     session.commit()
 
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_pre_subscription_banner_view",
-                    section_type=SectionType.PRE_SUBSCRIPTION_INFO.value),
+            url_for(
+                "api/tanos.get_pre_subscription_banner_view",
+                section_type=SectionType.PRE_SUBSCRIPTION_INFO.value,
+            ),
             headers=headers,
         )
 
