@@ -23,13 +23,13 @@ def handle_custom_type_exception(error):
     sentry_sdk.capture_exception(error)
     check_custom_err = getattr(error, "type_", None)
     if check_custom_err:
-        return {"type": error.type_["type_"], "message": error.msg}, error.code
+        return {"detail": error.type_["type_"], "message": error.msg}, error.code
     elif isinstance(check_custom_err, dict):
-        return {"type": error.code, "message": error.msg}, error.code
+        return {"detail": error.code, "message": error.msg}, error.code
     else:
         return (
             {
-                "type": HTTPStatus.INTERNAL_SERVER_ERROR,
+                "detail": HTTPStatus.INTERNAL_SERVER_ERROR,
                 "message": "internal_server_error",
             },
             HTTPStatus.INTERNAL_SERVER_ERROR,
@@ -40,7 +40,7 @@ def handle_custom_type_exception(error):
 def handle_invalid_request_exception(error):
     sentry_sdk.capture_exception(error)
     return (
-        {"type": error.message[0]["loc"][0], "message": "invalid_request_error"},
+        {"detail": error.message[0]["loc"][0], "message": "invalid_request_error"},
         error.status_code,
     )
 
@@ -49,7 +49,7 @@ def handle_invalid_request_exception(error):
 def handle_no_authorization_exception(error):
     sentry_sdk.capture_exception(error)
     return (
-        {"type": HTTPStatus.UNAUTHORIZED, "message": "unauthorized_error"},
+        {"detail": HTTPStatus.UNAUTHORIZED, "message": "unauthorized_error"},
         HTTPStatus.UNAUTHORIZED,
     )
 
@@ -63,6 +63,6 @@ def handle_signature_has_expired_exception(error):
 def handle_token_validation_exception(error):
     sentry_sdk.capture_exception(error)
     return (
-        {"type": error.code, "message": error.msg},
+        {"detail": error.code, "message": error.msg},
         error.code,
     )
