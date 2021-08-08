@@ -56,6 +56,7 @@ class UserRepository:
         try:
             user = UserModel(
                 id=dto.user_id,
+                email=dto.email,
                 is_required_agree_terms=dto.is_required_agree_terms,
                 join_date=get_server_timestamp().strftime("%Y%m%d"),
                 is_active=dto.is_active,
@@ -74,6 +75,7 @@ class UserRepository:
         try:
             device = DeviceModel(
                 user_id=dto.user_id,
+                phone_number=dto.phone_number,
                 uuid=dto.uuid,
                 os=dto.os,
                 is_active=dto.is_active_device,

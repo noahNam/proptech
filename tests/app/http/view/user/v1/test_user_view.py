@@ -22,10 +22,11 @@ from core.domains.user.enum.user_info_enum import (
     CodeStepEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
+from core.exceptions import InvalidRequestException
 
 
 def test_get_user_view_then_success(
-    client, session, test_request_context, make_header, make_authorization, create_users
+        client, session, test_request_context, make_header, make_authorization, create_users
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -36,7 +37,7 @@ def test_get_user_view_then_success(
     )
 
     with test_request_context:
-        response = client.get(url_for("api/tanos.get_user_view"), headers=headers,)
+        response = client.get(url_for("api/tanos.get_user_view"), headers=headers, )
 
     data = response.get_json()["data"]
     assert response.status_code == 200
@@ -46,7 +47,7 @@ def test_get_user_view_then_success(
 
 
 def test_get_user_view_then_user_is_not_found(
-    client, session, test_request_context, make_header, make_authorization
+        client, session, test_request_context, make_header, make_authorization
 ):
     authorization = make_authorization(user_id=1)
     headers = make_header(
@@ -56,7 +57,7 @@ def test_get_user_view_then_user_is_not_found(
     )
 
     with test_request_context:
-        response = client.get(url_for("api/tanos.get_user_view"), headers=headers,)
+        response = client.get(url_for("api/tanos.get_user_view"), headers=headers, )
 
     data = response.get_json()["data"]
     assert response.status_code == 200
@@ -64,7 +65,7 @@ def test_get_user_view_then_user_is_not_found(
 
 
 def test_create_user_when_first_login_then_success(
-    client, session, test_request_context, make_header, make_authorization,
+        client, session, test_request_context, make_header, make_authorization,
 ):
     user_id = 1
     authorization = make_authorization(user_id=user_id)
@@ -73,7 +74,8 @@ def test_create_user_when_first_login_then_success(
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(uuid=str(uuid.uuid4()), os="AOS", token=str(uuid.uuid4()),)
+    dict_ = dict(uuid=str(uuid.uuid4()), os="AOS", token=str(uuid.uuid4()), email="noah@apartalk.com",
+                 phone_number="010-1234-5678")
 
     with test_request_context:
         response = client.post(
@@ -82,14 +84,50 @@ def test_create_user_when_first_login_then_success(
             headers=headers,
         )
 
+    user = session.query(UserModel).filter_by(id=user_id).first()
+
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert data["result"] == "success"
     assert isinstance(data["result"], str)
 
+    assert user.email == dict_["email"]
+    assert user.device.phone_number == "".join(dict_["phone_number"].split("-"))
+
+
+def test_create_user_when_first_login_wihtout_email_and_phone_number_then_success(
+        client, session, test_request_context, make_header, make_authorization,
+):
+    user_id = 1
+    authorization = make_authorization(user_id=user_id)
+    headers = make_header(
+        authorization=authorization,
+        content_type="application/json",
+        accept="application/json",
+    )
+    dict_ = dict(uuid=str(uuid.uuid4()), os="AOS", token=str(uuid.uuid4()), email=None,
+                 phone_number=None)
+
+    with test_request_context:
+        response = client.post(
+            url_for("api/tanos.create_user_view"),
+            data=json.dumps(dict_),
+            headers=headers,
+        )
+
+    user = session.query(UserModel).filter_by(id=user_id).first()
+
+    data = response.get_json()["data"]
+    assert response.status_code == 200
+    assert data["result"] == "success"
+    assert isinstance(data["result"], str)
+
+    assert user.email is None
+    assert user.device.phone_number is None
+
 
 def test_create_user_when_given_wrong_token_then_unauthorized_error(
-    client, session, test_request_context, make_header, make_authorization,
+        client, session, test_request_context, make_header, make_authorization,
 ):
     user_id = None
     authorization = make_authorization(user_id=user_id)
@@ -105,12 +143,12 @@ def test_create_user_when_given_wrong_token_then_unauthorized_error(
         )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.get_json()["type"] == HTTPStatus.UNAUTHORIZED
+    assert response.get_json()["detail"] == HTTPStatus.UNAUTHORIZED
     assert response.get_json()["message"] == "unauthorized_error"
 
 
 def test_create_user_to_verify_data_when_first_login_tehn_success(
-    client, session, test_request_context, make_header, make_authorization
+        client, session, test_request_context, make_header, make_authorization
 ):
     user_id = 1
     authorization = make_authorization(user_id=user_id)
@@ -119,7 +157,8 @@ def test_create_user_to_verify_data_when_first_login_tehn_success(
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(uuid=str(uuid.uuid4()), os="AOS", token=str(uuid.uuid4()),)
+    dict_ = dict(uuid=str(uuid.uuid4()), os="AOS", token=str(uuid.uuid4()), email=None,
+                 phone_number=None)
 
     with test_request_context:
         response = client.post(
@@ -155,7 +194,7 @@ def test_create_user_to_verify_data_when_first_login_tehn_success(
 
 
 def test_create_app_agree_terms_when_first_login_with_not_receive_marketing_then_success(
-    client, session, test_request_context, make_header, make_authorization, create_users
+        client, session, test_request_context, make_header, make_authorization, create_users
 ):
     user_id = 1
     authorization = make_authorization(user_id=user_id)
@@ -164,7 +203,7 @@ def test_create_app_agree_terms_when_first_login_with_not_receive_marketing_then
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(receive_marketing_yn=False,)
+    dict_ = dict(receive_marketing_yn=False, )
 
     with test_request_context:
         response = client.post(
@@ -185,7 +224,7 @@ def test_create_app_agree_terms_when_first_login_with_not_receive_marketing_then
 
 
 def test_create_app_agree_terms_when_first_login_with_not_user_id_then_authorization_error(
-    client, session, test_request_context, make_header, make_authorization, create_users
+        client, session, test_request_context, make_header, make_authorization, create_users
 ):
     user_id = None
     authorization = make_authorization(user_id=user_id)
@@ -194,7 +233,7 @@ def test_create_app_agree_terms_when_first_login_with_not_user_id_then_authoriza
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(receive_marketing_yn=False,)
+    dict_ = dict(receive_marketing_yn=False, )
 
     with test_request_context:
         response = client.post(
@@ -205,12 +244,12 @@ def test_create_app_agree_terms_when_first_login_with_not_user_id_then_authoriza
 
     data = response.get_json()
     assert response.status_code == 401
-    assert data["type"] == 401
+    assert data["detail"] == 401
     assert data["message"] == "unauthorized_error"
 
 
 def test_create_app_agree_terms_to_verify_data_when_first_login_then_success(
-    client, session, test_request_context, make_header, make_authorization, user_factory
+        client, session, test_request_context, make_header, make_authorization, user_factory
 ):
     user_id = 1
     user = user_factory.build(id=user_id, is_required_agree_terms=False)
@@ -223,7 +262,7 @@ def test_create_app_agree_terms_to_verify_data_when_first_login_then_success(
         content_type="application/json",
         accept="application/json",
     )
-    dict_ = dict(receive_marketing_yn=False,)
+    dict_ = dict(receive_marketing_yn=False, )
 
     with test_request_context:
         response = client.post(
@@ -256,13 +295,13 @@ def test_create_app_agree_terms_to_verify_data_when_first_login_then_success(
     return_value=True,
 )
 def test_upsert_user_info_view_when_first_input_nickname_then_create_success(
-    _send_sqs_message,
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    user_factory,
+        _send_sqs_message,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        user_factory,
 ):
     user_id = 1
     user = user_factory.build(id=user_id, is_required_agree_terms=False)
@@ -289,8 +328,8 @@ def test_upsert_user_info_view_when_first_input_nickname_then_create_success(
     )
     user_info_model = (
         session.query(UserInfoModel)
-        .filter_by(user_profile_id=user_profile_model.id, code=dict_.get("codes")[0])
-        .first()
+            .filter_by(user_profile_id=user_profile_model.id, code=dict_.get("codes")[0])
+            .first()
     )
 
     data = response.get_json()["data"]
@@ -311,13 +350,13 @@ def test_upsert_user_info_view_when_first_input_nickname_then_create_success(
     return_value=True,
 )
 def test_upsert_user_info_view_when_input_user_data_then_create_success(
-    _send_sqs_message,
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    user_factory,
+        _send_sqs_message,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        user_factory,
 ):
     user_id = 1
     user = user_factory.create(
@@ -351,8 +390,8 @@ def test_upsert_user_info_view_when_input_user_data_then_create_success(
     )
     user_info_model = (
         session.query(UserInfoModel)
-        .filter_by(user_profile_id=user_profile_model.id, code=1005)
-        .first()
+            .filter_by(user_profile_id=user_profile_model.id, code=1005)
+            .first()
     )
 
     data = response.get_json()["data"]
@@ -372,13 +411,13 @@ def test_upsert_user_info_view_when_input_user_data_then_create_success(
     return_value=True,
 )
 def test_upsert_user_info_view_when_input_user_data_then_update_success(
-    _send_sqs_message,
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    user_factory,
+        _send_sqs_message,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        user_factory,
 ):
     user_id = 1
     user = user_factory.create(
@@ -423,8 +462,8 @@ def test_upsert_user_info_view_when_input_user_data_then_update_success(
 
     user_info_model = (
         session.query(UserInfoModel)
-        .filter_by(user_profile_id=1, code=dict2_.get("codes")[0])
-        .first()
+            .filter_by(user_profile_id=1, code=dict2_.get("codes")[0])
+            .first()
     )
 
     # user_info_model
@@ -437,13 +476,13 @@ def test_upsert_user_info_view_when_input_user_data_then_update_success(
     return_value=True,
 )
 def test_upsert_user_info_view_when_next_step_input_user_data_then_update_user_last_update_code(
-    _send_sqs_message,
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    user_factory,
+        _send_sqs_message,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        user_factory,
 ):
     user_id = 1
     user = user_factory.build(id=user_id, is_required_agree_terms=False)
@@ -487,7 +526,7 @@ def test_upsert_user_info_view_when_next_step_input_user_data_then_update_user_l
 
 
 def test_get_user_info_when_survey_step_one_then_success(
-    client, session, test_request_context, make_header, make_authorization, create_users
+        client, session, test_request_context, make_header, make_authorization, create_users
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -508,13 +547,13 @@ def test_get_user_info_when_survey_step_one_then_success(
 
 
 def test_get_user_info_when_survey_step_two_then_success(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    avg_monthly_income_worker_factory,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        avg_monthly_income_worker_factory,
 ):
     avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
     session.add(avg_monthly_income_workers)
@@ -543,14 +582,14 @@ def test_get_user_info_when_survey_step_two_then_success(
     return_value=True,
 )
 def test_get_user_info_view_when_monthly_income_then_success(
-    _send_sqs_message,
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    avg_monthly_income_worker_factory,
+        _send_sqs_message,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        avg_monthly_income_worker_factory,
 ):
     # data set ##################################################################################
     avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
@@ -614,14 +653,14 @@ def test_get_user_info_view_when_monthly_income_then_success(
     return_value=True,
 )
 def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_success(
-    _send_sqs_message,
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    user_factory,
-    avg_monthly_income_worker_factory,
+        _send_sqs_message,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        user_factory,
+        avg_monthly_income_worker_factory,
 ):
     avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
     session.add(avg_monthly_income_workers)
@@ -681,7 +720,7 @@ def test_upsert_user_info_view_when_input_number_of_child_then_create_both_data_
 
 @pytest.mark.skip(reason="local에서 환경변수 미설정 시 에러나므로 skip")
 def test_get_user_provider_view_when_call_captian_api_then_success(
-    client, session, test_request_context, make_header, make_authorization
+        client, session, test_request_context, make_header, make_authorization
 ):
     user_id = 1
     authorization = make_authorization(user_id=user_id)
@@ -702,7 +741,7 @@ def test_get_user_provider_view_when_call_captian_api_then_success(
 
 
 def test_patch_user_out_view_then_success(
-    client, session, test_request_context, make_header, make_authorization, create_users
+        client, session, test_request_context, make_header, make_authorization, create_users
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -723,13 +762,13 @@ def test_patch_user_out_view_then_success(
 
 
 def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_step_one_and_badge_is_true(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_notifications,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_notifications,
 ):
     user_id = create_users[0].id
     authorization = make_authorization(user_id=user_id)
@@ -740,7 +779,7 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_ste
     )
 
     with test_request_context:
-        response = client.get(url_for("api/tanos.get_user_main_view"), headers=headers,)
+        response = client.get(url_for("api/tanos.get_user_main_view"), headers=headers, )
 
     data = response.get_json()["data"]
     assert response.status_code == 200
@@ -751,7 +790,7 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_ste
 
 
 def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_zero_step_and_badge_is_false(
-    client, session, test_request_context, make_header, make_authorization, user_factory
+        client, session, test_request_context, make_header, make_authorization, user_factory
 ):
     user = user_factory.create(
         device=True,
@@ -771,7 +810,7 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_zer
     )
 
     with test_request_context:
-        response = client.get(url_for("api/tanos.get_user_main_view"), headers=headers,)
+        response = client.get(url_for("api/tanos.get_user_main_view"), headers=headers, )
 
     data = response.get_json()["data"]
     assert response.status_code == 200
@@ -782,7 +821,7 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_zer
 
 
 def test_get_survey_result_view_then_return_survey_result(
-    client, session, test_request_context, make_header, make_authorization, create_users
+        client, session, test_request_context, make_header, make_authorization, create_users
 ):
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
@@ -804,7 +843,7 @@ def test_get_survey_result_view_then_return_survey_result(
 
 
 def test_get_survey_result_view_then_return_survey_result_is_none(
-    client, session, test_request_context, make_header, make_authorization, create_users
+        client, session, test_request_context, make_header, make_authorization, create_users
 ):
     authorization = make_authorization(user_id=create_users[1].id)
     headers = make_header(
@@ -826,7 +865,7 @@ def test_get_survey_result_view_then_return_survey_result_is_none(
 
 
 def test_get_user_profile_view_when_enter_setting_page_return_success(
-    client, session, test_request_context, make_header, make_authorization, create_users
+        client, session, test_request_context, make_header, make_authorization, create_users
 ):
     authorization = make_authorization(user_id=create_users[1].id)
     headers = make_header(
@@ -846,7 +885,7 @@ def test_get_user_profile_view_when_enter_setting_page_return_success(
 
 
 def test_update_user_profile_view_when_enter_setting_page_then_success(
-    client, session, test_request_context, make_header, make_authorization, create_users
+        client, session, test_request_context, make_header, make_authorization, create_users
 ):
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
