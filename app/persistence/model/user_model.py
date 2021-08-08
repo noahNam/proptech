@@ -19,6 +19,7 @@ class UserModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
+    email = Column(String(75), nullable=True)
     is_required_agree_terms = Column(Boolean, nullable=False, default=False)
     join_date = Column(String(8), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
@@ -43,6 +44,7 @@ class UserModel(db.Model):
     def to_entity(self) -> UserEntity:
         return UserEntity(
             id=self.id,
+            email=self.email,
             is_required_agree_terms=self.is_required_agree_terms,
             join_date=self.join_date,
             is_active=self.is_active,
