@@ -1,4 +1,6 @@
-from pydantic import BaseModel, StrictInt, ValidationError
+from typing import Optional
+
+from pydantic import BaseModel, StrictInt, ValidationError, validator
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.user.dto.user_dto import (
@@ -20,6 +22,8 @@ class GetUserSchema(BaseModel):
 
 class CreateUserSchema(BaseModel):
     user_id: StrictInt
+    email: Optional[str]
+    phone_number: Optional[str]
     is_required_agree_terms: bool
     is_active: bool
     is_out: bool
@@ -28,6 +32,16 @@ class CreateUserSchema(BaseModel):
     is_active_device: bool
     is_auth: bool
     token: str
+
+    @validator("phone_number")
+    def check_phone_number(cls, phone_number) -> Optional[str]:
+        if not phone_number:
+            return None
+
+        phone_number = "".join(phone_number.split("-"))
+        if len(phone_number) > 11:
+            raise ValidationError("phone_number only 11 character")
+        return phone_number
 
 
 class CreateAppAgreeTermsSchema(BaseModel):
@@ -67,7 +81,7 @@ class GetUserRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserSchema(user_id=self.user_id,).dict()
+            schema = GetUserSchema(user_id=self.user_id, ).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -78,9 +92,11 @@ class GetUserRequestSchema:
 
 class CreateUserRequestSchema:
     def __init__(
-        self, user_id, uuid, os, token,
+            self, user_id, uuid, os, token, email, phone_number
     ):
         self.user_id = int(user_id) if user_id else None
+        self.email = email
+        self.phone_number = phone_number
         self.is_required_agree_terms = False
         self.is_active = True
         self.is_out = False
@@ -94,6 +110,8 @@ class CreateUserRequestSchema:
         try:
             schema = CreateUserSchema(
                 user_id=self.user_id,
+                email=self.email,
+                phone_number=self.phone_number,
                 is_required_agree_terms=self.is_required_agree_terms,
                 is_active=self.is_active,
                 is_out=self.is_out,
@@ -113,7 +131,7 @@ class CreateUserRequestSchema:
 
 class CreateAppAgreeTermsRequestSchema:
     def __init__(
-        self, user_id, receive_marketing_yn,
+            self, user_id, receive_marketing_yn,
     ):
         self.user_id = int(user_id) if user_id else None
         self.private_user_info_yn = True
@@ -138,7 +156,7 @@ class CreateAppAgreeTermsRequestSchema:
 
 class UpsertUserInfoRequestSchema:
     def __init__(
-        self, user_id, codes, values,
+            self, user_id, codes, values,
     ):
         self.user_id = int(user_id) if user_id else None
         self.codes = codes
@@ -159,7 +177,7 @@ class UpsertUserInfoRequestSchema:
 
 class GetUserInfoRequestSchema:
     def __init__(
-        self, user_id, survey_step,
+            self, user_id, survey_step,
     ):
         self.user_id = int(user_id) if user_id else None
         self.survey_step = int(survey_step)
@@ -183,7 +201,7 @@ class GetUserMainRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserMainSchema(user_id=self.user_id,).dict()
+            schema = GetUserMainSchema(user_id=self.user_id, ).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -198,7 +216,7 @@ class GetSurveyResultRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetSurveyResultSchema(user_id=self.user_id,).dict()
+            schema = GetSurveyResultSchema(user_id=self.user_id, ).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
