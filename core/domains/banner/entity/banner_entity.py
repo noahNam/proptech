@@ -1,6 +1,9 @@
 from datetime import datetime
+from typing import List
 
 from pydantic import BaseModel
+
+from core.domains.house.entity.house_entity import CalendarInfoEntity
 
 
 class BannerImageEntity(BaseModel):
@@ -31,3 +34,13 @@ class ButtonLinkEntity(BaseModel):
     reference_url: str = None
     section_type: int
     is_active: bool
+
+
+class GetHomeBannerEntity(BaseModel):
+    banner_list: List[BannerEntity] = None
+    calendar_infos: List[CalendarInfoEntity] = None
+
+
+class GetPreSubscriptionBannerEntity(BaseModel):
+    banner_list: List[BannerEntity] = None
+    button_links: List[ButtonLinkEntity] = None

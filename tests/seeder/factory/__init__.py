@@ -51,9 +51,8 @@ from app.persistence.model import (
 
 # factory에 사용해야 하는 Model을 가져온다
 from core.domains.banner.enum.banner_enum import (
-    BannerSectionType,
+    SectionType,
     BannerSubTopic,
-    ButtonSectionType,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -653,7 +652,7 @@ class BannerFactory(BaseFactory):
 
     title = factory.Sequence(lambda n: f"배너_{n}")
     desc = factory.Sequence(lambda n: f"배너설명_{n}")
-    section_type = BannerSectionType.HOME_SCREEN.value
+    section_type = SectionType.HOME_SCREEN.value
     sub_topic = BannerSubTopic.HOME_SUBSCRIPTION_BY_REGION.value
     reference_url = "https://www.reference.com"
     is_active = True
@@ -671,5 +670,5 @@ class ButtonLinkFactory(BaseFactory):
 
     title = factory.Sequence(lambda n: f"버튼_{n}")
     reference_url = "https://www.reference.com"
-    section_type = ButtonSectionType.HOME_SCREEN.value
+    section_type = SectionType.HOME_SCREEN.value
     is_active = True
