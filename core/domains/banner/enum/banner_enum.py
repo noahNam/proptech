@@ -1,10 +1,10 @@
 from enum import Enum
 
 
-class BannerSectionType(Enum):
+class SectionType(Enum):
     """
-        사용 테이블: banners
-        용도 : 배너 이미지를 내려줄때, 화면 구분용
+        사용 테이블: banners, button_links
+        용도 : 배너 이미지를 내려줄때, 버튼 링크 URL 내려줄때 화면 구분용
     """
 
     HOME_SCREEN = 0
@@ -28,13 +28,3 @@ class BannerSubTopic(Enum):
     PUBLIC_SALE = 5
     HONEYMOON_HOPE_TOWN = 6
     PRE_SUBSCRIPTION_FAQ = 7
-
-
-class ButtonSectionType(Enum):
-    """
-        사용 테이블: banners
-        용도 : 버튼 링크 URL 내려줄때, 화면 구분용
-    """
-
-    HOME_SCREEN = 0
-    PRE_SUBSCRIPTION_INFO = 1
