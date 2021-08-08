@@ -1,6 +1,9 @@
 import pytest
 
-from app.http.requests.v1.banner_request import GetHomeBannerRequestSchema, GetPreSubscriptionBannerRequestSchema
+from app.http.requests.v1.banner_request import (
+    GetHomeBannerRequestSchema,
+    GetPreSubscriptionBannerRequestSchema,
+)
 from core.domains.banner.enum.banner_enum import SectionType
 from core.exceptions import InvalidRequestException
 

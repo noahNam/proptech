@@ -9,7 +9,7 @@ from core.domains.banner.entity.banner_entity import (
     BannerEntity,
     ButtonLinkEntity,
     GetHomeBannerEntity,
-    GetPreSubscriptionBannerEntity
+    GetPreSubscriptionBannerEntity,
 )
 from core.domains.house.entity.house_entity import CalendarInfoEntity
 
@@ -51,18 +51,18 @@ class BannerRepository:
             return []
         return [button_link.to_entity() for button_link in button_links]
 
-    def make_home_banner_entity(self,
-                                banner_list: List[BannerEntity],
-                                calendar_entities: List[CalendarInfoEntity]) -> GetHomeBannerEntity:
+    def make_home_banner_entity(
+        self,
+        banner_list: List[BannerEntity],
+        calendar_entities: List[CalendarInfoEntity],
+    ) -> GetHomeBannerEntity:
         return GetHomeBannerEntity(
-            banner_list=banner_list,
-            calendar_infos=calendar_entities
+            banner_list=banner_list, calendar_infos=calendar_entities
         )
 
-    def make_pre_subscription_banner_entity(self,
-                                            banner_list: List[BannerEntity],
-                                            button_links: List[ButtonLinkEntity]) -> GetPreSubscriptionBannerEntity:
+    def make_pre_subscription_banner_entity(
+        self, banner_list: List[BannerEntity], button_links: List[ButtonLinkEntity]
+    ) -> GetPreSubscriptionBannerEntity:
         return GetPreSubscriptionBannerEntity(
-            banner_list=banner_list,
-            button_links=button_links
+            banner_list=banner_list, button_links=button_links
         )

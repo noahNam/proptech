@@ -21,11 +21,15 @@ def get_public_sales_of_ticket_usage(
 
 def get_home_screen_calendar_info(year_month: str, user_id: int):
     search_filters = HouseRepository().get_calendar_info_filters(year_month=year_month)
-    calendar_entities = HouseRepository().get_calendar_info(user_id=user_id, search_filters=search_filters)
+    calendar_entities = HouseRepository().get_calendar_info(
+        user_id=user_id, search_filters=search_filters
+    )
     setattr(g, HouseTopicEnum.GET_HOME_SCREEN_CALENDAR_INFO, calendar_entities)
 
 
 pub.subscribe(
     get_public_sales_of_ticket_usage, HouseTopicEnum.GET_PUBLIC_SALES_TO_TICKET_USAGE
 )
-pub.subscribe(get_home_screen_calendar_info, HouseTopicEnum.GET_HOME_SCREEN_CALENDAR_INFO)
+pub.subscribe(
+    get_home_screen_calendar_info, HouseTopicEnum.GET_HOME_SCREEN_CALENDAR_INFO
+)

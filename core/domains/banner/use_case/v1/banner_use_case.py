@@ -21,7 +21,7 @@ class BannerBaseUseCase:
 
 class GetHomeBannerUseCase(BannerBaseUseCase):
     def execute(
-            self, dto: GetHomeBannerDto
+        self, dto: GetHomeBannerDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if dto.section_type != SectionType.HOME_SCREEN.value:
             return UseCaseFailureOutput(
@@ -38,22 +38,33 @@ class GetHomeBannerUseCase(BannerBaseUseCase):
 
         year_month = year + month
 
-        calendar_entities = self.__get_home_screen_calendar_info(year_month=year_month, user_id=dto.user_id)
-        banner_list = self._banner_repo.get_banner_list_include_images(section_type=dto.section_type)
-        result = self._banner_repo.make_home_banner_entity(banner_list=banner_list,
-                                                           calendar_entities=calendar_entities)
+        calendar_entities = self.__get_home_screen_calendar_info(
+            year_month=year_month, user_id=dto.user_id
+        )
+        banner_list = self._banner_repo.get_banner_list_include_images(
+            section_type=dto.section_type
+        )
+        result = self._banner_repo.make_home_banner_entity(
+            banner_list=banner_list, calendar_entities=calendar_entities
+        )
 
         return UseCaseSuccessOutput(value=result)
 
-    def __get_home_screen_calendar_info(self, year_month: str, user_id: int) -> List[CalendarInfoEntity]:
-        send_message(topic_name=HouseTopicEnum.GET_HOME_SCREEN_CALENDAR_INFO, year_month=year_month, user_id=user_id)
+    def __get_home_screen_calendar_info(
+        self, year_month: str, user_id: int
+    ) -> List[CalendarInfoEntity]:
+        send_message(
+            topic_name=HouseTopicEnum.GET_HOME_SCREEN_CALENDAR_INFO,
+            year_month=year_month,
+            user_id=user_id,
+        )
 
         return get_event_object(topic_name=HouseTopicEnum.GET_HOME_SCREEN_CALENDAR_INFO)
 
 
 class GetPreSubscriptionBannerUseCase(BannerBaseUseCase):
     def execute(
-            self, dto: SectionTypeDto
+        self, dto: SectionTypeDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if dto.section_type != SectionType.PRE_SUBSCRIPTION_INFO.value:
             return UseCaseFailureOutput(
@@ -61,8 +72,13 @@ class GetPreSubscriptionBannerUseCase(BannerBaseUseCase):
                 message=FailureType.INVALID_REQUEST_ERROR,
                 code=HTTPStatus.BAD_REQUEST,
             )
-        banner_list = self._banner_repo.get_banner_list_include_images(section_type=dto.section_type)
-        button_links = self._banner_repo.get_button_link_list(section_type=dto.section_type)
-        result = self._banner_repo.make_pre_subscription_banner_entity(banner_list=banner_list,
-                                                                       button_links=button_links)
+        banner_list = self._banner_repo.get_banner_list_include_images(
+            section_type=dto.section_type
+        )
+        button_links = self._banner_repo.get_button_link_list(
+            section_type=dto.section_type
+        )
+        result = self._banner_repo.make_pre_subscription_banner_entity(
+            banner_list=banner_list, button_links=button_links
+        )
         return UseCaseSuccessOutput(value=result)

@@ -9,7 +9,7 @@ pre_subscription_section_type = SectionType.PRE_SUBSCRIPTION_INFO.value
 
 
 def test_when_get_banner_list_include_images_then_should_return_banner_list(
-        session, banner_factory
+    session, banner_factory
 ):
     banner1 = banner_factory(
         banner_image=True,
@@ -49,13 +49,11 @@ def test_when_get_banner_list_include_images_then_should_return_banner_list(
 
 
 def test_when_get_button_link_list_then_should_return_button_link_list(
-        session, button_link_factory
+    session, button_link_factory
 ):
     button1 = button_link_factory(section_type=SectionType.HOME_SCREEN.value)
     button2 = button_link_factory(section_type=SectionType.HOME_SCREEN.value)
-    button3 = button_link_factory(
-        section_type=SectionType.PRE_SUBSCRIPTION_INFO.value
-    )
+    button3 = button_link_factory(section_type=SectionType.PRE_SUBSCRIPTION_INFO.value)
 
     session.add_all([button1, button2, button3])
     session.commit()
