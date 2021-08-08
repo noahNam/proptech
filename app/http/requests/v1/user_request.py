@@ -40,7 +40,7 @@ class CreateUserSchema(BaseModel):
 
         phone_number = "".join(phone_number.split("-"))
         if len(phone_number) > 11:
-            raise ValidationError("phone_number only 11 character")
+            raise ValidationError
         return phone_number
 
 
