@@ -41,7 +41,7 @@ def test_view_when_user_id_not_exists_then_check_auth_failure(
         )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.get_json()["type"] == HTTPStatus.UNAUTHORIZED
+    assert response.get_json()["detail"] == HTTPStatus.UNAUTHORIZED
     assert response.get_json()["message"] == "unauthorized_error"
 
 
