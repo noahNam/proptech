@@ -1,0 +1,123 @@
+home_banner:
+  properties:
+    banners:
+      type: object
+      properties:
+        banner_list:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 5
+              title:
+                type: string
+                example: "배너 이름"
+              desc:
+                type: string
+                example: "배너 설명"
+              reference_url:
+                type: string
+                example: "https://www.reference.com"
+              section_type:
+                type: integer
+                example: 0
+              sub_topic:
+                type: integer
+                example: 1
+              is_active:
+                type: boolean
+                example: True
+              is_event:
+                type: boolean
+                example: True
+              banner_image:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 5
+                  banner_id:
+                    type: integer
+                    example: 3
+                  file_name:
+                    type: string
+                    example: "photo_name"
+                  path:
+                    type: string
+                    example: "https://None.s3.None.amazonaws.com/public_sale_photos/2021/07/13/2c222a5b-b115-4330-8c88-9be638b14b46.png"
+                  extension:
+                    type: string
+                    example: "png"
+                  created_at:
+                    type: string
+                    example: "Mon, 12 Jul 2021 15:00:00 GMT"
+                  updated_at:
+                    type: string
+                    example: "Mon, 12 Jul 2021 15:00:00 GMT"
+              calendar_infos:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 1
+                    name:
+                      type: string
+                      example: "래미안 원베일리"
+                    road_address:
+                      type: string
+                      example: "서울특별시 서초구 신반포로19길 10"
+                    jibun_address:
+                      type: string
+                      example: "서울특별시 서초구 반포동 1-1"
+                    is_like:
+                      type: boolen
+                      example: True
+                    public_sales:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 3
+                        real_estate_id:
+                          type: integer
+                          example: 1
+                        contract_start_date:
+                          type: string
+                          example: "20210709"
+                        contract_end_date:
+                          type: string
+                          example: "20210714"
+                        first_supply_date:
+                          type: string
+                          example: "20210701"
+                        first_supply_etc_date:
+                          type: string
+                          example: "20210702"
+                        second_supply_date:
+                          type: string
+                          example: "20210703"
+                        second_supply_etc_date:
+                          type: string
+                          example: "20210704"
+                        special_supply_date:
+                          type: string
+                          example: "20210628"
+                        special_supply_etc_date:
+                          type: string
+                          example: "20210629"
+                        subscription_start_date:
+                          type: string
+                          example: "20210621"
+                        subscription_end_date:
+                          type: string
+                          example: "20210715"
+                        move_in_year:
+                          type: integer
+                          example: 2023
+                        move_in_month:
+                          type: integer
+                          example: 12

@@ -1,3 +1,4 @@
+from flasgger import swag_from
 from flask import request
 
 from app.http.requests.v1.banner_request import GetHomeBannerRequestSchema, GetPreSubscriptionBannerRequestSchema
@@ -9,6 +10,7 @@ from core.domains.banner.use_case.v1.banner_use_case import GetHomeBannerUseCase
 @api.route("/v1/banners/home_screen", methods=["GET"])
 @jwt_required
 @auth_required
+@swag_from("get_home_banner_view.yml", methods=["GET"])
 def get_home_banner_view():
     dto = GetHomeBannerRequestSchema(
         user_id=current_user.id,
@@ -23,6 +25,7 @@ def get_home_banner_view():
 @api.route("/v1/banners/pre_subscription", methods=["GET"])
 @jwt_required
 @auth_required
+@swag_from("get_pre_subscription_banner_view.yml", methods=["GET"])
 def get_pre_subscription_banner_view():
     dto = GetPreSubscriptionBannerRequestSchema(
         section_type=request.args.get("section_type")

@@ -131,7 +131,7 @@ def test_when_get_pre_subscription_banner_view_then_return_banner_list_with_butt
         )
 
     data = response.get_json()["data"]
-
+    print(data)
     assert response.status_code == 200
     assert len(data["banners"]["banner_list"]) == 2
     assert len(data["banners"]["button_links"]) == 2
