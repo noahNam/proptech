@@ -23,6 +23,7 @@ def upgrade():
             nullable=False,
             autoincrement=False,
         ),
+        sa.Column("email", sa.String(length=75), nullable=True),
         sa.Column("is_required_agree_terms", sa.Boolean(), nullable=False),
         sa.Column("join_date", sa.String(length=8), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
