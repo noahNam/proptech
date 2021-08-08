@@ -10,6 +10,8 @@ class GetUserDto(BaseModel):
 
 class CreateUserDto(BaseModel):
     user_id: int
+    email: Optional[str]
+    phone_number: Optional[str]
     is_required_agree_terms: bool
     is_active: bool
     is_out: bool
