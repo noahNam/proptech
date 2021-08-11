@@ -5,8 +5,10 @@ import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.banner.entity.banner_entity import BannerEntity, GetHomeBannerEntity, ButtonLinkEntity, \
-    GetPreSubscriptionBannerEntity
+from core.domains.banner.entity.banner_entity import (
+    BannerEntity,
+    ButtonLinkEntity,
+)
 from core.domains.banner.enum import BannerTopicEnum
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
@@ -22,9 +24,8 @@ from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
     GetSearchHouseListEntity,
     GetRecentViewListEntity,
-    CalendarInfoEntity,
+    CalendarInfoEntity, GetMainPreSubscriptionEntity, GetHouseMainEntity,
 )
-from core.domains.house.enum import HouseTopicEnum
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
     HouseTypeEnum,
@@ -41,6 +42,10 @@ class HouseBaseUseCase:
     @inject.autoparams()
     def __init__(self, house_repo: HouseRepository):
         self._house_repo = house_repo
+
+    def _get_banner_list(self, section_type: int) -> List[BannerEntity]:
+        send_message(topic_name=BannerTopicEnum.GET_BANNER_LIST, section_type=section_type)
+        return get_event_object(topic_name=BannerTopicEnum.GET_BANNER_LIST)
 
 
 class UpsertInterestHouseUseCase(HouseBaseUseCase):
@@ -249,21 +254,11 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
         return UseCaseSuccessOutput(value=bounding_entities)
 
 
-class BannerBaseUseCase(HouseBaseUseCase):
-    def _get_banner_list(self, section_type: int) -> List[BannerEntity]:
-        send_message(topic_name=BannerTopicEnum.GET_BANNER_LIST, section_type=section_type)
-        return get_event_object(topic_name=BannerTopicEnum.GET_BANNER_LIST)
-
-    def _get_button_link_list(self, section_type: int) -> List[ButtonLinkEntity]:
-        send_message(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST, section_type=section_type)
-        return get_event_object(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST)
-
-
-class GetHomeBannerUseCase(BannerBaseUseCase):
-    def make_home_banner_entity(self, banner_list: List[BannerEntity],
+class GetHouseMainUseCase(HouseBaseUseCase):
+    def _make_house_main_entity(self, banner_list: List[BannerEntity],
                                 calendar_entities: List[CalendarInfoEntity],
-                                ) -> GetHomeBannerEntity:
-        return GetHomeBannerEntity(
+                                ) -> GetHouseMainEntity:
+        return GetHouseMainEntity(
             banner_list=banner_list, calendar_infos=calendar_entities
         )
 
@@ -294,17 +289,21 @@ class GetHomeBannerUseCase(BannerBaseUseCase):
             user_id=dto.user_id, search_filters=search_filters
         )
 
-        result = self.make_home_banner_entity(
+        result = self._make_house_main_entity(
             banner_list=banner_list, calendar_entities=calendar_entities
         )
         return UseCaseSuccessOutput(value=result)
 
 
-class GetPreSubscriptionBannerUseCase(BannerBaseUseCase):
-    def make_pre_subscription_banner_entity(
+class GetMainPreSubscriptionUseCase(HouseBaseUseCase):
+    def _get_button_link_list(self, section_type: int) -> List[ButtonLinkEntity]:
+        send_message(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST, section_type=section_type)
+        return get_event_object(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST)
+
+    def _make_house_main_pre_subscription_entity(
             self, banner_list: List[BannerEntity], button_links: List[ButtonLinkEntity]
-    ) -> GetPreSubscriptionBannerEntity:
-        return GetPreSubscriptionBannerEntity(
+    ) -> GetMainPreSubscriptionEntity:
+        return GetMainPreSubscriptionEntity(
             banner_list=banner_list, button_links=button_links
         )
 
@@ -322,7 +321,7 @@ class GetPreSubscriptionBannerUseCase(BannerBaseUseCase):
         # get button link list
         button_link_list = self._get_button_link_list(section_type=dto.section_type)
 
-        result = self.make_pre_subscription_banner_entity(
+        result = self._make_house_main_pre_subscription_entity(
             banner_list=banner_list, button_links=button_link_list
         )
         return UseCaseSuccessOutput(value=result)

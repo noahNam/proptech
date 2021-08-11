@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 from app.persistence.model import InterestHouseModel, RecentlyViewModel
-from core.domains.banner.entity.banner_entity import GetPreSubscriptionBannerEntity, GetHomeBannerEntity
 from core.domains.house.dto.house_dto import (
     UpsertInterestHouseDto,
     CoordinatesRangeDto,
@@ -19,6 +18,8 @@ from core.domains.house.entity.house_entity import (
     SearchPublicSaleEntity,
     SearchAdministrativeDivisionEntity,
     GetSearchHouseListEntity,
+    GetMainPreSubscriptionEntity,
+    GetHouseMainEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -35,9 +36,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetInterestHouseListUseCase,
     GetRecentViewListUseCase,
     GetSearchHouseListUseCase,
-    BoundingWithinRadiusUseCase,
-    GetPreSubscriptionBannerUseCase,
-    GetHomeBannerUseCase,
+    BoundingWithinRadiusUseCase, GetMainPreSubscriptionUseCase, GetHouseMainUseCase,
 )
 from core.domains.user.dto.user_dto import GetUserDto
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -499,10 +498,10 @@ def test_when_get_home_banner_use_case_then_include_present_calendar_info(
             "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
-        result = GetHomeBannerUseCase().execute(dto=dto)
+        result = GetHouseMainUseCase().execute(dto=dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, GetHomeBannerEntity)
+    assert isinstance(result.value, GetHouseMainEntity)
     assert mock_calendar_info.called is True
     assert len(result.value.banner_list) == 2
 
@@ -513,7 +512,7 @@ def test_when_get_home_banner_use_case_with_wrong_section_type_then_fail(
     invalid_dto = GetHomeBannerDto(
         section_type=SectionType.PRE_SUBSCRIPTION_INFO.value, user_id=create_users[0].id
     )
-    result = GetHomeBannerUseCase().execute(dto=invalid_dto)
+    result = GetHouseMainUseCase().execute(dto=invalid_dto)
 
     assert isinstance(result, UseCaseFailureOutput)
 
@@ -540,10 +539,10 @@ def test_when_get_pre_subscription_banner_use_case_then_return_pre_subscription_
 
     dto = SectionTypeDto(section_type=SectionType.PRE_SUBSCRIPTION_INFO.value)
 
-    result = GetPreSubscriptionBannerUseCase().execute(dto=dto)
+    result = GetMainPreSubscriptionUseCase().execute(dto=dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, GetPreSubscriptionBannerEntity)
+    assert isinstance(result.value, GetMainPreSubscriptionEntity)
     assert len(result.value.banner_list) == 2
     assert len(result.value.button_links) == 2
 
@@ -552,6 +551,6 @@ def test_when_get_pre_subscription_banner_use_case_with_wrong_section_type_then_
         session,
 ):
     invalid_dto = SectionTypeDto(section_type=SectionType.HOME_SCREEN.value)
-    result = GetPreSubscriptionBannerUseCase().execute(dto=invalid_dto)
+    result = GetMainPreSubscriptionUseCase().execute(dto=invalid_dto)
 
     assert isinstance(result, UseCaseFailureOutput)

@@ -5,7 +5,7 @@ from flask import url_for
 
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.http.responses import success_response
-from app.persistence.model import InterestHouseModel, BannerModel
+from app.persistence.model import InterestHouseModel
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
@@ -742,7 +742,7 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         with test_request_context:
             response = client.get(
                 url_for(
-                    "api/tanos.get_home_banner_view",
+                    "api/tanos.get_home_main_view",
                     section_type=SectionType.HOME_SCREEN.value,
                 ),
                 headers=headers,
@@ -797,7 +797,7 @@ def test_when_get_pre_subscription_banner_view_then_return_banner_list_with_butt
     with test_request_context:
         response = client.get(
             url_for(
-                "api/tanos.get_pre_subscription_banner_view",
+                "api/tanos.get_main_pre_subscription_view",
                 section_type=SectionType.PRE_SUBSCRIPTION_INFO.value,
             ),
             headers=headers,

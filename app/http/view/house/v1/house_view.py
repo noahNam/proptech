@@ -9,8 +9,8 @@ from app.http.requests.v1.house_request import (
     GetSearchHouseListRequestSchema,
     GetBoundingWithinRadiusRequestSchema,
     GetRecentViewListRequestSchema,
-    GetHomeBannerRequestSchema,
-    GetPreSubscriptionBannerRequestSchema,
+    GetMainPreSubscriptionRequestSchema,
+    GetHouseMainRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -35,9 +35,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetInterestHouseListUseCase,
     GetSearchHouseListUseCase,
     BoundingWithinRadiusUseCase,
-    GetRecentViewListUseCase,
-    GetHomeBannerUseCase,
-    GetPreSubscriptionBannerUseCase,
+    GetRecentViewListUseCase, GetHouseMainUseCase, GetMainPreSubscriptionUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -182,24 +180,24 @@ def get_bounding_within_radius_view(house_id):
 @api.route("/v1/houses/main", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_home_banner_view.yml", methods=["GET"])
-def get_home_banner_view():
-    dto = GetHomeBannerRequestSchema(
+@swag_from("get_home_main_view.yml", methods=["GET"])
+def get_home_main_view():
+    dto = GetHouseMainRequestSchema(
         user_id=current_user.id, section_type=SectionType.HOME_SCREEN.value
     ).validate_request_and_make_dto()
 
-    return GetHomeBannerPresenter().transform(GetHomeBannerUseCase().execute(dto=dto))
+    return GetHomeBannerPresenter().transform(GetHouseMainUseCase().execute(dto=dto))
 
 
 @api.route("/v1/houses/pre-subs", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_pre_subscription_banner_view.yml", methods=["GET"])
-def get_pre_subscription_banner_view():
-    dto = GetPreSubscriptionBannerRequestSchema(
+@swag_from("get_main_pre_subscription_view.yml", methods=["GET"])
+def get_main_pre_subscription_view():
+    dto = GetMainPreSubscriptionRequestSchema(
         section_type=SectionType.PRE_SUBSCRIPTION_INFO.value
     ).validate_request_and_make_dto()
 
     return GetPreSubscriptionBannerPresenter().transform(
-        GetPreSubscriptionBannerUseCase().execute(dto=dto)
+        GetMainPreSubscriptionUseCase().execute(dto=dto)
     )

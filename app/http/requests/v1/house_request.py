@@ -331,7 +331,7 @@ class GetBoundingWithinRadiusRequestSchema:
             raise InvalidRequestException(message=e.errors())
 
 
-class GetHomeBannerSchema(BaseModel):
+class GetHouseMainSchema(BaseModel):
     section_type: int
     user_id: int
 
@@ -342,14 +342,14 @@ class GetHomeBannerSchema(BaseModel):
         return section_type
 
 
-class GetHomeBannerRequestSchema:
+class GetHouseMainRequestSchema:
     def __init__(self, section_type, user_id):
         self.section_type = section_type
         self.user_id = int(user_id) if user_id else None
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetHomeBannerSchema(
+            schema = GetHouseMainSchema(
                 section_type=int(self.section_type), user_id=self.user_id
             ).dict()
             return GetHomeBannerDto(**schema)
@@ -360,7 +360,7 @@ class GetHomeBannerRequestSchema:
             raise InvalidRequestException(message=e.errors())
 
 
-class GetPreSubscriptionBannerSchema(BaseModel):
+class GetMainPreSubscriptionSchema(BaseModel):
     section_type: int
 
     @validator("section_type")
@@ -370,13 +370,13 @@ class GetPreSubscriptionBannerSchema(BaseModel):
         return section_type
 
 
-class GetPreSubscriptionBannerRequestSchema:
+class GetMainPreSubscriptionRequestSchema:
     def __init__(self, section_type):
         self.section_type = section_type
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetPreSubscriptionBannerSchema(
+            schema = GetMainPreSubscriptionSchema(
                 section_type=int(self.section_type)
             ).dict()
             return SectionTypeDto(**schema)

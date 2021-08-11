@@ -4,6 +4,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
+from core.domains.banner.entity.banner_entity import BannerEntity, ButtonLinkEntity
+
 
 class InterestHouseEntity(BaseModel):
     id: int
@@ -303,4 +305,11 @@ class GetPublicSaleOfTicketUsageEntity(BaseModel):
     image_path: Optional[str]
 
 
+class GetHouseMainEntity(BaseModel):
+    banner_list: List[BannerEntity] = None
+    calendar_infos: List[CalendarInfoEntity] = None
 
+
+class GetMainPreSubscriptionEntity(BaseModel):
+    banner_list: List[BannerEntity] = None
+    button_links: List[ButtonLinkEntity] = None
