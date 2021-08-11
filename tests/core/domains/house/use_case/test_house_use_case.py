@@ -5,32 +5,41 @@ from core.domains.house.dto.house_dto import (
     UpsertInterestHouseDto,
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetCalenderInfoDto,
+    GetCalendarInfoDto,
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
+    SectionTypeDto,
+    GetHomeBannerDto,
 )
 from core.domains.house.entity.house_entity import (
-    PublicSaleCalenderEntity,
-    CalenderInfoEntity,
+    PublicSaleCalendarEntity,
+    CalendarInfoEntity,
     SearchRealEstateEntity,
     SearchPublicSaleEntity,
     SearchAdministrativeDivisionEntity,
     GetSearchHouseListEntity,
+    GetMainPreSubscriptionEntity,
+    GetHouseMainEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
     BoundingLevelEnum,
     SearchTypeEnum,
+    SectionType,
+    BannerSubTopic,
+    PreSaleTypeEnum,
 )
 from core.domains.house.use_case.v1.house_use_case import (
     UpsertInterestHouseUseCase,
     BoundingUseCase,
     GetHousePublicDetailUseCase,
-    GetCalenderInfoUseCase,
+    GetCalendarInfoUseCase,
     GetInterestHouseListUseCase,
     GetRecentViewListUseCase,
     GetSearchHouseListUseCase,
     BoundingWithinRadiusUseCase,
+    GetMainPreSubscriptionUseCase,
+    GetHouseMainUseCase,
 )
 from core.domains.user.dto.user_dto import GetUserDto
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -47,7 +56,7 @@ coordinates_dto = CoordinatesRangeDto(
     level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value,
 )
 
-get_calender_info_dto = GetCalenderInfoDto(year=2021, month=7, user_id=1)
+get_calendar_info_dto = GetCalendarInfoDto(year=2021, month=7, user_id=1)
 
 
 def test_upsert_interest_house_use_case_when_like_public_sales_then_success(session):
@@ -226,17 +235,18 @@ def test_get_house_public_detail_use_case_when_disable_public_sale_house(
     assert result.message == FailureType.NOT_FOUND_ERROR
 
 
-def test_get_calender_info_use_case_when_included_request_date(
+def test_get_calendar_info_use_case_when_included_request_date(
     session, create_real_estate_with_public_sale
 ):
     """
-        get_calender_info_by_get_calender_info_dto -> return mocking
+        get_calendar_info_by_get_calendar_info_dto -> return mocking
         요청 받은 년월에 속한 매물이 있으면 캘린더 정보 리턴
     """
-    public_sale_calender = PublicSaleCalenderEntity(
+    public_sale_calendar = PublicSaleCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
+        trade_type=PreSaleTypeEnum.PRE_SALE,
         offer_date="20210705",
         subscription_start_date="20210705",
         subscription_end_date="20210705",
@@ -252,41 +262,41 @@ def test_get_calender_info_use_case_when_included_request_date(
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calender_info = CalenderInfoEntity(
+    sample_calendar_info = CalendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
-        public_sale=public_sale_calender,
+        public_sale=public_sale_calendar,
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
-    ) as mock_calender_info:
-        mock_calender_info.return_value = sample_calender_info
-        result = GetCalenderInfoUseCase().execute(dto=get_calender_info_dto)
+        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+    ) as mock_calendar_info:
+        mock_calendar_info.return_value = sample_calendar_info
+        result = GetCalendarInfoUseCase().execute(dto=get_calendar_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert mock_calender_info.called is True
+    assert mock_calendar_info.called is True
 
 
-def test_get_calender_info_use_case_when_no_included_request_date(
+def test_get_calendar_info_use_case_when_no_included_request_date(
     session, create_real_estate_with_public_sale
 ):
     """
-        get_calender_info_by_get_calender_info_dto -> return mocking
+        get_calendar_info_by_get_calendar_info_dto -> return mocking
         요청 받은 년월에 속한 매물이 없으면 null 리턴
     """
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calender_info"
-    ) as mock_calender_info:
-        mock_calender_info.return_value = None
-        result = GetCalenderInfoUseCase().execute(dto=get_calender_info_dto)
+        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+    ) as mock_calendar_info:
+        mock_calendar_info.return_value = None
+        result = GetCalendarInfoUseCase().execute(dto=get_calendar_info_dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value is None
-    assert mock_calender_info.called is True
+    assert mock_calendar_info.called is True
 
 
 def test_get_interest_house_list_use_case_when_like_one_public_sale_then_result_one(
@@ -432,3 +442,118 @@ def test_bounding_within_radius_use_case_when_get_coordinates_then_success(
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert mock_result.called is True
+
+
+def test_when_get_home_banner_use_case_then_include_present_calendar_info(
+    session, create_users, banner_factory
+):
+    """
+        get_calendar_info_by_get_calendar_info_dto -> return mocking
+    """
+    banner1 = banner_factory(
+        banner_image=True,
+        section_type=SectionType.HOME_SCREEN.value,
+        sub_topic=BannerSubTopic.HOME_THIRD_PLANNED_CITY.value,
+    )
+    banner2 = banner_factory(
+        banner_image=True,
+        section_type=SectionType.HOME_SCREEN.value,
+        sub_topic=BannerSubTopic.HOME_SUBSCRIPTION_BY_REGION.value,
+    )
+
+    session.add_all([banner1, banner2])
+    session.commit()
+
+    public_sale_calendar = PublicSaleCalendarEntity(
+        id=1,
+        real_estate_id=1,
+        name="힐스테이트",
+        trade_type=PreSaleTypeEnum.PRE_SALE,
+        offer_date="20210705",
+        subscription_start_date="20210705",
+        subscription_end_date="20210705",
+        special_supply_date="20210705",
+        special_supply_etc_date="20210705",
+        first_supply_date="20210705",
+        first_supply_etc_date="20210705",
+        second_supply_date="20210705",
+        second_supply_etc_date="20210705",
+        notice_winner_date="20210705",
+        contract_start_date="20210705",
+        contract_end_date="20210705",
+        move_in_year=2023,
+        move_in_month=12,
+    )
+    sample_calendar_info = CalendarInfoEntity(
+        is_like=True,
+        id=1,
+        name="힐스테이트",
+        road_address="서울 서초구 어딘가",
+        jibun_address="서울 서초구 어딘가",
+        public_sale=public_sale_calendar,
+    )
+
+    dto = GetHomeBannerDto(
+        section_type=SectionType.HOME_SCREEN.value, user_id=create_users[0].id
+    )
+
+    with patch(
+        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+    ) as mock_calendar_info:
+        mock_calendar_info.return_value = [sample_calendar_info]
+        result = GetHouseMainUseCase().execute(dto=dto)
+
+    assert isinstance(result, UseCaseSuccessOutput)
+    assert isinstance(result.value, GetHouseMainEntity)
+    assert mock_calendar_info.called is True
+    assert len(result.value.banner_list) == 2
+
+
+def test_when_get_home_banner_use_case_with_wrong_section_type_then_fail(
+    session, create_users
+):
+    invalid_dto = GetHomeBannerDto(
+        section_type=SectionType.PRE_SUBSCRIPTION_INFO.value, user_id=create_users[0].id
+    )
+    result = GetHouseMainUseCase().execute(dto=invalid_dto)
+
+    assert isinstance(result, UseCaseFailureOutput)
+
+
+def test_when_get_pre_subscription_banner_use_case_then_return_pre_subscription_banner_info_with_button_links(
+    session, create_users, button_link_factory, banner_factory
+):
+    banner1 = banner_factory(
+        banner_image=True,
+        section_type=SectionType.PRE_SUBSCRIPTION_INFO.value,
+        sub_topic=BannerSubTopic.PRE_SUBSCRIPTION_FAQ.value,
+    )
+    banner2 = banner_factory(
+        banner_image=True,
+        section_type=SectionType.PRE_SUBSCRIPTION_INFO.value,
+        sub_topic=BannerSubTopic.PRE_SUBSCRIPTION_FAQ.value,
+    )
+
+    button1 = button_link_factory(section_type=SectionType.PRE_SUBSCRIPTION_INFO.value)
+    button2 = button_link_factory(section_type=SectionType.PRE_SUBSCRIPTION_INFO.value)
+
+    session.add_all([banner1, banner2, button1, button2])
+    session.commit()
+
+    dto = SectionTypeDto(section_type=SectionType.PRE_SUBSCRIPTION_INFO.value)
+
+    result = GetMainPreSubscriptionUseCase().execute(dto=dto)
+
+    assert isinstance(result, UseCaseSuccessOutput)
+    assert isinstance(result.value, GetMainPreSubscriptionEntity)
+    assert len(result.value.banner_list) == 2
+    assert len(result.value.button_links) == 2
+
+
+def test_when_get_pre_subscription_banner_use_case_with_wrong_section_type_then_fail(
+    session,
+):
+    invalid_dto = SectionTypeDto(section_type=SectionType.HOME_SCREEN.value)
+    result = GetMainPreSubscriptionUseCase().execute(dto=invalid_dto)
+
+    assert isinstance(result, UseCaseFailureOutput)

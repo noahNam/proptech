@@ -44,9 +44,10 @@ from app.persistence.model import (
     TicketTargetModel,
     PostAttachmentModel,
     RecommendCodeModel,
+    BannerModel,
+    BannerImageModel,
+    ButtonLinkModel,
 )
-
-# factory에 사용해야 하는 Model을 가져온다
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
     RealTradeTypeEnum,
@@ -55,6 +56,8 @@ from core.domains.house.enum.house_enum import (
     RentTypeEnum,
     PreSaleTypeEnum,
     DivisionLevelEnum,
+    SectionType,
+    BannerSubTopic,
 )
 from core.domains.notification.enum.notification_enum import (
     NotificationTopicEnum,
@@ -63,7 +66,6 @@ from core.domains.notification.enum.notification_enum import (
 )
 from core.domains.payment.enum.payment_enum import TicketSignEnum, PromotionTypeEnum
 from core.domains.post.enum.post_enum import (
-    PostTypeEnum,
     PostCategoryEnum,
     PostCategoryDetailEnum,
 )
@@ -71,6 +73,8 @@ from core.domains.user.enum.user_enum import (
     UserTicketTypeDivisionEnum,
     UserTicketCreatedByEnum,
 )
+
+# factory에 사용해야 하는 Model을 가져온다
 
 faker = FakerFactory.create(locale="ko_KR")
 
@@ -622,3 +626,46 @@ class RecommendCodeFactory(BaseFactory):
     code = (StringGenerator("[\l]{6}").render_list(1, unique=True)[0]).upper()
     code_count = 0
     is_used = False
+
+
+class BannerImageFactory(BaseFactory):
+    class Meta:
+        model = BannerImageModel
+
+    banner_id = factory.Sequence(lambda n: n + 1)
+    file_name = "photo_file"
+    path = (
+        "https://sample.s3.sample.amazonaws.com"
+        "/public_sale_detail_photos/2021/07/15/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
+    )
+    extension = "jpeg"
+    created_at = get_server_timestamp()
+    updated_at = get_server_timestamp()
+
+
+class BannerFactory(BaseFactory):
+    class Meta:
+        model = BannerModel
+
+    title = factory.Sequence(lambda n: f"배너_{n}")
+    desc = factory.Sequence(lambda n: f"배너설명_{n}")
+    section_type = SectionType.HOME_SCREEN.value
+    sub_topic = BannerSubTopic.HOME_SUBSCRIPTION_BY_REGION.value
+    reference_url = "https://www.reference.com"
+    is_active = True
+    is_event = True
+
+    @factory.post_generation
+    def banner_image(obj, create, extracted, **kwargs):
+        if extracted:
+            BannerImageFactory(banner=obj, **kwargs)
+
+
+class ButtonLinkFactory(BaseFactory):
+    class Meta:
+        model = ButtonLinkModel
+
+    title = factory.Sequence(lambda n: f"버튼_{n}")
+    reference_url = "https://www.reference.com"
+    section_type = SectionType.HOME_SCREEN.value
+    is_active = True

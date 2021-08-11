@@ -40,7 +40,9 @@ class PostModel(db.Model):
             body=self.article.body if self.article else None,
             post_attachments=[
                 post_attachment.to_entity() for post_attachment in self.post_attachments
-            ],
+            ]
+            if self.post_attachments
+            else None,
             is_deleted=self.is_deleted,
             read_count=self.read_count,
             created_at=self.created_at.date().strftime("%Y-%m-%d %H:%M:%S"),

@@ -2,6 +2,7 @@ import inject
 
 from app.extensions.queue.sender import QueueMessageSender
 from app.extensions.queue.sqs_sender import SqsMessageSender
+from core.domains.banner.repository.banner_repository import BannerRepository
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.notification.repository.notification_repository import (
     NotificationRepository,
@@ -18,6 +19,7 @@ def bind(binder, app):
     binder.bind_to_provider(PostRepository, PostRepository)
     binder.bind_to_provider(PaymentRepository, PaymentRepository)
     binder.bind_to_provider(QueueMessageSender, SqsMessageSender)
+    binder.bind_to_provider(BannerRepository, BannerRepository)
 
 
 def init_provider(app):
