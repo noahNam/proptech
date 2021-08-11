@@ -27,7 +27,11 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetPreSubscriptionBannerPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
-from core.domains.house.enum.house_enum import BoundingLevelEnum, CalendarYearThreshHold, SectionType
+from core.domains.house.enum.house_enum import (
+    BoundingLevelEnum,
+    CalendarYearThreshHold,
+    SectionType,
+)
 from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
@@ -35,7 +39,9 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetInterestHouseListUseCase,
     GetSearchHouseListUseCase,
     BoundingWithinRadiusUseCase,
-    GetRecentViewListUseCase, GetHouseMainUseCase, GetMainPreSubscriptionUseCase,
+    GetRecentViewListUseCase,
+    GetHouseMainUseCase,
+    GetMainPreSubscriptionUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -114,8 +120,8 @@ def house_calendar_list_view():
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
                 message=f"Invalid Parameter input, "
-                        f"year: {CalendarYearThreshHold.MIN_YEAR.value} ~ {CalendarYearThreshHold.MAX_YEAR.value}, "
-                        f"month: 1 ~ 12 required",
+                f"year: {CalendarYearThreshHold.MIN_YEAR.value} ~ {CalendarYearThreshHold.MAX_YEAR.value}, "
+                f"month: 1 ~ 12 required",
             )
         )
     return GetCalendarInfoPresenter().transform(

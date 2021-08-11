@@ -9,12 +9,16 @@ from core.domains.banner.repository.banner_repository import BannerRepository
 
 
 def get_banner_list(section_type: int) -> None:
-    banner_list: List[BannerEntity] = BannerRepository().get_banner_list_include_images(section_type=section_type)
+    banner_list: List[BannerEntity] = BannerRepository().get_banner_list_include_images(
+        section_type=section_type
+    )
     setattr(g, BannerTopicEnum.GET_BANNER_LIST, banner_list)
 
 
 def get_button_link_list(section_type: int) -> None:
-    button_link_list: List[ButtonLinkEntity] = BannerRepository().get_button_link_list(section_type=section_type)
+    button_link_list: List[ButtonLinkEntity] = BannerRepository().get_button_link_list(
+        section_type=section_type
+    )
     setattr(g, BannerTopicEnum.GET_BUTTON_LINK_LIST, button_link_list)
 
 
