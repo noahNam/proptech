@@ -360,7 +360,7 @@ class GetHouseMainRequestSchema:
             return GetHomeBannerDto(**schema)
         except ValidationError as e:
             logger.error(
-                f"[GetHomeBannerRequestSchema][validate_request_and_make_dto] error : {e}"
+                f"[GetHouseMainRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 
@@ -387,6 +387,6 @@ class GetMainPreSubscriptionRequestSchema:
             return SectionTypeDto(**schema)
         except ValidationError as e:
             logger.error(
-                f"[GetPreSubscriptionBannerRequestSchema][validate_request_and_make_dto] error : {e}"
+                f"[GetMainPreSubscriptionRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

@@ -202,7 +202,7 @@ class GetSearchHouseListPresenter:
             return failure_response(output=output, status_code=output.code)
 
 
-class GetHomeBannerPresenter:
+class GetHouseMainPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
@@ -225,7 +225,7 @@ class GetHomeBannerPresenter:
             return failure_response(output=output, status_code=output.code)
 
 
-class GetPreSubscriptionBannerPresenter:
+class GetMainPreSubscriptionPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
