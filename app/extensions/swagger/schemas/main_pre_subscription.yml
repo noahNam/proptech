@@ -1,4 +1,4 @@
-pre_subscription_banner:
+main_pre_subscription:
   properties:
     banners:
       type: object
