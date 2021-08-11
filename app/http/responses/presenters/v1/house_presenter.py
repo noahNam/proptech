@@ -10,6 +10,8 @@ from core.domains.house.schema.house_schema import (
     GetInterestHouseListResponseSchema,
     GetSearchHouseListResponseSchema,
     GetRecentViewListResponseSchema,
+    GetHomeBannerResponseSchema,
+    GetPreSubscriptionBannerResponseSchema,
 )
 from pydantic import ValidationError
 from app.http.responses import failure_response, success_response
@@ -182,6 +184,52 @@ class GetSearchHouseListPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = GetSearchHouseListResponseSchema(houses=output.value)
+            except ValidationError:
+                return failure_response(
+                    UseCaseFailureOutput(
+                        type="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            result = {
+                "data": schema.dict(),
+                "meta": output.meta,
+            }
+            return success_response(result=result)
+        elif isinstance(output, UseCaseFailureOutput):
+            return failure_response(output=output, status_code=output.code)
+
+
+class GetHomeBannerPresenter:
+    def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
+        if isinstance(output, UseCaseSuccessOutput):
+            try:
+                schema = GetHomeBannerResponseSchema(banners=output.value)
+            except ValidationError:
+                return failure_response(
+                    UseCaseFailureOutput(
+                        type="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            result = {
+                "data": schema.dict(),
+                "meta": output.meta,
+            }
+            return success_response(result=result)
+        elif isinstance(output, UseCaseFailureOutput):
+            return failure_response(output=output, status_code=output.code)
+
+
+class GetPreSubscriptionBannerPresenter:
+    def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
+        if isinstance(output, UseCaseSuccessOutput):
+            try:
+                schema = GetPreSubscriptionBannerResponseSchema(banners=output.value)
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(

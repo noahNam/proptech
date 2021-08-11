@@ -2,6 +2,7 @@ from typing import List, Union, Optional
 
 from pydantic import BaseModel, StrictStr
 
+from core.domains.banner.entity.banner_entity import GetHomeBannerEntity, GetPreSubscriptionBannerEntity
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
@@ -57,3 +58,11 @@ class GetRecentViewListResponseSchema(BaseModel):
 
 class GetSearchHouseListResponseSchema(BaseModel):
     houses: Optional[GetSearchHouseListEntity]
+
+
+class GetHomeBannerResponseSchema(BaseModel):
+    banners: Optional[GetHomeBannerEntity]
+
+
+class GetPreSubscriptionBannerResponseSchema(BaseModel):
+    banners: Optional[GetPreSubscriptionBannerEntity]

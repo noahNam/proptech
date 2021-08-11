@@ -16,7 +16,6 @@ from .post.v1.post_view import *  # noqa isort:skip
 from .main import *  # noqa isort:skip
 from .house.v1.house_view import *  # noqa isort:skip
 from .payment.v1.payment_view import *  # noqa isort:skip
-from .banner.v1.banner_view import *  # noqa isort:skip
 
 
 @api.errorhandler(Exception)

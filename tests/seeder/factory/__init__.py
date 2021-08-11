@@ -48,12 +48,6 @@ from app.persistence.model import (
     BannerImageModel,
     ButtonLinkModel,
 )
-
-# factory에 사용해야 하는 Model을 가져온다
-from core.domains.banner.enum.banner_enum import (
-    SectionType,
-    BannerSubTopic,
-)
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
     RealTradeTypeEnum,
@@ -62,6 +56,8 @@ from core.domains.house.enum.house_enum import (
     RentTypeEnum,
     PreSaleTypeEnum,
     DivisionLevelEnum,
+    SectionType,
+    BannerSubTopic,
 )
 from core.domains.notification.enum.notification_enum import (
     NotificationTopicEnum,
@@ -70,7 +66,6 @@ from core.domains.notification.enum.notification_enum import (
 )
 from core.domains.payment.enum.payment_enum import TicketSignEnum, PromotionTypeEnum
 from core.domains.post.enum.post_enum import (
-    PostTypeEnum,
     PostCategoryEnum,
     PostCategoryDetailEnum,
 )
@@ -78,6 +73,8 @@ from core.domains.user.enum.user_enum import (
     UserTicketTypeDivisionEnum,
     UserTicketCreatedByEnum,
 )
+
+# factory에 사용해야 하는 Model을 가져온다
 
 faker = FakerFactory.create(locale="ko_KR")
 
