@@ -21,7 +21,7 @@ from core.domains.house.entity.house_entity import (
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
     BoundingLevelEnum,
-    DivisionLevelEnum, SectionType, BannerSubTopic,
+    DivisionLevelEnum, SectionType, BannerSubTopic, PreSaleTypeEnum,
 )
 from core.use_case_output import UseCaseSuccessOutput
 
@@ -278,6 +278,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         id=1,
         real_estate_id=1,
         name="힐스테이트",
+        trade_type=PreSaleTypeEnum.PRE_SALE,
         offer_date="20210705",
         subscription_start_date="20210705",
         subscription_end_date="20210705",
@@ -709,6 +710,7 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         id=1,
         real_estate_id=1,
         name="힐스테이트",
+        trade_type=PreSaleTypeEnum.PRE_SALE,
         offer_date="20210705",
         subscription_start_date="20210705",
         subscription_end_date="20210705",

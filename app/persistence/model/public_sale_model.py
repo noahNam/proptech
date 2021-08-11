@@ -139,6 +139,7 @@ class PublicSaleModel(db.Model):
             id=self.id,
             real_estate_id=self.real_estate_id,
             name=self.name,
+            trade_type=self.trade_type,
             offer_date=self.offer_date,
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,

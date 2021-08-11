@@ -227,6 +227,7 @@ class PublicSaleCalendarEntity(BaseModel):
     id: int
     real_estate_id: int
     name: str
+    trade_type: Enum
     offer_date: Optional[str]
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
@@ -242,6 +243,9 @@ class PublicSaleCalendarEntity(BaseModel):
     move_in_year: int
     move_in_month: int
 
+    class Config:
+        use_enum_values = True
+
 
 class CalendarInfoEntity(BaseModel):
     is_like: bool
@@ -250,6 +254,9 @@ class CalendarInfoEntity(BaseModel):
     road_address: str
     jibun_address: str
     public_sale: PublicSaleCalendarEntity = None
+
+    class Config:
+        use_enum_values = True
 
 
 class InterestHouseListEntity(BaseModel):
