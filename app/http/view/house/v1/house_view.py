@@ -23,8 +23,8 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetInterestHouseListPresenter,
     GetRecentViewListPresenter,
     GetSearchHouseListPresenter,
-    GetHomeBannerPresenter,
-    GetPreSubscriptionBannerPresenter,
+    GetHouseMainPresenter,
+    GetMainPreSubscriptionPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import (
@@ -192,7 +192,7 @@ def get_home_main_view():
         user_id=current_user.id, section_type=SectionType.HOME_SCREEN.value
     ).validate_request_and_make_dto()
 
-    return GetHomeBannerPresenter().transform(GetHouseMainUseCase().execute(dto=dto))
+    return GetHouseMainPresenter().transform(GetHouseMainUseCase().execute(dto=dto))
 
 
 @api.route("/v1/houses/pre-subs", methods=["GET"])
@@ -204,6 +204,6 @@ def get_main_pre_subscription_view():
         section_type=SectionType.PRE_SUBSCRIPTION_INFO.value
     ).validate_request_and_make_dto()
 
-    return GetPreSubscriptionBannerPresenter().transform(
+    return GetMainPreSubscriptionPresenter().transform(
         GetMainPreSubscriptionUseCase().execute(dto=dto)
     )
