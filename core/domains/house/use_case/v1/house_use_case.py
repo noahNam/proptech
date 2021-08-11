@@ -24,7 +24,9 @@ from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
     GetSearchHouseListEntity,
     GetRecentViewListEntity,
-    CalendarInfoEntity, GetMainPreSubscriptionEntity, GetHouseMainEntity,
+    CalendarInfoEntity,
+    GetMainPreSubscriptionEntity,
+    GetHouseMainEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -44,13 +46,15 @@ class HouseBaseUseCase:
         self._house_repo = house_repo
 
     def _get_banner_list(self, section_type: int) -> List[BannerEntity]:
-        send_message(topic_name=BannerTopicEnum.GET_BANNER_LIST, section_type=section_type)
+        send_message(
+            topic_name=BannerTopicEnum.GET_BANNER_LIST, section_type=section_type
+        )
         return get_event_object(topic_name=BannerTopicEnum.GET_BANNER_LIST)
 
 
 class UpsertInterestHouseUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: UpsertInterestHouseDto
+        self, dto: UpsertInterestHouseDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -68,7 +72,7 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
 
 class BoundingUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: CoordinatesRangeDto
+        self, dto: CoordinatesRangeDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
             <dto.level condition>
@@ -84,8 +88,8 @@ class BoundingUseCase(HouseBaseUseCase):
             )
         # dto.level range check
         if (
-                dto.level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
-                or dto.level > BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value
+            dto.level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
+            or dto.level > BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value
         ):
             return UseCaseFailureOutput(
                 type="level",
@@ -108,7 +112,7 @@ class BoundingUseCase(HouseBaseUseCase):
 
 class GetHousePublicDetailUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetHousePublicDetailDto
+        self, dto: GetHousePublicDetailDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not self._house_repo.is_enable_public_sale_house(dto=dto):
             return UseCaseFailureOutput(
@@ -144,7 +148,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
 
 class GetCalendarInfoUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetCalendarInfoDto
+        self, dto: GetCalendarInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         year_month = dto.year + dto.month
         search_filters = self._house_repo.get_calendar_info_filters(
@@ -159,7 +163,7 @@ class GetCalendarInfoUseCase(HouseBaseUseCase):
 
 class GetInterestHouseListUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -177,7 +181,7 @@ class GetInterestHouseListUseCase(HouseBaseUseCase):
 
 class GetRecentViewListUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetUserDto
+        self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -195,7 +199,7 @@ class GetRecentViewListUseCase(HouseBaseUseCase):
 
 class GetSearchHouseListUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: GetSearchHouseListDto
+        self, dto: GetSearchHouseListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.keywords or dto.keywords == "" or len(dto.keywords) < 2:
             result = None
@@ -210,13 +214,13 @@ class GetSearchHouseListUseCase(HouseBaseUseCase):
 
 class BoundingWithinRadiusUseCase(HouseBaseUseCase):
     def execute(
-            self, dto: BoundingWithinRadiusDto
+        self, dto: BoundingWithinRadiusDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
 
         if (
-                not dto
-                or dto.search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
-                or dto.search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
+            not dto
+            or dto.search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
+            or dto.search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
         ):
             return UseCaseFailureOutput(
                 type="BoundingWithinRadiusDto",
@@ -255,15 +259,17 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
 
 
 class GetHouseMainUseCase(HouseBaseUseCase):
-    def _make_house_main_entity(self, banner_list: List[BannerEntity],
-                                calendar_entities: List[CalendarInfoEntity],
-                                ) -> GetHouseMainEntity:
+    def _make_house_main_entity(
+        self,
+        banner_list: List[BannerEntity],
+        calendar_entities: List[CalendarInfoEntity],
+    ) -> GetHouseMainEntity:
         return GetHouseMainEntity(
             banner_list=banner_list, calendar_infos=calendar_entities
         )
 
     def execute(
-            self, dto: GetHomeBannerDto
+        self, dto: GetHomeBannerDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if dto.section_type != SectionType.HOME_SCREEN.value:
             return UseCaseFailureOutput(
@@ -284,7 +290,9 @@ class GetHouseMainUseCase(HouseBaseUseCase):
 
         year_month = year + month
 
-        search_filters = self._house_repo.get_calendar_info_filters(year_month=year_month)
+        search_filters = self._house_repo.get_calendar_info_filters(
+            year_month=year_month
+        )
         calendar_entities = self._house_repo.get_calendar_info(
             user_id=dto.user_id, search_filters=search_filters
         )
@@ -297,18 +305,20 @@ class GetHouseMainUseCase(HouseBaseUseCase):
 
 class GetMainPreSubscriptionUseCase(HouseBaseUseCase):
     def _get_button_link_list(self, section_type: int) -> List[ButtonLinkEntity]:
-        send_message(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST, section_type=section_type)
+        send_message(
+            topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST, section_type=section_type
+        )
         return get_event_object(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST)
 
     def _make_house_main_pre_subscription_entity(
-            self, banner_list: List[BannerEntity], button_links: List[ButtonLinkEntity]
+        self, banner_list: List[BannerEntity], button_links: List[ButtonLinkEntity]
     ) -> GetMainPreSubscriptionEntity:
         return GetMainPreSubscriptionEntity(
             banner_list=banner_list, button_links=button_links
         )
 
     def execute(
-            self, dto: SectionTypeDto
+        self, dto: SectionTypeDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if dto.section_type != SectionType.PRE_SUBSCRIPTION_INFO.value:
             return UseCaseFailureOutput(

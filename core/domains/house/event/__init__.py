@@ -9,7 +9,7 @@ from core.domains.house.repository.house_repository import HouseRepository
 
 
 def get_public_sales_of_ticket_usage(
-        public_house_ids: int,
+    public_house_ids: int,
 ) -> List[GetPublicSaleOfTicketUsageEntity]:
     result: List[
         GetPublicSaleOfTicketUsageEntity
