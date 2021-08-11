@@ -9,6 +9,8 @@ from app.http.requests.v1.house_request import (
     GetSearchHouseListRequestSchema,
     GetBoundingWithinRadiusRequestSchema,
     GetRecentViewListRequestSchema,
+    GetHomeBannerRequestSchema,
+    GetPreSubscriptionBannerRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -21,9 +23,11 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetInterestHouseListPresenter,
     GetRecentViewListPresenter,
     GetSearchHouseListPresenter,
+    GetHomeBannerPresenter,
+    GetPreSubscriptionBannerPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
-from core.domains.house.enum.house_enum import BoundingLevelEnum, CalendarYearThreshHold
+from core.domains.house.enum.house_enum import BoundingLevelEnum, CalendarYearThreshHold, SectionType
 from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
@@ -32,6 +36,8 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetSearchHouseListUseCase,
     BoundingWithinRadiusUseCase,
     GetRecentViewListUseCase,
+    GetHomeBannerUseCase,
+    GetPreSubscriptionBannerUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -110,8 +116,8 @@ def house_calendar_list_view():
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
                 message=f"Invalid Parameter input, "
-                f"year: {CalendarYearThreshHold.MIN_YEAR.value} ~ {CalendarYearThreshHold.MAX_YEAR.value}, "
-                f"month: 1 ~ 12 required",
+                        f"year: {CalendarYearThreshHold.MIN_YEAR.value} ~ {CalendarYearThreshHold.MAX_YEAR.value}, "
+                        f"month: 1 ~ 12 required",
             )
         )
     return GetCalendarInfoPresenter().transform(
@@ -171,3 +177,29 @@ def get_bounding_within_radius_view(house_id):
     ).validate_request_and_make_dto()
 
     return BoundingPresenter().transform(BoundingWithinRadiusUseCase().execute(dto=dto))
+
+
+@api.route("/v1/houses/main", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_home_banner_view.yml", methods=["GET"])
+def get_home_banner_view():
+    dto = GetHomeBannerRequestSchema(
+        user_id=current_user.id, section_type=SectionType.HOME_SCREEN.value
+    ).validate_request_and_make_dto()
+
+    return GetHomeBannerPresenter().transform(GetHomeBannerUseCase().execute(dto=dto))
+
+
+@api.route("/v1/houses/pre-subs", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_pre_subscription_banner_view.yml", methods=["GET"])
+def get_pre_subscription_banner_view():
+    dto = GetPreSubscriptionBannerRequestSchema(
+        section_type=SectionType.PRE_SUBSCRIPTION_INFO.value
+    ).validate_request_and_make_dto()
+
+    return GetPreSubscriptionBannerPresenter().transform(
+        GetPreSubscriptionBannerUseCase().execute(dto=dto)
+    )

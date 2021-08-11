@@ -294,3 +294,6 @@ class GetPublicSaleOfTicketUsageEntity(BaseModel):
     house_id: int
     name: str
     image_path: Optional[str]
+
+
+

@@ -1,8 +1,5 @@
-from core.domains.banner.enum.banner_enum import (
-    SectionType,
-    BannerSubTopic,
-)
 from core.domains.banner.repository.banner_repository import BannerRepository
+from core.domains.house.enum.house_enum import SectionType, BannerSubTopic
 
 home_section_type = SectionType.HOME_SCREEN.value
 pre_subscription_section_type = SectionType.PRE_SUBSCRIPTION_INFO.value

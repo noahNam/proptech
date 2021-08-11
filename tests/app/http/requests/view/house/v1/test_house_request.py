@@ -4,9 +4,9 @@ from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
     GetCalendarInfoRequestSchema,
     GetSearchHouseListRequestSchema,
-    GetBoundingWithinRadiusRequestSchema,
+    GetBoundingWithinRadiusRequestSchema, GetPreSubscriptionBannerRequestSchema, GetHomeBannerRequestSchema,
 )
-from core.domains.house.enum.house_enum import BoundingLevelEnum
+from core.domains.house.enum.house_enum import BoundingLevelEnum, SectionType
 from core.exceptions import InvalidRequestException
 
 # input parameter
@@ -107,4 +107,41 @@ def test_get_bounding_within_radius_request_when_wrong_search_type_then_fail():
     with pytest.raises(InvalidRequestException):
         GetBoundingWithinRadiusRequestSchema(
             house_id=house_id, search_type=search_type
+        ).validate_request_and_make_dto()
+
+
+def test_get_home_banner_request_when_valid_value_then_success():
+    section_type = SectionType.HOME_SCREEN.value
+    user_id = 1
+    result = GetHomeBannerRequestSchema(
+        section_type=section_type, user_id=user_id
+    ).validate_request_and_make_dto()
+
+    assert result.user_id == user_id
+    assert result.section_type == section_type
+
+
+def test_get_home_banner_request_when_invalid_value_then_fail():
+    section_type = SectionType.PRE_SUBSCRIPTION_INFO.value
+    user_id = 1
+    with pytest.raises(InvalidRequestException):
+        GetHomeBannerRequestSchema(
+            section_type=section_type, user_id=user_id
+        ).validate_request_and_make_dto()
+
+
+def test_get_pre_subscription_banner_request_when_valid_value_then_success():
+    section_type = SectionType.PRE_SUBSCRIPTION_INFO.value
+    result = GetPreSubscriptionBannerRequestSchema(
+        section_type=section_type
+    ).validate_request_and_make_dto()
+
+    assert result.section_type == section_type
+
+
+def test_get_pre_subscription_banner_request_when_invalid_value_then_fail():
+    section_type = SectionType.HOME_SCREEN.value
+    with pytest.raises(InvalidRequestException):
+        GetPreSubscriptionBannerRequestSchema(
+            section_type=section_type
         ).validate_request_and_make_dto()

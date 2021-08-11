@@ -8,10 +8,7 @@ from app.persistence.model import BannerModel, ButtonLinkModel
 from core.domains.banner.entity.banner_entity import (
     BannerEntity,
     ButtonLinkEntity,
-    GetHomeBannerEntity,
-    GetPreSubscriptionBannerEntity,
 )
-from core.domains.house.entity.house_entity import CalendarInfoEntity
 
 logger = logger_.getLogger(__name__)
 
@@ -50,19 +47,3 @@ class BannerRepository:
         if not button_links:
             return []
         return [button_link.to_entity() for button_link in button_links]
-
-    def make_home_banner_entity(
-        self,
-        banner_list: List[BannerEntity],
-        calendar_entities: List[CalendarInfoEntity],
-    ) -> GetHomeBannerEntity:
-        return GetHomeBannerEntity(
-            banner_list=banner_list, calendar_infos=calendar_entities
-        )
-
-    def make_pre_subscription_banner_entity(
-        self, banner_list: List[BannerEntity], button_links: List[ButtonLinkEntity]
-    ) -> GetPreSubscriptionBannerEntity:
-        return GetPreSubscriptionBannerEntity(
-            banner_list=banner_list, button_links=button_links
-        )
