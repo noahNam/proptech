@@ -1,4 +1,4 @@
-home_banner:
+house_main:
   properties:
     banners:
       type: object
@@ -85,6 +85,12 @@ home_banner:
                         real_estate_id:
                           type: integer
                           example: 1
+                        name:
+                          type: string
+                          example: "래미안 원베일리"
+                        trade_type:
+                          type: string
+                          example: "분양 or 사전청약"
                         contract_start_date:
                           type: string
                           example: "20210709"

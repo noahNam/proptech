@@ -13,11 +13,11 @@ parameters:
       example: Bearer eyJ0eXAiOiJKV1QiLC....JWT...values
 responses:
   '200':
-    description: banner list with button links
+    description: banner list with present calendar info
     content:
       application/json:
         schema:
-          $ref: '#/components/schemas/pre_subscription_banner'
+          $ref: '#/components/schemas/house_main'
   '400':
     description: invalid_request_error
     content:

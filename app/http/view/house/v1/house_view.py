@@ -186,7 +186,7 @@ def get_bounding_within_radius_view(house_id):
 @api.route("/v1/houses/main", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_home_main_view.yml", methods=["GET"])
+@swag_from("get_house_main_view.yml", methods=["GET"])
 def get_home_main_view():
     dto = GetHouseMainRequestSchema(
         user_id=current_user.id, section_type=SectionType.HOME_SCREEN.value
