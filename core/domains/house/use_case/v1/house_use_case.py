@@ -4,23 +4,35 @@ from typing import Union, List, Optional
 import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
+from app.extensions.utils.time_helper import get_server_timestamp
+from core.domains.banner.entity.banner_entity import (
+    BannerEntity,
+    ButtonLinkEntity,
+)
+from core.domains.banner.enum import BannerTopicEnum
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetCalenderInfoDto,
+    GetCalendarInfoDto,
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
+    GetHomeBannerDto,
+    SectionTypeDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
     GetSearchHouseListEntity,
     GetRecentViewListEntity,
+    CalendarInfoEntity,
+    GetMainPreSubscriptionEntity,
+    GetHouseMainEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
     HouseTypeEnum,
     SearchTypeEnum,
+    SectionType,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import RecentlyViewDto, GetUserDto
@@ -32,6 +44,12 @@ class HouseBaseUseCase:
     @inject.autoparams()
     def __init__(self, house_repo: HouseRepository):
         self._house_repo = house_repo
+
+    def _get_banner_list(self, section_type: int) -> List[BannerEntity]:
+        send_message(
+            topic_name=BannerTopicEnum.GET_BANNER_LIST, section_type=section_type
+        )
+        return get_event_object(topic_name=BannerTopicEnum.GET_BANNER_LIST)
 
 
 class UpsertInterestHouseUseCase(HouseBaseUseCase):
@@ -128,13 +146,19 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         return get_event_object(topic_name=UserTopicEnum.CREATE_RECENTLY_VIEW)
 
 
-class GetCalenderInfoUseCase(HouseBaseUseCase):
+class GetCalendarInfoUseCase(HouseBaseUseCase):
     def execute(
-        self, dto: GetCalenderInfoDto
+        self, dto: GetCalendarInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        calender_entities = self._house_repo.get_calender_info(dto=dto)
+        year_month = dto.year + dto.month
+        search_filters = self._house_repo.get_calendar_info_filters(
+            year_month=year_month
+        )
+        calendar_entities = self._house_repo.get_calendar_info(
+            user_id=dto.user_id, search_filters=search_filters
+        )
 
-        return UseCaseSuccessOutput(value=calender_entities)
+        return UseCaseSuccessOutput(value=calendar_entities)
 
 
 class GetInterestHouseListUseCase(HouseBaseUseCase):
@@ -232,3 +256,82 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
         )
 
         return UseCaseSuccessOutput(value=bounding_entities)
+
+
+class GetHouseMainUseCase(HouseBaseUseCase):
+    def _make_house_main_entity(
+        self,
+        banner_list: List[BannerEntity],
+        calendar_entities: List[CalendarInfoEntity],
+    ) -> GetHouseMainEntity:
+        return GetHouseMainEntity(
+            banner_list=banner_list, calendar_infos=calendar_entities
+        )
+
+    def execute(
+        self, dto: GetHomeBannerDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if dto.section_type != SectionType.HOME_SCREEN.value:
+            return UseCaseFailureOutput(
+                type="section_type",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
+            )
+        # get home banner list
+        banner_list = self._get_banner_list(section_type=dto.section_type)
+
+        # get present calendar info
+        now = get_server_timestamp()
+        year = str(now.year)
+        month = str(now.month)
+
+        if 0 < now.month < 10:
+            month = "0" + month
+
+        year_month = year + month
+
+        search_filters = self._house_repo.get_calendar_info_filters(
+            year_month=year_month
+        )
+        calendar_entities = self._house_repo.get_calendar_info(
+            user_id=dto.user_id, search_filters=search_filters
+        )
+
+        result = self._make_house_main_entity(
+            banner_list=banner_list, calendar_entities=calendar_entities
+        )
+        return UseCaseSuccessOutput(value=result)
+
+
+class GetMainPreSubscriptionUseCase(HouseBaseUseCase):
+    def _get_button_link_list(self, section_type: int) -> List[ButtonLinkEntity]:
+        send_message(
+            topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST, section_type=section_type
+        )
+        return get_event_object(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST)
+
+    def _make_house_main_pre_subscription_entity(
+        self, banner_list: List[BannerEntity], button_links: List[ButtonLinkEntity]
+    ) -> GetMainPreSubscriptionEntity:
+        return GetMainPreSubscriptionEntity(
+            banner_list=banner_list, button_links=button_links
+        )
+
+    def execute(
+        self, dto: SectionTypeDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if dto.section_type != SectionType.PRE_SUBSCRIPTION_INFO.value:
+            return UseCaseFailureOutput(
+                type="section_type",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
+            )
+        # get home banner list
+        banner_list = self._get_banner_list(section_type=dto.section_type)
+        # get button link list
+        button_link_list = self._get_button_link_list(section_type=dto.section_type)
+
+        result = self._make_house_main_pre_subscription_entity(
+            banner_list=banner_list, button_links=button_link_list
+        )
+        return UseCaseSuccessOutput(value=result)

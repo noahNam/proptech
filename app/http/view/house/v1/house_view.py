@@ -4,11 +4,13 @@ from flask import request
 from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
     GetHousePublicDetailRequestSchema,
-    GetCalenderInfoRequestSchema,
+    GetCalendarInfoRequestSchema,
     GetInterestHouseListRequestSchema,
     GetSearchHouseListRequestSchema,
     GetBoundingWithinRadiusRequestSchema,
     GetRecentViewListRequestSchema,
+    GetMainPreSubscriptionRequestSchema,
+    GetHouseMainRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -16,22 +18,30 @@ from app.http.responses.presenters.v1.house_presenter import (
     BoundingPresenter,
     BoundingAdministrativePresenter,
     GetHousePublicDetailPresenter,
-    GetCalenderInfoPresenter,
+    GetCalendarInfoPresenter,
     UpsertInterestHousePresenter,
     GetInterestHouseListPresenter,
     GetRecentViewListPresenter,
     GetSearchHouseListPresenter,
+    GetHouseMainPresenter,
+    GetMainPreSubscriptionPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
-from core.domains.house.enum.house_enum import BoundingLevelEnum, CalenderYearThreshHold
+from core.domains.house.enum.house_enum import (
+    BoundingLevelEnum,
+    CalendarYearThreshHold,
+    SectionType,
+)
 from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
-    GetCalenderInfoUseCase,
+    GetCalendarInfoUseCase,
     GetInterestHouseListUseCase,
     GetSearchHouseListUseCase,
     BoundingWithinRadiusUseCase,
     GetRecentViewListUseCase,
+    GetHouseMainUseCase,
+    GetMainPreSubscriptionUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -94,13 +104,13 @@ def house_public_detail_view(house_id: int):
     )
 
 
-@api.route("/v1/houses/calender", methods=["GET"])
+@api.route("/v1/houses/calendar", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("house_calender_list_view.yml", methods=["GET"])
-def house_calender_list_view():
+@swag_from("house_calendar_list_view.yml", methods=["GET"])
+def house_calendar_list_view():
     try:
-        dto = GetCalenderInfoRequestSchema(
+        dto = GetCalendarInfoRequestSchema(
             year=request.args.get("year"),
             month=request.args.get("month"),
             user_id=current_user.id,
@@ -110,12 +120,12 @@ def house_calender_list_view():
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
                 message=f"Invalid Parameter input, "
-                f"year: {CalenderYearThreshHold.MIN_YEAR.value} ~ {CalenderYearThreshHold.MAX_YEAR.value}, "
+                f"year: {CalendarYearThreshHold.MIN_YEAR.value} ~ {CalendarYearThreshHold.MAX_YEAR.value}, "
                 f"month: 1 ~ 12 required",
             )
         )
-    return GetCalenderInfoPresenter().transform(
-        GetCalenderInfoUseCase().execute(dto=dto)
+    return GetCalendarInfoPresenter().transform(
+        GetCalendarInfoUseCase().execute(dto=dto)
     )
 
 
@@ -171,3 +181,29 @@ def get_bounding_within_radius_view(house_id):
     ).validate_request_and_make_dto()
 
     return BoundingPresenter().transform(BoundingWithinRadiusUseCase().execute(dto=dto))
+
+
+@api.route("/v1/houses/main", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_house_main_view.yml", methods=["GET"])
+def get_home_main_view():
+    dto = GetHouseMainRequestSchema(
+        user_id=current_user.id, section_type=SectionType.HOME_SCREEN.value
+    ).validate_request_and_make_dto()
+
+    return GetHouseMainPresenter().transform(GetHouseMainUseCase().execute(dto=dto))
+
+
+@api.route("/v1/houses/pre-subs", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_main_pre_subscription_view.yml", methods=["GET"])
+def get_main_pre_subscription_view():
+    dto = GetMainPreSubscriptionRequestSchema(
+        section_type=SectionType.PRE_SUBSCRIPTION_INFO.value
+    ).validate_request_and_make_dto()
+
+    return GetMainPreSubscriptionPresenter().transform(
+        GetMainPreSubscriptionUseCase().execute(dto=dto)
+    )

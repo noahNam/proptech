@@ -13,12 +13,18 @@ from app.extensions.utils.log_helper import logger_
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    GetCalenderInfoDto,
+    GetCalendarInfoDto,
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
+    SectionTypeDto,
+    GetHomeBannerDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
-from core.domains.house.enum.house_enum import CalenderYearThreshHold, SearchTypeEnum
+from core.domains.house.enum.house_enum import (
+    CalendarYearThreshHold,
+    SearchTypeEnum,
+    SectionType,
+)
 from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import InvalidRequestException
 
@@ -232,7 +238,7 @@ class GetHousePublicDetailRequestSchema:
             raise InvalidRequestException(message=e.errors())
 
 
-class GetCalenderInfoSchema(BaseModel):
+class GetCalendarInfoSchema(BaseModel):
     year: str
     month: str
     user_id: StrictInt
@@ -241,8 +247,8 @@ class GetCalenderInfoSchema(BaseModel):
     def check_year(cls, year) -> str:
         year_to_int = int(year)
         if (
-            year_to_int < CalenderYearThreshHold.MIN_YEAR.value
-            or year_to_int > CalenderYearThreshHold.MAX_YEAR.value
+            year_to_int < CalendarYearThreshHold.MIN_YEAR.value
+            or year_to_int > CalendarYearThreshHold.MAX_YEAR.value
         ):
             raise ValidationError("Out of range: year is currently support 2017 ~ 2030")
         return year
@@ -260,7 +266,7 @@ class GetCalenderInfoSchema(BaseModel):
         return month
 
 
-class GetCalenderInfoRequestSchema:
+class GetCalendarInfoRequestSchema:
     def __init__(self, year, month, user_id):
         self.year = year
         self.month = month
@@ -268,13 +274,13 @@ class GetCalenderInfoRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetCalenderInfoSchema(
+            schema = GetCalendarInfoSchema(
                 year=self.year, month=self.month, user_id=self.user_id
             ).dict()
-            return GetCalenderInfoDto(**schema)
+            return GetCalendarInfoDto(**schema)
         except ValidationError as e:
             logger.error(
-                f"[GetCalenderInfoRequestSchema][validate_request_and_make_dto] error : {e}"
+                f"[GetCalendarInfoRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 
@@ -326,5 +332,61 @@ class GetBoundingWithinRadiusRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetBoundingWithinRadiusRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetHouseMainSchema(BaseModel):
+    section_type: int
+    user_id: int
+
+    @validator("section_type")
+    def check_section_type(cls, section_type) -> str:
+        if section_type != SectionType.HOME_SCREEN.value:
+            raise ValidationError("Invalid section_type: need home_screen value")
+        return section_type
+
+
+class GetHouseMainRequestSchema:
+    def __init__(self, section_type, user_id):
+        self.section_type = section_type
+        self.user_id = int(user_id) if user_id else None
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetHouseMainSchema(
+                section_type=int(self.section_type), user_id=self.user_id
+            ).dict()
+            return GetHomeBannerDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetHouseMainRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetMainPreSubscriptionSchema(BaseModel):
+    section_type: int
+
+    @validator("section_type")
+    def check_section_type(cls, section_type) -> str:
+        if section_type != SectionType.PRE_SUBSCRIPTION_INFO.value:
+            raise ValidationError("Invalid section_type: need pre_subscription value")
+        return section_type
+
+
+class GetMainPreSubscriptionRequestSchema:
+    def __init__(self, section_type):
+        self.section_type = section_type
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetMainPreSubscriptionSchema(
+                section_type=int(self.section_type)
+            ).dict()
+            return SectionTypeDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetMainPreSubscriptionRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

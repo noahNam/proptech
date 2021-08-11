@@ -7,7 +7,9 @@ from core.domains.house.entity.house_entity import (
     AdministrativeDivisionEntity,
     HousePublicDetailEntity,
     GetSearchHouseListEntity,
-    CalenderInfoEntity,
+    CalendarInfoEntity,
+    GetHouseMainEntity,
+    GetMainPreSubscriptionEntity,
 )
 
 
@@ -39,8 +41,8 @@ class GetHousePublicDetailResponseSchema(BaseModel):
     house: HousePublicDetailEntity
 
 
-class GetCalenderInfoResponseSchema(BaseModel):
-    houses: Optional[List[CalenderInfoEntity]]
+class GetCalendarInfoResponseSchema(BaseModel):
+    houses: Optional[List[CalendarInfoEntity]]
 
 
 class UpsertInterestHouseResponseSchema(BaseModel):
@@ -57,3 +59,11 @@ class GetRecentViewListResponseSchema(BaseModel):
 
 class GetSearchHouseListResponseSchema(BaseModel):
     houses: Optional[GetSearchHouseListEntity]
+
+
+class GetHouseMainResponseSchema(BaseModel):
+    banners: Optional[GetHouseMainEntity]
+
+
+class GetMainPreSubscriptionResponseSchema(BaseModel):
+    banners: Optional[GetMainPreSubscriptionEntity]

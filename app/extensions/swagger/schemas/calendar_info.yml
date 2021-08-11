@@ -1,4 +1,4 @@
-calender_info:
+calendar_info:
   properties:
     data:
       type: array
@@ -32,6 +32,9 @@ calender_info:
                   real_estate_id:
                     type: integer
                     example: 1
+                  trade_type:
+                    type: string
+                    example: "분양 or 사전청약"
                   contract_start_date:
                     type: string
                     example: "20210709"
