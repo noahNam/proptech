@@ -10,8 +10,8 @@ from core.domains.house.schema.house_schema import (
     GetInterestHouseListResponseSchema,
     GetSearchHouseListResponseSchema,
     GetRecentViewListResponseSchema,
-    GetHomeBannerResponseSchema,
-    GetPreSubscriptionBannerResponseSchema,
+    GetMainPreSubscriptionResponseSchema,
+    GetHouseMainResponseSchema,
 )
 from pydantic import ValidationError
 from app.http.responses import failure_response, success_response
@@ -206,7 +206,7 @@ class GetHomeBannerPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = GetHomeBannerResponseSchema(banners=output.value)
+                schema = GetHouseMainResponseSchema(banners=output.value)
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
@@ -229,7 +229,7 @@ class GetPreSubscriptionBannerPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = GetPreSubscriptionBannerResponseSchema(banners=output.value)
+                schema = GetMainPreSubscriptionResponseSchema(banners=output.value)
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
