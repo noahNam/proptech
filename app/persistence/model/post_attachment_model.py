@@ -9,6 +9,7 @@ from sqlalchemy import (
 )
 
 from app import db
+from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import PostModel
 from core.domains.post.entity.post_entity import PostAttachmentEntity
@@ -32,7 +33,7 @@ class PostAttachmentModel(db.Model):
             post_id=self.post_id,
             type=self.type,
             file_name=self.file_name,
-            path=self.path,
+            path=S3Helper.get_cloudfront_url() + "/" + self.path,
             extension=self.extension,
             created_at=self.created_at,
             updated_at=self.updated_at,
