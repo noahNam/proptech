@@ -16,3 +16,7 @@ class S3PathEnum(Enum):
 
 class S3RegionEnum(Enum):
     TOADHOME_BUCKET_REGION = os.environ.get("TOADHOME_BUCKET_REGION")
+
+
+class CloudFrontEnum(Enum):
+    TOADHOME_CLOUD_FRONT_DOMAIN = os.environ.get("TOADHOME_CLOUD_FRONT_DOMAIN")
