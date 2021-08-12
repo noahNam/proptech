@@ -18,7 +18,7 @@ from app.persistence.model.real_estate_model import RealEstateModel
 from core.domains.house.entity.house_entity import (
     PublicSaleEntity,
     PublicSalePushEntity,
-    PublicSaleCalenderEntity,
+    PublicSaleCalendarEntity,
 )
 from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,
@@ -134,11 +134,12 @@ class PublicSaleModel(db.Model):
             id=self.id, name=self.name, region=self.region, message_type=message_type,
         )
 
-    def to_calender_entity(self) -> PublicSaleCalenderEntity:
-        return PublicSaleCalenderEntity(
+    def to_calendar_entity(self) -> PublicSaleCalendarEntity:
+        return PublicSaleCalendarEntity(
             id=self.id,
             real_estate_id=self.real_estate_id,
             name=self.name,
+            trade_type=self.trade_type,
             offer_date=self.offer_date,
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,

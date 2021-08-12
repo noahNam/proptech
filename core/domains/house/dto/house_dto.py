@@ -26,7 +26,7 @@ class GetHousePublicDetailDto(BaseModel):
     house_id: int
 
 
-class GetCalenderInfoDto(BaseModel):
+class GetCalendarInfoDto(BaseModel):
     year: str
     month: str
     user_id: int
@@ -39,3 +39,12 @@ class GetSearchHouseListDto(BaseModel):
 class BoundingWithinRadiusDto(BaseModel):
     house_id: int
     search_type: int
+
+
+class SectionTypeDto(BaseModel):
+    section_type: int
+
+
+class GetHomeBannerDto(BaseModel):
+    section_type: int
+    user_id: int

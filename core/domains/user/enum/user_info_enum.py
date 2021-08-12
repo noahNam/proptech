@@ -118,18 +118,18 @@ class MonthlyIncomeEnum(Enum):
 
 
 class AssetsRealEstateEnum(Enum):
-    COND_CD = [1, 2, 3, 4]
-    COND_NM = ["12,600만원 이하", "21,550만원 이하", "21,550만원 초과", "없어요"]
+    COND_CD = [1, 2, 3]
+    COND_NM = ["없어요", "215,500천원 이하", "215,500천원 초과"]
 
 
 class AssetsCarEnum(Enum):
-    COND_CD = [1, 2, 3, 4]
-    COND_NM = ["2,494만원 이하", "2,797만원 이하", "2,797만원 초과", "없어요"]
+    COND_CD = [1, 2, 3]
+    COND_NM = ["없어요", "34,960천원 이하", "34,960천원 초과"]
 
 
 class AssetsTotalEnum(Enum):
     COND_CD = [1, 2, 3, 4, 5]
-    COND_NM = ["21,500만원 이하", "25,400만원 이하", "29,200만원 이하", "29,200만원 초과", "없어요"]
+    COND_NM = ["없어요", "215,500천원 이하", "250,460천원 이하", "307,000천원 이하", "307,000천원 초과"]
 
 
 class IsSupportParentCodeEnum(Enum):
