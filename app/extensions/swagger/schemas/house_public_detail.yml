@@ -287,7 +287,7 @@ house_public_detail:
                             example: "photo_name"
                           path:
                             type: string
-                            example: "https://None.s3.None.amazonaws.com/public_sale_photos/2021/07/13/2c222a5b-b115-4330-8c88-9be638b14b46.png"
+                            example: "https://sample.cloudfront.net/public_sale_photos/2021/07/13/2c222a5b-b115-4330-8c88-9be638b14b46.png"
                           extension:
                             type: string
                             example: "png"
@@ -311,7 +311,7 @@ house_public_detail:
                   example: "photo_name"
                 path:
                   type: string
-                  example: "https://None.s3.None.amazonaws.com/public_sale_photos/2021/07/13/2c222a5b-b115-4330-8c88-9be638b14b46.png"
+                  example: "https://sample.cloudfront.net/public_sale_photos/2021/07/13/2c222a5b-b115-4330-8c88-9be638b14b46.png"
                 extension:
                   type: string
                   example: "png"

@@ -135,3 +135,7 @@ class BannerSubTopic(Enum):
     PUBLIC_SALE = 5
     HONEYMOON_HOPE_TOWN = 6
     PRE_SUBSCRIPTION_FAQ = 7
+
+    # 공통
+    TOP_SCREEN_BANNER = 8
+    BOTTOM_SCREEN_BANNER = 9

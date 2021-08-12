@@ -30,7 +30,7 @@ class BannerImageModel(db.Model):
             id=self.id,
             banner_id=self.banner_id,
             file_name=self.file_name,
-            path=S3Helper.get_s3_url() + "/" + self.path,
+            path=S3Helper.get_cloudfront_url() + "/" + self.path,
             extension=self.extension,
             created_at=self.created_at,
             updated_at=self.updated_at,
