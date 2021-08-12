@@ -4,6 +4,8 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
+from core.domains.banner.entity.banner_entity import BannerEntity, ButtonLinkEntity
+
 
 class InterestHouseEntity(BaseModel):
     id: int
@@ -223,10 +225,11 @@ class HousePublicDetailEntity(BaseModel):
         use_enum_values = True
 
 
-class PublicSaleCalenderEntity(BaseModel):
+class PublicSaleCalendarEntity(BaseModel):
     id: int
     real_estate_id: int
     name: str
+    trade_type: Enum
     offer_date: Optional[str]
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
@@ -242,14 +245,20 @@ class PublicSaleCalenderEntity(BaseModel):
     move_in_year: int
     move_in_month: int
 
+    class Config:
+        use_enum_values = True
 
-class CalenderInfoEntity(BaseModel):
+
+class CalendarInfoEntity(BaseModel):
     is_like: bool
     id: int
     name: str
     road_address: str
     jibun_address: str
-    public_sale: PublicSaleCalenderEntity = None
+    public_sale: PublicSaleCalendarEntity = None
+
+    class Config:
+        use_enum_values = True
 
 
 class InterestHouseListEntity(BaseModel):
@@ -294,3 +303,13 @@ class GetPublicSaleOfTicketUsageEntity(BaseModel):
     house_id: int
     name: str
     image_path: Optional[str]
+
+
+class GetHouseMainEntity(BaseModel):
+    banner_list: List[BannerEntity] = None
+    calendar_infos: List[CalendarInfoEntity] = None
+
+
+class GetMainPreSubscriptionEntity(BaseModel):
+    banner_list: List[BannerEntity] = None
+    button_links: List[ButtonLinkEntity] = None
