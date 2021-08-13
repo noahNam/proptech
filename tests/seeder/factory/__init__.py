@@ -345,9 +345,7 @@ class PostAttachmentFactory(BaseFactory):
 
     post_id = 1
     file_name = "photo_file"
-    path = (
-        "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
-    )
+    path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
     type = 0
     created_at = get_server_timestamp()
@@ -416,9 +414,7 @@ class PublicSaleDetailPhotoFactory(BaseFactory):
 
     public_sale_details_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
-    path = (
-        "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
-    )
+    path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
@@ -446,9 +442,7 @@ class PublicSalePhotoFactory(BaseFactory):
 
     public_sales_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
-    path = (
-        "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
-    )
+    path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
@@ -631,9 +625,7 @@ class BannerImageFactory(BaseFactory):
 
     banner_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
-    path = (
-        "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
-    )
+    path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()

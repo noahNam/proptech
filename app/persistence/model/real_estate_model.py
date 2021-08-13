@@ -16,7 +16,8 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     RealEstateWithPrivateSaleEntity,
     HousePublicDetailEntity,
-    DetailCalendarInfoEntity, SimpleCalendarInfoEntity,
+    DetailCalendarInfoEntity,
+    SimpleCalendarInfoEntity,
 )
 
 
@@ -64,13 +65,13 @@ class RealEstateModel(db.Model):
     )
 
     def to_bounding_entity(
-            self,
-            avg_trade: Optional[float],
-            avg_deposit: Optional[float],
-            avg_rent: Optional[float],
-            avg_supply: Optional[float],
-            avg_private_pyoung: Optional[float],
-            avg_public_pyoung: Optional[float],
+        self,
+        avg_trade: Optional[float],
+        avg_deposit: Optional[float],
+        avg_rent: Optional[float],
+        avg_supply: Optional[float],
+        avg_private_pyoung: Optional[float],
+        avg_public_pyoung: Optional[float],
     ) -> BoundingRealEstateEntity:
         return BoundingRealEstateEntity(
             id=self.id,
@@ -100,7 +101,7 @@ class RealEstateModel(db.Model):
         )
 
     def to_estate_with_private_sales_entity(
-            self, avg_trade: Optional[float], avg_private_pyoung: Optional[float]
+        self, avg_trade: Optional[float], avg_private_pyoung: Optional[float]
     ) -> RealEstateWithPrivateSaleEntity:
         return RealEstateWithPrivateSaleEntity(
             id=self.id,
@@ -125,17 +126,17 @@ class RealEstateModel(db.Model):
         )
 
     def to_house_with_public_detail_entity(
-            self,
-            is_like: bool,
-            min_pyoung_number: Optional[float],
-            max_pyoung_number: Optional[float],
-            min_supply_area: Optional[float],
-            max_supply_area: Optional[float],
-            avg_supply_price: Optional[float],
-            supply_price_per_pyoung: Optional[float],
-            min_acquisition_tax: int,
-            max_acquisition_tax: int,
-            near_houses: Optional[list],
+        self,
+        is_like: bool,
+        min_pyoung_number: Optional[float],
+        max_pyoung_number: Optional[float],
+        min_supply_area: Optional[float],
+        max_supply_area: Optional[float],
+        avg_supply_price: Optional[float],
+        supply_price_per_pyoung: Optional[float],
+        min_acquisition_tax: int,
+        max_acquisition_tax: int,
+        near_houses: Optional[list],
     ) -> HousePublicDetailEntity:
         return HousePublicDetailEntity(
             id=self.id,
