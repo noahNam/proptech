@@ -45,6 +45,6 @@ class SectionTypeDto(BaseModel):
     section_type: int
 
 
-class GetHomeBannerDto(BaseModel):
+class GetHouseMainDto(BaseModel):
     section_type: int
     user_id: int
