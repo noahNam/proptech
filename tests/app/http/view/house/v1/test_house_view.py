@@ -10,13 +10,13 @@ from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
-    CalendarInfoEntity,
-    PublicSaleCalendarEntity,
     HousePublicDetailEntity,
     SearchPublicSaleEntity,
     SearchRealEstateEntity,
     SearchAdministrativeDivisionEntity,
     GetSearchHouseListEntity,
+    SimpleCalendarInfoEntity,
+    PublicSaleSimpleCalendarEntity, PublicSaleDetailCalendarEntity, DetailCalendarInfoEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -277,7 +277,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         accept="application/json",
     )
 
-    public_sale_calendar = PublicSaleCalendarEntity(
+    public_sale_detail_calendar = PublicSaleDetailCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
@@ -297,17 +297,17 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calendar_info = CalendarInfoEntity(
+    sample_calendar_info = DetailCalendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
-        public_sale=public_sale_calendar,
+        public_sale=public_sale_detail_calendar,
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_detail_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
         with test_request_context:
@@ -709,7 +709,7 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     session.add_all([banner1, banner2])
     session.commit()
 
-    public_sale_calendar = PublicSaleCalendarEntity(
+    public_sale_simple_calendar = PublicSaleSimpleCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
@@ -729,17 +729,17 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calendar_info = CalendarInfoEntity(
+    sample_calendar_info = SimpleCalendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
-        public_sale=public_sale_calendar,
+        public_sale=public_sale_simple_calendar,
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
         with test_request_context:
