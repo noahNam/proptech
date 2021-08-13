@@ -248,7 +248,8 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
             )
 
             # SQS Data 전송 -> Data Lake
-            if detail_dto.value:
+            # 닉네임일 때는 제외
+            if detail_dto.value and detail_dto.code != CodeEnum.NICKNAME.value:
                 msg: SenderDto = self._make_sqs_send_message(dto=detail_dto)
                 self._send_sqs_message(
                     queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg
