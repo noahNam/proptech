@@ -377,7 +377,7 @@ class HouseRepository:
 
     def get_house_public_detail(
             self, dto: GetHousePublicDetailDto, degree: float, is_like: bool
-    ) -> HousePublicDetailEntity:
+    ) -> Optional[HousePublicDetailEntity]:
         """
             <주변 실거래가 매물 List 가져오기>
             Postgis func- ST_DWithin(A_Geometry, B_Geometry, degree) -> bool
@@ -393,6 +393,9 @@ class HouseRepository:
         house_with_public_sales = self._get_house_with_public_sales(
             house_id=dto.house_id
         )
+
+        if not house_with_public_sales:
+            return None
 
         # 주변 실거래가 List queryset -> house_with_private_queryset
         filters = list()

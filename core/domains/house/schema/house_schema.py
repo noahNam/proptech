@@ -38,7 +38,7 @@ class BoundingAdministrativeResponseSchema(BaseModel):
 
 
 class GetHousePublicDetailResponseSchema(BaseModel):
-    house: HousePublicDetailEntity
+    house: Optional[HousePublicDetailEntity]
 
 
 class GetCalendarInfoResponseSchema(BaseModel):
