@@ -647,6 +647,7 @@ class BannerFactory(BaseFactory):
     desc = factory.Sequence(lambda n: f"배너설명_{n}")
     section_type = SectionType.HOME_SCREEN.value
     sub_topic = BannerSubTopic.HOME_SUBSCRIPTION_BY_REGION.value
+    contents_num = factory.Sequence(lambda n: n + 1)
     reference_url = "https://www.reference.com"
     is_active = True
     is_event = True
