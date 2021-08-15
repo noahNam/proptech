@@ -43,7 +43,7 @@ class GetHousePublicDetailResponseSchema(BaseModel):
 
 
 class GetCalendarInfoResponseSchema(BaseModel):
-    houses: Optional[List[DetailCalendarInfoEntity]]
+    houses: List[SimpleCalendarInfoEntity]
 
 
 class UpsertInterestHouseResponseSchema(BaseModel):
