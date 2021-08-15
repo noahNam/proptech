@@ -225,7 +225,7 @@ class HousePublicDetailEntity(BaseModel):
         use_enum_values = True
 
 
-class PublicSaleCalendarEntity(BaseModel):
+class PublicSaleDetailCalendarEntity(BaseModel):
     id: int
     real_estate_id: int
     name: str
@@ -249,13 +249,32 @@ class PublicSaleCalendarEntity(BaseModel):
         use_enum_values = True
 
 
-class CalendarInfoEntity(BaseModel):
+class PublicSaleSimpleCalendarEntity(BaseModel):
+    id: int
+    real_estate_id: int
+    name: str
+    trade_type: Enum
+    subscription_start_date: Optional[str]
+    subscription_end_date: Optional[str]
+    special_supply_date: Optional[str]
+    special_supply_etc_date: Optional[str]
+    first_supply_date: Optional[str]
+    first_supply_etc_date: Optional[str]
+    second_supply_date: Optional[str]
+    second_supply_etc_date: Optional[str]
+    notice_winner_date: Optional[str]
+
+    class Config:
+        use_enum_values = True
+
+
+class DetailCalendarInfoEntity(BaseModel):
     is_like: bool
     id: int
     name: str
     road_address: str
     jibun_address: str
-    public_sale: PublicSaleCalendarEntity = None
+    public_sale: PublicSaleDetailCalendarEntity = None
 
     class Config:
         use_enum_values = True
@@ -305,11 +324,23 @@ class GetPublicSaleOfTicketUsageEntity(BaseModel):
     image_path: Optional[str]
 
 
-class GetHouseMainEntity(BaseModel):
-    banner_list: List[BannerEntity] = None
-    calendar_infos: List[CalendarInfoEntity] = None
-
-
 class GetMainPreSubscriptionEntity(BaseModel):
     banner_list: List[BannerEntity] = None
     button_links: List[ButtonLinkEntity] = None
+
+
+class SimpleCalendarInfoEntity(BaseModel):
+    is_like: bool
+    id: int
+    name: str
+    road_address: str
+    jibun_address: str
+    public_sale: PublicSaleSimpleCalendarEntity = None
+
+    class Config:
+        use_enum_values = True
+
+
+class GetHouseMainEntity(BaseModel):
+    banner_list: List[BannerEntity] = None
+    calendar_infos: List[SimpleCalendarInfoEntity] = None
