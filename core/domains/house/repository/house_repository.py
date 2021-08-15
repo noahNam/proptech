@@ -31,7 +31,6 @@ from core.domains.house.entity.house_entity import (
     RealEstateWithPrivateSaleEntity,
     AdministrativeDivisionEntity,
     BoundingRealEstateEntity,
-    CalendarInfoEntity,
     InterestHouseListEntity,
     GetRecentViewListEntity,
     GetSearchHouseListEntity,
@@ -39,6 +38,8 @@ from core.domains.house.entity.house_entity import (
     SearchPublicSaleEntity,
     SearchAdministrativeDivisionEntity,
     GetPublicSaleOfTicketUsageEntity,
+    DetailCalendarInfoEntity,
+    SimpleCalendarInfoEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -377,7 +378,7 @@ class HouseRepository:
 
     def get_house_public_detail(
         self, dto: GetHousePublicDetailDto, degree: float, is_like: bool
-    ) -> HousePublicDetailEntity:
+    ) -> Optional[HousePublicDetailEntity]:
         """
             <주변 실거래가 매물 List 가져오기>
             Postgis func- ST_DWithin(A_Geometry, B_Geometry, degree) -> bool
@@ -393,6 +394,9 @@ class HouseRepository:
         house_with_public_sales = self._get_house_with_public_sales(
             house_id=dto.house_id
         )
+
+        if not house_with_public_sales:
+            return None
 
         # 주변 실거래가 List queryset -> house_with_private_queryset
         filters = list()
@@ -441,24 +445,46 @@ class HouseRepository:
             is_like=is_like,
         )
 
-    def _make_calendar_info_entity(
+    def _make_detail_calendar_info_entity(
         self, queryset: Optional[list], user_id: int
-    ) -> Optional[List[CalendarInfoEntity]]:
+    ) -> List[DetailCalendarInfoEntity]:
 
         """
             <최종 Entity 구성>
-            : 분양 매물 + 상세 queryset + is_like -> calendarInfoEntity
+            : 분양 매물 + 상세 queryset + is_like -> DetailCalendarInfoEntity
         """
-        if not queryset:
-            return None
-
         result = list()
-        for query in queryset:
-            dto = GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
+        if queryset:
+            for query in queryset:
+                dto = GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
 
-        # 사용자가 해당 분양 매물에 대해 찜하기 했는지 여부
-        is_like = self.is_user_liked_house(self.get_public_interest_house(dto=dto))
-        result.append(query.to_calendar_info_entity(is_like=is_like))
+                # 사용자가 해당 분양 매물에 대해 찜하기 했는지 여부
+                is_like = self.is_user_liked_house(
+                    self.get_public_interest_house(dto=dto)
+                )
+                result.append(query.to_detail_calendar_info_entity(is_like=is_like))
+
+        return result
+
+    def _make_simple_calendar_info_entity(
+        self, queryset: Optional[list], user_id: int
+    ) -> List[SimpleCalendarInfoEntity]:
+
+        """
+            <최종 Entity 구성>
+            : 분양 매물 + 상세 queryset + is_like -> SimpleCalendarInfoEntity
+        """
+        result = list()
+
+        if queryset:
+            for query in queryset:
+                dto = GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
+
+                # 사용자가 해당 분양 매물에 대해 찜하기 했는지 여부
+                is_like = self.is_user_liked_house(
+                    self.get_public_interest_house(dto=dto)
+                )
+                result.append(query.to_simple_calendar_info_entity(is_like=is_like))
 
         return result
 
@@ -476,7 +502,6 @@ class HouseRepository:
 
         filters.append(
             or_(
-                PublicSaleModel.offer_date.startswith(year_month),
                 PublicSaleModel.subscription_start_date.startswith(year_month),
                 PublicSaleModel.subscription_end_date.startswith(year_month),
                 PublicSaleModel.special_supply_date.startswith(year_month),
@@ -486,13 +511,11 @@ class HouseRepository:
                 PublicSaleModel.second_supply_date.startswith(year_month),
                 PublicSaleModel.second_supply_etc_date.startswith(year_month),
                 PublicSaleModel.notice_winner_date.startswith(year_month),
-                PublicSaleModel.contract_start_date.startswith(year_month),
-                PublicSaleModel.contract_end_date.startswith(year_month),
             )
         )
         return filters
 
-    def get_calendar_info(self, user_id: int, search_filters: list) -> Optional[list]:
+    def _get_calendar_info_queryset(self, search_filters: list) -> Optional[list]:
         query = (
             session.query(RealEstateModel)
             .join(RealEstateModel.public_sales)
@@ -501,7 +524,23 @@ class HouseRepository:
 
         queryset = query.all()
 
-        return self._make_calendar_info_entity(queryset=queryset, user_id=user_id)
+        return queryset
+
+    def get_detail_calendar_info(
+        self, user_id: int, search_filters: list
+    ) -> List[DetailCalendarInfoEntity]:
+        queryset = self._get_calendar_info_queryset(search_filters=search_filters)
+        return self._make_detail_calendar_info_entity(
+            queryset=queryset, user_id=user_id
+        )
+
+    def get_simple_calendar_info(
+        self, user_id: int, search_filters: list
+    ) -> List[SimpleCalendarInfoEntity]:
+        queryset = self._get_calendar_info_queryset(search_filters=search_filters)
+        return self._make_simple_calendar_info_entity(
+            queryset=queryset, user_id=user_id
+        )
 
     def get_interest_house_list(self, dto: GetUserDto) -> List[InterestHouseListEntity]:
         public_sales_query = (

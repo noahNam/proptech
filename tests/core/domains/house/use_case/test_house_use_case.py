@@ -9,17 +9,19 @@ from core.domains.house.dto.house_dto import (
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
     SectionTypeDto,
-    GetHomeBannerDto,
+    GetHouseMainDto,
 )
 from core.domains.house.entity.house_entity import (
-    PublicSaleCalendarEntity,
-    CalendarInfoEntity,
     SearchRealEstateEntity,
     SearchPublicSaleEntity,
     SearchAdministrativeDivisionEntity,
     GetSearchHouseListEntity,
     GetMainPreSubscriptionEntity,
     GetHouseMainEntity,
+    DetailCalendarInfoEntity,
+    SimpleCalendarInfoEntity,
+    PublicSaleDetailCalendarEntity,
+    PublicSaleSimpleCalendarEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -242,7 +244,7 @@ def test_get_calendar_info_use_case_when_included_request_date(
         get_calendar_info_by_get_calendar_info_dto -> return mocking
         요청 받은 년월에 속한 매물이 있으면 캘린더 정보 리턴
     """
-    public_sale_calendar = PublicSaleCalendarEntity(
+    public_sale_detail_calendar = PublicSaleDetailCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
@@ -262,17 +264,17 @@ def test_get_calendar_info_use_case_when_included_request_date(
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calendar_info = CalendarInfoEntity(
+    sample_calendar_info = DetailCalendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
-        public_sale=public_sale_calendar,
+        public_sale=public_sale_detail_calendar,
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_detail_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = sample_calendar_info
         result = GetCalendarInfoUseCase().execute(dto=get_calendar_info_dto)
@@ -285,11 +287,11 @@ def test_get_calendar_info_use_case_when_no_included_request_date(
     session, create_real_estate_with_public_sale
 ):
     """
-        get_calendar_info_by_get_calendar_info_dto -> return mocking
+        get_calendar_info_by_get_detail_calendar_info_dto -> return mocking
         요청 받은 년월에 속한 매물이 없으면 null 리턴
     """
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_detail_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = None
         result = GetCalendarInfoUseCase().execute(dto=get_calendar_info_dto)
@@ -444,11 +446,11 @@ def test_bounding_within_radius_use_case_when_get_coordinates_then_success(
     assert mock_result.called is True
 
 
-def test_when_get_home_banner_use_case_then_include_present_calendar_info(
+def test_when_get_house_main_use_case_then_include_present_calendar_info(
     session, create_users, banner_factory
 ):
     """
-        get_calendar_info_by_get_calendar_info_dto -> return mocking
+        get_calendar_info_by_get_simple_calendar_info_dto -> return mocking
     """
     banner1 = banner_factory(
         banner_image=True,
@@ -464,12 +466,11 @@ def test_when_get_home_banner_use_case_then_include_present_calendar_info(
     session.add_all([banner1, banner2])
     session.commit()
 
-    public_sale_calendar = PublicSaleCalendarEntity(
+    public_sale_simple_calendar = PublicSaleSimpleCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
         trade_type=PreSaleTypeEnum.PRE_SALE,
-        offer_date="20210705",
         subscription_start_date="20210705",
         subscription_end_date="20210705",
         special_supply_date="20210705",
@@ -479,26 +480,22 @@ def test_when_get_home_banner_use_case_then_include_present_calendar_info(
         second_supply_date="20210705",
         second_supply_etc_date="20210705",
         notice_winner_date="20210705",
-        contract_start_date="20210705",
-        contract_end_date="20210705",
-        move_in_year=2023,
-        move_in_month=12,
     )
-    sample_calendar_info = CalendarInfoEntity(
+    sample_calendar_info = SimpleCalendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
-        public_sale=public_sale_calendar,
+        public_sale=public_sale_simple_calendar,
     )
 
-    dto = GetHomeBannerDto(
+    dto = GetHouseMainDto(
         section_type=SectionType.HOME_SCREEN.value, user_id=create_users[0].id
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
         result = GetHouseMainUseCase().execute(dto=dto)
@@ -512,7 +509,7 @@ def test_when_get_home_banner_use_case_then_include_present_calendar_info(
 def test_when_get_home_banner_use_case_with_wrong_section_type_then_fail(
     session, create_users
 ):
-    invalid_dto = GetHomeBannerDto(
+    invalid_dto = GetHouseMainDto(
         section_type=SectionType.PRE_SUBSCRIPTION_INFO.value, user_id=create_users[0].id
     )
     result = GetHouseMainUseCase().execute(dto=invalid_dto)

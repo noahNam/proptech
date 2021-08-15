@@ -45,4 +45,3 @@ class S3Helper:
     @classmethod
     def get_cloudfront_url(cls):
         return f"https://{CloudFrontEnum.TOADHOME_CLOUD_FRONT_DOMAIN.value}"
-
