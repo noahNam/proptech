@@ -244,7 +244,7 @@ def test_get_calendar_info_use_case_when_included_request_date(
         get_calendar_info_by_get_calendar_info_dto -> return mocking
         요청 받은 년월에 속한 매물이 있으면 캘린더 정보 리턴
     """
-    public_sale_detail_calendar = PublicSaleDetailCalendarEntity(
+    public_sale_simple_calendar = PublicSaleSimpleCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
@@ -264,17 +264,17 @@ def test_get_calendar_info_use_case_when_included_request_date(
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calendar_info = DetailCalendarInfoEntity(
+    sample_calendar_info = SimpleCalendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
-        public_sale=public_sale_detail_calendar,
+        public_sale=public_sale_simple_calendar,
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_detail_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = sample_calendar_info
         result = GetCalendarInfoUseCase().execute(dto=get_calendar_info_dto)
@@ -287,11 +287,11 @@ def test_get_calendar_info_use_case_when_no_included_request_date(
     session, create_real_estate_with_public_sale
 ):
     """
-        get_calendar_info_by_get_detail_calendar_info_dto -> return mocking
+        get_calendar_info_by_get_simple_calendar_info_dto -> return mocking
         요청 받은 년월에 속한 매물이 없으면 null 리턴
     """
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_detail_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = None
         result = GetCalendarInfoUseCase().execute(dto=get_calendar_info_dto)
