@@ -154,7 +154,7 @@ class GetCalendarInfoUseCase(HouseBaseUseCase):
         search_filters = self._house_repo.get_calendar_info_filters(
             year_month=year_month
         )
-        calendar_entities = self._house_repo.get_detail_calendar_info(
+        calendar_entities = self._house_repo.get_simple_calendar_info(
             user_id=dto.user_id, search_filters=search_filters
         )
 

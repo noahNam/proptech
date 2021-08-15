@@ -309,7 +309,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_detail_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
         with test_request_context:
