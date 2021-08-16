@@ -52,7 +52,8 @@ class ECSCompose:
     @property
     def image(self) -> str:
         env = self.environment
-        return f"toadhome/tanos-api-{env}"
+        service_type = self.service_type
+        return f"toadhome/tanos-{service_type}-{env}"
 
     @property
     def cluster(self) -> str:
