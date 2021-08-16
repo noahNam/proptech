@@ -20,6 +20,7 @@ REPO_URL = "https://ap-northeast-2.console.aws.amazon.com/ecr/repositories/"
 # argparser
 parser = argparse.ArgumentParser(description="Build image.")
 parser.add_argument("-e", "--environment", type=str, help="Specify environment")
+parser.add_argument("-s", "--service", type=str, help="Specify service (api / cron)")
 parser.add_argument("-v", "--v", type=int, help="Specify a version.")
 parser.add_argument("-d", "--debug", action="store_true", help="DEBUG")
 
