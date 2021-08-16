@@ -16,7 +16,8 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     RealEstateWithPrivateSaleEntity,
     HousePublicDetailEntity,
-    CalendarInfoEntity,
+    DetailCalendarInfoEntity,
+    SimpleCalendarInfoEntity,
 )
 
 
@@ -165,8 +166,20 @@ class RealEstateModel(db.Model):
             near_houses=near_houses,
         )
 
-    def to_calendar_info_entity(self, is_like: bool) -> CalendarInfoEntity:
-        return CalendarInfoEntity(
+    def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:
+        return DetailCalendarInfoEntity(
+            is_like=is_like,
+            id=self.id,
+            name=self.name,
+            road_address=self.road_address,
+            jibun_address=self.jibun_address,
+            public_sale=self.public_sales.to_calendar_entity()
+            if self.public_sales
+            else None,
+        )
+
+    def to_simple_calendar_info_entity(self, is_like: bool) -> SimpleCalendarInfoEntity:
+        return SimpleCalendarInfoEntity(
             is_like=is_like,
             id=self.id,
             name=self.name,

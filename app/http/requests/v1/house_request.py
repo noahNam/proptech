@@ -17,7 +17,7 @@ from core.domains.house.dto.house_dto import (
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
     SectionTypeDto,
-    GetHomeBannerDto,
+    GetHouseMainDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.enum.house_enum import (
@@ -357,7 +357,7 @@ class GetHouseMainRequestSchema:
             schema = GetHouseMainSchema(
                 section_type=int(self.section_type), user_id=self.user_id
             ).dict()
-            return GetHomeBannerDto(**schema)
+            return GetHouseMainDto(**schema)
         except ValidationError as e:
             logger.error(
                 f"[GetHouseMainRequestSchema][validate_request_and_make_dto] error : {e}"
