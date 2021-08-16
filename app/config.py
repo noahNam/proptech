@@ -10,7 +10,7 @@ class Config:
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_ECHO = False
     SQLALCHEMY_PRE_PING = True
-    SQLALCHEMY_ENGINE_OPTIONS = {'pool_pre_ping': SQLALCHEMY_PRE_PING}
+    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": SQLALCHEMY_PRE_PING}
     DEBUG = False
 
     # JWT

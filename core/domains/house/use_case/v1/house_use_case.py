@@ -16,17 +16,17 @@ from core.domains.house.dto.house_dto import (
     GetCalendarInfoDto,
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
-    GetHomeBannerDto,
     SectionTypeDto,
+    GetHouseMainDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
     GetSearchHouseListEntity,
     GetRecentViewListEntity,
-    CalendarInfoEntity,
     GetMainPreSubscriptionEntity,
     GetHouseMainEntity,
+    SimpleCalendarInfoEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -154,7 +154,7 @@ class GetCalendarInfoUseCase(HouseBaseUseCase):
         search_filters = self._house_repo.get_calendar_info_filters(
             year_month=year_month
         )
-        calendar_entities = self._house_repo.get_calendar_info(
+        calendar_entities = self._house_repo.get_simple_calendar_info(
             user_id=dto.user_id, search_filters=search_filters
         )
 
@@ -262,14 +262,14 @@ class GetHouseMainUseCase(HouseBaseUseCase):
     def _make_house_main_entity(
         self,
         banner_list: List[BannerEntity],
-        calendar_entities: List[CalendarInfoEntity],
+        calendar_entities: List[SimpleCalendarInfoEntity],
     ) -> GetHouseMainEntity:
         return GetHouseMainEntity(
             banner_list=banner_list, calendar_infos=calendar_entities
         )
 
     def execute(
-        self, dto: GetHomeBannerDto
+        self, dto: GetHouseMainDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if dto.section_type != SectionType.HOME_SCREEN.value:
             return UseCaseFailureOutput(
@@ -277,7 +277,7 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                 message=FailureType.INVALID_REQUEST_ERROR,
                 code=HTTPStatus.BAD_REQUEST,
             )
-        # get home banner list
+        # get house main banner list
         banner_list = self._get_banner_list(section_type=dto.section_type)
 
         # get present calendar info
@@ -293,7 +293,7 @@ class GetHouseMainUseCase(HouseBaseUseCase):
         search_filters = self._house_repo.get_calendar_info_filters(
             year_month=year_month
         )
-        calendar_entities = self._house_repo.get_calendar_info(
+        calendar_entities = self._house_repo.get_simple_calendar_info(
             user_id=dto.user_id, search_filters=search_filters
         )
 

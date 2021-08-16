@@ -144,13 +144,13 @@ def test_get_calendar_info_when_get_calendar_info_dto(
     dto = get_calendar_info_dto
     year_month = get_calendar_info_dto.year + get_calendar_info_dto.month
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_detail_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = create_real_estate_with_public_sale[0]
         search_filters = HouseRepository().get_calendar_info_filters(
             year_month=year_month
         )
-        result = HouseRepository().get_calendar_info(
+        result = HouseRepository().get_detail_calendar_info(
             user_id=dto.user_id, search_filters=search_filters
         )
 
