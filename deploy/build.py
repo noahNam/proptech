@@ -37,9 +37,10 @@ def intify(l: list):
 
 
 # constants
-IMAGE_NAME = "tanos-api-dev"
+# IMAGE_NAME = "tanos-api-dev"
 BASE_DIR = Path(__file__).absolute().parent.parent
 AVAILABLE_ENVIRONMENT = ["dev", "prod"]
+AVAILABLE_SERVICE = ["api", "cron"]
 
 
 class ECRPush:
@@ -66,11 +67,12 @@ class ECRPush:
     @property
     def image_name(self) -> str:
         env = self.environment
+        service_type = self.service_type
         if env == "dev":
-            return "toadhome/tanos-api-dev"
+            return f"toadhome/tanos-{service_type}-dev"
 
         if env == "prod":
-            return "toadhome/tanos-api-prod"
+            return f"toadhome/tanos-{service_type}-prod"
 
     @property
     def dockerfile(self) -> PosixPath:
@@ -84,6 +86,19 @@ class ECRPush:
             self.fail(f'"{env}" IS NOT AN AVAILABLE ENVIRONMENT')
 
         return env.lower()
+
+    @property
+    def service_type(self) -> str:
+        args = parser.parse_args()
+        if not args.service:
+            self.fail(f"Please supply service.")
+            return
+
+        if args.service not in AVAILABLE_SERVICE:
+            self.fail(f"service expected to be one of {AVAILABLE_SERVICE}")
+            return
+
+        return args.service
 
     def get_latest_tag(
         self, previous_result: Optional[list] = None, next_token: Optional[str] = None

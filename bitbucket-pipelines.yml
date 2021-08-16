@@ -121,7 +121,7 @@ pipelines:
             - export AWS_SECRET_ACCESS_KEY=$AWS_TEST_SECRET_ACCESS_KEY
             - export AWS_DEFAULT_REGION=$AWS_REGION
             - pip3 install -U docker boto3
-            - python deploy/build.py -e dev
+            - python deploy/build.py -e dev -s cron
           caches:
             - docker
       - step:
