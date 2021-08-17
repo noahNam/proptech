@@ -23,6 +23,7 @@ from core.domains.user import event
 from core.domains.notification import event
 from core.domains.house import event
 from core.domains.banner import event
+from core.domains.payment import event
 
 
 def init_config(

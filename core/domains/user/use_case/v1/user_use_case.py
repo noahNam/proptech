@@ -14,6 +14,7 @@ from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.notification.dto.notification_dto import GetBadgeDto
 from core.domains.notification.enum import NotificationTopicEnum
+from core.domains.payment.enum import PaymentTopicEnum
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateUserProfileImgDto,
@@ -247,6 +248,10 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                 dto=detail_dto, survey_step=survey_step
             )
 
+            # 설문 완료 시 무료 티켓 추가 (이미 무료 티켓을 받았으면 추가 발급 X)
+            if survey_step == UserSurveyStepEnum.STEP_COMPLETE.value:
+                self._create_join_ticket(dto=detail_dto)
+
             # SQS Data 전송 -> Data Lake
             # 닉네임일 때는 제외
             if detail_dto.value and detail_dto.code != CodeEnum.NICKNAME.value:
@@ -267,6 +272,12 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                     )
 
         return UseCaseSuccessOutput()
+
+    def _create_join_ticket(self, dto: UpsertUserInfoDetailDto) -> None:
+        send_message(
+            topic_name=PaymentTopicEnum.CREATE_JOIN_TICKET, user_id=dto.user_id
+        )
+        return get_event_object(topic_name=PaymentTopicEnum.CREATE_JOIN_TICKET)
 
     def _get_survey_step(
         self, dto: UpsertUserInfoDetailDto, user_profile: Optional[UserProfileEntity]
