@@ -23,6 +23,7 @@ class TicketTypeDivisionEnum(Enum):
     """
         사용모델 : TicketTypeModel
         sign (+)
+            SURVEY_PROMOTION -> 유저 설문 완료시 티켓을 공짜로 주는 프로모션
             SHARE_PROMOTION -> 추천 코드 공유시 티켓을 공짜로 주는 프로모션
             CHARGED -> 결제로 인해 쌓이는 티켓
         sign (-)
@@ -35,6 +36,7 @@ class TicketTypeDivisionEnum(Enum):
                 -> ticket_usage_results.ticket_id update에 필요
     """
 
+    SURVEY_PROMOTION = 0
     SHARE_PROMOTION = 1
     CHARGED = 2
     REFUND = 3

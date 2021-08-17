@@ -24,8 +24,12 @@ from core.domains.payment.dto.payment_dto import (
 from core.domains.payment.entity.payment_entity import (
     PromotionEntity,
     RecommendCodeEntity,
+    TicketEntity,
 )
-from core.domains.payment.enum.payment_enum import TicketSignEnum
+from core.domains.payment.enum.payment_enum import (
+    TicketSignEnum,
+    TicketTypeDivisionEnum,
+)
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -261,3 +265,31 @@ class PaymentRepository:
                 f"[PaymentRepository][update_recommend_code_is_used] user_id : {recommend_code.user_id}, error : {e}"
             )
             raise Exception
+
+    def is_join_ticket(self, user_id: int) -> bool:
+        return session.query(
+            exists()
+            .where(TicketModel.user_id == user_id)
+            .where(TicketModel.type == TicketTypeDivisionEnum.SURVEY_PROMOTION.value)
+        ).scalar()
+
+    def create_join_ticket(self, user_id: int) -> None:
+        try:
+            join_amount = 1
+            ticket = TicketModel(
+                user_id=user_id,
+                type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,
+                amount=join_amount,
+                sign=TicketSignEnum.PLUS.value,
+                is_active=True,
+                created_by="system",
+            )
+
+            session.add(ticket)
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[PaymentRepository][create_join_ticket] user_id : {user_id}, error : {e}"
+            )
+            raise NotUniqueErrorException(type_="T110")
