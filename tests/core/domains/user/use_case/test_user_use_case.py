@@ -8,7 +8,9 @@ from app.persistence.model import (
     AppAgreeTermsModel,
     UserProfileModel,
     UserInfoModel,
+    TicketModel,
 )
+from core.domains.payment.enum.payment_enum import TicketTypeDivisionEnum
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
@@ -239,11 +241,20 @@ def test_upsert_user_info_when_create_user_data_then_success(
         .filter_by(user_profile_id=user_profile.id, code=upsert_user_info_dto.codes[0])
         .first()
     )
+    ticket = (
+        session.query(TicketModel)
+        .filter_by(
+            user_id=upsert_user_info_dto.user_id,
+            type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,
+        )
+        .first()
+    )
 
     assert user_profile.last_update_code == upsert_user_info_dto.codes[0]
     assert user_info.user_profile_id == user_profile.id
     assert user_info.code == upsert_user_info_dto.codes[0]
     assert user_info.value == upsert_user_info_dto.values[0]
+    assert ticket is None
 
 
 @patch(
@@ -608,7 +619,17 @@ def test_upsert_user_info_when_update_is_sub_account_then_chain_update_user_data
         .all()
     )
 
+    ticket = (
+        session.query(TicketModel)
+        .filter_by(
+            user_id=upsert_user_info_dto.user_id,
+            type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,
+        )
+        .first()
+    )
+
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_TWO.value
+    assert ticket is None
     for user_info in user_infos:
         if user_info.code == 1016:
             assert user_info.value == "2"
@@ -700,7 +721,17 @@ def test_upsert_user_info_when_update_speical_cond_then_survey_step_is_comepte(
         .first()
     )
 
+    ticket = (
+        session.query(TicketModel)
+        .filter_by(
+            user_id=upsert_user_info_dto.user_id,
+            type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,
+        )
+        .first()
+    )
+
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
+    assert ticket.type == TicketTypeDivisionEnum.SURVEY_PROMOTION.value
 
 
 def test_upsert_user_info_when_update_duplicate_nickname_then_failure(
