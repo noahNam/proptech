@@ -24,10 +24,10 @@ class BannerRepository:
 
         query = (
             session.query(BannerModel)
-                .join(BannerModel.banner_image)
-                .filter(*filters)
-                .order_by(asc(BannerModel.sub_topic))
-                .order_by(asc(BannerModel.contents_num))
+            .join(BannerModel.banner_image)
+            .filter(*filters)
+            .order_by(asc(BannerModel.sub_topic))
+            .order_by(asc(BannerModel.contents_num))
         )
 
         banners = query.all()
