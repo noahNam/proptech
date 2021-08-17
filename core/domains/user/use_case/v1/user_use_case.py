@@ -249,9 +249,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
             )
 
             # 설문 완료 시 무료 티켓 추가 (이미 무료 티켓을 받았으면 추가 발급 X)
-            print("---> survey_step : ", survey_step)
             if survey_step == UserSurveyStepEnum.STEP_COMPLETE.value:
-                print("---> survey_step : in")
                 self._create_join_ticket(dto=detail_dto)
 
             # SQS Data 전송 -> Data Lake
