@@ -1,6 +1,7 @@
 INSERT INTO ticket_types (id, division) VALUES
-(1, 'share_promotion'),
-(2, 'charged'),
-(3, 'refund'),
-(4, 'used_ticket'),
-(5, 'used_promotion');
+(1, 'survey_promotion'),
+(2, 'share_promotion'),
+(3, 'charged'),
+(4, 'refund'),
+(5, 'used_ticket'),
+(6, 'used_promotion');
