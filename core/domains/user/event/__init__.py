@@ -4,7 +4,7 @@ from pubsub import pub
 from core.domains.notification.dto.notification_dto import (
     UpdateReceiveNotificationSettingDto,
 )
-from core.domains.user.dto.user_dto import CreateUserDto, RecentlyViewDto
+from core.domains.user.dto.user_dto import RecentlyViewDto
 from core.domains.user.enum import UserTopicEnum
 from core.domains.user.repository.user_repository import UserRepository
 
