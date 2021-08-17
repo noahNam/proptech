@@ -36,12 +36,12 @@ class TicketTypeDivisionEnum(Enum):
                 -> ticket_usage_results.ticket_id update에 필요
     """
 
-    SURVEY_PROMOTION = 0
-    SHARE_PROMOTION = 1
-    CHARGED = 2
-    REFUND = 3
-    USED_TICKET = 4
-    USED_PROMOTION = 5
+    SURVEY_PROMOTION = 1
+    SHARE_PROMOTION = 2
+    CHARGED = 3
+    REFUND = 4
+    USED_TICKET = 5
+    USED_PROMOTION = 6
 
 
 class RecommendCodeMaxCountEnum(Enum):
