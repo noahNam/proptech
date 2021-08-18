@@ -47,7 +47,7 @@ class GetCalendarInfoResponseSchema(BaseModel):
 
 
 class UpsertInterestHouseResponseSchema(BaseModel):
-    result: StrictStr
+    house: GetInterestHouseListBaseSchema
 
 
 class GetInterestHouseListResponseSchema(BaseModel):
