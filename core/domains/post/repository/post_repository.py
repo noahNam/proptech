@@ -43,10 +43,10 @@ class PostRepository:
         try:
             query = (
                 session.query(PostModel)
-                    .join(PostModel.article)
-                    .join(PostModel.post_attachments)
+                    .join(PostModel.article, isouter=True)
+                    .join(PostModel.post_attachments, isouter=True)
                     .filter(*search_filter)
-                    .order_by(PostModel.id.desc())
+                    .order_by(PostModel.id.asc())
                     .order_by(PostAttachmentModel.id.desc())
             )
             post_list = query.all()
