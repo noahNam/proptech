@@ -167,7 +167,7 @@ def test_get_interest_house_list_then_entity_result(
     assert isinstance(result, list)
     assert len(result) == 1
     assert result[0].house_id == 1
-    assert result[0].road_address is not None
+    assert result[0].jibun_address is not None
 
 
 def test_get_recent_view_list_then_entity_result(

@@ -549,7 +549,7 @@ class HouseRepository:
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
                 PublicSaleModel.name,
-                RealEstateModel.road_address,
+                RealEstateModel.jibun_address,
                 PublicSaleModel.subscription_start_date,
                 PublicSaleModel.subscription_end_date,
             )
@@ -569,7 +569,7 @@ class HouseRepository:
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
                 PrivateSaleModel.name,
-                RealEstateModel.road_address,
+                RealEstateModel.jibun_address,
                 literal("", String).label("subscription_start_date"),
                 literal("", String).label("subscription_end_date"),
             )
@@ -601,7 +601,7 @@ class HouseRepository:
                         house_id=query.house_id,
                         type=query.type,
                         name=query.name,
-                        road_address=query.road_address,
+                        jibun_address=query.jibun_address,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
                     )
