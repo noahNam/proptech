@@ -21,7 +21,7 @@ from core.domains.house.dto.house_dto import (
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
-    InterestHouseListEntity,
+    InterestHouseEntity,
     GetSearchHouseListEntity,
     GetRecentViewListEntity,
     GetMainPreSubscriptionEntity,
@@ -63,11 +63,26 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        interest_house: int = self._house_repo.update_interest_house(dto=dto)
-        if not interest_house:
-            self._house_repo.create_interest_house(dto=dto)
+        # FE 요청으로 단순 upsert -> 찜한 내역 response 보내주는 것으로 변경
+        interest_house_id: int = self._house_repo.update_interest_house(dto=dto)
+        if not interest_house_id:
+            interest_house: InterestHouseEntity = self._house_repo.create_interest_house(
+                dto=dto
+            )
+            interest_house_id = interest_house.id
 
-        return UseCaseSuccessOutput()
+        result: Optional[InterestHouseEntity] = self._house_repo.get_interest_house(
+            user_id=dto.user_id, house_id=interest_house_id
+        )
+
+        if not result:
+            return UseCaseFailureOutput(
+                type="interest_house",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        return UseCaseSuccessOutput(value=result)
 
 
 class BoundingUseCase(HouseBaseUseCase):
@@ -172,9 +187,9 @@ class GetInterestHouseListUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        result: List[
-            InterestHouseListEntity
-        ] = self._house_repo.get_interest_house_list(dto=dto)
+        result: List[InterestHouseEntity] = self._house_repo.get_interest_house_list(
+            dto=dto
+        )
 
         return UseCaseSuccessOutput(value=result)
 
