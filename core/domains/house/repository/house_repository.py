@@ -55,14 +55,15 @@ logger = logger_.getLogger(__name__)
 
 
 class HouseRepository:
-    def create_interest_house(self, dto: UpsertInterestHouseDto) -> None:
+    def create_interest_house(self, dto: UpsertInterestHouseDto) -> InterestHouseModel:
         try:
             interest_house = InterestHouseModel(
                 user_id=dto.user_id, house_id=dto.house_id, type=dto.type, is_like=True
             )
-
             session.add(interest_house)
             session.commit()
+
+            return interest_house
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
@@ -549,7 +550,7 @@ class HouseRepository:
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
                 PublicSaleModel.name,
-                RealEstateModel.road_address,
+                RealEstateModel.jibun_address,
                 PublicSaleModel.subscription_start_date,
                 PublicSaleModel.subscription_end_date,
             )
@@ -569,7 +570,7 @@ class HouseRepository:
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
                 PrivateSaleModel.name,
-                RealEstateModel.road_address,
+                RealEstateModel.jibun_address,
                 literal("", String).label("subscription_start_date"),
                 literal("", String).label("subscription_end_date"),
             )
@@ -601,13 +602,55 @@ class HouseRepository:
                         house_id=query.house_id,
                         type=query.type,
                         name=query.name,
-                        road_address=query.road_address,
+                        jibun_address=query.jibun_address,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
                     )
                 )
 
         return result
+
+    def get_interest_house(
+        self, user_id: int, house_id: int
+    ) -> Optional[InterestHouseListEntity]:
+        query = (
+            session.query(InterestHouseModel)
+            .with_entities(
+                InterestHouseModel.house_id,
+                InterestHouseModel.type,
+                PublicSaleModel.name,
+                RealEstateModel.jibun_address,
+                PublicSaleModel.subscription_start_date,
+                PublicSaleModel.subscription_end_date,
+            )
+            .join(
+                PublicSaleModel,
+                (InterestHouseModel.house_id == PublicSaleModel.id)
+                & (InterestHouseModel.type == HouseTypeEnum.PUBLIC_SALES.value)
+                & (InterestHouseModel.user_id == user_id)
+                & (InterestHouseModel.house_id == house_id),
+            )
+            .join(PublicSaleModel.real_estates)
+        )
+
+        queryset = query.first()
+
+        if not queryset:
+            return None
+
+        return self._make_interest_house_entity(queryset=queryset)
+
+    def _make_interest_house_entity(
+        self, queryset: InterestHouseModel
+    ) -> InterestHouseListEntity:
+        return InterestHouseListEntity(
+            house_id=queryset.house_id,
+            type=queryset.type,
+            name=queryset.name,
+            jibun_address=queryset.jibun_address,
+            subscription_start_date=queryset.subscription_start_date,
+            subscription_end_date=queryset.subscription_end_date,
+        )
 
     def get_recent_view_list(self, dto: GetUserDto) -> List[GetRecentViewListEntity]:
         # private_sales 는 X -> MVP 에서는 매매 상세화면이 없음

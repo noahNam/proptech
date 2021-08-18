@@ -22,7 +22,7 @@ class UpsertInterestHousePresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = UpsertInterestHouseResponseSchema(result=output.type)
+                schema = UpsertInterestHouseResponseSchema(house=output.value)
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
