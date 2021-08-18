@@ -18,7 +18,7 @@ class GetInterestHouseListBaseSchema(BaseModel):
     house_id: int
     type: int
     name: str
-    road_address: str
+    jibun_address: str
     subscription_start_date: str
     subscription_end_date: str
 
