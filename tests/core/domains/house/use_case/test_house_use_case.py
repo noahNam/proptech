@@ -18,9 +18,7 @@ from core.domains.house.entity.house_entity import (
     GetSearchHouseListEntity,
     GetMainPreSubscriptionEntity,
     GetHouseMainEntity,
-    DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
-    PublicSaleDetailCalendarEntity,
     PublicSaleSimpleCalendarEntity,
 )
 from core.domains.house.enum.house_enum import (
@@ -61,7 +59,9 @@ coordinates_dto = CoordinatesRangeDto(
 get_calendar_info_dto = GetCalendarInfoDto(year=2021, month=7, user_id=1)
 
 
-def test_upsert_interest_house_use_case_when_like_public_sales_then_success(session):
+def test_upsert_interest_house_use_case_when_like_public_sales_then_success(
+    session, create_real_estate_with_public_sale
+):
     result = UpsertInterestHouseUseCase().execute(dto=upsert_interest_house_dto)
 
     filters = list()
@@ -79,7 +79,7 @@ def test_upsert_interest_house_use_case_when_like_public_sales_then_success(sess
 
 
 def test_upsert_interest_house_use_case_when_unlike_public_sales_then_success(
-    session, interest_house_factory
+    session, interest_house_factory, create_real_estate_with_public_sale
 ):
     interest_house = interest_house_factory.build()
     session.add(interest_house)

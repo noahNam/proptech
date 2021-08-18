@@ -57,7 +57,13 @@ bounding_entitiy = BoundingRealEstateEntity(
 
 
 def test_upsert_interest_house_view_when_like_public_sales_then_insert_success(
-    client, session, test_request_context, make_header, make_authorization, create_users
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    create_real_estate_with_public_sale,
 ):
     user_id = create_users[0].id
     house_id = 1
@@ -80,7 +86,7 @@ def test_upsert_interest_house_view_when_like_public_sales_then_insert_success(
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"] == "success"
+    assert data["house"]["jibun_address"] is not None
 
 
 def test_upsert_interest_house_view_when_unlike_public_sales_then_update_is_like_equals_false(
@@ -90,6 +96,7 @@ def test_upsert_interest_house_view_when_unlike_public_sales_then_update_is_like
     make_header,
     make_authorization,
     interest_house_factory,
+    create_real_estate_with_public_sale,
 ):
     interest_house = interest_house_factory.build()
     session.add(interest_house)
@@ -128,7 +135,7 @@ def test_upsert_interest_house_view_when_unlike_public_sales_then_update_is_like
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"] == "success"
+    assert isinstance(data["house"], dict)
     assert result.is_like is False
 
 
