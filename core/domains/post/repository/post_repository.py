@@ -5,9 +5,10 @@ from sqlalchemy import and_
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
+from app.persistence.model import PostAttachmentModel
 from app.persistence.model.post_model import PostModel
 from core.domains.post.dto.post_dto import GetPostListDto
-from core.domains.post.entity.post_entity import PostEntity
+from core.domains.post.entity.post_entity import PostEntity, ArticleEntity
 
 logger = logger_.getLogger(__name__)
 
@@ -18,8 +19,17 @@ class PostRepository:
             session.query(PostModel).filter_by(id=post_id).exists()
         ).scalar()
 
+    def _get_article_entity(self, post_list: List[PostModel]) -> Union[List[ArticleEntity], List]:
+        result = list()
+        if not post_list:
+            return []
+        for post in post_list:
+            body = post.article.body.split("\r\n")
+            result.append(ArticleEntity(tokenized_body=body))
+        return result
+
     def get_post_list_include_contents(
-        self, dto: GetPostListDto
+            self, dto: GetPostListDto
     ) -> Union[List[PostEntity], List]:
         search_filter = list()
         search_filter.append(
@@ -33,12 +43,19 @@ class PostRepository:
         try:
             query = (
                 session.query(PostModel)
-                .filter(*search_filter)
-                .order_by(PostModel.id.desc())
+                    .join(PostModel.article)
+                    .join(PostModel.post_attachments)
+                    .filter(*search_filter)
+                    .order_by(PostModel.id.desc())
+                    .order_by(PostAttachmentModel.id.desc())
             )
             post_list = query.all()
+            article_list: Union[List[ArticleEntity], List] = self._get_article_entity(post_list)
 
-            return [post.to_entity() for post in post_list]
+            post_entities = list()
+            for post, article in zip(post_list, article_list):
+                post_entities.append(post.to_entity(article=article))
+            return post_entities
         except Exception as e:
             logger.error(
                 f"[PostRepository][get_post_list_include_contents] error : {e}"

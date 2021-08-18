@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -11,7 +13,7 @@ from sqlalchemy.orm import relationship
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.post.entity.post_entity import PostEntity
+from core.domains.post.entity.post_entity import PostEntity, ArticleEntity
 
 
 class PostModel(db.Model):
@@ -30,14 +32,14 @@ class PostModel(db.Model):
     article = relationship("ArticleModel", backref="post", uselist=False)
     post_attachments = relationship("PostAttachmentModel", backref="post", uselist=True)
 
-    def to_entity(self) -> PostEntity:
+    def to_entity(self, article: ArticleEntity) -> PostEntity:
         return PostEntity(
             id=self.id,
             title=self.title,
             desc=self.desc,
             category_id=self.category_id,
             category_detail_id=self.category_detail_id,
-            body=self.article.body if self.article else None,
+            body=article if self.article else None,
             post_attachments=[
                 post_attachment.to_entity() for post_attachment in self.post_attachments
             ]
