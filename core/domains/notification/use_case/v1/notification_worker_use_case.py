@@ -3,6 +3,7 @@ import sys
 from typing import List
 
 import inject
+import requests
 import sentry_sdk
 
 from app.extensions.utils.log_helper import logger_
@@ -30,6 +31,17 @@ class PrePrcsNotificationUseCase:
         self._notification_repo = notification_repo
         self.topic = topic
 
+    def send_slack_message(self, message: str):
+        channel = "#engineering-class"
+
+        text = "[Batch Error] PrePrcsNotificationUseCase -> " + message
+        slack_token = "xoxb-1811487173312-2075478573287-JtTJbgy3fAboqlwkLeas9R1o"
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": "Bearer " + slack_token},
+            data={"channel": channel, "text": text},
+        )
+
     def execute(self):
         logger.info(f"🚀\tPrePrcsNotification Start - {self.client_id}")
 
@@ -44,6 +56,7 @@ class PrePrcsNotificationUseCase:
             )
         except Exception as e:
             logger.error(f"🚀\tget_push_target_of_public_sales Error - {e}")
+            self.send_slack_message(message=f"🚀\tget_push_target_of_public_sales Error - {e}")
             sentry_sdk.capture_exception(e)
             sys.exit(0)
 
@@ -59,6 +72,7 @@ class PrePrcsNotificationUseCase:
             )
         except Exception as e:
             logger.error(f"🚀\t_convert_message_for_public_sales Error - {e}")
+            self.send_slack_message(message=f"🚀\t_convert_message_for_public_sales Error - {e}")
             sentry_sdk.capture_exception(e)
             sys.exit(0)
 
@@ -75,6 +89,7 @@ class PrePrcsNotificationUseCase:
             )
         except Exception as e:
             logger.error(f"🚀\tcreate_notifications Error - {e}")
+            self.send_slack_message(message=f"🚀\tcreate_notifications Error - {e}")
             sentry_sdk.capture_exception(e)
             sys.exit(0)
 
@@ -83,7 +98,7 @@ class PrePrcsNotificationUseCase:
         )
 
     def _convert_message_for_public_sales(
-        self, target_public_sales: List[PublicSalePushEntity]
+            self, target_public_sales: List[PublicSalePushEntity]
     ) -> List[dict]:
         notification_list = list()
         for target_public_sale in target_public_sales:
@@ -143,7 +158,7 @@ class PrePrcsNotificationUseCase:
                     content=content,
                     created_at=str(get_server_timestamp().replace(microsecond=0)),
                     badge_type=NotificationBadgeTypeEnum.ALL.value,
-                    data={"user_id": target_user.id, "topic": topic,},
+                    data={"user_id": target_user.id, "topic": topic, },
                 )
 
                 message_dict = MessageConverter.to_dict(message_dto)
