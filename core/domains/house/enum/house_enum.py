@@ -139,3 +139,5 @@ class BannerSubTopic(Enum):
     # 공통
     TOP_SCREEN_BANNER = 8
     BOTTOM_SCREEN_BANNER = 9
+
+
