@@ -158,7 +158,10 @@ class PrePrcsNotificationUseCase:
                     content=content,
                     created_at=str(get_server_timestamp().replace(microsecond=0)),
                     badge_type=NotificationBadgeTypeEnum.ALL.value,
-                    data={"user_id": target_user.id, "topic": topic, },
+                    data={
+                        # "user_id": target_user.id,
+                        "topic": topic,
+                    },
                 )
 
                 message_dict = MessageConverter.to_dict(message_dto)
