@@ -24,6 +24,7 @@ class PostModel(db.Model):
     category_detail_id = Column(SmallInteger, nullable=False, index=True)
     title = Column(String(50), nullable=False)
     desc = Column(String(200), nullable=False)
+    contents_num = Column(SmallInteger, nullable=False)
     is_deleted = Column(Boolean, nullable=False, default=False)
     read_count = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
@@ -32,14 +33,15 @@ class PostModel(db.Model):
     article = relationship("ArticleModel", backref="post", uselist=False)
     post_attachments = relationship("PostAttachmentModel", backref="post", uselist=True)
 
-    def to_entity(self, article: ArticleEntity) -> PostEntity:
+    def to_entity(self) -> PostEntity:
         return PostEntity(
             id=self.id,
             title=self.title,
             desc=self.desc,
             category_id=self.category_id,
             category_detail_id=self.category_detail_id,
-            body=article if self.article else None,
+            contents_num=self.contents_num,
+            body=self.article.body if self.article else None,
             post_attachments=[
                 post_attachment.to_entity() for post_attachment in self.post_attachments
             ]

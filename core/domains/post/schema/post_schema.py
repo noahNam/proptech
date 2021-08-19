@@ -1,8 +1,7 @@
-from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel
-from pydantic.types import StrictInt, StrictStr
+from pydantic.types import StrictStr
 
 from core.domains.post.entity.post_entity import PostEntity
 
