@@ -16,15 +16,16 @@ class PostAttachmentEntity(BaseModel):
 
 
 class ArticleEntity(BaseModel):
-    tokenized_body: List[str] = None
+    body: str = None
 
 
 class PostEntity(BaseModel):
     id: int
     category_id: int
     category_detail_id: int
+    contents_num: int
     title: str
-    body: ArticleEntity = None
+    body: str = None
     desc: str = None
     is_deleted: bool
     read_count: int
