@@ -35,7 +35,7 @@ class PrePrcsNotificationUseCase:
         channel = "#engineering-class"
 
         text = "[Batch Error] PrePrcsNotificationUseCase -> " + message
-        slack_token = "***REMOVED***"
+        slack_token = os.environ.get("SLACK_TOKEN")
         requests.post(
             "https://slack.com/api/chat.postMessage",
             headers={"Authorization": "Bearer " + slack_token},
