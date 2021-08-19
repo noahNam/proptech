@@ -5,9 +5,10 @@ from sqlalchemy import and_
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
+from app.persistence.model import PostAttachmentModel
 from app.persistence.model.post_model import PostModel
 from core.domains.post.dto.post_dto import GetPostListDto
-from core.domains.post.entity.post_entity import PostEntity
+from core.domains.post.entity.post_entity import PostEntity, ArticleEntity
 
 logger = logger_.getLogger(__name__)
 
@@ -19,7 +20,7 @@ class PostRepository:
         ).scalar()
 
     def get_post_list_include_contents(
-        self, dto: GetPostListDto
+            self, dto: GetPostListDto
     ) -> Union[List[PostEntity], List]:
         search_filter = list()
         search_filter.append(
@@ -33,8 +34,11 @@ class PostRepository:
         try:
             query = (
                 session.query(PostModel)
-                .filter(*search_filter)
-                .order_by(PostModel.id.desc())
+                    .join(PostModel.article, isouter=True)
+                    .join(PostModel.post_attachments, isouter=True)
+                    .filter(*search_filter)
+                    .order_by(PostModel.id.asc())
+                    .order_by(PostAttachmentModel.id.asc())
             )
             post_list = query.all()
 

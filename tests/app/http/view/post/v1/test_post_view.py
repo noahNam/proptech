@@ -46,6 +46,7 @@ def test_get_post_list_include_contents_view_when_watch_notice_then_return_notic
         )
 
     data = response1.get_json()["data"]
+
     assert response1.status_code == 200
     assert len(data["posts"]) == 15
 
