@@ -21,13 +21,13 @@ class MessageConverter:
     def to_dict(dto: PushMessageDto):
         content = {
             "data": {
-                # "uuid": str(uuid.uuid4()),
-                # "token": dto.token,
-                "title": dto.title,
-                "body": dto.content,
                 "created_at": dto.created_at,
                 "badge_type": dto.badge_type,
                 "data": dto.data,
+            },
+            "notification": {
+                "title": dto.title,
+                "body": dto.content,
             }
         }
         return dict(
@@ -35,5 +35,9 @@ class MessageConverter:
         )
 
     @staticmethod
-    def get_message(message: dict):
+    def get_data(message: dict):
         return json.loads(message["GCM"])["data"]
+
+    @staticmethod
+    def get_notification_content(message: dict):
+        return json.loads(message["GCM"])["notification"]
