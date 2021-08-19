@@ -1,22 +1,13 @@
-from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel
-from pydantic.types import StrictInt, StrictStr
+from pydantic.types import StrictStr
 
-
-class PostResponseBaseSchema(BaseModel):
-    id: StrictInt
-    title: StrictStr
-    body: StrictStr
-    is_deleted: bool
-    read_count: StrictInt
-    created_at: StrictStr
-    updated_at: StrictStr
+from core.domains.post.entity.post_entity import PostEntity
 
 
 class GetPostListResponseSchema(BaseModel):
-    posts: List[PostResponseBaseSchema]
+    posts: List[PostEntity]
 
 
 class UpdatePostReadCountResponseSchema(BaseModel):

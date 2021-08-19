@@ -362,6 +362,7 @@ class PostFactory(BaseFactory):
     read_count = 0
     category_id = PostCategoryEnum.NOTICE.value
     category_detail_id = PostCategoryDetailEnum.NO_DETAIL.value
+    contents_num = factory.Sequence(lambda n: n + 1)
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
 

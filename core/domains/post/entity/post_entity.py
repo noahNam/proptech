@@ -15,10 +15,15 @@ class PostAttachmentEntity(BaseModel):
     updated_at: datetime
 
 
+class ArticleEntity(BaseModel):
+    body: str = None
+
+
 class PostEntity(BaseModel):
     id: int
     category_id: int
     category_detail_id: int
+    contents_num: int
     title: str
     body: str = None
     desc: str = None
