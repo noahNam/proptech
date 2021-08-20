@@ -19,7 +19,7 @@ class TicketUsageResultModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     user_id = Column(BigInteger, nullable=False, index=True)
-    public_house_id = Column(BigInteger, nullable=False, index=True)
+    public_house_id = Column(BigInteger, nullable=True)
     ticket_id = Column(BigInteger, nullable=True)
     is_active = Column(Boolean, nullable=False)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)

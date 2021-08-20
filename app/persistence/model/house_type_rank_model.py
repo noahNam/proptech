@@ -10,8 +10,8 @@ from app import db
 from core.domains.payment.entity.payment_entity import TicketUsageResultDetailEntity
 
 
-class TicketUsageResultDetailModel(db.Model):
-    __tablename__ = "ticket_usage_result_details"
+class HouseTypeRankModel(db.Model):
+    __tablename__ = "house_type_ranks"
 
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
