@@ -84,7 +84,7 @@ def test_get_ticket_usage_result_view_then_return_no_list(
     return_value=HTTPStatus.OK,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 @patch(
@@ -143,7 +143,7 @@ def test_use_ticket_when_used_ticket_then_success(
     return_value=HTTPStatus.OK,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 @patch(
@@ -211,7 +211,7 @@ def test_use_ticket_when_used_promotion_then_success(
     return_value=HTTPStatus.INTERNAL_SERVER_ERROR,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 @patch(

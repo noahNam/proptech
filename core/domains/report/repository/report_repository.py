@@ -1,0 +1,48 @@
+from typing import List
+
+from sqlalchemy import exists
+
+from app.extensions.database import session
+from app.extensions.utils.log_helper import logger_
+from app.persistence.model import TicketUsageResultModel
+from core.exceptions import NotUniqueErrorException
+
+logger = logger_.getLogger(__name__)
+
+
+class ReportRepository:
+    def get_ticket_usage_results(self, user_id: int) -> List[int]:
+        query = session.query(TicketUsageResultModel).filter_by(
+            user_id=user_id, is_active=True
+        )
+        query_set = query.all()
+
+        if not query_set:
+            return []
+        return [query.public_house_id for query in query_set]
+
+    def is_ticket_usage(self, user_id: int, house_id: int) -> bool:
+        return session.query(
+            exists()
+            .where(TicketUsageResultModel.public_house_id == house_id)
+            .where(TicketUsageResultModel.user_id == user_id)
+        ).scalar()
+
+    def update_ticket_usage_result(
+        self, user_id: int, public_house_id: int, ticket_id: int
+    ) -> None:
+        try:
+            filters = list()
+            filters.append(TicketUsageResultModel.user_id == user_id)
+            filters.append(TicketUsageResultModel.public_house_id == public_house_id)
+
+            session.query(TicketUsageResultModel).filter(*filters).update(
+                {"ticket_id": ticket_id}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[update_ticket_usage_result][update_ticket_usage_result] user_id : {user_id}, ticket_id : {ticket_id}, error : {e}"
+            )
+            raise NotUniqueErrorException(type_="T200")

@@ -232,9 +232,7 @@ class TicketUsageResultFactory(BaseFactory):
     is_active = True
     created_at = get_server_timestamp()
 
-    house_type_ranks = factory.List(
-        [factory.SubFactory(HouseTypeRankFactory)]
-    )
+    house_type_ranks = factory.List([factory.SubFactory(HouseTypeRankFactory)])
 
 
 class UserFactory(BaseFactory):
