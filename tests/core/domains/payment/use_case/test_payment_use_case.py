@@ -113,7 +113,7 @@ def test_use_ticket_when_no_prom_no_available_ticket_then_return_failure_output(
     return_value=HTTPStatus.OK,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 @patch(
@@ -184,7 +184,7 @@ def test_use_ticket_when_no_prom_available_ticket_then_return_success_output(
     return_value=HTTPStatus.OK,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 @patch(
@@ -274,7 +274,7 @@ def test_use_ticket_when_exist_all_type_prom_available_count_available_ticket_th
     return_value=HTTPStatus.OK,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 @patch(
@@ -354,7 +354,7 @@ def test_use_ticket_when_exist_all_type_prom_no_count_available_ticket_then_retu
     return_value=HTTPStatus.OK,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 @patch(
@@ -397,7 +397,7 @@ def test_use_ticket_when_exist_all_type_prom_no_count_no_ticket_then_return_fail
     return_value=HTTPStatus.OK,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 @patch(
@@ -478,7 +478,7 @@ def test_use_ticket_when_exist_house_exist_some_type_prom_no_count_available_tic
 
 @pytest.mark.skip(reason="유닛테스트는 통과하나 전체 테스트시에 생기는 문제로 skip")
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 def test_use_ticket_when_exist_house_exist_some_type_prom_no_count_no_available_ticket_then_return_success_output(
@@ -512,7 +512,7 @@ def test_use_ticket_when_exist_house_exist_some_type_prom_no_count_no_available_
     return_value=HTTPStatus.OK,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 def test_use_ticket_when_exist_house_exist_some_type_prom_available_count_then_return_success_output(
@@ -596,7 +596,7 @@ def test_use_ticket_when_exist_house_exist_some_type_prom_available_count_then_r
     return_value=HTTPStatus.OK,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 @patch(
@@ -681,7 +681,7 @@ def test_use_ticket_when_not_exist_house_exist_some_type_prom_available_ticket_t
     return_value=HTTPStatus.OK,
 )
 @patch(
-    "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._is_ticket_usage",
     return_value=False,
 )
 @patch(

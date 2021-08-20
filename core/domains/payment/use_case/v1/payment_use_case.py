@@ -11,7 +11,6 @@ from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
     UseTicketDto,
     CreateTicketDto,
-    UpdateTicketUsageResultDto,
     UseRecommendCodeDto,
 )
 from core.domains.payment.entity.payment_entity import (
@@ -25,6 +24,7 @@ from core.domains.payment.enum.payment_enum import (
     RecommendCodeMaxCountEnum,
 )
 from core.domains.payment.repository.payment_repository import PaymentRepository
+from core.domains.report.enum import ReportTopicEnum
 from core.domains.user.entity.user_entity import UserProfileEntity
 from core.domains.user.enum import UserTopicEnum
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
@@ -48,8 +48,8 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        public_house_ids: List[int] = self._payment_repo.get_ticket_usage_results(
-            dto=dto
+        public_house_ids: List[int] = self._get_ticket_usage_results(
+            user_id=dto.user_id
         )
         result = list()
         if public_house_ids:
@@ -60,6 +60,12 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
             )
 
         return UseCaseSuccessOutput(value=result)
+
+    def _get_ticket_usage_results(self, user_id: int) -> List[int]:
+        send_message(
+            topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS, user_id=user_id,
+        )
+        return get_event_object(topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS)
 
     def _get_public_sales_of_ticket_usage(
         self, public_house_ids: List[int]
@@ -96,7 +102,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
             )
 
         # 이미 티켓을 사용한 분양건인 경우 사용 X
-        if self._payment_repo.is_ticket_usage(dto=dto):
+        if self._is_ticket_usage(user_id=dto.user_id, house_id=dto.house_id):
             return UseCaseFailureOutput(
                 type=HTTPStatus.BAD_REQUEST,
                 message="this is product where tickets have already been used",
@@ -223,6 +229,25 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                         )
         return UseCaseSuccessOutput(value=dict(type="success", message="ticket used"))
 
+    def _is_ticket_usage(self, user_id: int, house_id: int) -> bool:
+        send_message(
+            topic_name=ReportTopicEnum.IS_TICKET_USAGE,
+            user_id=user_id,
+            house_id=house_id,
+        )
+        return get_event_object(topic_name=ReportTopicEnum.IS_TICKET_USAGE)
+
+    def _update_ticket_usage_result(
+        self, user_id: int, house_id: int, ticket_id: int
+    ) -> bool:
+        send_message(
+            topic_name=ReportTopicEnum.UPDATE_TICKET_USAGE_RESULT,
+            user_id=user_id,
+            house_id=house_id,
+            ticket_id=ticket_id,
+        )
+        return get_event_object(topic_name=ReportTopicEnum.UPDATE_TICKET_USAGE_RESULT)
+
     def _get_user_survey_step(self, user_id: int) -> Optional[UserProfileEntity]:
         send_message(
             topic_name=UserTopicEnum.GET_USER_SURVEY_STEP, user_id=user_id,
@@ -253,11 +278,6 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
             created_by="system",
         )
 
-    def _make_update_ticket_usage_result_dto(self, dto: UseTicketDto, ticket_id: int):
-        return UpdateTicketUsageResultDto(
-            user_id=dto.user_id, public_house_id=dto.house_id, ticket_id=ticket_id,
-        )
-
     def _call_jarvis_analytics_api(self, dto: UseTicketDto) -> HTTPStatus:
         # todo. jarvis 분석 api 호출
         pass
@@ -280,11 +300,8 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
             self._payment_repo.create_ticket_target(dto=dto, ticket_id=ticket_id)
 
             # 티켓 사용 결과 ticket_id 업데이트 (ticket_usage_results 스키마)
-            update_ticket_usage_result_dto: UpdateTicketUsageResultDto = self._make_update_ticket_usage_result_dto(
-                dto=dto, ticket_id=ticket_id
-            )
-            self._payment_repo.update_ticket_usage_result(
-                dto=update_ticket_usage_result_dto
+            self._update_ticket_usage_result(
+                user_id=dto.user_id, house_id=dto.house_id, ticket_id=ticket_id
             )
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
@@ -313,11 +330,8 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
             self._payment_repo.create_ticket_target(dto=dto, ticket_id=ticket_id)
 
             # 티켓 사용 결과 ticket_id 업데이트 (ticket_usage_results 스키마)
-            update_ticket_usage_result_dto: UpdateTicketUsageResultDto = self._make_update_ticket_usage_result_dto(
-                dto=dto, ticket_id=ticket_id
-            )
-            self._payment_repo.update_ticket_usage_result(
-                dto=update_ticket_usage_result_dto
+            self._update_ticket_usage_result(
+                user_id=dto.user_id, house_id=dto.house_id, ticket_id=ticket_id
             )
 
             #  프로모션 사용횟수 생성 (promotion_usage_counts 스키마)

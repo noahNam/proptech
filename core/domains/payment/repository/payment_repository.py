@@ -7,7 +7,6 @@ from strgen import StringGenerator
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
 from app.persistence.model import (
-    TicketUsageResultModel,
     PromotionModel,
     PromotionUsageCountModel,
     TicketModel,
@@ -16,15 +15,12 @@ from app.persistence.model import (
     RecommendCodeModel,
 )
 from core.domains.payment.dto.payment_dto import (
-    PaymentUserDto,
     UseTicketDto,
     CreateTicketDto,
-    UpdateTicketUsageResultDto,
 )
 from core.domains.payment.entity.payment_entity import (
     PromotionEntity,
     RecommendCodeEntity,
-    TicketEntity,
 )
 from core.domains.payment.enum.payment_enum import (
     TicketSignEnum,
@@ -36,23 +32,6 @@ logger = logger_.getLogger(__name__)
 
 
 class PaymentRepository:
-    def get_ticket_usage_results(self, dto: PaymentUserDto) -> List[int]:
-        query = session.query(TicketUsageResultModel).filter_by(
-            user_id=dto.user_id, is_active=True
-        )
-        public_houses = query.all()
-
-        if not public_houses:
-            return []
-        return [public_house.id for public_house in public_houses]
-
-    def is_ticket_usage(self, dto: UseTicketDto) -> bool:
-        return session.query(
-            exists()
-            .where(TicketUsageResultModel.public_house_id == dto.house_id)
-            .where(TicketUsageResultModel.user_id == dto.user_id)
-        ).scalar()
-
     def get_promotion(self, dto: UseTicketDto) -> Optional[PromotionEntity]:
         filters = list()
         filters.append(PromotionModel.is_active == True)
@@ -120,25 +99,6 @@ class PaymentRepository:
                 f"[PaymentRepository][create_ticket] user_id : {dto.user_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T100")
-
-    def update_ticket_usage_result(self, dto: UpdateTicketUsageResultDto) -> None:
-        try:
-            filters = list()
-            filters.append(TicketUsageResultModel.user_id == dto.user_id)
-            filters.append(
-                TicketUsageResultModel.public_house_id == dto.public_house_id
-            )
-
-            session.query(TicketUsageResultModel).filter(*filters).update(
-                {"ticket_id": dto.ticket_id}
-            )
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            logger.error(
-                f"[PaymentRepository][update_ticket_usage_result] user_id : {dto.user_id}, ticket_id : {dto.ticket_id}, error : {e}"
-            )
-            raise NotUniqueErrorException(type_="T200")
 
     def create_promotion_usage_count(self, dto: UseTicketDto, promotion_id: int):
         try:
