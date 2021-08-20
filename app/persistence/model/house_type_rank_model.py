@@ -7,7 +7,7 @@ from sqlalchemy import (
 )
 
 from app import db
-from core.domains.payment.entity.payment_entity import HouseTypeRankEntity
+from core.domains.report.entity.report_entity import HouseTypeRankEntity
 
 
 class HouseTypeRankModel(db.Model):

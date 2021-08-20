@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.payment.entity.payment_entity import TicketUsageResultEntity
+from core.domains.report.entity.report_entity import TicketUsageResultEntity
 
 
 class TicketUsageResultModel(db.Model):
@@ -35,9 +35,13 @@ class TicketUsageResultModel(db.Model):
         return TicketUsageResultEntity(
             id=self.id,
             user_id=self.user_id,
-            house_id=self.house_id,
+            public_house_id=self.public_house_id,
             ticket_id=self.ticket_id,
             is_active=self.is_active,
             created_at=self.created_at,
-            house_type_ranks=self.house_type_ranks,
+            tickets=[
+                house_type_rank.to_entity() for house_type_rank in self.house_type_ranks
+            ]
+            if self.house_type_ranks
+            else [],
         )
