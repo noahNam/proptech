@@ -37,7 +37,7 @@ from app.persistence.model import (
     SurveyResultModel,
     UserInfoModel,
     TicketUsageResultModel,
-    TicketUsageResultDetailModel,
+    HouseTypeRankModel,
     PromotionModel,
     PromotionHouseModel,
     PromotionUsageCountModel,
@@ -212,9 +212,9 @@ class TicketFactory(BaseFactory):
                 TicketTargetFactory(users=obj, **kwargs)
 
 
-class TicketUsageResultDetailFactory(BaseFactory):
+class HouseTypeRankFactory(BaseFactory):
     class Meta:
-        model = TicketUsageResultDetailModel
+        model = HouseTypeRankModel
 
     ticket_usage_result_id = 1
     house_structure_type = factory.Sequence(lambda n: f"59B_{n}")
@@ -232,8 +232,8 @@ class TicketUsageResultFactory(BaseFactory):
     is_active = True
     created_at = get_server_timestamp()
 
-    ticket_usage_result_details = factory.List(
-        [factory.SubFactory(TicketUsageResultDetailFactory)]
+    house_type_ranks = factory.List(
+        [factory.SubFactory(HouseTypeRankFactory)]
     )
 
 

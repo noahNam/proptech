@@ -7,7 +7,7 @@ from sqlalchemy import (
 )
 
 from app import db
-from core.domains.payment.entity.payment_entity import TicketUsageResultDetailEntity
+from core.domains.payment.entity.payment_entity import HouseTypeRankEntity
 
 
 class HouseTypeRankModel(db.Model):
@@ -21,8 +21,8 @@ class HouseTypeRankModel(db.Model):
     subscription_type = Column(String(10), nullable=False)
     rank = Column(SmallInteger, nullable=False)
 
-    def to_entity(self) -> TicketUsageResultDetailEntity:
-        return TicketUsageResultDetailEntity(
+    def to_entity(self) -> HouseTypeRankEntity:
+        return HouseTypeRankEntity(
             id=self.id,
             ticket_usage_result_id=self.ticket_usage_result_id,
             house_type=self.house_type,
