@@ -11,6 +11,7 @@ from core.domains.payment.enum.payment_enum import (
     TicketTypeDivisionEnum,
 )
 from core.domains.payment.use_case.v1.payment_use_case import CreateRecommendCodeUseCase
+from core.domains.user.enum.user_enum import UserSurveyStepEnum
 
 
 def test_get_ticket_usage_result_view_then_return_usage_ticket_list(
@@ -86,9 +87,14 @@ def test_get_ticket_usage_result_view_then_return_no_list(
     "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
     return_value=False,
 )
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_used_ticket_then_success(
     call_jarvis_analytics_api,
     is_ticket_usage,
+    _get_user_survey_step,
     client,
     session,
     test_request_context,
@@ -140,9 +146,14 @@ def test_use_ticket_when_used_ticket_then_success(
     "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
     return_value=False,
 )
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_used_promotion_then_success(
     call_jarvis_analytics_api,
     is_ticket_usage,
+    _get_user_survey_step,
     client,
     session,
     test_request_context,
@@ -203,9 +214,14 @@ def test_use_ticket_when_used_promotion_then_success(
     "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
     return_value=False,
 )
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_error_on_jarvis_then_failure(
     call_jarvis_analytics_api,
     is_ticket_usage,
+    _get_user_survey_step,
     client,
     session,
     test_request_context,
