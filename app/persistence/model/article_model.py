@@ -24,6 +24,4 @@ class ArticleModel(db.Model):
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
     def to_entity(self) -> ArticleEntity:
-        return ArticleEntity(
-            body=self.body,
-        )
+        return ArticleEntity(body=self.body,)

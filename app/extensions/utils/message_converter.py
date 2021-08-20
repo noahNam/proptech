@@ -25,10 +25,7 @@ class MessageConverter:
                 "badge_type": dto.badge_type,
                 "data": dto.data,
             },
-            "notification": {
-                "title": dto.title,
-                "body": dto.content,
-            }
+            "notification": {"title": dto.title, "body": dto.content,},
         }
         return dict(
             default=str(uuid.uuid4()), GCM=json.dumps(content, ensure_ascii=False)

@@ -4,6 +4,7 @@ from sqlalchemy import (
     Integer,
     DateTime,
     SmallInteger,
+    String,
 )
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -20,13 +21,17 @@ class SurveyResultModel(db.Model):
     detail_point_family = Column(SmallInteger, nullable=True)
     detail_point_bank = Column(SmallInteger, nullable=True)
     public_newly_married = Column(SmallInteger, nullable=True)
+    public_newly_married_div = Column(String(2), nullable=True)
     public_first_life = Column(SmallInteger, nullable=True)
+    public_first_life_div = Column(String(2), nullable=True)
     public_multiple_children = Column(SmallInteger, nullable=True)
     public_old_parent = Column(SmallInteger, nullable=True)
     public_agency_recommend = Column(SmallInteger, nullable=True)
     public_normal = Column(SmallInteger, nullable=True)
     private_newly_married = Column(SmallInteger, nullable=True)
+    private_newly_married_div = Column(String(2), nullable=True)
     private_first_life = Column(SmallInteger, nullable=True)
+    private_first_life_div = Column(String(2), nullable=True)
     private_multiple_children = Column(SmallInteger, nullable=True)
     private_old_parent = Column(SmallInteger, nullable=True)
     private_agency_recommend = Column(SmallInteger, nullable=True)
@@ -45,13 +50,17 @@ class SurveyResultModel(db.Model):
             detail_point_family=self.detail_point_family,
             detail_point_bank=self.detail_point_bank,
             public_newly_married=self.public_newly_married,
+            public_newly_married_div=self.public_newly_married_div,
             public_first_life=self.public_first_life,
+            public_first_life_div=self.public_first_life_div,
             public_multiple_children=self.public_multiple_children,
             public_old_parent=self.public_old_parent,
             public_agency_recommend=self.public_agency_recommend,
             public_normal=self.public_normal,
             private_newly_married=self.private_newly_married,
+            private_newly_married_div=self.private_newly_married_div,
             private_first_life=self.private_first_life,
+            private_first_life_div=self.private_first_life_div,
             private_multiple_children=self.private_multiple_children,
             private_old_parent=self.private_old_parent,
             private_agency_recommend=self.private_agency_recommend,

@@ -56,7 +56,9 @@ class PrePrcsNotificationUseCase:
             )
         except Exception as e:
             logger.error(f"🚀\tget_push_target_of_public_sales Error - {e}")
-            self.send_slack_message(message=f"🚀\tget_push_target_of_public_sales Error - {e}")
+            self.send_slack_message(
+                message=f"🚀\tget_push_target_of_public_sales Error - {e}"
+            )
             sentry_sdk.capture_exception(e)
             sys.exit(0)
 
@@ -72,7 +74,9 @@ class PrePrcsNotificationUseCase:
             )
         except Exception as e:
             logger.error(f"🚀\t_convert_message_for_public_sales Error - {e}")
-            self.send_slack_message(message=f"🚀\t_convert_message_for_public_sales Error - {e}")
+            self.send_slack_message(
+                message=f"🚀\t_convert_message_for_public_sales Error - {e}"
+            )
             sentry_sdk.capture_exception(e)
             sys.exit(0)
 
@@ -98,7 +102,7 @@ class PrePrcsNotificationUseCase:
         )
 
     def _convert_message_for_public_sales(
-            self, target_public_sales: List[PublicSalePushEntity]
+        self, target_public_sales: List[PublicSalePushEntity]
     ) -> List[dict]:
         notification_list = list()
         for target_public_sale in target_public_sales:

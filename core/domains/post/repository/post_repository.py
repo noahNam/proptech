@@ -20,7 +20,7 @@ class PostRepository:
         ).scalar()
 
     def get_post_list_include_contents(
-            self, dto: GetPostListDto
+        self, dto: GetPostListDto
     ) -> Union[List[PostEntity], List]:
         search_filter = list()
         search_filter.append(
@@ -34,11 +34,11 @@ class PostRepository:
         try:
             query = (
                 session.query(PostModel)
-                    .join(PostModel.article, isouter=True)
-                    .join(PostModel.post_attachments, isouter=True)
-                    .filter(*search_filter)
-                    .order_by(PostModel.id.asc())
-                    .order_by(PostAttachmentModel.id.asc())
+                .join(PostModel.article, isouter=True)
+                .join(PostModel.post_attachments, isouter=True)
+                .filter(*search_filter)
+                .order_by(PostModel.id.asc())
+                .order_by(PostAttachmentModel.id.asc())
             )
             post_list = query.all()
 
