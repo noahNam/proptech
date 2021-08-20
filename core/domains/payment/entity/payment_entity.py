@@ -28,7 +28,7 @@ class TicketEntity(BaseModel):
     ticket_targets: Optional[List[TicketTargetEntity]]
 
 
-class TicketUsageResultDetailEntity(BaseModel):
+class HouseTypeRankEntity(BaseModel):
     id: int
     ticket_usage_result_id: int
     house_type: str
@@ -43,7 +43,7 @@ class TicketUsageResultEntity(BaseModel):
     ticket_id: int
     is_active: bool
     created_at: datetime
-    ticket_usage_result_details: TicketUsageResultDetailEntity
+    house_type_ranks: HouseTypeRankEntity
 
 
 class PromotionHouseEntity(BaseModel):

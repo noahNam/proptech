@@ -36,7 +36,7 @@ from tests.seeder.factory import (
     SurveyResultFactory,
     UserInfoFactory,
     TicketUsageResultFactory,
-    TicketUsageResultDetailFactory,
+    HouseTypeRankFactory,
     PromotionFactory,
     PromotionHouseFactory,
     PromotionUsageCountFactory,
@@ -72,7 +72,7 @@ MODEL_FACTORIES = [
     PublicSaleDetailPhotoFactory,
     SurveyResultFactory,
     UserInfoFactory,
-    TicketUsageResultDetailFactory,
+    HouseTypeRankFactory,
     TicketUsageResultFactory,
     PromotionHouseFactory,
     PromotionUsageCountFactory,
@@ -109,9 +109,9 @@ def create_users(session, user_factory):
 
 @pytest.fixture
 def create_ticket_usage_results(
-    session, ticket_usage_result_detail_factory, ticket_usage_result_factory
+    session, house_type_rank_factory, ticket_usage_result_factory
 ):
-    ticket_usage_result_detail = ticket_usage_result_detail_factory.build_batch(size=2)
+    ticket_usage_result_detail = house_type_rank_factory.build_batch(size=2)
     session.add_all(ticket_usage_result_detail)
     session.commit()
 

@@ -24,11 +24,11 @@ class TicketUsageResultModel(db.Model):
     is_active = Column(Boolean, nullable=False)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    ticket_usage_result_details = relationship(
-        "TicketUsageResultDetailModel",
+    house_type_ranks = relationship(
+        "HouseTypeRankModel",
         backref=backref("ticket_usage_results"),
         uselist=True,
-        primaryjoin="foreign(TicketUsageResultModel.id)== TicketUsageResultDetailModel.ticket_usage_result_id",
+        primaryjoin="foreign(TicketUsageResultModel.id)== HouseTypeRankModel.ticket_usage_result_id",
     )
 
     def to_entity(self) -> TicketUsageResultEntity:
@@ -39,5 +39,5 @@ class TicketUsageResultModel(db.Model):
             ticket_id=self.ticket_id,
             is_active=self.is_active,
             created_at=self.created_at,
-            ticket_usage_result_details=self.ticket_usage_result_details,
+            house_type_ranks=self.house_type_ranks,
         )
