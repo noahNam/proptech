@@ -24,6 +24,7 @@ from core.domains.notification import event
 from core.domains.house import event
 from core.domains.banner import event
 from core.domains.payment import event
+from core.domains.report import event
 
 
 def init_config(

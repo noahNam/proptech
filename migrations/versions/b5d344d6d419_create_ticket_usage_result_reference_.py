@@ -16,7 +16,7 @@ depends_on = None
 
 def upgrade():
     op.create_table(
-        "ticket_usage_result_details",
+        "house_type_ranks",
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
@@ -27,8 +27,8 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_ticket_usage_result_details_ticket_usage_result_id"),
-        "ticket_usage_result_details",
+        op.f("ix_house_type_ranks_ticket_usage_result_id"),
+        "house_type_ranks",
         ["ticket_usage_result_id"],
         unique=False,
     )
@@ -38,17 +38,11 @@ def upgrade():
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
-        sa.Column("public_house_id", sa.BigInteger(), nullable=False),
+        sa.Column("public_house_id", sa.BigInteger(), nullable=True),
         sa.Column("ticket_id", sa.BigInteger(), nullable=True),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
-    )
-    op.create_index(
-        op.f("ix_ticket_usage_results_public_house_id"),
-        "ticket_usage_results",
-        ["public_house_id"],
-        unique=False,
     )
     op.create_index(
         op.f("ix_ticket_usage_results_user_id"),
@@ -62,13 +56,9 @@ def downgrade():
     op.drop_index(
         op.f("ix_ticket_usage_results_user_id"), table_name="ticket_usage_results"
     )
-    op.drop_index(
-        op.f("ix_ticket_usage_results_public_house_id"),
-        table_name="ticket_usage_results",
-    )
     op.drop_table("ticket_usage_results")
     op.drop_index(
-        op.f("ix_ticket_usage_result_details_ticket_usage_result_id"),
-        table_name="ticket_usage_result_details",
+        op.f("ix_house_type_ranks_ticket_usage_result_id"),
+        table_name="house_type_ranks",
     )
-    op.drop_table("ticket_usage_result_details")
+    op.drop_table("house_type_ranks")

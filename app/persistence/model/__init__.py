@@ -26,7 +26,7 @@ from .recently_view_model import RecentlyViewModel
 from .private_sale_detail_model import PrivateSaleDetailModel
 from .survey_result_model import SurveyResultModel
 from .ticket_usage_result_model import TicketUsageResultModel
-from .ticket_usage_result_detail_model import TicketUsageResultDetailModel
+from .house_type_rank_model import HouseTypeRankModel
 from .ticket_target_model import TicketTargetModel
 from .promotion_model import PromotionModel
 from .promotion_house_model import PromotionHouseModel
