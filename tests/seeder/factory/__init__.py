@@ -115,13 +115,17 @@ class SurveyResultFactory(BaseFactory):
     detail_point_family = 25
     detail_point_bank = 26
     public_newly_married = 10
+    public_newly_married_div = "우선"
     public_first_life = 11
+    public_first_life_div = "잔여"
     public_multiple_children = 12
     public_old_parent = 13
     public_agency_recommend = 14
     public_normal = 15
     private_newly_married = 16
+    private_newly_married_div = "잔여"
     private_first_life = 17
+    private_first_life_div = "우선"
     private_old_parent = 19
     private_agency_recommend = 20
     private_normal = 21
