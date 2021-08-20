@@ -36,7 +36,6 @@ from core.domains.user.entity.user_entity import (
     UserEntity,
     UserInfoCodeValueEntity,
     UserProfileEntity,
-    UserInfoResultEntity,
 )
 from core.domains.user.enum.user_info_enum import CodeEnum, CodeStepEnum
 from core.exceptions import NotUniqueErrorException

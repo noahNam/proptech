@@ -25,6 +25,9 @@ from core.domains.payment.enum.payment_enum import (
     RecommendCodeMaxCountEnum,
 )
 from core.domains.payment.repository.payment_repository import PaymentRepository
+from core.domains.user.entity.user_entity import UserProfileEntity
+from core.domains.user.enum import UserTopicEnum
+from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
@@ -79,6 +82,17 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                 type="user_id",
                 message=FailureType.NOT_FOUND_ERROR,
                 code=HTTPStatus.NOT_FOUND,
+            )
+
+        # 유저 설문을 완료하지 않은 경우 사용 X
+        if (
+            self._get_user_survey_step(user_id=dto.user_id)
+            != UserSurveyStepEnum.STEP_COMPLETE
+        ):
+            return UseCaseFailureOutput(
+                type=HTTPStatus.BAD_REQUEST,
+                message="needs user surveys",
+                code=HTTPStatus.BAD_REQUEST,
             )
 
         # 이미 티켓을 사용한 분양건인 경우 사용 X
@@ -208,6 +222,12 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                             dto=dto, promotion=promotion
                         )
         return UseCaseSuccessOutput(value=dict(type="success", message="ticket used"))
+
+    def _get_user_survey_step(self, user_id: int) -> Optional[UserProfileEntity]:
+        send_message(
+            topic_name=UserTopicEnum.GET_USER_SURVEY_STEP, user_id=user_id,
+        )
+        return get_event_object(topic_name=UserTopicEnum.GET_USER_SURVEY_STEP)
 
     def _is_promotion_available(self, promotion: PromotionEntity) -> bool:
         if not promotion.promotion_usage_count:

@@ -27,6 +27,7 @@ from core.domains.payment.use_case.v1.payment_use_case import (
     GetRecommendCodeUseCase,
     UseRecommendCodeUseCase,
 )
+from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput
 
 use_ticket_dto = UseTicketDto(user_id=1, house_id=1)
@@ -51,8 +52,12 @@ def test_get_ticket_usage_result_use_case_then_success(
     assert len(result.value) == 1
 
 
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_already_been_used_then_return_failure_output(
-    session, ticket_usage_result_factory
+    _get_user_survey_step, session, ticket_usage_result_factory
 ):
     """
         이미 티켓을 사용한 분양건에 대해서 다시 티켓을 사용할 경우
@@ -67,8 +72,28 @@ def test_use_ticket_when_already_been_used_then_return_failure_output(
     assert result.message == "this is product where tickets have already been used"
 
 
-def test_use_ticket_when_no_prom_no_available_ticket_then_return_failure_output(
+def test_use_ticket_when_already_been_used_then_return_failure_output(
     session, ticket_usage_result_factory
+):
+    """
+        유저 설문을 완료하지 않은 유저의 경우 실패
+    """
+    ticket_usage_result = ticket_usage_result_factory.build()
+    session.add(ticket_usage_result)
+    session.commit()
+
+    result = UseBasicTicketUseCase().execute(dto=use_ticket_dto)
+
+    assert isinstance(result, UseCaseFailureOutput)
+    assert result.message == "needs user surveys"
+
+
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
+def test_use_ticket_when_no_prom_no_available_ticket_then_return_failure_output(
+    _get_user_survey_step, session, ticket_usage_result_factory
 ):
     """
         프로모션이 없고 티켓도 없는 경우
@@ -91,9 +116,14 @@ def test_use_ticket_when_no_prom_no_available_ticket_then_return_failure_output(
     "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
     return_value=False,
 )
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_no_prom_available_ticket_then_return_success_output(
     call_jarvis_analytics_api,
     is_ticket_usage,
+    _get_user_survey_step,
     session,
     ticket_usage_result_factory,
     ticket_factory,
@@ -157,9 +187,14 @@ def test_use_ticket_when_no_prom_available_ticket_then_return_success_output(
     "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
     return_value=False,
 )
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_exist_all_type_prom_available_count_available_ticket_then_return_success_output(
     call_jarvis_analytics_api,
     is_ticket_usage,
+    _get_user_survey_step,
     session,
     ticket_usage_result_factory,
     ticket_factory,
@@ -242,9 +277,14 @@ def test_use_ticket_when_exist_all_type_prom_available_count_available_ticket_th
     "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
     return_value=False,
 )
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_exist_all_type_prom_no_count_available_ticket_then_return_success_output(
     call_jarvis_analytics_api,
     is_ticket_usage,
+    _get_user_survey_step,
     session,
     ticket_usage_result_factory,
     ticket_factory,
@@ -317,9 +357,14 @@ def test_use_ticket_when_exist_all_type_prom_no_count_available_ticket_then_retu
     "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
     return_value=False,
 )
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_exist_all_type_prom_no_count_no_ticket_then_return_failure_output(
     call_jarvis_analytics_api,
     is_ticket_usage,
+    _get_user_survey_step,
     session,
     ticket_usage_result_factory,
     promotion_factory,
@@ -355,9 +400,14 @@ def test_use_ticket_when_exist_all_type_prom_no_count_no_ticket_then_return_fail
     "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
     return_value=False,
 )
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_exist_house_exist_some_type_prom_no_count_available_ticket_then_return_success_output(
     call_jarvis_analytics_api,
     is_ticket_usage,
+    _get_user_survey_step,
     session,
     ticket_usage_result_factory,
     ticket_factory,
@@ -549,9 +599,14 @@ def test_use_ticket_when_exist_house_exist_some_type_prom_available_count_then_r
     "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
     return_value=False,
 )
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_not_exist_house_exist_some_type_prom_available_ticket_then_return_success_output(
     call_jarvis_analytics_api,
     is_ticket_usage,
+    _get_user_survey_step,
     session,
     ticket_usage_result_factory,
     ticket_factory,
@@ -629,9 +684,14 @@ def test_use_ticket_when_not_exist_house_exist_some_type_prom_available_ticket_t
     "core.domains.payment.repository.payment_repository.PaymentRepository.is_ticket_usage",
     return_value=False,
 )
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseBasicTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
 def test_use_ticket_when_not_exist_house_exist_some_type_prom_no_available_ticket_then_return_failure_output(
     call_jarvis_analytics_api,
     is_ticket_usage,
+    _get_user_survey_step,
     session,
     ticket_usage_result_factory,
     promotion_factory,
