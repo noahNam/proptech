@@ -39,7 +39,7 @@ def get_ticket_usage_result_view():
     )
 
 
-@api.route("/v1/payments/ticket", methods=["POST"])
+@api.route("/v1/payments/house", methods=["POST"])
 @jwt_required
 @auth_required
 @swag_from("use_ticket.yml", methods=["POST"])
