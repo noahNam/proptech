@@ -11,7 +11,6 @@ from app.persistence.model import (
     PromotionUsageCountModel,
     TicketModel,
     TicketTargetModel,
-    PromotionHouseModel,
     RecommendCodeModel,
 )
 from core.domains.payment.dto.payment_dto import (
@@ -32,9 +31,10 @@ logger = logger_.getLogger(__name__)
 
 
 class PaymentRepository:
-    def get_promotion(self, dto: UseHouseTicketDto) -> Optional[PromotionEntity]:
+    def get_promotion(self, dto: UseHouseTicketDto, div: str) -> Optional[PromotionEntity]:
         filters = list()
         filters.append(PromotionModel.is_active == True)
+        filters.append(PromotionModel.div == div)
 
         query = (
             session.query(PromotionModel)

@@ -21,7 +21,7 @@ from core.domains.payment.enum.payment_enum import (
     TicketTypeDivisionEnum,
     TicketSignEnum,
     PromotionTypeEnum,
-    RecommendCodeMaxCountEnum,
+    RecommendCodeMaxCountEnum, PromotionDivEnum,
 )
 from core.domains.payment.repository.payment_repository import PaymentRepository
 from core.domains.report.enum import ReportTopicEnum
@@ -109,7 +109,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                 code=HTTPStatus.BAD_REQUEST,
             )
 
-        promotion: Optional[PromotionEntity] = self._payment_repo.get_promotion(dto=dto)
+        promotion: Optional[PromotionEntity] = self._payment_repo.get_promotion(dto=dto, div=PromotionDivEnum.HOUSE.value)
         if not promotion:
             # 프로모션은 없지만 유료 티켓을 사용하는 경우
             number_of_ticket: int = self._payment_repo.get_number_of_ticket(dto=dto)

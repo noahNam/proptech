@@ -14,7 +14,7 @@ from core.domains.payment.entity.payment_entity import (
     PromotionEntity,
     RecommendCodeEntity,
 )
-from core.domains.payment.enum.payment_enum import TicketSignEnum
+from core.domains.payment.enum.payment_enum import TicketSignEnum, PromotionDivEnum
 from core.domains.payment.repository.payment_repository import PaymentRepository
 from core.domains.report.repository.report_repository import ReportRepository
 
@@ -73,7 +73,7 @@ def test_get_promotion_then_return_list_for_promotion_entity(
     session.commit()
 
     dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().get_promotion(dto=dto)
+    result = PaymentRepository().get_promotion(dto=dto, div=PromotionDivEnum.HOUSE.value)
 
     assert isinstance(result, PromotionEntity)
     assert result.max_count == 1
@@ -89,7 +89,7 @@ def test_get_promotion_then_return_none(session, create_users, promotion_factory
     session.commit()
 
     dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().get_promotion(dto=dto)
+    result = PaymentRepository().get_promotion(dto=dto, div=PromotionDivEnum.HOUSE.value)
 
     assert result is None
 
