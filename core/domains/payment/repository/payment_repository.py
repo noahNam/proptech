@@ -31,7 +31,7 @@ logger = logger_.getLogger(__name__)
 
 
 class PaymentRepository:
-    def get_promotion(self, dto: UseHouseTicketDto, div: str) -> Optional[PromotionEntity]:
+    def get_promotion(self, user_id: int, div: str) -> Optional[PromotionEntity]:
         filters = list()
         filters.append(PromotionModel.is_active == True)
         filters.append(PromotionModel.div == div)
@@ -41,7 +41,7 @@ class PaymentRepository:
             .join(
                 PromotionUsageCountModel,
                 (PromotionModel.id == PromotionUsageCountModel.promotion_id)
-                & (PromotionUsageCountModel.user_id == dto.user_id),
+                & (PromotionUsageCountModel.user_id == user_id),
                 isouter=True,
             )
             .options(selectinload(PromotionModel.promotion_houses))
@@ -54,8 +54,8 @@ class PaymentRepository:
             return None
         return promotion.to_entity()
 
-    def get_number_of_ticket(self, dto: UseHouseTicketDto) -> int:
-        query = session.query(TicketModel).filter_by(user_id=dto.user_id)
+    def get_number_of_ticket(self, user_id: int) -> int:
+        query = session.query(TicketModel).filter_by(user_id=user_id)
         tickets = query.all()
         return self._calc_total_amount(tickets=tickets)
 

@@ -16,11 +16,11 @@ from core.exceptions import InvalidRequestException
 logger = logger_.getLogger(__name__)
 
 
-class PaymentUserResultSchema(BaseModel):
+class PaymentUserSchema(BaseModel):
     user_id: StrictInt
 
 
-class UseBasicTicketSchema(BaseModel):
+class UseHouseTicketSchema(BaseModel):
     user_id: StrictInt
     house_id: StrictInt
 
@@ -36,7 +36,7 @@ class GetTicketUsageResultRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = PaymentUserResultSchema(user_id=self.user_id,).dict()
+            schema = PaymentUserSchema(user_id=self.user_id, ).dict()
             return PaymentUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -45,20 +45,37 @@ class GetTicketUsageResultRequestSchema:
             raise InvalidRequestException(message=e.errors())
 
 
-class UseBasicTicketRequestSchema:
+class UseHouseTicketRequestSchema:
     def __init__(self, user_id, house_id):
         self.user_id = int(user_id) if user_id else None
         self.house_id = house_id
 
     def validate_request_and_make_dto(self):
         try:
-            schema = UseBasicTicketSchema(
+            schema = UseHouseTicketSchema(
                 user_id=self.user_id, house_id=self.house_id
             ).dict()
             return UseHouseTicketDto(**schema)
         except ValidationError as e:
             logger.error(
-                f"[UseTicketRequestSchema][validate_request_and_make_dto] error : {e}"
+                f"[UseHouseTicketRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class UseUserTicketRequestSchema:
+    def __init__(self, user_id):
+        self.user_id = int(user_id) if user_id else None
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = PaymentUserSchema(
+                user_id=self.user_id
+            ).dict()
+            return PaymentUserDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[UseUserTicketRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 
@@ -69,7 +86,7 @@ class CreateRecommendCodeRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = PaymentUserResultSchema(user_id=self.user_id,).dict()
+            schema = PaymentUserSchema(user_id=self.user_id, ).dict()
             return PaymentUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -84,7 +101,7 @@ class GetRecommendCodeRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = PaymentUserResultSchema(user_id=self.user_id,).dict()
+            schema = PaymentUserSchema(user_id=self.user_id, ).dict()
             return PaymentUserDto(**schema)
         except ValidationError as e:
             logger.error(

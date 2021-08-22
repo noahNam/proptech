@@ -21,10 +21,17 @@ class ReportRepository:
             return []
         return [query.public_house_id for query in query_set]
 
-    def is_ticket_usage(self, user_id: int, house_id: int) -> bool:
+    def is_ticket_usage_for_house(self, user_id: int, house_id: int) -> bool:
         return session.query(
             exists()
             .where(TicketUsageResultModel.public_house_id == house_id)
+            .where(TicketUsageResultModel.user_id == user_id)
+        ).scalar()
+
+    def is_ticket_usage_for_user(self, user_id: int,) -> bool:
+        return session.query(
+            exists()
+            .where(TicketUsageResultModel.public_house_id is None)
             .where(TicketUsageResultModel.user_id == user_id)
         ).scalar()
 
