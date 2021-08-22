@@ -66,13 +66,10 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
         # FE 요청으로 단순 upsert -> 찜한 내역 response 보내주는 것으로 변경
         interest_house_id: int = self._house_repo.update_interest_house(dto=dto)
         if not interest_house_id:
-            interest_house: InterestHouseEntity = self._house_repo.create_interest_house(
-                dto=dto
-            )
-            interest_house_id = interest_house.id
+            self._house_repo.create_interest_house(dto=dto)
 
         result: Optional[InterestHouseEntity] = self._house_repo.get_interest_house(
-            user_id=dto.user_id, house_id=interest_house_id
+            user_id=dto.user_id, house_id=dto.house_id
         )
 
         if not result:
