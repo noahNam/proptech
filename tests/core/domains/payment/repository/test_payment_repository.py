@@ -154,7 +154,7 @@ def test_create_promotion_usage_count(session, create_users):
     promotion_id = 1
     dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
 
-    PaymentRepository().create_promotion_usage_count(dto=dto, promotion_id=promotion_id)
+    PaymentRepository().create_promotion_usage_count(user_id=dto.user_id, promotion_id=promotion_id)
 
     promotion_usage_count_model = (
         session.query(PromotionUsageCountModel)
@@ -172,8 +172,8 @@ def test_update_promotion_usage_count(session, create_users):
     promotion_id = 1
     dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
 
-    PaymentRepository().create_promotion_usage_count(dto=dto, promotion_id=promotion_id)
-    PaymentRepository().update_promotion_usage_count(dto=dto, promotion_id=promotion_id)
+    PaymentRepository().create_promotion_usage_count(user_id=dto.user_id, promotion_id=promotion_id)
+    PaymentRepository().update_promotion_usage_count(user_id=dto.user_id, promotion_id=promotion_id)
 
     promotion_usage_count_model = (
         session.query(PromotionUsageCountModel)

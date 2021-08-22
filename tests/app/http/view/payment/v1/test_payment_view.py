@@ -263,7 +263,7 @@ def test_use_ticket_when_error_on_jarvis_then_failure(
     data = response.get_json()
     assert response.status_code == 500
     assert data["detail"] == 500
-    assert data["message"] == "error on jarvis (usage_charged_ticket)"
+    assert data["message"] == "error on jarvis (use_ticket_to_house_by_charged)"
 
 
 def test_create_recommend_code_view_then_return_recommend_code(

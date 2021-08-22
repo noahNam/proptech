@@ -95,25 +95,25 @@ class PaymentRepository:
             )
             raise NotUniqueErrorException(type_="T100")
 
-    def create_promotion_usage_count(self, dto: UseHouseTicketDto, promotion_id: int):
+    def create_promotion_usage_count(self, user_id: int, promotion_id: int):
         try:
             promotion_usage_count = PromotionUsageCountModel(
-                promotion_id=promotion_id, user_id=dto.user_id, usage_count=1
+                promotion_id=promotion_id, user_id=user_id, usage_count=1
             )
             session.add(promotion_usage_count)
             session.commit()
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[PaymentRepository][create_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {promotion_id}, error : {e}"
+                f"[PaymentRepository][create_promotion_usage_count] user_id : {user_id}, promotion_id : {promotion_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T300")
 
-    def update_promotion_usage_count(self, dto: UseHouseTicketDto, promotion_id: int):
+    def update_promotion_usage_count(self, user_id: int, promotion_id: int):
         try:
             filters = list()
             filters.append(PromotionUsageCountModel.promotion_id == promotion_id)
-            filters.append(PromotionUsageCountModel.user_id == dto.user_id)
+            filters.append(PromotionUsageCountModel.user_id == user_id)
 
             session.query(PromotionUsageCountModel).filter(*filters).update(
                 {"usage_count": PromotionUsageCountModel.usage_count + 1}
@@ -122,7 +122,7 @@ class PaymentRepository:
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[PaymentRepository][update_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {promotion_id}, error : {e}"
+                f"[PaymentRepository][update_promotion_usage_count] user_id : {user_id}, promotion_id : {promotion_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T400")
 
