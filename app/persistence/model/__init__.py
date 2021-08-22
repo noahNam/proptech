@@ -5,7 +5,6 @@ from .device_token_model import DeviceTokenModel
 from .receive_push_type_model import ReceivePushTypeModel
 from .user_profile_model import UserProfileModel
 from .user_info_model import UserInfoModel
-from .ticket_type_model import TicketTypeModel
 from .ticket_model import TicketModel
 from .app_agree_terms_model import AppAgreeTermsModel
 from .avg_monthly_income_worker_model import AvgMonthlyIncomeWokrerModel
