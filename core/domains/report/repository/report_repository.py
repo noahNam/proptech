@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import exists
 
@@ -36,7 +36,7 @@ class ReportRepository:
         ).scalar()
 
     def update_ticket_usage_result(
-        self, user_id: int, public_house_id: int, ticket_id: int
+        self, user_id: int, public_house_id: Optional[int], ticket_id: int
     ) -> None:
         try:
             filters = list()

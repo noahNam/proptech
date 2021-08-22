@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from flask import g
 from pubsub import pub
@@ -31,7 +31,7 @@ def is_ticket_usage_for_user(user_id: int,):
     setattr(g, ReportTopicEnum.IS_TICKET_USAGE_FOR_USER, result)
 
 
-def update_ticket_usage_result(user_id: int, house_id: int, ticket_id: int):
+def update_ticket_usage_result(user_id: int, house_id: Optional[int], ticket_id: int):
     ReportRepository().update_ticket_usage_result(
         user_id=user_id, public_house_id=house_id, ticket_id=ticket_id
     )

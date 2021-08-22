@@ -40,7 +40,8 @@ class TicketTypeDivisionEnum(Enum):
             USED_TICKET_TO_HOUSE -> 티켓 사용
             USED_TICKET_TO_USER -> 티켓 사용
 
-            USED_PROMOTION -> 티켓 사용
+            USED_PROMOTION_TO_HOUSE -> 프로모션 사용
+            USED_PROMOTION_TO_USER -> 프로모션 사용
                 amount = 0 처리
                 프르모션 적용으로 티켓을 사용안할 때도 내역 쌓아야 함.
                 -> ticket_usage_results.ticket_id update에 필요
@@ -52,7 +53,8 @@ class TicketTypeDivisionEnum(Enum):
     REFUND = 4
     USED_TICKET_TO_HOUSE = 5
     USED_TICKET_TO_USER = 6
-    USED_PROMOTION = 7
+    USED_PROMOTION_TO_HOUSE = 7
+    USED_PROMOTION_TO_USER = 8
 
 
 class RecommendCodeMaxCountEnum(Enum):
