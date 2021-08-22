@@ -55,7 +55,6 @@ def upgrade():
         sa.Column("usage_count", sa.SmallInteger(), nullable=False),
         sa.ForeignKeyConstraint(["promotion_id"], ["promotions.id"],),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("promotion_id"),
     )
     op.create_index(
         op.f("ix_promotion_usage_counts_user_id"),
