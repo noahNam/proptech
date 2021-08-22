@@ -37,27 +37,27 @@ def test_get_ticket_usage_results_then_return_public_sale_ids(
     assert result[0] == public_sales_id
 
 
-def test_is_ticket_usage_then_return_true(
+def test_is_ticket_usage_for_house_then_return_true(
     session, create_users, ticket_usage_result_factory
 ):
     ticket_usage_result = ticket_usage_result_factory.build()
     session.add(ticket_usage_result)
     session.commit()
 
-    result = ReportRepository().is_ticket_usage(user_id=create_users[0].id, house_id=1)
+    result = ReportRepository().is_ticket_usage_for_house(user_id=create_users[0].id, house_id=1)
 
     assert isinstance(result, bool)
     assert result is True
 
 
-def test_is_ticket_usage_then_return_false(
+def test_is_ticket_usage_for_house_then_return_false(
     session, create_users, ticket_usage_result_factory
 ):
     ticket_usage_result = ticket_usage_result_factory.build()
     session.add(ticket_usage_result)
     session.commit()
 
-    result = ReportRepository().is_ticket_usage(user_id=create_users[0].id, house_id=2)
+    result = ReportRepository().is_ticket_usage_for_house(user_id=create_users[0].id, house_id=2)
 
     assert isinstance(result, bool)
     assert result is False
@@ -73,7 +73,7 @@ def test_get_promotion_then_return_list_for_promotion_entity(
     session.commit()
 
     dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().get_promotion(dto=dto, div=PromotionDivEnum.HOUSE.value)
+    result = PaymentRepository().get_promotion(user_id=dto.user_id, div=PromotionDivEnum.HOUSE.value)
 
     assert isinstance(result, PromotionEntity)
     assert result.max_count == 1
@@ -89,7 +89,7 @@ def test_get_promotion_then_return_none(session, create_users, promotion_factory
     session.commit()
 
     dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().get_promotion(dto=dto, div=PromotionDivEnum.HOUSE.value)
+    result = PaymentRepository().get_promotion(user_id=dto.user_id, div=PromotionDivEnum.HOUSE.value)
 
     assert result is None
 
@@ -100,14 +100,14 @@ def test_get_number_of_ticket_then_return_2(session, create_users, ticket_factor
     session.commit()
 
     dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().get_number_of_ticket(dto=dto)
+    result = PaymentRepository().get_number_of_ticket(user_id=dto.user_id)
 
     assert result == 2
 
 
 def test_get_number_of_ticket_then_return_0(session, create_users):
     dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().get_number_of_ticket(dto=dto)
+    result = PaymentRepository().get_number_of_ticket(user_id=dto.user_id)
 
     assert result == 0
 
