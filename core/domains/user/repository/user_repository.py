@@ -389,7 +389,7 @@ class UserRepository:
         query = (
             session.query(UserModel)
             .options(joinedload(UserModel.user_profile))
-            .options(joinedload(UserModel.tickets).joinedload(TicketModel.ticket_type))
+            .options(joinedload(UserModel.tickets))
             .filter(UserModel.id == dto.user_id)
         )
         user = query.first()

@@ -10,6 +10,15 @@ class PromotionTypeEnum(Enum):
     SOME = "some"
 
 
+class PromotionDivEnum(Enum):
+    """
+        사용모델 : PromotionModel
+    """
+
+    HOUSE = "house"
+    USER = "user"
+
+
 class TicketSignEnum(Enum):
     """
         사용모델 : TicketModel
@@ -21,14 +30,15 @@ class TicketSignEnum(Enum):
 
 class TicketTypeDivisionEnum(Enum):
     """
-        사용모델 : TicketTypeModel
+        사용모델 : TicketModel
         sign (+)
             SURVEY_PROMOTION -> 유저 설문 완료시 티켓을 공짜로 주는 프로모션
             SHARE_PROMOTION -> 추천 코드 공유시 티켓을 공짜로 주는 프로모션
             CHARGED -> 결제로 인해 쌓이는 티켓
         sign (-)
             REFUND -> 티켓 환불
-            USED_TICKET -> 티켓 사용
+            USED_TICKET_TO_HOUSE -> 티켓 사용
+            USED_TICKET_TO_USER -> 티켓 사용
 
             USED_PROMOTION -> 티켓 사용
                 amount = 0 처리
@@ -40,8 +50,9 @@ class TicketTypeDivisionEnum(Enum):
     SHARE_PROMOTION = 2
     CHARGED = 3
     REFUND = 4
-    USED_TICKET = 5
-    USED_PROMOTION = 6
+    USED_TICKET_TO_HOUSE = 5
+    USED_TICKET_TO_USER = 6
+    USED_PROMOTION = 7
 
 
 class RecommendCodeMaxCountEnum(Enum):

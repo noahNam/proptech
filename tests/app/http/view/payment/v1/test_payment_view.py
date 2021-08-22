@@ -112,7 +112,7 @@ def test_use_ticket_when_used_ticket_then_success(
     session.add(ticket_usage_result)
     session.commit()
 
-    ticket = ticket_factory.build(user_id=1, ticket_type=False, ticket_targets=False)
+    ticket = ticket_factory.build(user_id=1, ticket_targets=False)
     session.add(ticket)
     session.commit()
     ########################################################################
@@ -180,7 +180,7 @@ def test_use_ticket_when_used_promotion_then_success(
     session.add(ticket_usage_result)
     session.commit()
 
-    ticket = ticket_factory.build(user_id=1, ticket_type=False, ticket_targets=False)
+    ticket = ticket_factory.build(user_id=1, ticket_targets=False)
     session.add(ticket)
     session.commit()
     ########################################################################
@@ -239,7 +239,7 @@ def test_use_ticket_when_error_on_jarvis_then_failure(
     session.add(ticket_usage_result)
     session.commit()
 
-    ticket = ticket_factory.build(user_id=1, ticket_type=False, ticket_targets=False)
+    ticket = ticket_factory.build(user_id=1, ticket_targets=False)
     session.add(ticket)
     session.commit()
     ########################################################################

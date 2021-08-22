@@ -136,7 +136,7 @@ def test_use_ticket_when_no_prom_available_ticket_then_return_success_output(
     session.add(ticket_usage_result)
     session.commit()
 
-    ticket = ticket_factory.build(user_id=1, ticket_type=False, ticket_targets=False)
+    ticket = ticket_factory.build(user_id=1, ticket_targets=False)
     session.add(ticket)
     session.commit()
     ########################################################################
@@ -216,7 +216,7 @@ def test_use_ticket_when_exist_all_type_prom_available_count_available_ticket_th
     session.add(ticket_usage_result)
     session.commit()
 
-    ticket = ticket_factory.build(user_id=1, ticket_type=False, ticket_targets=False)
+    ticket = ticket_factory.build(user_id=1, ticket_targets=False)
     session.add(ticket)
     session.commit()
     ########################################################################
@@ -306,7 +306,7 @@ def test_use_ticket_when_exist_all_type_prom_no_count_available_ticket_then_retu
     session.add(ticket_usage_result)
     session.commit()
 
-    ticket = ticket_factory.build(user_id=1, ticket_type=False, ticket_targets=False)
+    ticket = ticket_factory.build(user_id=1, ticket_targets=False)
     session.add(ticket)
     session.commit()
     ########################################################################
@@ -433,7 +433,7 @@ def test_use_ticket_when_exist_house_exist_some_type_prom_no_count_available_tic
     session.add(ticket_usage_result)
     session.commit()
 
-    ticket = ticket_factory.build(user_id=1, ticket_type=False, ticket_targets=False)
+    ticket = ticket_factory.build(user_id=1, ticket_targets=False)
     session.add(ticket)
     session.commit()
     ########################################################################
@@ -631,7 +631,7 @@ def test_use_ticket_when_not_exist_house_exist_some_type_prom_available_ticket_t
     session.add(ticket_usage_result)
     session.commit()
 
-    ticket = ticket_factory.build(user_id=1, ticket_type=False, ticket_targets=False)
+    ticket = ticket_factory.build(user_id=1, ticket_targets=False)
     session.add(ticket)
     session.commit()
     ########################################################################
@@ -671,7 +671,7 @@ def test_use_ticket_when_not_exist_house_exist_some_type_prom_available_ticket_t
     assert result.value["message"] == "ticket used"
 
     assert len(ticket_models) == 2
-    assert ticket_models[1].type == TicketTypeDivisionEnum.USED_TICKET.value
+    assert ticket_models[1].type == TicketTypeDivisionEnum.USED_TICKET_TO_HOUSE.value
     assert len(ticket_target_models) == 1
     assert ticket_usage_result_model.ticket_id == ticket.id + 1
 

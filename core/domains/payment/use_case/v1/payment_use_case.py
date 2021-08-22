@@ -290,7 +290,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
             # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
                 dto=dto,
-                type_=TicketTypeDivisionEnum.USED_TICKET.value,
+                type_=TicketTypeDivisionEnum.USED_TICKET_TO_HOUSE.value,
                 amount=1,
                 sign=TicketSignEnum.MINUS.value,
             )

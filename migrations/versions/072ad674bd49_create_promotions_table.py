@@ -22,6 +22,7 @@ def upgrade():
             "id", sa.SmallInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("type", sa.String(length=4), nullable=False),
+        sa.Column("div", sa.String(length=5), nullable=False),
         sa.Column("max_count", sa.SmallInteger(), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
