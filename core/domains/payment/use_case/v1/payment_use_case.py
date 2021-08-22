@@ -9,7 +9,7 @@ from core.domains.house.entity.house_entity import GetPublicSaleOfTicketUsageEnt
 from core.domains.house.enum import HouseTopicEnum
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
-    UseTicketDto,
+    UseHouseTicketDto,
     CreateTicketDto,
     UseRecommendCodeDto,
 )
@@ -81,7 +81,7 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
 
 class UseBasicTicketUseCase(PaymentBaseUseCase):
     def execute(
-        self, dto: UseTicketDto
+        self, dto: UseHouseTicketDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -268,7 +268,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
         return dict(type="failure", message=message)
 
     def _make_create_use_ticket_dto(
-        self, dto: UseTicketDto, type_: int, amount: int, sign: TicketSignEnum
+        self, dto: UseHouseTicketDto, type_: int, amount: int, sign: TicketSignEnum
     ) -> CreateTicketDto:
         return CreateTicketDto(
             user_id=dto.user_id,
@@ -278,12 +278,12 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
             created_by="system",
         )
 
-    def _call_jarvis_analytics_api(self, dto: UseTicketDto) -> HTTPStatus:
+    def _call_jarvis_analytics_api(self, dto: UseHouseTicketDto) -> HTTPStatus:
         # todo. jarvis 분석 api 호출
         pass
 
     def _usage_charged_ticket(
-        self, dto: UseTicketDto
+        self, dto: UseHouseTicketDto
     ) -> Optional[UseCaseFailureOutput]:
         response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
@@ -313,7 +313,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
         return None
 
     def _usage_promotion_ticket(
-        self, dto: UseTicketDto, promotion: PromotionEntity
+        self, dto: UseHouseTicketDto, promotion: PromotionEntity
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
         if response == HTTPStatus.OK:

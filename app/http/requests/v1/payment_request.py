@@ -8,7 +8,7 @@ from pydantic import (
 from app.extensions.utils.log_helper import logger_
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
-    UseTicketDto,
+    UseHouseTicketDto,
     UseRecommendCodeDto,
 )
 from core.exceptions import InvalidRequestException
@@ -55,7 +55,7 @@ class UseBasicTicketRequestSchema:
             schema = UseBasicTicketSchema(
                 user_id=self.user_id, house_id=self.house_id
             ).dict()
-            return UseTicketDto(**schema)
+            return UseHouseTicketDto(**schema)
         except ValidationError as e:
             logger.error(
                 f"[UseTicketRequestSchema][validate_request_and_make_dto] error : {e}"

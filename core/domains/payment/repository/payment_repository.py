@@ -15,7 +15,7 @@ from app.persistence.model import (
     RecommendCodeModel,
 )
 from core.domains.payment.dto.payment_dto import (
-    UseTicketDto,
+    UseHouseTicketDto,
     CreateTicketDto,
 )
 from core.domains.payment.entity.payment_entity import (
@@ -32,17 +32,12 @@ logger = logger_.getLogger(__name__)
 
 
 class PaymentRepository:
-    def get_promotion(self, dto: UseTicketDto) -> Optional[PromotionEntity]:
+    def get_promotion(self, dto: UseHouseTicketDto) -> Optional[PromotionEntity]:
         filters = list()
         filters.append(PromotionModel.is_active == True)
 
         query = (
             session.query(PromotionModel)
-            .join(
-                PromotionHouseModel,
-                PromotionModel.id == PromotionHouseModel.promotion_id,
-                isouter=True,
-            )
             .join(
                 PromotionUsageCountModel,
                 (PromotionModel.id == PromotionUsageCountModel.promotion_id)
@@ -59,7 +54,7 @@ class PaymentRepository:
             return None
         return promotion.to_entity()
 
-    def get_number_of_ticket(self, dto: UseTicketDto) -> int:
+    def get_number_of_ticket(self, dto: UseHouseTicketDto) -> int:
         query = session.query(TicketModel).filter_by(user_id=dto.user_id)
         tickets = query.all()
         return self._calc_total_amount(tickets=tickets)
@@ -100,7 +95,7 @@ class PaymentRepository:
             )
             raise NotUniqueErrorException(type_="T100")
 
-    def create_promotion_usage_count(self, dto: UseTicketDto, promotion_id: int):
+    def create_promotion_usage_count(self, dto: UseHouseTicketDto, promotion_id: int):
         try:
             promotion_usage_count = PromotionUsageCountModel(
                 promotion_id=promotion_id, user_id=dto.user_id, usage_count=1
@@ -114,7 +109,7 @@ class PaymentRepository:
             )
             raise NotUniqueErrorException(type_="T300")
 
-    def update_promotion_usage_count(self, dto: UseTicketDto, promotion_id: int):
+    def update_promotion_usage_count(self, dto: UseHouseTicketDto, promotion_id: int):
         try:
             filters = list()
             filters.append(PromotionUsageCountModel.promotion_id == promotion_id)
@@ -131,7 +126,7 @@ class PaymentRepository:
             )
             raise NotUniqueErrorException(type_="T400")
 
-    def create_ticket_target(self, dto: UseTicketDto, ticket_id: int) -> None:
+    def create_ticket_target(self, dto: UseHouseTicketDto, ticket_id: int) -> None:
         try:
             ticket = TicketTargetModel(
                 ticket_id=ticket_id, public_house_id=dto.house_id,
