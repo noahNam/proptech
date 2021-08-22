@@ -551,6 +551,7 @@ class HouseRepository:
                 RealEstateModel.jibun_address,
                 PublicSaleModel.subscription_start_date,
                 PublicSaleModel.subscription_end_date,
+                PublicSalePhotoModel.path.label("image_path"),
             )
             .join(
                 PublicSaleModel,
@@ -560,6 +561,7 @@ class HouseRepository:
                 & (InterestHouseModel.is_like == True),
             )
             .join(PublicSaleModel.real_estates)
+            .join(PublicSaleModel.public_sale_photos, isouter=True)
         )
 
         private_sales_query = (
@@ -571,6 +573,7 @@ class HouseRepository:
                 RealEstateModel.jibun_address,
                 literal("", String).label("subscription_start_date"),
                 literal("", String).label("subscription_end_date"),
+                literal("", String).label("image_path"),
             )
             .join(
                 PrivateSaleModel,
@@ -620,6 +623,7 @@ class HouseRepository:
                 RealEstateModel.jibun_address,
                 PublicSaleModel.subscription_start_date,
                 PublicSaleModel.subscription_end_date,
+                PublicSalePhotoModel.path.label("image_path"),
             )
             .join(
                 PublicSaleModel,
@@ -629,6 +633,7 @@ class HouseRepository:
                 & (InterestHouseModel.house_id == house_id),
             )
             .join(PublicSaleModel.real_estates)
+            .join(PublicSaleModel.public_sale_photos, isouter=True)
         )
 
         queryset = query.first()

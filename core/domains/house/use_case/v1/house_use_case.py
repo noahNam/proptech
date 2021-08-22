@@ -21,12 +21,11 @@ from core.domains.house.dto.house_dto import (
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
-    InterestHouseEntity,
     GetSearchHouseListEntity,
     GetRecentViewListEntity,
     GetMainPreSubscriptionEntity,
     GetHouseMainEntity,
-    SimpleCalendarInfoEntity,
+    SimpleCalendarInfoEntity, InterestHouseListEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -68,7 +67,7 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
         if not interest_house_id:
             self._house_repo.create_interest_house(dto=dto)
 
-        result: Optional[InterestHouseEntity] = self._house_repo.get_interest_house(
+        result: Optional[InterestHouseListEntity] = self._house_repo.get_interest_house(
             user_id=dto.user_id, house_id=dto.house_id
         )
 
@@ -184,7 +183,7 @@ class GetInterestHouseListUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        result: List[InterestHouseEntity] = self._house_repo.get_interest_house_list(
+        result: List[InterestHouseListEntity] = self._house_repo.get_interest_house_list(
             dto=dto
         )
 
