@@ -21,6 +21,7 @@ class GetInterestHouseListBaseSchema(BaseModel):
     jibun_address: str
     subscription_start_date: str
     subscription_end_date: str
+    image_path: Optional[str]
 
 
 class GetRecentViewListBaseSchema(BaseModel):
