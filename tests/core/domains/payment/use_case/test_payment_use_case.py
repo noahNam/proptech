@@ -12,7 +12,7 @@ from app.persistence.model import (
 )
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
-    UseTicketDto,
+    UseHouseTicketDto,
     UseRecommendCodeDto,
 )
 from core.domains.payment.enum.payment_enum import (
@@ -30,7 +30,7 @@ from core.domains.payment.use_case.v1.payment_use_case import (
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput
 
-use_ticket_dto = UseTicketDto(user_id=1, house_id=1)
+use_ticket_dto = UseHouseTicketDto(user_id=1, house_id=1)
 
 
 def test_get_ticket_usage_result_use_case_then_success(
