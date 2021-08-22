@@ -18,7 +18,7 @@ class PromotionUsageCountModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     promotion_id = Column(
-        SmallInteger, ForeignKey(PromotionModel.id), nullable=False, unique=True
+        SmallInteger, ForeignKey(PromotionModel.id), nullable=False
     )
     user_id = Column(BigInteger, nullable=False, index=True)
     usage_count = Column(SmallInteger, nullable=False, default=0)
