@@ -44,10 +44,16 @@ class ReportRepository:
             filters = list()
             filters.append(TicketUsageResultModel.user_id == user_id)
             if public_house_id:
-                filters.append(TicketUsageResultModel.public_house_id == public_house_id)
-                filters.append(TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value)
+                filters.append(
+                    TicketUsageResultModel.public_house_id == public_house_id
+                )
+                filters.append(
+                    TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value
+                )
             else:
-                filters.append(TicketUsageResultModel.type == TicketUsageTypeEnum.USER.value)
+                filters.append(
+                    TicketUsageResultModel.type == TicketUsageTypeEnum.USER.value
+                )
 
             session.query(TicketUsageResultModel).filter(*filters).update(
                 {"ticket_id": ticket_id}

@@ -3,7 +3,8 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     DateTime,
-    Boolean, String,
+    Boolean,
+    String,
 )
 from sqlalchemy.orm import relationship, backref
 

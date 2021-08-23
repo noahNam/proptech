@@ -36,7 +36,7 @@ class GetTicketUsageResultRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = PaymentUserSchema(user_id=self.user_id, ).dict()
+            schema = PaymentUserSchema(user_id=self.user_id,).dict()
             return PaymentUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -69,9 +69,7 @@ class UseUserTicketRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = PaymentUserSchema(
-                user_id=self.user_id
-            ).dict()
+            schema = PaymentUserSchema(user_id=self.user_id).dict()
             return PaymentUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -86,7 +84,7 @@ class CreateRecommendCodeRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = PaymentUserSchema(user_id=self.user_id, ).dict()
+            schema = PaymentUserSchema(user_id=self.user_id,).dict()
             return PaymentUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -101,7 +99,7 @@ class GetRecommendCodeRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = PaymentUserSchema(user_id=self.user_id, ).dict()
+            schema = PaymentUserSchema(user_id=self.user_id,).dict()
             return PaymentUserDto(**schema)
         except ValidationError as e:
             logger.error(
