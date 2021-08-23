@@ -7,6 +7,7 @@ Create Date: 2021-08-23 16:19:22.630168
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import text
 from sqlalchemy.dialects import postgresql
 
 revision = '483bc2b4f3e3'
@@ -42,8 +43,14 @@ def upgrade():
                     )
 
     # alter public_sale_details
-    op.add_column('public_sale_details', sa.Column('special_household', sa.SmallInteger(), nullable=False))
-    op.add_column('public_sale_details', sa.Column('general_household', sa.SmallInteger(), nullable=False))
+    op.add_column(
+        'public_sale_details',
+        sa.Column('special_household', sa.SmallInteger(), nullable=False, server_default=text("0"))
+    )
+    op.add_column(
+        'public_sale_details',
+        sa.Column('general_household', sa.SmallInteger(), nullable=False, server_default=text("0"))
+    )
 
 
 def downgrade():
