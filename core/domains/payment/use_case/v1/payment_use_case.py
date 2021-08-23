@@ -378,7 +378,7 @@ class UseUserTicketUseCase(PaymentBaseUseCase):
                 code=HTTPStatus.BAD_REQUEST,
             )
 
-        # 유저 분석 프로모션은 한번 구입 시 무제한 사용 가능 -> 유저 설문을 바꿔보면서 분석 가능 (확인필요)
+        # 유저 분석 프로모션은 한번 구입 시 무제한 사용 가능 -> 유저 설문을 바꿔보면서 분석 가능
         if self._is_ticket_usage_for_user(user_id=dto.user_id):
             # todo. 재분석 실행
             pass
