@@ -5,7 +5,7 @@ security:
   - userAuth: []
 requestBody:
   required: true
-  description: use_ticket_type -> mvp는 basic 고정 / 추후에 3기 신도시 붙이면 추가 예정
+  description:
   content:
     application/json:
       schema:

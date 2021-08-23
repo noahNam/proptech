@@ -11,11 +11,10 @@ from app.persistence.model import (
     PromotionUsageCountModel,
     TicketModel,
     TicketTargetModel,
-    PromotionHouseModel,
     RecommendCodeModel,
 )
 from core.domains.payment.dto.payment_dto import (
-    UseTicketDto,
+    UseHouseTicketDto,
     CreateTicketDto,
 )
 from core.domains.payment.entity.payment_entity import (
@@ -32,21 +31,17 @@ logger = logger_.getLogger(__name__)
 
 
 class PaymentRepository:
-    def get_promotion(self, dto: UseTicketDto) -> Optional[PromotionEntity]:
+    def get_promotion(self, user_id: int, div: str) -> Optional[PromotionEntity]:
         filters = list()
         filters.append(PromotionModel.is_active == True)
+        filters.append(PromotionModel.div == div)
 
         query = (
             session.query(PromotionModel)
             .join(
-                PromotionHouseModel,
-                PromotionModel.id == PromotionHouseModel.promotion_id,
-                isouter=True,
-            )
-            .join(
                 PromotionUsageCountModel,
                 (PromotionModel.id == PromotionUsageCountModel.promotion_id)
-                & (PromotionUsageCountModel.user_id == dto.user_id),
+                & (PromotionUsageCountModel.user_id == user_id),
                 isouter=True,
             )
             .options(selectinload(PromotionModel.promotion_houses))
@@ -59,8 +54,8 @@ class PaymentRepository:
             return None
         return promotion.to_entity()
 
-    def get_number_of_ticket(self, dto: UseTicketDto) -> int:
-        query = session.query(TicketModel).filter_by(user_id=dto.user_id)
+    def get_number_of_ticket(self, user_id: int) -> int:
+        query = session.query(TicketModel).filter_by(user_id=user_id)
         tickets = query.all()
         return self._calc_total_amount(tickets=tickets)
 
@@ -100,25 +95,25 @@ class PaymentRepository:
             )
             raise NotUniqueErrorException(type_="T100")
 
-    def create_promotion_usage_count(self, dto: UseTicketDto, promotion_id: int):
+    def create_promotion_usage_count(self, user_id: int, promotion_id: int):
         try:
             promotion_usage_count = PromotionUsageCountModel(
-                promotion_id=promotion_id, user_id=dto.user_id, usage_count=1
+                promotion_id=promotion_id, user_id=user_id, usage_count=1
             )
             session.add(promotion_usage_count)
             session.commit()
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[PaymentRepository][create_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {promotion_id}, error : {e}"
+                f"[PaymentRepository][create_promotion_usage_count] user_id : {user_id}, promotion_id : {promotion_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T300")
 
-    def update_promotion_usage_count(self, dto: UseTicketDto, promotion_id: int):
+    def update_promotion_usage_count(self, user_id: int, promotion_id: int):
         try:
             filters = list()
             filters.append(PromotionUsageCountModel.promotion_id == promotion_id)
-            filters.append(PromotionUsageCountModel.user_id == dto.user_id)
+            filters.append(PromotionUsageCountModel.user_id == user_id)
 
             session.query(PromotionUsageCountModel).filter(*filters).update(
                 {"usage_count": PromotionUsageCountModel.usage_count + 1}
@@ -127,11 +122,11 @@ class PaymentRepository:
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[PaymentRepository][update_promotion_usage_count] user_id : {dto.user_id}, promotion_id : {promotion_id}, error : {e}"
+                f"[PaymentRepository][update_promotion_usage_count] user_id : {user_id}, promotion_id : {promotion_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T400")
 
-    def create_ticket_target(self, dto: UseTicketDto, ticket_id: int) -> None:
+    def create_ticket_target(self, dto: UseHouseTicketDto, ticket_id: int) -> None:
         try:
             ticket = TicketTargetModel(
                 ticket_id=ticket_id, public_house_id=dto.house_id,

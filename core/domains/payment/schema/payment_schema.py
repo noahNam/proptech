@@ -22,7 +22,11 @@ class GetTicketUsageResultResponseSchema(BaseModel):
     houses: List[GetTicketUsageResultBaseSchema]
 
 
-class UseBasicTicketResponseSchema(BaseModel):
+class UseHouseTicketResponseSchema(BaseModel):
+    ticket_usage_result: UseBasicTicketBaseSchema
+
+
+class UseUserTicketResponseSchema(BaseModel):
     ticket_usage_result: UseBasicTicketBaseSchema
 
 

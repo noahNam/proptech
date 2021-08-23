@@ -3,25 +3,28 @@ from flask import request
 
 from app.http.requests.v1.payment_request import (
     GetTicketUsageResultRequestSchema,
-    UseBasicTicketRequestSchema,
     CreateRecommendCodeRequestSchema,
     GetRecommendCodeRequestSchema,
     UseRecommendCodeRequestSchema,
+    UseHouseTicketRequestSchema,
+    UseUserTicketRequestSchema,
 )
 from app.http.responses.presenters.v1.payment_presenter import (
     GetTicketUsageResultPresenter,
-    UseBasicTicketPresenter,
     CreateRecommendCodePresenter,
     GetRecommendCodePresenter,
     UseRecommendCodePresenter,
+    UseHouseTicketPresenter,
+    UseUserTicketPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.payment.use_case.v1.payment_use_case import (
     GetTicketUsageResultUseCase,
-    UseBasicTicketUseCase,
     CreateRecommendCodeUseCase,
     GetRecommendCodeUseCase,
     UseRecommendCodeUseCase,
+    UseHouseTicketUseCase,
+    UseUserTicketUseCase,
 )
 
 
@@ -39,22 +42,34 @@ def get_ticket_usage_result_view():
     )
 
 
-@api.route("/v1/payments/ticket", methods=["POST"])
+@api.route("/v1/payments/house", methods=["POST"])
 @jwt_required
 @auth_required
-@swag_from("use_ticket.yml", methods=["POST"])
-def use_basic_ticket_view():
-    dto = UseBasicTicketRequestSchema(
+@swag_from("use_ticket_house.yml", methods=["POST"])
+def use_house_ticket_view():
+    dto = UseHouseTicketRequestSchema(
         **request.get_json(), user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return UseBasicTicketPresenter().transform(UseBasicTicketUseCase().execute(dto=dto))
+    return UseHouseTicketPresenter().transform(UseHouseTicketUseCase().execute(dto=dto))
+
+
+@api.route("/v1/payments/user", methods=["POST"])
+@jwt_required
+@auth_required
+@swag_from("use_ticket_house.yml", methods=["POST"])
+def use_user_ticket_view():
+    dto = UseUserTicketRequestSchema(
+        user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return UseUserTicketPresenter().transform(UseUserTicketUseCase().execute(dto=dto))
 
 
 @api.route("/v1/payments/recommend-code", methods=["POST"])
 @jwt_required
 @auth_required
-@swag_from("use_ticket.yml", methods=["POST"])
+@swag_from("use_ticket_house.yml", methods=["POST"])
 def create_recommend_code_view():
     dto = CreateRecommendCodeRequestSchema(
         user_id=current_user.id,
@@ -68,7 +83,7 @@ def create_recommend_code_view():
 @api.route("/v1/payments/recommend-code", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("use_ticket.yml", methods=["GET"])
+@swag_from("use_ticket_house.yml", methods=["GET"])
 def get_recommend_code_view():
     dto = GetRecommendCodeRequestSchema(
         user_id=current_user.id,
@@ -82,7 +97,7 @@ def get_recommend_code_view():
 @api.route("/v1/payments/recommend-code/<string:code>", methods=["POST"])
 @jwt_required
 @auth_required
-@swag_from("use_ticket.yml", methods=["POST"])
+@swag_from("use_ticket_house.yml", methods=["POST"])
 def use_recommend_code_view(code):
     dto = UseRecommendCodeRequestSchema(
         code=code, user_id=current_user.id,
