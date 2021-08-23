@@ -1060,27 +1060,6 @@ def test_use_recommend_code_when_not_available_code_then_return_failure_output(
     assert result.value["message"] == "invalid_request_error"
 
 
-@patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._get_user_survey_step",
-    return_value=UserSurveyStepEnum.STEP_COMPLETE,
-)
-def test_use_user_ticket_when_already_been_used_then_return_failure_output(
-        _get_user_survey_step, session, ticket_usage_result_factory
-):
-    """
-        고고고고고고
-        이미 티켓을 사용한 분양건에 대해서 다시 티켓을 사용할 경우
-    """
-    ticket_usage_result = ticket_usage_result_factory.build()
-    session.add(ticket_usage_result)
-    session.commit()
-
-    result = UseHouseTicketUseCase().execute(dto=use_ticket_dto)
-
-    assert isinstance(result, UseCaseFailureOutput)
-    assert result.message == "this is product where tickets have already been used"
-
-
 def test_use_user_ticket_when_needs_user_surveys_then_return_failure_output(
         session, ticket_usage_result_factory
 ):
