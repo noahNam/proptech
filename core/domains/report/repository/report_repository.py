@@ -5,6 +5,7 @@ from sqlalchemy import exists
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
 from app.persistence.model import TicketUsageResultModel
+from core.domains.payment.enum.payment_enum import TicketUsageTypeEnum
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -26,13 +27,14 @@ class ReportRepository:
             exists()
             .where(TicketUsageResultModel.public_house_id == house_id)
             .where(TicketUsageResultModel.user_id == user_id)
+            .where(TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value)
         ).scalar()
 
     def is_ticket_usage_for_user(self, user_id: int,) -> bool:
         return session.query(
             exists()
-            .where(TicketUsageResultModel.public_house_id is None)
             .where(TicketUsageResultModel.user_id == user_id)
+            .where(TicketUsageResultModel.type == TicketUsageTypeEnum.USER.value)
         ).scalar()
 
     def update_ticket_usage_result(
