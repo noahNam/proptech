@@ -20,7 +20,6 @@ from app.persistence.model import (
     InterestHouseModel,
     ReceivePushTypeModel,
     AppAgreeTermsModel,
-    TicketTypeModel,
     TicketModel,
     UserModel,
     ArticleModel,
@@ -64,15 +63,17 @@ from core.domains.notification.enum.notification_enum import (
     NotificationBadgeTypeEnum,
     NotificationStatusEnum,
 )
-from core.domains.payment.enum.payment_enum import TicketSignEnum, PromotionTypeEnum
+from core.domains.payment.enum.payment_enum import (
+    TicketSignEnum,
+    PromotionTypeEnum,
+    PromotionDivEnum,
+    TicketUsageTypeEnum,
+)
 from core.domains.post.enum.post_enum import (
     PostCategoryEnum,
     PostCategoryDetailEnum,
 )
-from core.domains.user.enum.user_enum import (
-    UserTicketTypeDivisionEnum,
-    UserTicketCreatedByEnum,
-)
+from core.domains.user.enum.user_enum import UserTicketCreatedByEnum
 
 # factory에 사용해야 하는 Model을 가져온다
 
@@ -182,13 +183,6 @@ class TicketTargetFactory(BaseFactory):
     public_house_id = factory.Sequence(lambda n: n + 1)
 
 
-class TicketTypeFactory(BaseFactory):
-    class Meta:
-        model = TicketTypeModel
-
-    division = UserTicketTypeDivisionEnum.CHARGED.value
-
-
 class TicketFactory(BaseFactory):
     class Meta:
         model = TicketModel
@@ -199,11 +193,6 @@ class TicketFactory(BaseFactory):
     is_active = True
     created_by = UserTicketCreatedByEnum.SYSTEM.value
     created_at = get_server_timestamp()
-
-    @factory.post_generation
-    def ticket_type(obj, create, extracted, **kwargs):
-        if extracted:
-            TicketTypeFactory(users=obj, **kwargs)
 
     @factory.post_generation
     def ticket_targets(obj, create, extracted, **kwargs):
@@ -227,6 +216,7 @@ class TicketUsageResultFactory(BaseFactory):
         model = TicketUsageResultModel
 
     user_id = 1
+    type = TicketUsageTypeEnum.HOUSE.value
     public_house_id = 1
     ticket_id = None
     is_active = True
@@ -594,6 +584,7 @@ class PromotionFactory(BaseFactory):
         model = PromotionModel
 
     type = PromotionTypeEnum.ALL.value
+    div = PromotionDivEnum.HOUSE.value
     max_count = 1
     is_active = True
     created_at = get_server_timestamp()

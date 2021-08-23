@@ -606,6 +606,7 @@ class HouseRepository:
                         jibun_address=query.jibun_address,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
+                        image_path=query.image_path,
                     )
                 )
 

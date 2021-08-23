@@ -25,7 +25,8 @@ from core.domains.house.entity.house_entity import (
     GetRecentViewListEntity,
     GetMainPreSubscriptionEntity,
     GetHouseMainEntity,
-    SimpleCalendarInfoEntity, InterestHouseListEntity,
+    SimpleCalendarInfoEntity,
+    InterestHouseListEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -183,9 +184,9 @@ class GetInterestHouseListUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        result: List[InterestHouseListEntity] = self._house_repo.get_interest_house_list(
-            dto=dto
-        )
+        result: List[
+            InterestHouseListEntity
+        ] = self._house_repo.get_interest_house_list(dto=dto)
 
         return UseCaseSuccessOutput(value=result)
 

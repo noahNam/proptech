@@ -15,6 +15,7 @@ class HouseTypeRankEntity(BaseModel):
 class TicketUsageResultEntity(BaseModel):
     id: int
     user_id: int
+    type: str
     public_house_id: Optional[int]
     ticket_id: Optional[int]
     is_active: bool
