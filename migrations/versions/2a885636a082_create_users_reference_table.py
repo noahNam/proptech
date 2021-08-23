@@ -137,17 +137,6 @@ def upgrade():
     )
 
     op.create_table(
-        "ticket_types",
-        sa.Column(
-            "id",
-            sa.SmallInteger().with_variant(sa.SmallInteger(), "sqlite"),
-            nullable=False,
-        ),
-        sa.Column("division", sa.String(length=20), nullable=False),
-        sa.PrimaryKeyConstraint("id"),
-    )
-
-    op.create_table(
         "tickets",
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
@@ -174,9 +163,6 @@ def upgrade():
         sa.ForeignKeyConstraint(["ticket_id"], ["tickets.id"],),
         sa.PrimaryKeyConstraint("id"),
     )
-
-    with open("./migrations/seeds/default_ticket_types.sql") as fp:
-        op.execute(fp.read())
 
 
 def downgrade():

@@ -4,6 +4,7 @@ from sqlalchemy import (
     Integer,
     DateTime,
     Boolean,
+    String,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -19,6 +20,7 @@ class TicketUsageResultModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     user_id = Column(BigInteger, nullable=False, index=True)
+    type = Column(String(5), nullable=False)
     public_house_id = Column(BigInteger, nullable=True)
     ticket_id = Column(BigInteger, nullable=True)
     is_active = Column(Boolean, nullable=False)
@@ -35,6 +37,7 @@ class TicketUsageResultModel(db.Model):
         return TicketUsageResultEntity(
             id=self.id,
             user_id=self.user_id,
+            type=self.type,
             public_house_id=self.public_house_id,
             ticket_id=self.ticket_id,
             is_active=self.is_active,
