@@ -432,6 +432,8 @@ class PublicSaleDetailFactory(BaseFactory):
     supply_area = random.uniform(50, 130)
     supply_price = random.randint(10000, 50000)
     acquisition_tax = random.randint(1000000, 5000000)
+    special_household = random.randint(100, 300)
+    general_household = random.randint(100, 300)
 
     @factory.post_generation
     def private_sale_detail_photos(obj, create, extracted, **kwargs):
