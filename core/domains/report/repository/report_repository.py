@@ -1,10 +1,11 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import exists
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
 from app.persistence.model import TicketUsageResultModel
+from core.domains.payment.enum.payment_enum import TicketUsageTypeEnum
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -21,20 +22,38 @@ class ReportRepository:
             return []
         return [query.public_house_id for query in query_set]
 
-    def is_ticket_usage(self, user_id: int, house_id: int) -> bool:
+    def is_ticket_usage_for_house(self, user_id: int, house_id: int) -> bool:
         return session.query(
             exists()
             .where(TicketUsageResultModel.public_house_id == house_id)
             .where(TicketUsageResultModel.user_id == user_id)
+            .where(TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value)
+        ).scalar()
+
+    def is_ticket_usage_for_user(self, user_id: int,) -> bool:
+        return session.query(
+            exists()
+            .where(TicketUsageResultModel.user_id == user_id)
+            .where(TicketUsageResultModel.type == TicketUsageTypeEnum.USER.value)
         ).scalar()
 
     def update_ticket_usage_result(
-        self, user_id: int, public_house_id: int, ticket_id: int
+        self, user_id: int, public_house_id: Optional[int], ticket_id: int
     ) -> None:
         try:
             filters = list()
             filters.append(TicketUsageResultModel.user_id == user_id)
-            filters.append(TicketUsageResultModel.public_house_id == public_house_id)
+            if public_house_id:
+                filters.append(
+                    TicketUsageResultModel.public_house_id == public_house_id
+                )
+                filters.append(
+                    TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value
+                )
+            else:
+                filters.append(
+                    TicketUsageResultModel.type == TicketUsageTypeEnum.USER.value
+                )
 
             session.query(TicketUsageResultModel).filter(*filters).update(
                 {"ticket_id": ticket_id}

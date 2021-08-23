@@ -5,7 +5,7 @@ class PaymentUserDto(BaseModel):
     user_id: int
 
 
-class UseTicketDto(BaseModel):
+class UseHouseTicketDto(BaseModel):
     user_id: int
     house_id: int
 

@@ -38,6 +38,7 @@ def upgrade():
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
+        sa.Column("type", sa.String(length=5), nullable=False),
         sa.Column("public_house_id", sa.BigInteger(), nullable=True),
         sa.Column("ticket_id", sa.BigInteger(), nullable=True),
         sa.Column("is_active", sa.Boolean(), nullable=False),
