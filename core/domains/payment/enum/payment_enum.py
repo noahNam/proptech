@@ -28,6 +28,16 @@ class TicketSignEnum(Enum):
     MINUS = "minus"
 
 
+class TicketUsageTypeEnum(Enum):
+    """
+        사용모델 : TicketUsageResultModel
+    """
+
+    HOUSE = "house"
+    USER = "user"
+    SUBS = "subs"
+
+
 class TicketTypeDivisionEnum(Enum):
     """
         사용모델 : TicketModel

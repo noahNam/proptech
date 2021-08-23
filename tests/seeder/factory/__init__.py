@@ -66,14 +66,13 @@ from core.domains.notification.enum.notification_enum import (
 from core.domains.payment.enum.payment_enum import (
     TicketSignEnum,
     PromotionTypeEnum,
-    PromotionDivEnum,
+    PromotionDivEnum, TicketUsageTypeEnum,
 )
 from core.domains.post.enum.post_enum import (
     PostCategoryEnum,
     PostCategoryDetailEnum,
 )
 from core.domains.user.enum.user_enum import (
-    UserTicketTypeDivisionEnum,
     UserTicketCreatedByEnum,
 )
 
@@ -218,6 +217,7 @@ class TicketUsageResultFactory(BaseFactory):
         model = TicketUsageResultModel
 
     user_id = 1
+    type = TicketUsageTypeEnum.HOUSE.value
     public_house_id = 1
     ticket_id = None
     is_active = True
