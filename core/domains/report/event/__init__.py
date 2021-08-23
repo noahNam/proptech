@@ -7,7 +7,7 @@ from core.domains.report.enum import ReportTopicEnum
 from core.domains.report.repository.report_repository import ReportRepository
 
 
-def get_ticket_usage_results(user_id: int, ):
+def get_ticket_usage_results(user_id: int,):
     ticket_usage_result_ids: List[int] = ReportRepository().get_ticket_usage_results(
         user_id=user_id
     )
@@ -24,9 +24,7 @@ def is_ticket_usage_for_house(user_id: int, house_id: int):
 
 
 def is_ticket_usage_for_user(user_id: int,):
-    result: bool = ReportRepository().is_ticket_usage_for_user(
-        user_id=user_id,
-    )
+    result: bool = ReportRepository().is_ticket_usage_for_user(user_id=user_id,)
 
     setattr(g, ReportTopicEnum.IS_TICKET_USAGE_FOR_USER, result)
 

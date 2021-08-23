@@ -7,7 +7,9 @@ from core.domains.payment.schema.payment_schema import (
     GetTicketUsageResultResponseSchema,
     CreateRecommendCodeResponseSchema,
     GetRecommendCodeResponseSchema,
-    UseRecommendCodeResponseSchema, UseHouseTicketResponseSchema, UseUserTicketResponseSchema,
+    UseRecommendCodeResponseSchema,
+    UseHouseTicketResponseSchema,
+    UseUserTicketResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
