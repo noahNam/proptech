@@ -80,7 +80,7 @@ def test_get_ticket_usage_result_view_then_return_no_list(
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -92,7 +92,7 @@ def test_get_ticket_usage_result_view_then_return_no_list(
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_ticket_when_used_ticket_then_success(
-    _call_jarvis_analytics_api,
+    _call_jarvis_house_analytics_api,
     _is_ticket_usage_for_house,
     _get_user_survey_step,
     client,
@@ -139,7 +139,7 @@ def test_use_ticket_when_used_ticket_then_success(
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -151,7 +151,7 @@ def test_use_ticket_when_used_ticket_then_success(
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_ticket_when_used_promotion_then_success(
-    _call_jarvis_analytics_api,
+    _call_jarvis_house_analytics_api,
     _is_ticket_usage_for_house,
     _get_user_survey_step,
     client,
@@ -207,7 +207,7 @@ def test_use_ticket_when_used_promotion_then_success(
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.INTERNAL_SERVER_ERROR,
 )
 @patch(
@@ -219,7 +219,7 @@ def test_use_ticket_when_used_promotion_then_success(
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_ticket_when_error_on_jarvis_then_failure(
-    _call_jarvis_analytics_api,
+    _call_jarvis_house_analytics_api,
     _is_ticket_usage_for_house,
     _get_user_survey_step,
     client,

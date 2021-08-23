@@ -109,7 +109,7 @@ def test_use_house_ticket_when_no_prom_no_available_ticket_then_return_failure_o
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -121,7 +121,7 @@ def test_use_house_ticket_when_no_prom_no_available_ticket_then_return_failure_o
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_house_ticket_when_no_prom_available_ticket_then_return_success_output(
-        _call_jarvis_analytics_api,
+        _call_jarvis_house_analytics_api,
         _is_ticket_usage_for_house,
         _get_user_survey_step,
         session,
@@ -180,7 +180,7 @@ def test_use_house_ticket_when_no_prom_available_ticket_then_return_success_outp
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -192,7 +192,7 @@ def test_use_house_ticket_when_no_prom_available_ticket_then_return_success_outp
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_house_ticket_when_exist_all_type_prom_available_count_available_ticket_then_return_success_output(
-        _call_jarvis_analytics_api,
+        _call_jarvis_house_analytics_api,
         _is_ticket_usage_for_house,
         _get_user_survey_step,
         session,
@@ -270,7 +270,7 @@ def test_use_house_ticket_when_exist_all_type_prom_available_count_available_tic
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -282,7 +282,7 @@ def test_use_house_ticket_when_exist_all_type_prom_available_count_available_tic
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_house_ticket_when_exist_all_type_prom_no_count_available_ticket_then_return_success_output(
-        _call_jarvis_analytics_api,
+        _call_jarvis_house_analytics_api,
         _is_ticket_usage_for_house,
         _get_user_survey_step,
         session,
@@ -350,7 +350,7 @@ def test_use_house_ticket_when_exist_all_type_prom_no_count_available_ticket_the
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -362,7 +362,7 @@ def test_use_house_ticket_when_exist_all_type_prom_no_count_available_ticket_the
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_house_ticket_when_exist_all_type_prom_no_count_no_ticket_then_return_failure_output(
-        _call_jarvis_analytics_api,
+        _call_jarvis_house_analytics_api,
         _is_ticket_usage_for_house,
         _get_user_survey_step,
         session,
@@ -393,7 +393,7 @@ def test_use_house_ticket_when_exist_all_type_prom_no_count_no_ticket_then_retur
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -405,7 +405,7 @@ def test_use_house_ticket_when_exist_all_type_prom_no_count_no_ticket_then_retur
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_house_ticket_when_exist_house_exist_some_type_prom_no_count_available_ticket_then_return_success_output(
-        _call_jarvis_analytics_api,
+        _call_jarvis_house_analytics_api,
         _is_ticket_usage_for_house,
         _get_user_survey_step,
         session,
@@ -516,7 +516,7 @@ def test_use_house_ticket_when_exist_house_exist_some_type_prom_no_count_no_avai
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -525,7 +525,7 @@ def test_use_house_ticket_when_exist_house_exist_some_type_prom_no_count_no_avai
 )
 def test_use_house_ticket_when_exist_house_exist_some_type_prom_available_count_then_return_success_output(
         _get_user_survey_step,
-        _call_jarvis_analytics_api,
+        _call_jarvis_house_analytics_api,
         _is_ticket_usage_for_house,
         session,
         ticket_usage_result_factory,
@@ -601,7 +601,7 @@ def test_use_house_ticket_when_exist_house_exist_some_type_prom_available_count_
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -613,7 +613,7 @@ def test_use_house_ticket_when_exist_house_exist_some_type_prom_available_count_
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_house_ticket_when_not_exist_house_exist_some_type_prom_available_ticket_then_return_success_output(
-        _call_jarvis_analytics_api,
+        _call_jarvis_house_analytics_api,
         _is_ticket_usage_for_house,
         _get_user_survey_step,
         session,
@@ -686,7 +686,7 @@ def test_use_house_ticket_when_not_exist_house_exist_some_type_prom_available_ti
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -698,7 +698,7 @@ def test_use_house_ticket_when_not_exist_house_exist_some_type_prom_available_ti
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_house_ticket_when_not_exist_house_exist_some_type_prom_no_available_ticket_then_return_failure_output(
-        _call_jarvis_analytics_api,
+        _call_jarvis_house_analytics_api,
         _is_ticket_usage_for_house,
         _get_user_survey_step,
         session,
@@ -1077,7 +1077,7 @@ def test_use_user_ticket_when_needs_user_surveys_then_return_failure_output(
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._call_jarvis_user_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -1089,7 +1089,7 @@ def test_use_user_ticket_when_needs_user_surveys_then_return_failure_output(
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_user_ticket_when_no_prom_available_ticket_then_return_success_output(
-        _call_jarvis_analytics_api,
+        _call_jarvis_user_analytics_api,
         _is_ticket_usage_for_house,
         _get_user_survey_step,
         session,
@@ -1118,7 +1118,8 @@ def test_use_user_ticket_when_no_prom_available_ticket_then_return_success_outpu
     ticket_models = (
         session.query(TicketModel)
             .filter(
-            TicketModel.user_id == use_ticket_dto.user_id, TicketModel.is_active == True
+            TicketModel.user_id == use_ticket_dto.user_id, TicketModel.is_active == True,
+            TicketModel.type == TicketTypeDivisionEnum.USED_TICKET_TO_USER.value
         )
             .all()
     )
@@ -1145,13 +1146,13 @@ def test_use_user_ticket_when_no_prom_available_ticket_then_return_success_outpu
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value["message"] == "ticket used"
 
-    assert len(ticket_models) == 2
+    assert len(ticket_models) == 1
     assert len(ticket_target_models) == 0
     assert ticket_usage_result_model.ticket_id == ticket.id + 1
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._call_jarvis_user_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -1163,7 +1164,7 @@ def test_use_user_ticket_when_no_prom_available_ticket_then_return_success_outpu
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_user_ticket_when_no_prom_no_ticket_then_return_failure_output(
-        _call_jarvis_analytics_api,
+        _call_jarvis_user_analytics_api,
         _is_ticket_usage_for_house,
         _get_user_survey_step,
         session,
@@ -1185,7 +1186,7 @@ def test_use_user_ticket_when_no_prom_no_ticket_then_return_failure_output(
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._call_jarvis_analytics_api",
+    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._call_jarvis_user_analytics_api",
     return_value=HTTPStatus.OK,
 )
 @patch(
@@ -1197,7 +1198,7 @@ def test_use_user_ticket_when_no_prom_no_ticket_then_return_failure_output(
     return_value=UserSurveyStepEnum.STEP_COMPLETE,
 )
 def test_use_user_ticket_when_available_prom_then_return_success_output(
-        _call_jarvis_analytics_api,
+        _call_jarvis_user_analytics_api,
         _is_ticket_usage_for_house,
         _get_user_survey_step,
         session,
@@ -1255,3 +1256,41 @@ def test_use_user_ticket_when_available_prom_then_return_success_output(
 
     assert len(ticket_models) == 1
     assert ticket_usage_result_model.ticket_id == ticket.id + 1
+
+
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._call_jarvis_user_analytics_api",
+    return_value=HTTPStatus.INTERNAL_SERVER_ERROR,
+)
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._is_ticket_usage_for_user",
+    return_value=True,
+)
+@patch(
+    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._get_user_survey_step",
+    return_value=UserSurveyStepEnum.STEP_COMPLETE,
+)
+def test_use_user_ticket_when_reuse_ticket_then_return_failure_output(
+        _call_jarvis_user_analytics_api,
+        _is_ticket_usage_for_house,
+        _get_user_survey_step,
+        session,
+        ticket_usage_result_factory,
+):
+    """
+        이미 한번 유저 분석을 사용한 경우
+        유저 분석 프로모션은 한번 구입 시 무제한 사용 가능 -> 유저 설문을 바꿔보면서 분석 가능
+        -> 자비스 에러
+    """
+    # data set #############################################################
+    user_id = 1
+
+    ticket_usage_result = ticket_usage_result_factory.build(type=TicketUsageTypeEnum.USER.value, public_house_id=None)
+    session.add(ticket_usage_result)
+    session.commit()
+    ########################################################################
+
+    dto = PaymentUserDto(user_id=user_id)
+    result = UseUserTicketUseCase().execute(dto=dto)
+    assert isinstance(result, UseCaseFailureOutput)
+    assert result.message == "error on jarvis (reuse_ticket_to_user)"
