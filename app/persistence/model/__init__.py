@@ -37,3 +37,5 @@ from .banner_image_model import BannerImageModel
 from .button_link_model import ButtonLinkModel
 from .special_supply_result_model import SpecialSupplyResultModel
 from .general_supply_result_model import GeneralSupplyResultModel
+from .predicted_competition_model import PredictedCompetitionModel
+from .user_analysis_model import UserAnalysisModel
