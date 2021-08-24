@@ -54,5 +54,5 @@ class PublicSaleDetailModel(db.Model):
             if self.public_sale_detail_photos
             else None,
             special_household=self.special_household,
-            general_household=self.general_household
+            general_household=self.general_household,
         )
