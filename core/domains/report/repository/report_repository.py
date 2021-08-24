@@ -5,9 +5,8 @@ from sqlalchemy.orm import selectinload
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
-from app.persistence.model import TicketUsageResultModel
+from app.persistence.model import TicketUsageResultModel, PredictedCompetitionModel
 from core.domains.payment.enum.payment_enum import TicketUsageTypeEnum
-from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.exceptions import NotUniqueErrorException
 
 logger = logger_.getLogger(__name__)
@@ -70,7 +69,7 @@ class ReportRepository:
 
     def get_expected_competition(
         self, user_id: int, house_id: int
-    ) -> Optional[TicketUsageResultEntity]:
+    ) -> List[PredictedCompetitionModel]:
         filters = list()
         filters.append(TicketUsageResultModel.user_id == user_id)
         filters.append(TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value)
@@ -87,6 +86,6 @@ class ReportRepository:
         query_set = query.first()
 
         if not query_set:
-            return None
+            return []
 
-        return query_set.to_entity()
+        return query_set.to_entity().predicted_competitions

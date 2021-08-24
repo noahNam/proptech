@@ -6,7 +6,6 @@ import factory
 from faker import Factory as FakerFactory
 from strgen import StringGenerator
 
-from app import PredictedCompetitionModel
 from app.extensions.utils.time_helper import (
     get_server_timestamp,
     get_random_date_about_one_month_from_today,
@@ -47,6 +46,7 @@ from app.persistence.model import (
     BannerModel,
     BannerImageModel,
     ButtonLinkModel,
+    PredictedCompetitionModel,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
