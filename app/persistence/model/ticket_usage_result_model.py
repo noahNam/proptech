@@ -33,6 +33,20 @@ class TicketUsageResultModel(db.Model):
         primaryjoin="foreign(TicketUsageResultModel.id)== HouseTypeRankModel.ticket_usage_result_id",
     )
 
+    user_analysis = relationship(
+        "UserAnalysisModel",
+        backref=backref("ticket_usage_results"),
+        uselist=True,
+        primaryjoin="foreign(TicketUsageResultModel.id)== UserAnalysisModel.ticket_usage_result_id",
+    )
+
+    predicted_competitions = relationship(
+        "PredictedCompetitionModel",
+        backref=backref("ticket_usage_results"),
+        uselist=True,
+        primaryjoin="foreign(TicketUsageResultModel.id)== PredictedCompetitionModel.ticket_usage_result_id",
+    )
+
     def to_entity(self) -> TicketUsageResultEntity:
         return TicketUsageResultEntity(
             id=self.id,
@@ -46,5 +60,14 @@ class TicketUsageResultModel(db.Model):
                 house_type_rank.to_entity() for house_type_rank in self.house_type_ranks
             ]
             if self.house_type_ranks
+            else [],
+            user_analysis=[analysis.to_entity() for analysis in self.user_analysis]
+            if self.user_analysis
+            else [],
+            predicted_competitions=[
+                predicted_competition.to_entity()
+                for predicted_competition in self.predicted_competitions
+            ]
+            if self.predicted_competitions
             else [],
         )
