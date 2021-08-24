@@ -18,7 +18,7 @@ requestBody:
             example: 1
 responses:
   '200':
-    description: 참고링크 -> https://www.notion.so/apartalk/tanos-v1-payments-ticket-749e9cef60a64347a0ec6afd698a47f8
+    description: 참고링크 -> https://www.notion.so/apartalk/tanos-v1-payments-user-ba3d6d7c50694e3fb722ceaf9f7e89d3
     content:
       application/json:
         schema:
@@ -114,7 +114,7 @@ responses:
               example: 500
             message:
               type: string
-              example: error on jarvis (use_ticket_to_house_by_charged)
+              example: error on jarvis (use_ticket_to_user_by_charged)
   '500 #4':
     description: internal_server_error
     content:
@@ -126,4 +126,16 @@ responses:
               example: 500
             message:
               type: string
-              example: error on jarvis (use_ticket_to_house_by_promotion)
+              example: error on jarvis (use_ticket_to_user_by_promotion)
+  '500 #5':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: integer
+              example: 500
+            message:
+              type: string
+              example: error on jarvis (reuse_ticket_to_user)

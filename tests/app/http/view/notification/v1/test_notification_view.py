@@ -90,12 +90,12 @@ def test_get_badge_view_then_return_true(
         accept="application/json",
     )
 
-    dict_ = dict(badge_type=NotificationBadgeTypeEnum.ALL.value)
-
     with test_request_context:
         response = client.get(
-            url_for("api/tanos.get_badge_view"),
-            data=json.dumps(dict_),
+            url_for(
+                "api/tanos.get_badge_view",
+                badge_type=NotificationBadgeTypeEnum.ALL.value,
+            ),
             headers=headers,
         )
 

@@ -57,7 +57,7 @@ def use_house_ticket_view():
 @api.route("/v1/payments/user", methods=["POST"])
 @jwt_required
 @auth_required
-@swag_from("use_ticket_house.yml", methods=["POST"])
+@swag_from("use_ticket_user.yml", methods=["POST"])
 def use_user_ticket_view():
     dto = UseUserTicketRequestSchema(
         user_id=current_user.id,
@@ -69,7 +69,7 @@ def use_user_ticket_view():
 @api.route("/v1/payments/recommend-code", methods=["POST"])
 @jwt_required
 @auth_required
-@swag_from("use_ticket_house.yml", methods=["POST"])
+@swag_from("create_recommend_code.yml", methods=["POST"])
 def create_recommend_code_view():
     dto = CreateRecommendCodeRequestSchema(
         user_id=current_user.id,
@@ -83,7 +83,7 @@ def create_recommend_code_view():
 @api.route("/v1/payments/recommend-code", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("use_ticket_house.yml", methods=["GET"])
+@swag_from("get_recommend_code.yml", methods=["GET"])
 def get_recommend_code_view():
     dto = GetRecommendCodeRequestSchema(
         user_id=current_user.id,
@@ -97,7 +97,7 @@ def get_recommend_code_view():
 @api.route("/v1/payments/recommend-code/<string:code>", methods=["POST"])
 @jwt_required
 @auth_required
-@swag_from("use_ticket_house.yml", methods=["POST"])
+@swag_from("use_recommend_code.yml", methods=["POST"])
 def use_recommend_code_view(code):
     dto = UseRecommendCodeRequestSchema(
         code=code, user_id=current_user.id,
