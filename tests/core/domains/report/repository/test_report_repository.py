@@ -1,6 +1,8 @@
+from collections import defaultdict
 from typing import List
 
 from app.persistence.model import PredictedCompetitionModel
+from core.domains.report.entity.report_entity import PredictedCompetitionEntity
 from core.domains.report.repository.report_repository import ReportRepository
 
 
@@ -27,50 +29,29 @@ def test_get_expected_competition_then_return_none(session):
 
 def test_sort(session, create_ticket_usage_results):
     user_id, house_id = 1, 1
-    result: List[
-        PredictedCompetitionModel
+    expected_competitions: List[
+        PredictedCompetitionEntity
     ] = ReportRepository().get_expected_competition(user_id=user_id, house_id=house_id)
 
-    sort_competitions = list()
-    sort_house_structure_types = list()
-    for c in result:
-        sort_house_structure_types = sort_house_structure_types + [
-            c.house_structure_type for _ in range(1, 5)
-        ]
-        sort_competitions = sort_competitions + [
-            c.multiple_children_competition,
-            c.newly_marry_competition,
-            c.old_parent_competition,
-            c.first_life_competition,
-        ]
-
-    end = len(sort_competitions) - 1
-    while end > 0:
-        last_swap = 0
-        for i in range(end):
-            if sort_competitions[i] > sort_competitions[i + 1]:
-                sort_competitions[i], sort_competitions[i + 1] = (
-                    sort_competitions[i + 1],
-                    sort_competitions[i],
-                )
-                sort_house_structure_types[i], sort_house_structure_types[i + 1] = (
-                    sort_house_structure_types[i + 1],
-                    sort_house_structure_types[i],
-                )
-                last_swap = i
-
-        end = last_swap
-
-    sorted_result = list()
-    for idx, _ in enumerate(sort_competitions):
-        if idx == 3:
-            break
-
-        sorted_result.append(
-            dict(
-                sort_competitions=sort_competitions[idx],
-                sort_house_structure_types=sort_house_structure_types[idx],
-            )
+    calc_special_total_supply = defaultdict(int)
+    calc_normal_total_supply = defaultdict(int)
+    for c in expected_competitions:
+        special_calc = (
+            c.multiple_children_supply
+            + c.newly_marry_supply
+            + c.old_parent_supply
+            + c.first_life_supply
         )
+
+        calc_special_total_supply[c.house_structure_type] = (
+            calc_special_total_supply[c.house_structure_type] + special_calc
+        )
+        calc_normal_total_supply[c.house_structure_type] = (
+            calc_normal_total_supply[c.house_structure_type] + c.normal_supply
+        )
+
+    for c in expected_competitions:
+        c.total_special_supply = calc_special_total_supply.get(c.house_structure_type)
+        c.total_normal_supply = calc_normal_total_supply.get(c.house_structure_type)
 
     assert 1 == 1

@@ -121,6 +121,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
     predicted_competitions_2 = predicted_competition_factory.build(
         region="기타경기",
@@ -129,6 +136,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
     predicted_competitions_3 = predicted_competition_factory.build(
         region="기타수도권",
@@ -137,6 +151,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
 
     # 주택형 : 084B
@@ -146,6 +167,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
     predicted_competitions_5 = predicted_competition_factory.build(
         house_structure_type="084B",
@@ -155,6 +183,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
     predicted_competitions_6 = predicted_competition_factory.build(
         house_structure_type="084B",
@@ -164,6 +199,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
 
     # 주택형 : 102A
@@ -173,6 +215,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
     predicted_competitions_8 = predicted_competition_factory.build(
         house_structure_type="102A",
@@ -182,6 +231,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
     predicted_competitions_9 = predicted_competition_factory.build(
         house_structure_type="102A",
@@ -191,6 +247,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
 
     # 주택형 : 102B
@@ -200,6 +263,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
     predicted_competitions_11 = predicted_competition_factory.build(
         house_structure_type="102B",
@@ -209,6 +279,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
     predicted_competitions_12 = predicted_competition_factory.build(
         house_structure_type="102B",
@@ -218,6 +295,13 @@ def create_ticket_usage_results(
         newly_marry_competition=random.randint(1, 1000),
         old_parent_competition=random.randint(1, 1000),
         first_life_competition=random.randint(1, 1000),
+        multiple_children_supply=random.randint(1, 20),
+        newly_marry_supply=random.randint(1, 20),
+        old_parent_supply=random.randint(1, 20),
+        first_life_supply=random.randint(1, 20),
+        normal_competition=random.randint(100, 1000),
+        normal_supply=random.randint(10, 200),
+        normal_passing_score=random.randint(60, 80),
     )
 
     list_ = [

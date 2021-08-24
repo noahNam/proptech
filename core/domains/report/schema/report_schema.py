@@ -6,8 +6,9 @@ from core.domains.report.entity.report_entity import PredictedCompetitionEntity
 
 
 class SortCompetitionBaseSchema(BaseModel):
-    sort_competitions: StrictInt
-    sort_house_structure_types: StrictStr
+    competitions: StrictInt
+    house_structure_types: StrictStr
+    competition_types: StrictStr
 
 
 class GetExpectedCompetitionBaseSchema(BaseModel):
