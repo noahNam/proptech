@@ -1,4 +1,3 @@
-import json
 from flask import url_for
 
 from core.domains.post.enum.post_enum import PostCategoryEnum, PostCategoryDetailEnum
@@ -36,7 +35,7 @@ def test_get_post_list_include_contents_view_when_watch_notice_then_return_notic
     )
 
     with test_request_context:
-        response1 = client.get(
+        response = client.get(
             url_for(
                 "api/tanos.get_post_list_view",
                 post_category=PostCategoryEnum.NOTICE.value,
@@ -45,9 +44,9 @@ def test_get_post_list_include_contents_view_when_watch_notice_then_return_notic
             headers=headers,
         )
 
-    data = response1.get_json()["data"]
+    data = response.get_json()["data"]
 
-    assert response1.status_code == 200
+    assert response.status_code == 200
     assert len(data["posts"]) == 15
 
 

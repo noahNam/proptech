@@ -1,4 +1,5 @@
 from datetime import date, timedelta, datetime
+import random
 
 import pytest
 from faker import Faker
@@ -115,45 +116,108 @@ def create_ticket_usage_results(
     predicted_competition_factory,
 ):
     # 주택형 : 084A
-    predicted_competitions_1 = predicted_competition_factory.build()
+    predicted_competitions_1 = predicted_competition_factory.build(
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
+    )
     predicted_competitions_2 = predicted_competition_factory.build(
-        region="기타경기", region_percentage=20
+        region="기타경기",
+        region_percentage=20,
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
     predicted_competitions_3 = predicted_competition_factory.build(
-        region="기타수도권", region_percentage=50
+        region="기타수도권",
+        region_percentage=50,
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
 
     # 주택형 : 084B
     predicted_competitions_4 = predicted_competition_factory.build(
         house_structure_type="084B",
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
     predicted_competitions_5 = predicted_competition_factory.build(
-        house_structure_type="084B", region="기타경기", region_percentage=20
+        house_structure_type="084B",
+        region="기타경기",
+        region_percentage=20,
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
     predicted_competitions_6 = predicted_competition_factory.build(
-        house_structure_type="084B", region="기타수도권", region_percentage=50
+        house_structure_type="084B",
+        region="기타수도권",
+        region_percentage=50,
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
 
     # 주택형 : 102A
     predicted_competitions_7 = predicted_competition_factory.build(
         house_structure_type="102A",
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
     predicted_competitions_8 = predicted_competition_factory.build(
-        house_structure_type="102A", region="기타경기", region_percentage=20
+        house_structure_type="102A",
+        region="기타경기",
+        region_percentage=20,
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
     predicted_competitions_9 = predicted_competition_factory.build(
-        house_structure_type="102A", region="기타수도권", region_percentage=50
+        house_structure_type="102A",
+        region="기타수도권",
+        region_percentage=50,
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
 
     # 주택형 : 102B
     predicted_competitions_10 = predicted_competition_factory.build(
         house_structure_type="102B",
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
     predicted_competitions_11 = predicted_competition_factory.build(
-        house_structure_type="102B", region="기타경기", region_percentage=20
+        house_structure_type="102B",
+        region="기타경기",
+        region_percentage=20,
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
     predicted_competitions_12 = predicted_competition_factory.build(
-        house_structure_type="102B", region="기타수도권", region_percentage=50
+        house_structure_type="102B",
+        region="기타수도권",
+        region_percentage=50,
+        multiple_children_competition=random.randint(1, 1000),
+        newly_marry_competition=random.randint(1, 1000),
+        old_parent_competition=random.randint(1, 1000),
+        first_life_competition=random.randint(1, 1000),
     )
 
     list_ = [
