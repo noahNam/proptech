@@ -7,7 +7,7 @@ from pydantic import BaseModel
 class HouseTypeRankEntity(BaseModel):
     id: int
     ticket_usage_result_id: int
-    house_type: str
+    house_structure_type: str
     subscription_type: str
     rank: int
 

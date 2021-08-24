@@ -44,6 +44,7 @@ from tests.seeder.factory import (
     BannerFactory,
     BannerImageFactory,
     ButtonLinkFactory,
+    PredictedCompetitionFactory,
 )
 
 MODEL_FACTORIES = [
@@ -80,6 +81,7 @@ MODEL_FACTORIES = [
     BannerFactory,
     BannerImageFactory,
     ButtonLinkFactory,
+    PredictedCompetitionFactory,
 ]
 
 faker = Faker()
@@ -107,8 +109,70 @@ def create_users(session, user_factory):
 
 @pytest.fixture
 def create_ticket_usage_results(
-    session, house_type_rank_factory, ticket_usage_result_factory
+    session,
+    house_type_rank_factory,
+    ticket_usage_result_factory,
+    predicted_competition_factory,
 ):
+    # 주택형 : 084A
+    predicted_competitions_1 = predicted_competition_factory.build()
+    predicted_competitions_2 = predicted_competition_factory.build(
+        region="기타경기", region_percentage=20
+    )
+    predicted_competitions_3 = predicted_competition_factory.build(
+        region="기타수도권", region_percentage=50
+    )
+
+    # 주택형 : 084B
+    predicted_competitions_4 = predicted_competition_factory.build(
+        house_structure_type="084B",
+    )
+    predicted_competitions_5 = predicted_competition_factory.build(
+        house_structure_type="084B", region="기타경기", region_percentage=20
+    )
+    predicted_competitions_6 = predicted_competition_factory.build(
+        house_structure_type="084B", region="기타수도권", region_percentage=50
+    )
+
+    # 주택형 : 102A
+    predicted_competitions_7 = predicted_competition_factory.build(
+        house_structure_type="102A",
+    )
+    predicted_competitions_8 = predicted_competition_factory.build(
+        house_structure_type="102A", region="기타경기", region_percentage=20
+    )
+    predicted_competitions_9 = predicted_competition_factory.build(
+        house_structure_type="102A", region="기타수도권", region_percentage=50
+    )
+
+    # 주택형 : 102B
+    predicted_competitions_10 = predicted_competition_factory.build(
+        house_structure_type="102B",
+    )
+    predicted_competitions_11 = predicted_competition_factory.build(
+        house_structure_type="102B", region="기타경기", region_percentage=20
+    )
+    predicted_competitions_12 = predicted_competition_factory.build(
+        house_structure_type="102B", region="기타수도권", region_percentage=50
+    )
+
+    list_ = [
+        predicted_competitions_1,
+        predicted_competitions_2,
+        predicted_competitions_3,
+        predicted_competitions_4,
+        predicted_competitions_5,
+        predicted_competitions_6,
+        predicted_competitions_7,
+        predicted_competitions_8,
+        predicted_competitions_9,
+        predicted_competitions_10,
+        predicted_competitions_11,
+        predicted_competitions_12,
+    ]
+    session.add_all(list_)
+    session.commit()
+
     ticket_usage_result_detail = house_type_rank_factory.build_batch(size=2)
     session.add_all(ticket_usage_result_detail)
     session.commit()
