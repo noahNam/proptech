@@ -29,6 +29,8 @@ class PredictedCompetitionEntity(BaseModel):
     normal_competition: Optional[int]
     normal_supply: Optional[int]
     normal_passing_score: Optional[int]
+    total_special_supply: Optional[int]
+    total_normal_supply: Optional[int]
 
 
 class UserAnalysisEntity(BaseModel):
