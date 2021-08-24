@@ -56,7 +56,7 @@ class TicketUsageResultModel(db.Model):
             ticket_id=self.ticket_id,
             is_active=self.is_active,
             created_at=self.created_at,
-            tickets=[
+            house_type_ranks=[
                 house_type_rank.to_entity() for house_type_rank in self.house_type_ranks
             ]
             if self.house_type_ranks

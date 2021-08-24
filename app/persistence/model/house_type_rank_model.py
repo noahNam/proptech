@@ -25,7 +25,7 @@ class HouseTypeRankModel(db.Model):
         return HouseTypeRankEntity(
             id=self.id,
             ticket_usage_result_id=self.ticket_usage_result_id,
-            house_type=self.house_type,
+            house_structure_type=self.house_structure_type,
             subscription_type=self.subscription_type,
             rank=self.rank,
         )

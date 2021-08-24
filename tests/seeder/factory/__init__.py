@@ -46,6 +46,7 @@ from app.persistence.model import (
     BannerModel,
     BannerImageModel,
     ButtonLinkModel,
+    PredictedCompetitionModel,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -209,6 +210,27 @@ class HouseTypeRankFactory(BaseFactory):
     house_structure_type = factory.Sequence(lambda n: f"59B_{n}")
     subscription_type = factory.Sequence(lambda n: f"신혼부부_{n}")
     rank = factory.Sequence(lambda n: n + 1)
+
+
+class PredictedCompetitionFactory(BaseFactory):
+    class Meta:
+        model = PredictedCompetitionModel
+
+    ticket_usage_result_id = 1
+    house_structure_type = "084A"
+    region = "당해"
+    region_percentage = "30"
+    multiple_children_competition = random.randint(1, 1000)
+    newly_marry_competition = random.randint(1, 1000)
+    old_parent_competition = random.randint(1, 1000)
+    first_life_competition = random.randint(1, 1000)
+    multiple_children_supply = random.randint(1, 20)
+    newly_marry_supply = random.randint(1, 20)
+    old_parent_supply = random.randint(1, 20)
+    first_life_supply = random.randint(1, 20)
+    normal_competition = random.randint(100, 1000)
+    normal_supply = random.randint(10, 200)
+    normal_passing_score = random.randint(60, 80)
 
 
 class TicketUsageResultFactory(BaseFactory):

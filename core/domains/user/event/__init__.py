@@ -31,9 +31,17 @@ def create_recently_view(dto: RecentlyViewDto):
     setattr(g, UserTopicEnum.CREATE_RECENTLY_VIEW, None)
 
 
+def get_user_profile(user_id: int):
+    user_profile: Optional[UserProfileEntity] = UserRepository().get_user_profile(
+        user_id=user_id
+    )
+    setattr(g, UserTopicEnum.GET_USER_PROFILE, user_profile)
+
+
 pub.subscribe(
     update_app_agree_terms_to_receive_marketing,
     UserTopicEnum.UPDATE_APP_AGREE_TERMS_TO_RECEIVE_MARKETING,
 )
 pub.subscribe(create_recently_view, UserTopicEnum.CREATE_RECENTLY_VIEW)
 pub.subscribe(get_user_survey_step, UserTopicEnum.GET_USER_SURVEY_STEP)
+pub.subscribe(get_user_profile, UserTopicEnum.GET_USER_PROFILE)
