@@ -30,6 +30,7 @@ class PublicSaleDetailPhotoEntity(BaseModel):
 class PublicSaleDetailEntity(BaseModel):
     id: int
     public_sales_id: int
+    area_type: str
     private_area: float
     supply_area: float
     supply_price: int
@@ -345,3 +346,31 @@ class SimpleCalendarInfoEntity(BaseModel):
 class GetHouseMainEntity(BaseModel):
     banner_list: List[BannerEntity] = None
     calendar_infos: List[SimpleCalendarInfoEntity] = None
+
+
+class PublicSaleDetailReportEntity(BaseModel):
+    id: int
+    public_sales_id: int
+    area_type: str
+    private_area: float
+    supply_area: float
+    supply_price: int
+    acquisition_tax: int
+    price_per_meter: Optional[int]
+    public_sale_detail_photo: PublicSaleDetailPhotoEntity = None
+
+
+class PublicSaleReportEntity(BaseModel):
+    id: int
+    real_estate_id: int
+    supply_household: int
+    offer_date: Optional[str]
+    special_supply_date: Optional[str]
+    special_supply_etc_date: Optional[str]
+    first_supply_date: Optional[str]
+    first_supply_etc_date: Optional[str]
+    second_supply_date: Optional[str]
+    second_supply_etc_date: Optional[str]
+    notice_winner_date: Optional[str]
+    public_sale_photo: Optional[PublicSalePhotoEntity]
+    public_sale_details: List[PublicSaleDetailReportEntity] = None

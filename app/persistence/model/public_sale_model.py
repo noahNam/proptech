@@ -18,7 +18,7 @@ from app.persistence.model.real_estate_model import RealEstateModel
 from core.domains.house.entity.house_entity import (
     PublicSaleEntity,
     PublicSalePushEntity,
-    PublicSaleDetailCalendarEntity,
+    PublicSaleDetailCalendarEntity, PublicSaleReportEntity,
 )
 from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,
@@ -154,4 +154,28 @@ class PublicSaleModel(db.Model):
             contract_end_date=self.contract_end_date,
             move_in_year=self.move_in_year,
             move_in_month=self.move_in_month,
+        )
+
+    def to_report_entity(self) -> PublicSaleReportEntity:
+        return PublicSaleReportEntity(
+            id=self.id,
+            real_estate_id=self.real_estate_id,
+            supply_household=self.supply_household,
+            offer_date=self.offer_date,
+            special_supply_date=self.special_supply_date,
+            special_supply_etc_date=self.special_supply_etc_date,
+            first_supply_date=self.first_supply_date,
+            first_supply_etc_date=self.first_supply_etc_date,
+            second_supply_date=self.second_supply_date,
+            second_supply_etc_date=self.second_supply_etc_date,
+            notice_winner_date=self.notice_winner_date,
+            public_sale_photo=self.public_sale_photos.to_entity()
+            if self.public_sale_photos
+            else None,
+            public_sale_details=[
+                public_sale_detail.to_report_entity()
+                for public_sale_detail in self.public_sale_details
+            ]
+            if self.public_sale_details
+            else None,
         )
