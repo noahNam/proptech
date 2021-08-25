@@ -41,6 +41,16 @@ class PublicSaleDetailModel(db.Model):
         uselist=False,
     )
 
+    special_supply_results = relationship(
+        "SpecialSupplyResultModel",
+        backref=backref("public_sale_details"),
+    )
+
+    general_supply_results = relationship(
+        "GeneralSupplyResultModel",
+        backref=backref("public_sale_details"),
+    )
+
     def to_entity(self) -> PublicSaleDetailEntity:
         return PublicSaleDetailEntity(
             id=self.id,
