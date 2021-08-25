@@ -18,7 +18,8 @@ from app.persistence.model.real_estate_model import RealEstateModel
 from core.domains.house.entity.house_entity import (
     PublicSaleEntity,
     PublicSalePushEntity,
-    PublicSaleDetailCalendarEntity, PublicSaleReportEntity,
+    PublicSaleDetailCalendarEntity,
+    PublicSaleReportEntity,
 )
 from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,

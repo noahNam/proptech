@@ -1,14 +1,19 @@
 from flasgger import swag_from
 from flask import request
 
-from app.http.requests.v1.report_request import GetExpectedCompetitionRequestSchema, GetSaleInfoRequestSchema
+from app.http.requests.v1.report_request import (
+    GetExpectedCompetitionRequestSchema,
+    GetSaleInfoRequestSchema,
+)
 from app.http.responses.presenters.v1.report_presenter import (
-    GetExpectedCompetitionPresenter, GetSaleInfoPresenter,
+    GetExpectedCompetitionPresenter,
+    GetSaleInfoPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 
 from core.domains.report.use_case.v1.report_use_case import (
-    GetExpectedCompetitionUseCase, GetSaleInfoUseCase,
+    GetExpectedCompetitionUseCase,
+    GetSaleInfoUseCase,
 )
 
 
@@ -35,6 +40,4 @@ def get_sale_info_view():
         user_id=1, house_id=request.args.get("house_id"),
     ).validate_request_and_make_dto()
 
-    return GetSaleInfoPresenter().transform(
-        GetSaleInfoUseCase().execute(dto=dto)
-    )
+    return GetSaleInfoPresenter().transform(GetSaleInfoUseCase().execute(dto=dto))

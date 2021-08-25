@@ -547,7 +547,6 @@ class RealEstateFactory(BaseFactory):
     latitude = random.uniform(33.1, 38.45)
     longitude = random.uniform(125.0666666, 131.8722222)
 
-
     @factory.post_generation
     def private_sales(obj, create, extracted, **kwargs):
         if extracted:
