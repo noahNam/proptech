@@ -21,7 +21,7 @@ def get_public_sales_of_ticket_usage(public_house_ids: int,):
 
 
 def get_public_sale_infos(house_id: int,):
-    result: List[PublicSaleReportEntity] = HouseRepository().get_public_sale_infos(
+    result: PublicSaleReportEntity = HouseRepository().get_public_sale_infos(
         house_id=house_id
     )
     setattr(g, HouseTopicEnum.GET_PUBLIC_SALE_INFOS, result)

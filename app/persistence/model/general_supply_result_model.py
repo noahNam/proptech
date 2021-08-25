@@ -32,7 +32,6 @@ class GeneralSupplyResultModel(db.Model):
         return GeneralSupplyResultEntity(
             region=self.region,
             region_percent=self.region_percent,
-            multi_children_vol=self.multi_children_vol,
             applicant_num=self.applicant_num,
             competition_rate=self.competition_rate,
             win_point=self.win_point,

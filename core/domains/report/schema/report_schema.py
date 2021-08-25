@@ -2,7 +2,6 @@ from typing import List, Optional
 
 from pydantic import BaseModel, StrictStr, StrictInt, StrictFloat
 
-from core.domains.house.entity.house_entity import PublicSaleReportEntity
 from core.domains.report.entity.report_entity import PredictedCompetitionEntity
 
 
@@ -37,8 +36,6 @@ class PublicSaleDetailReportSchema(BaseModel):
     supply_price: StrictInt
     price_per_meter: StrictInt
     public_sale_detail_photo: Optional[ReportPublicSaleDetailPhotoSchema]
-    special_supply_results: Optional[List[ReportPublicSaleDetailPhotoSchema]]
-    general_supply_results: Optional[List[ReportPublicSaleDetailPhotoSchema]]
 
 
 class PublicSaleReportSchema(BaseModel):
@@ -60,7 +57,7 @@ class PublicSaleReportSchema(BaseModel):
 
 
 class GetSaleInfoBaseSchema(BaseModel):
-    sale_infos: List[PublicSaleReportSchema]
+    sale_infos: PublicSaleReportSchema
 
 
 class GetSaleInfoResponseSchema(BaseModel):
