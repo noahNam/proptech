@@ -51,3 +51,4 @@ class TicketUsageResultEntity(BaseModel):
     house_type_ranks: List[HouseTypeRankEntity]
     user_analysis: List[UserAnalysisEntity]
     predicted_competitions: List[PredictedCompetitionEntity]
+

@@ -11,7 +11,8 @@ from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.persistence.model.public_sale_model import PublicSaleModel
-from core.domains.house.entity.house_entity import PublicSaleDetailEntity
+from core.domains.house.entity.house_entity import PublicSaleDetailEntity, PublicSaleDetailReportEntity
+from core.domains.house.enum.house_enum import PricePerMeterEnum
 
 
 class PublicSaleDetailModel(db.Model):
@@ -55,4 +56,21 @@ class PublicSaleDetailModel(db.Model):
             else None,
             special_household=self.special_household,
             general_household=self.general_household,
+        )
+
+    def to_report_entity(self) -> PublicSaleDetailReportEntity:
+        return PublicSaleDetailReportEntity(
+            id=self.id,
+            public_sales_id=self.public_sales_id,
+            private_area=self.private_area,
+            supply_area=self.supply_area,
+            supply_price=self.supply_price,
+            acquisition_tax=self.acquisition_tax,
+            area_type=self.area_type,
+            public_sale_detail_photo=self.public_sale_detail_photos.to_entity()
+            if self.public_sale_detail_photos
+            else None,
+            special_household=self.special_household,
+            general_household=self.general_household,
+            price_per_meter=int(self.supply_price / (self.supply_area / PricePerMeterEnum.CALC_VAR.value))
         )

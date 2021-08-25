@@ -139,3 +139,11 @@ class BannerSubTopic(Enum):
     # 공통
     TOP_SCREEN_BANNER = 8
     BOTTOM_SCREEN_BANNER = 9
+
+
+class PricePerMeterEnum(Enum):
+    """
+        평당가격 계산할 때 사용
+    """
+
+    CALC_VAR = 3.3058
