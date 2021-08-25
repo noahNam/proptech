@@ -36,6 +36,10 @@ class PublicSaleDetailModel(db.Model):
     acquisition_tax = Column(Integer, nullable=False)
     area_type = Column(String(5), nullable=True)
     special_household = Column(SmallInteger, nullable=False)
+    multi_children_house_hold = Column(SmallInteger, nullable=False)
+    newlywed_house_hold = Column(SmallInteger, nullable=False)
+    old_parent_house_hold = Column(SmallInteger, nullable=False)
+    first_life_house_hold = Column(SmallInteger, nullable=False)
     general_household = Column(SmallInteger, nullable=False)
 
     # 1:1 relationship
@@ -82,6 +86,10 @@ class PublicSaleDetailModel(db.Model):
             if self.public_sale_detail_photos
             else None,
             special_household=self.special_household,
+            multi_children_house_hold=self.multi_children_house_hold,
+            newlywed_house_hold=self.newlywed_house_hold,
+            old_parent_house_hold=self.old_parent_house_hold,
+            first_life_house_hold=self.first_life_house_hold,
             general_household=self.general_household,
             price_per_meter=int(
                 self.supply_price

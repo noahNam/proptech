@@ -6,14 +6,13 @@ import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from app.persistence.model import PredictedCompetitionModel
-from core.domains.house.entity.house_entity import PublicSaleReportEntity
+from core.domains.house.entity.house_entity import PublicSaleReportEntity, PublicSaleDetailReportEntity
 from core.domains.house.enum import HouseTopicEnum
 from core.domains.report.dto.report_dto import GetExpectedCompetitionDto, GetSaleInfoDto
 from core.domains.report.repository.report_repository import ReportRepository
 from core.domains.report.schema.report_schema import (
     GetExpectedCompetitionBaseSchema,
-    GetSaleInfoResponseSchema,
-    GetSaleInfoBaseSchema,
+    GetSaleInfoBaseSchema, PublicSaleDetailReportSchema,
 )
 from core.domains.user.entity.user_entity import UserProfileEntity
 from core.domains.user.enum import UserTopicEnum
@@ -31,7 +30,7 @@ class ReportBaseUseCase:
         )
         return get_event_object(topic_name=UserTopicEnum.GET_USER_PROFILE)
 
-    def _get_public_sale_info(self, house_id: int) -> List[PublicSaleReportEntity]:
+    def _get_public_sale_info(self, house_id: int) -> PublicSaleReportEntity:
         send_message(
             topic_name=HouseTopicEnum.GET_PUBLIC_SALE_INFOS, house_id=house_id,
         )
@@ -40,7 +39,7 @@ class ReportBaseUseCase:
 
 class GetExpectedCompetitionUseCase(ReportBaseUseCase):
     def execute(
-        self, dto: GetExpectedCompetitionDto
+            self, dto: GetExpectedCompetitionDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -79,24 +78,24 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _calc_total_supply_by_house_type(
-        self, expected_competitions: List[PredictedCompetitionModel]
+            self, expected_competitions: List[PredictedCompetitionModel]
     ):
         calc_special_total_supply = defaultdict(int)
         calc_normal_total_supply = defaultdict(int)
 
         for c in expected_competitions:
             special_calc = (
-                c.multiple_children_supply
-                + c.newly_marry_supply
-                + c.old_parent_supply
-                + c.first_life_supply
+                    c.multiple_children_supply
+                    + c.newly_marry_supply
+                    + c.old_parent_supply
+                    + c.first_life_supply
             )
 
             calc_special_total_supply[c.house_structure_type] = (
-                calc_special_total_supply[c.house_structure_type] + special_calc
+                    calc_special_total_supply[c.house_structure_type] + special_calc
             )
             calc_normal_total_supply[c.house_structure_type] = (
-                calc_normal_total_supply[c.house_structure_type] + c.normal_supply
+                    calc_normal_total_supply[c.house_structure_type] + c.normal_supply
             )
         for c in expected_competitions:
             c.total_special_supply = calc_special_total_supply.get(
@@ -105,10 +104,10 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             c.total_normal_supply = calc_normal_total_supply.get(c.house_structure_type)
 
     def _make_response_schema(
-        self,
-        expected_competitions: List[PredictedCompetitionModel],
-        nickname: str,
-        sort_competitions: List[dict],
+            self,
+            expected_competitions: List[PredictedCompetitionModel],
+            nickname: str,
+            sort_competitions: List[dict],
     ) -> GetExpectedCompetitionBaseSchema:
         return GetExpectedCompetitionBaseSchema(
             nickname=nickname,
@@ -117,7 +116,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         )
 
     def _sort_competition_desc(
-        self, expected_competitions: List[PredictedCompetitionModel]
+            self, expected_competitions: List[PredictedCompetitionModel]
     ) -> List[dict]:
         sort_competitions = list()
         sort_competition_types = list()
@@ -180,7 +179,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
 
 class GetSaleInfoUseCase(ReportBaseUseCase):
     def execute(
-        self, dto: GetSaleInfoDto
+            self, dto: GetSaleInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -189,9 +188,7 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        report_public_sale_infos: List[
-            PublicSaleReportEntity
-        ] = self._get_public_sale_info(house_id=dto.house_id)
+        report_public_sale_infos: PublicSaleReportEntity = self._get_public_sale_info(house_id=dto.house_id)
 
         result: GetSaleInfoBaseSchema = self._make_response_schema(
             report_public_sale_infos
@@ -200,6 +197,6 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _make_response_schema(
-        self, report_public_sale_infos: List[PublicSaleReportEntity],
+            self, report_public_sale_infos: PublicSaleReportEntity,
     ) -> GetSaleInfoBaseSchema:
-        return GetSaleInfoBaseSchema(sale_infos=report_public_sale_infos,)
+        return GetSaleInfoBaseSchema(sale_infos=report_public_sale_infos, )

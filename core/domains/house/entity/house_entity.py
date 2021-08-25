@@ -357,19 +357,18 @@ class GetHouseMainEntity(BaseModel):
 class SpecialSupplyResultReportEntity(BaseModel):
     region: Optional[str]
     region_percent: Optional[int]
-    multi_children_vol: Optional[int]
-    newlywed_vol: Optional[int]
-    old_parent_vol: Optional[int]
-    first_life_vol: Optional[int]
+    multi_children_vol: Optional[int] = 0
+    newlywed_vol: Optional[int] = 0
+    old_parent_vol: Optional[int] = 0
+    first_life_vol: Optional[int] = 0
 
 
 class GeneralSupplyResultEntity(BaseModel):
     region: Optional[str]
     region_percent: Optional[int]
-    multi_children_vol: Optional[int]
-    applicant_num: Optional[int]
-    competition_rate: Optional[int]
-    win_point: Optional[int]
+    applicant_num: Optional[int] = 0
+    competition_rate: Optional[int] = 0
+    win_point: Optional[int] = 0
 
 
 class PublicSaleDetailReportEntity(BaseModel):
@@ -380,7 +379,13 @@ class PublicSaleDetailReportEntity(BaseModel):
     supply_area: float
     supply_price: int
     acquisition_tax: int
-    price_per_meter: Optional[int]
+    special_household: Optional[int] = 0
+    multi_children_house_hold = Optional[int] = 0
+    newlywed_house_hold = Optional[int] = 0
+    old_parent_house_hold = Optional[int] = 0
+    first_life_house_hold = Optional[int] = 0
+    general_household = Optional[int] = 0
+    price_per_meter: Optional[int] = 0
     public_sale_detail_photo: Optional[PublicSaleDetailPhotoEntity]
     special_supply_results: List[SpecialSupplyResultReportEntity] = None
     general_supply_results: List[GeneralSupplyResultEntity] = None

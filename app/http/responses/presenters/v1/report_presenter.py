@@ -38,7 +38,7 @@ class GetSaleInfoPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = GetSaleInfoResponseSchema(result=output.value)
-            except ValidationError as e:
+            except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",

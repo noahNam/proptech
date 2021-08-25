@@ -853,7 +853,7 @@ class HouseRepository:
                 )
         return result
 
-    def get_public_sale_infos(self, house_id: int) -> List[PublicSaleReportEntity]:
+    def get_public_sale_infos(self, house_id: int) -> PublicSaleReportEntity:
         try:
             query = (
                 session.query(PublicSaleModel)
@@ -863,8 +863,8 @@ class HouseRepository:
                 .join(PublicSaleDetailModel.public_sale_detail_photos, isouter=True)
                 .filter(PublicSaleModel.id == house_id)
             )
-            query_set = query.all()
-            return [query.to_report_entity() for query in query_set]
+            query_set = query.first()
+            return query_set.to_report_entity()
         except Exception as e:
             pass
 
