@@ -1,10 +1,11 @@
 from typing import List, Optional
 
 from sqlalchemy import exists
+from sqlalchemy.orm import selectinload
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
-from app.persistence.model import TicketUsageResultModel
+from app.persistence.model import TicketUsageResultModel, PredictedCompetitionModel
 from core.domains.payment.enum.payment_enum import TicketUsageTypeEnum
 from core.exceptions import NotUniqueErrorException
 
@@ -65,3 +66,26 @@ class ReportRepository:
                 f"[update_ticket_usage_result][update_ticket_usage_result] user_id : {user_id}, ticket_id : {ticket_id}, error : {e}"
             )
             raise NotUniqueErrorException(type_="T200")
+
+    def get_expected_competition(
+        self, user_id: int, house_id: int
+    ) -> List[PredictedCompetitionModel]:
+        filters = list()
+        filters.append(TicketUsageResultModel.user_id == user_id)
+        filters.append(TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value)
+        filters.append(TicketUsageResultModel.public_house_id == house_id)
+        filters.append(TicketUsageResultModel.is_active == True)
+
+        query = (
+            session.query(TicketUsageResultModel)
+            .join(TicketUsageResultModel.predicted_competitions)
+            .options(selectinload(TicketUsageResultModel.predicted_competitions))
+            .filter(*filters)
+        )
+
+        query_set = query.first()
+
+        if not query_set:
+            return []
+
+        return query_set.to_entity().predicted_competitions

@@ -8,7 +8,6 @@ from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
     UseHouseTicketDto,
     CreateTicketDto,
-    UpdateTicketUsageResultDto,
 )
 from core.domains.payment.entity.payment_entity import (
     PromotionEntity,
@@ -320,28 +319,3 @@ def test_get_recommend_code_when_by_code_then_return_recommend_code_entity(
         code=recommend_code.code, code_group=recommend_code.code_group
     )
     assert isinstance(result, RecommendCodeEntity)
-
-
-def test_update_recommend_code_then_code_count_plus_one(
-    session, recommend_code_factory
-):
-    recommend_code = recommend_code_factory.build()
-    session.add(recommend_code)
-    session.commit()
-
-    recommend_code = RecommendCodeEntity(
-        id=recommend_code.id,
-        user_id=recommend_code.user_id,
-        code_group=recommend_code.code_group,
-        code=recommend_code.code,
-        code_count=recommend_code.code_count,
-        is_used=True,
-    )
-    PaymentRepository().update_recommend_code_count(recommend_code=recommend_code)
-    result = (
-        session.query(RecommendCodeModel)
-        .filter_by(user_id=recommend_code.user_id)
-        .first()
-    )
-
-    assert result.code_count == recommend_code.code_count + 1
