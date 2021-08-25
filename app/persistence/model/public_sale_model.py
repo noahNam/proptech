@@ -58,10 +58,13 @@ class PublicSaleModel(db.Model):
     subscription_end_date = Column(String(8), nullable=True)
     special_supply_date = Column(String(8), nullable=True)
     special_supply_etc_date = Column(String(8), nullable=True)
+    special_etc_gyeonggi_date = Column(String(8), nullable=True)
     first_supply_date = Column(String(8), nullable=True)
     first_supply_etc_date = Column(String(8), nullable=True)
+    first_etc_gyeonggi_date = Column(String(8), nullable=True)
     second_supply_date = Column(String(8), nullable=True)
     second_supply_etc_date = Column(String(8), nullable=True)
+    second_etc_gyeonggi_date = Column(String(8), nullable=True)
     notice_winner_date = Column(String(8), nullable=True)
     contract_start_date = Column(String(8), nullable=True)
     contract_end_date = Column(String(8), nullable=True)
@@ -102,10 +105,13 @@ class PublicSaleModel(db.Model):
             subscription_end_date=self.subscription_end_date,
             special_supply_date=self.special_supply_date,
             special_supply_etc_date=self.special_supply_etc_date,
+            special_etc_gyeonggi_date=self.special_etc_gyeonggi_date,
             first_supply_date=self.first_supply_date,
             first_supply_etc_date=self.first_supply_etc_date,
+            first_etc_gyeonggi_date=self.first_etc_gyeonggi_date,
             second_supply_date=self.second_supply_date,
             second_supply_etc_date=self.second_supply_etc_date,
+            second_etc_gyeonggi_date=self.second_etc_gyeonggi_date,
             notice_winner_date=self.notice_winner_date,
             contract_start_date=self.contract_start_date,
             contract_end_date=self.contract_end_date,
@@ -145,10 +151,13 @@ class PublicSaleModel(db.Model):
             subscription_end_date=self.subscription_end_date,
             special_supply_date=self.special_supply_date,
             special_supply_etc_date=self.special_supply_etc_date,
+            special_etc_gyeonggi_date=self.special_etc_gyeonggi_date,
             first_supply_date=self.first_supply_date,
             first_supply_etc_date=self.first_supply_etc_date,
+            first_etc_gyeonggi_date=self.first_etc_gyeonggi_date,
             second_supply_date=self.second_supply_date,
             second_supply_etc_date=self.second_supply_etc_date,
+            second_etc_gyeonggi_date=self.second_etc_gyeonggi_date,
             notice_winner_date=self.notice_winner_date,
             contract_start_date=self.contract_start_date,
             contract_end_date=self.contract_end_date,
