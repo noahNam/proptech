@@ -492,12 +492,21 @@ class PublicSaleFactory(BaseFactory):
     special_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
         "%Y%m%d"
     )
+    special_etc_gyeonggi_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
     first_supply_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
     first_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
         "%Y%m%d"
     )
+    first_etc_gyeonggi_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
     second_supply_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
     second_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    second_etc_gyeonggi_date = get_random_date_about_one_month_from_today().strftime(
         "%Y%m%d"
     )
     notice_winner_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
