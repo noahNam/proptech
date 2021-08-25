@@ -73,9 +73,18 @@ def upgrade():
     )
 
     # public_sales 기타-경기 칼럼 추가
-    op.add_column('public_sales', sa.Column('special_etc_gyeonggi_date', sa.String(length=8), nullable=True))
-    op.add_column('public_sales', sa.Column('first_etc_gyeonggi_date', sa.String(length=8), nullable=True))
-    op.add_column('public_sales', sa.Column('second_etc_gyeonggi_date', sa.String(length=8), nullable=True))
+    op.add_column(
+        "public_sales",
+        sa.Column("special_etc_gyeonggi_date", sa.String(length=8), nullable=True),
+    )
+    op.add_column(
+        "public_sales",
+        sa.Column("first_etc_gyeonggi_date", sa.String(length=8), nullable=True),
+    )
+    op.add_column(
+        "public_sales",
+        sa.Column("second_etc_gyeonggi_date", sa.String(length=8), nullable=True),
+    )
 
 
 def downgrade():
@@ -83,6 +92,6 @@ def downgrade():
     op.drop_column("public_sale_details", "special_household")
     op.drop_table("special_supply_results")
     op.drop_table("general_supply_results")
-    op.drop_column('public_sales', 'second_etc_gyeonggi_date')
-    op.drop_column('public_sales', 'first_etc_gyeonggi_date')
-    op.drop_column('public_sales', 'special_etc_gyeonggi_date')
+    op.drop_column("public_sales", "second_etc_gyeonggi_date")
+    op.drop_column("public_sales", "first_etc_gyeonggi_date")
+    op.drop_column("public_sales", "special_etc_gyeonggi_date")
