@@ -24,7 +24,6 @@ class GeneralSupplyResultModel(db.Model):
 
     region = Column(String(10), nullable=True)
     region_percent = Column(SmallInteger, nullable=True)
-    multi_children_vol = Column(SmallInteger, nullable=True)
     applicant_num = Column(SmallInteger, nullable=True)
     competition_rate = Column(SmallInteger, nullable=True)
     win_point = Column(SmallInteger, nullable=True)
