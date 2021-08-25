@@ -9,6 +9,7 @@ from sqlalchemy import (
 
 from app import db
 from app.persistence.model.public_sale_detail_model import PublicSaleDetailModel
+from core.domains.house.entity.house_entity import SpecialSupplyResultReportEntity
 
 
 class SpecialSupplyResultModel(db.Model):
@@ -27,3 +28,13 @@ class SpecialSupplyResultModel(db.Model):
     newlywed_vol = Column(SmallInteger, nullable=True)
     old_parent_vol = Column(SmallInteger, nullable=True)
     first_life_vol = Column(SmallInteger, nullable=True)
+
+    def to_report_entity(self) -> SpecialSupplyResultReportEntity:
+        return SpecialSupplyResultReportEntity(
+            region=self.region,
+            region_percent=self.region_percent,
+            multi_children_vol=self.multi_children_vol,
+            newlywed_vol=self.newlywed_vol,
+            old_parent_vol=self.old_parent_vol,
+            first_life_vol=self.first_life_vol,
+        )

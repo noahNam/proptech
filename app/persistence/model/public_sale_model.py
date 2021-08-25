@@ -174,10 +174,13 @@ class PublicSaleModel(db.Model):
             offer_date=self.offer_date,
             special_supply_date=self.special_supply_date,
             special_supply_etc_date=self.special_supply_etc_date,
+            special_etc_gyeonggi_date=self.special_etc_gyeonggi_date,
             first_supply_date=self.first_supply_date,
             first_supply_etc_date=self.first_supply_etc_date,
+            first_etc_gyeonggi_date=self.first_etc_gyeonggi_date,
             second_supply_date=self.second_supply_date,
             second_supply_etc_date=self.second_supply_etc_date,
+            second_etc_gyeonggi_date=self.second_etc_gyeonggi_date,
             notice_winner_date=self.notice_winner_date,
             public_sale_photo=self.public_sale_photos.to_entity()
             if self.public_sale_photos
