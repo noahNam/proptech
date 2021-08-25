@@ -354,6 +354,24 @@ class GetHouseMainEntity(BaseModel):
     calendar_infos: List[SimpleCalendarInfoEntity] = None
 
 
+class SpecialSupplyResultReportEntity(BaseModel):
+    region: Optional[str]
+    region_percent: Optional[int]
+    multi_children_vol: Optional[int]
+    newlywed_vol: Optional[int]
+    old_parent_vol: Optional[int]
+    first_life_vol: Optional[int]
+
+
+class GeneralSupplyResultEntity(BaseModel):
+    region: Optional[str]
+    region_percent: Optional[int]
+    multi_children_vol: Optional[int]
+    applicant_num: Optional[int]
+    competition_rate: Optional[int]
+    win_point: Optional[int]
+
+
 class PublicSaleDetailReportEntity(BaseModel):
     id: int
     public_sales_id: int
@@ -363,7 +381,9 @@ class PublicSaleDetailReportEntity(BaseModel):
     supply_price: int
     acquisition_tax: int
     price_per_meter: Optional[int]
-    public_sale_detail_photo: PublicSaleDetailPhotoEntity = None
+    public_sale_detail_photo: Optional[PublicSaleDetailPhotoEntity]
+    special_supply_results: List[SpecialSupplyResultReportEntity] = None
+    general_supply_results: List[GeneralSupplyResultEntity] = None
 
 
 class PublicSaleReportEntity(BaseModel):
@@ -373,10 +393,13 @@ class PublicSaleReportEntity(BaseModel):
     offer_date: Optional[str]
     special_supply_date: Optional[str]
     special_supply_etc_date: Optional[str]
+    special_etc_gyeonggi_date: Optional[str]
     first_supply_date: Optional[str]
     first_supply_etc_date: Optional[str]
+    first_etc_gyeonggi_date: Optional[str]
     second_supply_date: Optional[str]
     second_supply_etc_date: Optional[str]
+    second_etc_gyeonggi_date: Optional[str]
     notice_winner_date: Optional[str]
     public_sale_photo: Optional[PublicSalePhotoEntity]
     public_sale_details: List[PublicSaleDetailReportEntity] = None

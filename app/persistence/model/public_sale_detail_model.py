@@ -89,4 +89,16 @@ class PublicSaleDetailModel(db.Model):
                 self.supply_price
                 / (self.supply_area / PricePerMeterEnum.CALC_VAR.value)
             ),
+            special_supply_results=[
+                special_supply_result.to_report_entity()
+                for special_supply_result in self.special_supply_results
+            ]
+            if self.special_supply_results
+            else None,
+            general_supply_results=[
+                general_supply_result.to_report_entity()
+                for general_supply_result in self.general_supply_results
+            ]
+            if self.general_supply_results
+            else None,
         )

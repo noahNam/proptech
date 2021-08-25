@@ -37,6 +37,8 @@ class PublicSaleDetailReportSchema(BaseModel):
     supply_price: StrictInt
     price_per_meter: StrictInt
     public_sale_detail_photo: Optional[ReportPublicSaleDetailPhotoSchema]
+    special_supply_results: Optional[List[ReportPublicSaleDetailPhotoSchema]]
+    general_supply_results: Optional[List[ReportPublicSaleDetailPhotoSchema]]
 
 
 class PublicSaleReportSchema(BaseModel):
@@ -45,10 +47,13 @@ class PublicSaleReportSchema(BaseModel):
     offer_date: Optional[str]
     special_supply_date: Optional[str]
     special_supply_etc_date: Optional[str]
+    special_etc_gyeonggi_date: Optional[str]
     first_supply_date: Optional[str]
     first_supply_etc_date: Optional[str]
+    first_etc_gyeonggi_date: Optional[str]
     second_supply_date: Optional[str]
     second_supply_etc_date: Optional[str]
+    second_etc_gyeonggi_date: Optional[str]
     notice_winner_date: Optional[str]
     public_sale_photo: Optional[ReportPublicSalePhotoSchema]
     public_sale_details: List[PublicSaleDetailReportSchema] = None
