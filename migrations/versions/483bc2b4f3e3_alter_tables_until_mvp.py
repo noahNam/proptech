@@ -61,42 +61,42 @@ def upgrade():
             server_default=text("0"),
         ),
     )
-    # op.add_column(
-    #     "public_sale_details",
-    #     sa.Column(
-    #         "multi_children_house_hold",
-    #         sa.SmallInteger(),
-    #         nullable=False,
-    #         server_default=text("0"),
-    #     ),
-    # )
-    # op.add_column(
-    #     "public_sale_details",
-    #     sa.Column(
-    #         "newlywed_house_hold",
-    #         sa.SmallInteger(),
-    #         nullable=False,
-    #         server_default=text("0"),
-    #     ),
-    # )
-    # op.add_column(
-    #     "public_sale_details",
-    #     sa.Column(
-    #         "old_parent_house_hold",
-    #         sa.SmallInteger(),
-    #         nullable=False,
-    #         server_default=text("0"),
-    #     ),
-    # )
-    # op.add_column(
-    #     "public_sale_details",
-    #     sa.Column(
-    #         "first_life_house_hold",
-    #         sa.SmallInteger(),
-    #         nullable=False,
-    #         server_default=text("0"),
-    #     ),
-    # )
+    op.add_column(
+        "public_sale_details",
+        sa.Column(
+            "multi_children_house_hold",
+            sa.SmallInteger(),
+            nullable=False,
+            server_default=text("0"),
+        ),
+    )
+    op.add_column(
+        "public_sale_details",
+        sa.Column(
+            "newlywed_house_hold",
+            sa.SmallInteger(),
+            nullable=False,
+            server_default=text("0"),
+        ),
+    )
+    op.add_column(
+        "public_sale_details",
+        sa.Column(
+            "old_parent_house_hold",
+            sa.SmallInteger(),
+            nullable=False,
+            server_default=text("0"),
+        ),
+    )
+    op.add_column(
+        "public_sale_details",
+        sa.Column(
+            "first_life_house_hold",
+            sa.SmallInteger(),
+            nullable=False,
+            server_default=text("0"),
+        ),
+    )
     op.add_column(
         "public_sale_details",
         sa.Column(
@@ -126,10 +126,10 @@ def downgrade():
     op.drop_column("public_sale_details", "general_household")
     op.drop_column("public_sale_details", "special_household")
     op.drop_table("special_supply_results")
-    # op.drop_table("multi_children_house_hold")
-    # op.drop_table("newlywed_house_hold")
-    # op.drop_table("old_parent_house_hold")
-    # op.drop_table("first_life_house_hold")
+    op.drop_table("multi_children_house_hold")
+    op.drop_table("newlywed_house_hold")
+    op.drop_table("old_parent_house_hold")
+    op.drop_table("first_life_house_hold")
     op.drop_table("general_supply_results")
     op.drop_column("public_sales", "second_etc_gyeonggi_date")
     op.drop_column("public_sales", "first_etc_gyeonggi_date")

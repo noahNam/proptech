@@ -380,11 +380,11 @@ class PublicSaleDetailReportEntity(BaseModel):
     supply_price: int
     acquisition_tax: int
     special_household: Optional[int] = 0
-    multi_children_house_hold = Optional[int] = 0
-    newlywed_house_hold = Optional[int] = 0
-    old_parent_house_hold = Optional[int] = 0
-    first_life_house_hold = Optional[int] = 0
-    general_household = Optional[int] = 0
+    multi_children_house_hold: Optional[int] = 0
+    newlywed_house_hold: Optional[int] = 0
+    old_parent_house_hold: Optional[int] = 0
+    first_life_house_hold: Optional[int] = 0
+    general_household: Optional[int] = 0
     price_per_meter: Optional[int] = 0
     public_sale_detail_photo: Optional[PublicSaleDetailPhotoEntity]
     special_supply_results: List[SpecialSupplyResultReportEntity] = None
