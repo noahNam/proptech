@@ -18,7 +18,8 @@ from app.persistence.model import (
     InterestHouseModel,
     PrivateSaleDetailModel,
     RecentlyViewModel,
-    PublicSalePhotoModel, SpecialSupplyResultModel,
+    PublicSalePhotoModel,
+    SpecialSupplyResultModel,
 )
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
@@ -877,7 +878,11 @@ class HouseRepository:
         )
         query = (
             session.query(PublicSaleModel)
-            .join(RealEstateModel, (RealEstateModel.id == PublicSaleModel.real_estate_id) & (RealEstateModel.si_gun_gu == si_gun_gu))
+            .join(
+                RealEstateModel,
+                (RealEstateModel.id == PublicSaleModel.real_estate_id)
+                & (RealEstateModel.si_gun_gu == si_gun_gu),
+            )
             .options(contains_eager(PublicSaleModel.real_estates))
             .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
             .options(joinedload("public_sale_details.public_sale_detail_photos"))
