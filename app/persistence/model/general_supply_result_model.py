@@ -9,7 +9,7 @@ from sqlalchemy import (
 
 from app import db
 from app.persistence.model.public_sale_detail_model import PublicSaleDetailModel
-from core.domains.house.entity.house_entity import GeneralSupplyResultEntity
+from core.domains.house.entity.house_entity import GeneralSupplyResulReportEntity
 
 
 class GeneralSupplyResultModel(db.Model):
@@ -28,8 +28,8 @@ class GeneralSupplyResultModel(db.Model):
     competition_rate = Column(SmallInteger, nullable=True)
     win_point = Column(SmallInteger, nullable=True)
 
-    def to_report_entity(self) -> GeneralSupplyResultEntity:
-        return GeneralSupplyResultEntity(
+    def to_report_entity(self) -> GeneralSupplyResulReportEntity:
+        return GeneralSupplyResulReportEntity(
             region=self.region,
             region_percent=self.region_percent,
             applicant_num=self.applicant_num,
