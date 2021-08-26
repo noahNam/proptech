@@ -8,6 +8,7 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
@@ -186,7 +187,6 @@ class HouseRepository:
             .filter(*filters)
             .group_by(RealEstateModel.id)
         )
-
         queryset = query.all()
 
         return self._make_object_bounding_entity(queryset=queryset)
@@ -329,6 +329,7 @@ class HouseRepository:
             return None
 
         # Make Entity
+        # Slow Query Problem_2
         results = list()
         for query in queryset:
             results.append(
@@ -419,7 +420,7 @@ class HouseRepository:
                 <= get_server_timestamp(),
             )
         )
-
+        # Slow Query Problem_1
         query = (
             session.query(
                 RealEstateModel,
@@ -428,11 +429,13 @@ class HouseRepository:
                     "avg_private_supply_area"
                 ),
             )
-            .join(RealEstateModel.private_sales)
+            # .options(joinedload(RealEstateModel.private_sales, innerjoin=True))
+            .join(PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id)
+            .options(selectinload("private_sales.private_sale_details"))
+            # .join(PrivateSaleDetailModel, PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id)
             .filter(*filters)
             .group_by(RealEstateModel.id)
         )
-
         house_with_private_queryset = query.all()
         house_with_private_entities = self._make_house_with_private_entities(
             queryset=house_with_private_queryset
