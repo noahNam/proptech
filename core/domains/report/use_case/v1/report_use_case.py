@@ -8,12 +8,17 @@ from app.extensions.utils.event_observer import send_message, get_event_object
 from app.persistence.model import PredictedCompetitionModel
 from core.domains.house.entity.house_entity import PublicSaleReportEntity
 from core.domains.house.enum import HouseTopicEnum
-from core.domains.report.dto.report_dto import GetExpectedCompetitionDto, GetSaleInfoDto
+from core.domains.report.dto.report_dto import (
+    GetExpectedCompetitionDto,
+    GetSaleInfoDto,
+    GetRecentlySaleDto,
+)
 from core.domains.report.repository.report_repository import ReportRepository
 from core.domains.report.schema.report_schema import (
     GetExpectedCompetitionBaseSchema,
-    GetSaleInfoBaseSchema,
-    RecentlyPublicSaleReportSchema,
+    GetRecentlySaleResponseSchema,
+    VicinityPublicSaleReportSchema,
+    GetSaleInfoResponseSchema,
 )
 from core.domains.user.entity.user_entity import UserProfileEntity
 from core.domains.user.enum import UserTopicEnum
@@ -205,7 +210,7 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
             si_gun_gu=report_public_sale_info.real_estates.si_gun_gu
         )
 
-        result: GetSaleInfoBaseSchema = self._make_response_schema(
+        result: GetSaleInfoResponseSchema = self._make_response_schema(
             report_public_sale_info, report_recently_public_sale_info
         )
 
@@ -215,8 +220,8 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
         self,
         report_public_sale_info: PublicSaleReportEntity,
         report_recently_public_sale_info: PublicSaleReportEntity,
-    ) -> GetSaleInfoBaseSchema:
-        report_recently_public_sale_info = RecentlyPublicSaleReportSchema(
+    ) -> GetSaleInfoResponseSchema:
+        report_recently_public_sale_info = VicinityPublicSaleReportSchema(
             id=report_recently_public_sale_info.id,
             name=report_recently_public_sale_info.name,
             supply_household=report_recently_public_sale_info.supply_household,
@@ -226,7 +231,36 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
             longitude=report_recently_public_sale_info.real_estates.longitude,
         )
 
-        return GetSaleInfoBaseSchema(
+        return GetSaleInfoResponseSchema(
             sale_info=report_public_sale_info,
+            recently_sale_info=report_recently_public_sale_info,
+        )
+
+
+class GetRecentlySaleUseCase(ReportBaseUseCase):
+    def execute(
+        self, dto: GetRecentlySaleDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        report_recently_public_sale_info: PublicSaleReportEntity = self._get_public_sale_info(
+            house_id=dto.house_id
+        )
+
+        result: GetRecentlySaleResponseSchema = self._make_response_schema(
+            report_recently_public_sale_info
+        )
+
+        return UseCaseSuccessOutput(value=result)
+
+    def _make_response_schema(
+        self, report_recently_public_sale_info: PublicSaleReportEntity,
+    ) -> GetRecentlySaleResponseSchema:
+        return GetRecentlySaleResponseSchema(
             recently_sale_info=report_recently_public_sale_info,
         )

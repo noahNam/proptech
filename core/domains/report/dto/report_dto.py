@@ -9,3 +9,8 @@ class GetExpectedCompetitionDto(BaseModel):
 class GetSaleInfoDto(BaseModel):
     user_id: int
     house_id: int
+
+
+class GetRecentlySaleDto(BaseModel):
+    user_id: int
+    house_id: int

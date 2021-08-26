@@ -2,6 +2,10 @@ from typing import List, Optional
 
 from pydantic import BaseModel, StrictStr, StrictInt, StrictFloat
 
+from core.domains.house.entity.house_entity import (
+    SpecialSupplyResultReportEntity,
+    GeneralSupplyResulReportEntity,
+)
 from core.domains.report.entity.report_entity import PredictedCompetitionEntity
 
 
@@ -66,7 +70,7 @@ class PublicSaleReportSchema(BaseModel):
     real_estates: RealEstateReportSchema
 
 
-class RecentlyPublicSaleReportSchema(BaseModel):
+class VicinityPublicSaleReportSchema(BaseModel):
     id: StrictInt
     si_gun_gu: Optional[StrictStr]
     jibun_address: Optional[StrictStr]
@@ -76,10 +80,40 @@ class RecentlyPublicSaleReportSchema(BaseModel):
     supply_household: StrictInt
 
 
-class GetSaleInfoBaseSchema(BaseModel):
-    sale_info: PublicSaleReportSchema
-    recently_sale_info: RecentlyPublicSaleReportSchema
-
-
 class GetSaleInfoResponseSchema(BaseModel):
-    result: GetSaleInfoBaseSchema
+    sale_info: PublicSaleReportSchema
+    recently_sale_info: VicinityPublicSaleReportSchema
+
+
+class RecentlySaleDetailReportSchema(BaseModel):
+    area_type: StrictStr
+    private_area: StrictFloat
+    supply_area: StrictFloat
+    supply_price: StrictInt
+    special_household: StrictInt
+    general_household: StrictInt
+    price_per_meter: StrictInt
+    special_supply_results: List[SpecialSupplyResultReportEntity]
+    general_supply_results: List[GeneralSupplyResulReportEntity]
+
+
+class RecentlySaleReportSchema(BaseModel):
+    supply_household: StrictInt
+    offer_date: Optional[StrictStr]
+    special_supply_date: Optional[StrictStr]
+    special_supply_etc_date: Optional[StrictStr]
+    special_etc_gyeonggi_date: Optional[StrictStr]
+    first_supply_date: Optional[StrictStr]
+    first_supply_etc_date: Optional[StrictStr]
+    first_etc_gyeonggi_date: Optional[StrictStr]
+    second_supply_date: Optional[StrictStr]
+    second_supply_etc_date: Optional[StrictStr]
+    second_etc_gyeonggi_date: Optional[StrictStr]
+    notice_winner_date: Optional[StrictStr]
+    public_sale_photo: Optional[ReportPublicSalePhotoSchema]
+    public_sale_details: List[RecentlySaleDetailReportSchema] = None
+    real_estates: RealEstateReportSchema
+
+
+class GetRecentlySaleResponseSchema(BaseModel):
+    recently_sale_info: RecentlySaleReportSchema
