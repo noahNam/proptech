@@ -394,7 +394,7 @@ class PublicSaleDetailReportEntity(BaseModel):
     first_life_house_hold: Optional[int] = 0
     general_household: Optional[int] = 0
     price_per_meter: Optional[int] = 0
-    public_sale_detail_photo: Optional[PublicSaleDetailPhotoEntity]
+    public_sale_detail_photos: Optional[PublicSaleDetailPhotoEntity]
     special_supply_results: List[SpecialSupplyResultReportEntity] = None
     general_supply_results: List[GeneralSupplyResultEntity] = None
 
