@@ -640,6 +640,7 @@ class UseRecommendCodeUseCase(PaymentBaseUseCase):
         return UseCaseSuccessOutput()
 
     def _split_code_by_code_group(self, full_code: str) -> dict:
+        # todo. 잘못된 형식에 대한 return 필요함
         code_group_list = re.findall("\d", full_code)
         code_group = "".join(code_group_list)
         return dict(code=full_code.split(code_group)[1], code_group=code_group)
