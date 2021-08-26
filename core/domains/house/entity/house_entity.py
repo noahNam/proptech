@@ -372,9 +372,10 @@ class SpecialSupplyResultReportEntity(BaseModel):
     newlywed_vol: Optional[int] = 0
     old_parent_vol: Optional[int] = 0
     first_life_vol: Optional[int] = 0
+    total_vol: Optional[int] = 0
 
 
-class GeneralSupplyResultEntity(BaseModel):
+class GeneralSupplyResulReportEntity(BaseModel):
     region: Optional[str]
     region_percent: Optional[int]
     applicant_num: Optional[int] = 0
@@ -399,7 +400,7 @@ class PublicSaleDetailReportEntity(BaseModel):
     price_per_meter: Optional[int] = 0
     public_sale_detail_photos: Optional[PublicSaleDetailPhotoEntity]
     special_supply_results: List[SpecialSupplyResultReportEntity] = None
-    general_supply_results: List[GeneralSupplyResultEntity] = None
+    general_supply_results: List[GeneralSupplyResulReportEntity] = None
 
 
 class PublicSaleReportEntity(BaseModel):
