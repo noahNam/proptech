@@ -138,8 +138,13 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         )
 
         # get HousePublicDetailEntity (degree 조절 필요)
+        # <degree> -> 반경이 넓어지면 쿼리 속도가 느려집니다
+        # 1도 : 111km
+        # 0.1도 : 11.11km
+        # 0.01도 : 1.11km
+        # 0.001도 : 111m
         entities = self._house_repo.get_house_public_detail(
-            dto=dto, degree=1, is_like=is_like
+            dto=dto, degree=0.01, is_like=is_like
         )
 
         recently_view_dto = RecentlyViewDto(
