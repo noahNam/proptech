@@ -18,6 +18,7 @@ from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
+    RealEstateReportEntity,
 )
 
 
@@ -188,4 +189,13 @@ class RealEstateModel(db.Model):
             public_sale=self.public_sales.to_calendar_entity()
             if self.public_sales
             else None,
+        )
+
+    def to_report_entity(self) -> RealEstateReportEntity:
+        return RealEstateReportEntity(
+            id=self.id,
+            jibun_address=self.jibun_address,
+            si_gun_gu=self.si_gun_gu,
+            latitude=self.latitude,
+            longitude=self.longitude,
         )

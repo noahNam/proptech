@@ -30,6 +30,7 @@ class PublicSaleDetailPhotoEntity(BaseModel):
 class PublicSaleDetailEntity(BaseModel):
     id: int
     public_sales_id: int
+    area_type: str
     private_area: float
     supply_area: float
     supply_price: int
@@ -354,3 +355,69 @@ class SimpleCalendarInfoEntity(BaseModel):
 class GetHouseMainEntity(BaseModel):
     banner_list: List[BannerEntity] = None
     calendar_infos: List[SimpleCalendarInfoEntity] = None
+
+
+class RealEstateReportEntity(BaseModel):
+    id: int
+    jibun_address: Optional[str]
+    si_gun_gu: Optional[str]
+    latitude: float
+    longitude: float
+
+
+class SpecialSupplyResultReportEntity(BaseModel):
+    region: Optional[str]
+    region_percent: Optional[int]
+    multi_children_vol: Optional[int] = 0
+    newlywed_vol: Optional[int] = 0
+    old_parent_vol: Optional[int] = 0
+    first_life_vol: Optional[int] = 0
+
+
+class GeneralSupplyResultEntity(BaseModel):
+    region: Optional[str]
+    region_percent: Optional[int]
+    applicant_num: Optional[int] = 0
+    competition_rate: Optional[int] = 0
+    win_point: Optional[int] = 0
+
+
+class PublicSaleDetailReportEntity(BaseModel):
+    id: int
+    public_sales_id: int
+    area_type: str
+    private_area: float
+    supply_area: float
+    supply_price: int
+    acquisition_tax: int
+    special_household: Optional[int] = 0
+    multi_children_house_hold: Optional[int] = 0
+    newlywed_house_hold: Optional[int] = 0
+    old_parent_house_hold: Optional[int] = 0
+    first_life_house_hold: Optional[int] = 0
+    general_household: Optional[int] = 0
+    price_per_meter: Optional[int] = 0
+    public_sale_detail_photos: Optional[PublicSaleDetailPhotoEntity]
+    special_supply_results: List[SpecialSupplyResultReportEntity] = None
+    general_supply_results: List[GeneralSupplyResultEntity] = None
+
+
+class PublicSaleReportEntity(BaseModel):
+    id: int
+    name: Optional[str]
+    real_estate_id: int
+    supply_household: int
+    offer_date: Optional[str]
+    special_supply_date: Optional[str]
+    special_supply_etc_date: Optional[str]
+    special_etc_gyeonggi_date: Optional[str]
+    first_supply_date: Optional[str]
+    first_supply_etc_date: Optional[str]
+    first_etc_gyeonggi_date: Optional[str]
+    second_supply_date: Optional[str]
+    second_supply_etc_date: Optional[str]
+    second_etc_gyeonggi_date: Optional[str]
+    notice_winner_date: Optional[str]
+    public_sale_photo: Optional[PublicSalePhotoEntity]
+    public_sale_details: List[PublicSaleDetailReportEntity] = None
+    real_estates: RealEstateReportEntity
