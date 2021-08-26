@@ -8,7 +8,7 @@ from sqlalchemy import (
 )
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.user.entity.user_entity import SurveyResultEntity
+from core.domains.report.entity.report_entity import SurveyResultEntity
 
 
 class SurveyResultModel(db.Model):
