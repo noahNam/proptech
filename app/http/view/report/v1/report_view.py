@@ -32,12 +32,12 @@ def get_expected_competition_view():
 
 
 @api.route("/v1/reports/sale-info", methods=["GET"])
-# @jwt_required
-# @auth_required
-@swag_from("get_expected_competition.yml", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_sale_info.yml", methods=["GET"])
 def get_sale_info_view():
     dto = GetSaleInfoRequestSchema(
-        user_id=1, house_id=request.args.get("house_id"),
+        user_id=current_user.id, house_id=request.args.get("house_id"),
     ).validate_request_and_make_dto()
 
     return GetSaleInfoPresenter().transform(GetSaleInfoUseCase().execute(dto=dto))

@@ -856,10 +856,6 @@ class HouseRepository:
     def get_public_sale_info(self, house_id: int) -> PublicSaleReportEntity:
         query = (
             session.query(PublicSaleModel)
-            # .join(PublicSaleModel.real_estates)
-            # .join(PublicSaleModel.public_sale_details)
-            # .join(PublicSaleModel.public_sale_photos, isouter=True)
-            # .join(PublicSaleDetailModel.public_sale_detail_photos, isouter=True)
             .options(joinedload(PublicSaleModel.real_estates, innerjoin=True))
             .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
             .options(joinedload(PublicSaleModel.public_sale_photos))
@@ -874,41 +870,24 @@ class HouseRepository:
 
     def get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
         filters = list()
-        # filters.append(RealEstateModel.si_gun_gu == si_gun_gu)
+        filters.append(RealEstateModel.si_gun_gu == si_gun_gu)
         filters.append(
             PublicSaleModel.subscription_end_date
             < get_server_timestamp().strftime("%y%m%d")
         )
-        try:
-            # query = (
-            #     session.query(PublicSaleModel)
-            #     .join(RealEstateModel, (RealEstateModel.id == PublicSaleModel.real_estate_id) & (RealEstateModel.si_gun_gu == si_gun_gu))
-            #     .options(contains_eager(PublicSaleModel.real_estates))
-            #     .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
-            #     .options(joinedload("public_sale_details.public_sale_detail_photos"))
-            #     .options(joinedload("public_sale_details.special_supply_results"))
-            #     .options(joinedload("public_sale_details.general_supply_results"))
-            #     .options(joinedload(PublicSaleModel.public_sale_photos))
-            #     .filter(*filters)
-            #     .order_by(PublicSaleModel.subscription_end_date.desc())
-            #     .limit(1)
-            # )
+        query = (
+            session.query(PublicSaleModel)
+            .join(RealEstateModel, (RealEstateModel.id == PublicSaleModel.real_estate_id) & (RealEstateModel.si_gun_gu == si_gun_gu))
+            .options(contains_eager(PublicSaleModel.real_estates))
+            .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
+            .options(joinedload("public_sale_details.public_sale_detail_photos"))
+            .options(joinedload("public_sale_details.special_supply_results"))
+            .options(joinedload("public_sale_details.general_supply_results"))
+            .options(joinedload(PublicSaleModel.public_sale_photos))
+            .filter(*filters)
+            .order_by(PublicSaleModel.subscription_end_date.desc())
+            .limit(1)
+        )
 
-            query = (
-                session.query(PublicSaleModel)
-                .join(RealEstateModel, (RealEstateModel.id == PublicSaleModel.real_estate_id) & (RealEstateModel.si_gun_gu == si_gun_gu))
-                .options(contains_eager(PublicSaleModel.real_estates))
-                .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
-                # .options(joinedload("public_sale_details.public_sale_detail_photos"))
-                # .options(joinedload("public_sale_details.special_supply_results"))
-                # .options(joinedload("public_sale_details.general_supply_results"))
-                .options(joinedload(PublicSaleModel.public_sale_photos))
-                .filter(*filters)
-                .order_by(PublicSaleModel.subscription_end_date.desc())
-                .limit(1)
-            )
-
-            query_set = query.first()
-        except Exception as e:
-            pass
+        query_set = query.first()
         return query_set.to_report_entity()
