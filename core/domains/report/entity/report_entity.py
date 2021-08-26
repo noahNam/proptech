@@ -51,3 +51,32 @@ class TicketUsageResultEntity(BaseModel):
     house_type_ranks: List[HouseTypeRankEntity]
     user_analysis: List[UserAnalysisEntity]
     predicted_competitions: List[PredictedCompetitionEntity]
+
+
+class SurveyResultEntity(BaseModel):
+    id = int
+    user_id = int
+    total_point: Optional[int]
+    detail_point_house: Optional[int]
+    detail_point_family: Optional[int]
+    detail_point_bank: Optional[int]
+    public_newly_married: Optional[int]
+    public_newly_married_div: Optional[str]
+    public_first_life: Optional[int]
+    public_first_life_div: Optional[str]
+    public_multiple_children: Optional[int]
+    public_old_parent: Optional[int]
+    public_agency_recommend: Optional[int]
+    public_normal: Optional[int]
+    private_newly_married: Optional[int]
+    private_newly_married_div: Optional[str]
+    private_first_life: Optional[int]
+    private_first_life_div: Optional[str]
+    private_multiple_children: Optional[int]
+    private_old_parent: Optional[int]
+    private_agency_recommend: Optional[int]
+    private_normal: Optional[int]
+    hope_town_phase_one: Optional[int]
+    hope_town_phase_two: Optional[int]
+    created_at = datetime
+    updated_at = datetime

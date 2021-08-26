@@ -6,7 +6,7 @@ from core.domains.house.entity.house_entity import (
     SpecialSupplyResultReportEntity,
     GeneralSupplyResulReportEntity,
 )
-from core.domains.report.entity.report_entity import PredictedCompetitionEntity
+from core.domains.report.entity.report_entity import PredictedCompetitionEntity, SurveyResultEntity
 
 
 class SortCompetitionBaseSchema(BaseModel):
@@ -93,8 +93,8 @@ class RecentlySaleDetailReportSchema(BaseModel):
     special_household: StrictInt
     general_household: StrictInt
     price_per_meter: StrictInt
-    special_supply_results: List[SpecialSupplyResultReportEntity]
-    general_supply_results: List[GeneralSupplyResulReportEntity]
+    special_supply_results: List[SpecialSupplyResultReportEntity] = None
+    general_supply_results: List[GeneralSupplyResulReportEntity] = None
 
 
 class RecentlySaleReportSchema(BaseModel):
@@ -117,3 +117,15 @@ class RecentlySaleReportSchema(BaseModel):
 
 class GetRecentlySaleResponseSchema(BaseModel):
     recently_sale_info: RecentlySaleReportSchema
+
+
+class GetSurveysUserReportSchema(BaseModel):
+    is_ticket_usage_for_user: bool
+    survey_step: int
+    nickname: str
+    age: Optional[int]
+
+
+class GetUserSurveysResponseSchema(BaseModel):
+    user: GetSurveysUserReportSchema
+    survey_result: Optional[SurveyResultEntity]
