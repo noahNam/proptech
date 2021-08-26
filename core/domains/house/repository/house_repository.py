@@ -853,39 +853,32 @@ class HouseRepository:
                 )
         return result
 
-    def get_public_sale_infos(self, house_id: int) -> PublicSaleReportEntity:
-        try:
-            query = (
-                session.query(PublicSaleModel)
-                .join(PublicSaleModel.real_estates)
-                .join(PublicSaleModel.public_sale_details)
-                .join(PublicSaleModel.public_sale_photos, isouter=True)
-                .join(PublicSaleDetailModel.public_sale_detail_photos, isouter=True)
-                .filter(PublicSaleModel.id == house_id)
-            )
-            query_set = query.first()
-            return query_set.to_report_entity()
-        except Exception as e:
-            pass
+    def get_public_sale_info(self, house_id: int) -> PublicSaleReportEntity:
+        query = (
+            session.query(PublicSaleModel)
+            .join(PublicSaleModel.real_estates)
+            .join(PublicSaleModel.public_sale_details)
+            .join(PublicSaleModel.public_sale_photos, isouter=True)
+            .join(PublicSaleDetailModel.public_sale_detail_photos, isouter=True)
+            .filter(PublicSaleModel.id == house_id)
+        )
+        query_set = query.first()
+        return query_set.to_report_entity()
 
-    # public_sales_query = (
-    #      session.query(InterestHouseModel)
-    #          .with_entities(
-    #          InterestHouseModel.house_id,
-    #          InterestHouseModel.type,
-    #          PublicSaleModel.name,
-    #          RealEstateModel.jibun_address,
-    #          PublicSaleModel.subscription_start_date,
-    #          PublicSaleModel.subscription_end_date,
-    #          PublicSalePhotoModel.path.label("image_path"),
-    #      )
-    #          .join(
-    #          PublicSaleModel,
-    #          (InterestHouseModel.house_id == PublicSaleModel.id)
-    #          & (InterestHouseModel.type == HouseTypeEnum.PUBLIC_SALES.value)
-    #          & (InterestHouseModel.user_id == dto.user_id)
-    #          & (InterestHouseModel.is_like == True),
-    #      )
-    #          .join(PublicSaleModel.real_estates)
-    #          .join(PublicSaleModel.public_sale_photos, isouter=True)
-    #  )
+    def get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
+        filters = list()
+        filters.append(RealEstateModel.si_gun_gu == si_gun_gu)
+        filters.append(
+            PublicSaleModel.subscription_end_date
+            < get_server_timestamp().strftime("%y%m%d")
+        )
+
+        query = (
+            session.query(PublicSaleModel)
+            .join(PublicSaleModel.real_estates)
+            .filter(*filters)
+            .order_by(PublicSaleModel.subscription_end_date.desc())
+            .limit(1)
+        )
+        query_set = query.first()
+        return query_set.to_report_entity()

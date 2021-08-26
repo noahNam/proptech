@@ -34,30 +34,51 @@ class PublicSaleDetailReportSchema(BaseModel):
     private_area: StrictFloat
     supply_area: StrictFloat
     supply_price: StrictInt
+    special_household: StrictInt
+    multi_children_house_hold: StrictInt
+    newlywed_house_hold: StrictInt
+    old_parent_house_hold: StrictInt
+    first_life_house_hold: StrictInt
+    general_household: StrictInt
     price_per_meter: StrictInt
     public_sale_detail_photo: Optional[ReportPublicSaleDetailPhotoSchema]
 
 
+class RealEstateReportSchema(BaseModel):
+    jibun_address: Optional[StrictStr]
+
+
 class PublicSaleReportSchema(BaseModel):
-    id: int
-    supply_household: int
-    offer_date: Optional[str]
-    special_supply_date: Optional[str]
-    special_supply_etc_date: Optional[str]
-    special_etc_gyeonggi_date: Optional[str]
-    first_supply_date: Optional[str]
-    first_supply_etc_date: Optional[str]
-    first_etc_gyeonggi_date: Optional[str]
-    second_supply_date: Optional[str]
-    second_supply_etc_date: Optional[str]
-    second_etc_gyeonggi_date: Optional[str]
-    notice_winner_date: Optional[str]
+    supply_household: StrictInt
+    offer_date: Optional[StrictStr]
+    special_supply_date: Optional[StrictStr]
+    special_supply_etc_date: Optional[StrictStr]
+    special_etc_gyeonggi_date: Optional[StrictStr]
+    first_supply_date: Optional[StrictStr]
+    first_supply_etc_date: Optional[StrictStr]
+    first_etc_gyeonggi_date: Optional[StrictStr]
+    second_supply_date: Optional[StrictStr]
+    second_supply_etc_date: Optional[StrictStr]
+    second_etc_gyeonggi_date: Optional[StrictStr]
+    notice_winner_date: Optional[StrictStr]
     public_sale_photo: Optional[ReportPublicSalePhotoSchema]
     public_sale_details: List[PublicSaleDetailReportSchema] = None
+    real_estates: RealEstateReportSchema
+
+
+class RecentlyPublicSaleReportSchema(BaseModel):
+    id: StrictInt
+    si_gun_gu: Optional[StrictStr]
+    jibun_address: Optional[StrictStr]
+    latitude: StrictFloat
+    longitude: StrictFloat
+    name: Optional[StrictStr]
+    supply_household: StrictInt
 
 
 class GetSaleInfoBaseSchema(BaseModel):
-    sale_infos: PublicSaleReportSchema
+    sale_info: PublicSaleReportSchema
+    recently_sale_info: RecentlyPublicSaleReportSchema
 
 
 class GetSaleInfoResponseSchema(BaseModel):

@@ -169,6 +169,7 @@ class PublicSaleModel(db.Model):
     def to_report_entity(self) -> PublicSaleReportEntity:
         return PublicSaleReportEntity(
             id=self.id,
+            name=self.name,
             real_estate_id=self.real_estate_id,
             supply_household=self.supply_household,
             offer_date=self.offer_date,
@@ -191,4 +192,5 @@ class PublicSaleModel(db.Model):
             ]
             if self.public_sale_details
             else None,
+            real_estates=self.real_estates.to_report_entity(),
         )

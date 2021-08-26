@@ -20,14 +20,24 @@ def get_public_sales_of_ticket_usage(public_house_ids: int,):
     setattr(g, HouseTopicEnum.GET_PUBLIC_SALES_TO_TICKET_USAGE, result)
 
 
-def get_public_sale_infos(house_id: int,):
-    result: PublicSaleReportEntity = HouseRepository().get_public_sale_infos(
+def get_public_sale_info(house_id: int,):
+    result: PublicSaleReportEntity = HouseRepository().get_public_sale_info(
         house_id=house_id
     )
-    setattr(g, HouseTopicEnum.GET_PUBLIC_SALE_INFOS, result)
+    setattr(g, HouseTopicEnum.GET_PUBLIC_SALE_INFO, result)
+
+
+def get_recently_public_sale_info(si_gun_gu: str,):
+    result: PublicSaleReportEntity = HouseRepository().get_recently_public_sale_info(
+        si_gun_gu=si_gun_gu
+    )
+    setattr(g, HouseTopicEnum.GET_RECENTLY_PUBLIC_SALE_INFO, result)
 
 
 pub.subscribe(
     get_public_sales_of_ticket_usage, HouseTopicEnum.GET_PUBLIC_SALES_TO_TICKET_USAGE
 )
-pub.subscribe(get_public_sale_infos, HouseTopicEnum.GET_PUBLIC_SALE_INFOS)
+pub.subscribe(get_public_sale_info, HouseTopicEnum.GET_PUBLIC_SALE_INFO)
+pub.subscribe(
+    get_recently_public_sale_info, HouseTopicEnum.GET_RECENTLY_PUBLIC_SALE_INFO
+)
