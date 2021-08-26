@@ -3,12 +3,11 @@ from typing import Optional, List, Any
 from geoalchemy2 import Geometry
 from sqlalchemy import and_, func, or_, literal, String
 from sqlalchemy import exc
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload, selectinload, contains_eager
 from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
-from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
@@ -429,14 +428,15 @@ class HouseRepository:
                     "avg_private_supply_area"
                 ),
             )
-            # .options(joinedload(RealEstateModel.private_sales, innerjoin=True))
             .join(PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id)
-            .options(selectinload("private_sales.private_sale_details"))
-            # .join(PrivateSaleDetailModel, PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id)
+            .join(PrivateSaleDetailModel, PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id)
+            .options(contains_eager(RealEstateModel.private_sales))
+            .options(contains_eager("private_sales.private_sale_details"))
             .filter(*filters)
-            .group_by(RealEstateModel.id)
+            .group_by(RealEstateModel.id, PrivateSaleModel.id, PrivateSaleDetailModel.id)
         )
         house_with_private_queryset = query.all()
+
         house_with_private_entities = self._make_house_with_private_entities(
             queryset=house_with_private_queryset
         )
