@@ -3,7 +3,7 @@ from typing import Optional, List, Any
 from geoalchemy2 import Geometry
 from sqlalchemy import and_, func, or_, literal, String
 from sqlalchemy import exc
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload, selectinload, contains_eager
 from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
@@ -186,7 +186,6 @@ class HouseRepository:
             .filter(*filters)
             .group_by(RealEstateModel.id)
         )
-
         queryset = query.all()
 
         return self._make_object_bounding_entity(queryset=queryset)
@@ -329,6 +328,7 @@ class HouseRepository:
             return None
 
         # Make Entity
+        # Slow Query Problem_2
         results = list()
         for query in queryset:
             results.append(
@@ -419,7 +419,7 @@ class HouseRepository:
                 <= get_server_timestamp(),
             )
         )
-
+        # Slow Query Problem_1
         query = (
             session.query(
                 RealEstateModel,
@@ -428,12 +428,16 @@ class HouseRepository:
                     "avg_private_supply_area"
                 ),
             )
-            .join(RealEstateModel.private_sales)
+            .join(PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id)
+            .join(PrivateSaleDetailModel, PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id)
+            .options(contains_eager(RealEstateModel.private_sales))
+            .options(contains_eager("private_sales.private_sale_details"))
             .filter(*filters)
-            .group_by(RealEstateModel.id)
+            .group_by(RealEstateModel.id, PrivateSaleModel.id, PrivateSaleDetailModel.id)
+            .limit(10)
         )
-
         house_with_private_queryset = query.all()
+
         house_with_private_entities = self._make_house_with_private_entities(
             queryset=house_with_private_queryset
         )

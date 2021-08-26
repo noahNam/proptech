@@ -63,10 +63,13 @@ class PublicSaleEntity(BaseModel):
     subscription_end_date: Optional[str]
     special_supply_date: Optional[str]
     special_supply_etc_date: Optional[str]
+    special_etc_gyeonggi_date: Optional[str]
     first_supply_date: Optional[str]
     first_supply_etc_date: Optional[str]
+    first_etc_gyeonggi_date: Optional[str]
     second_supply_date: Optional[str]
     second_supply_etc_date: Optional[str]
+    second_etc_gyeonggi_date: Optional[str]
     notice_winner_date: Optional[str]
     contract_start_date: Optional[str]
     contract_end_date: Optional[str]
@@ -173,15 +176,15 @@ class BoundingRealEstateEntity(BaseModel):
 
 class RealEstateWithPrivateSaleEntity(BaseModel):
     id: int
-    name: str
-    road_address: str
+    name: Optional[str]
+    road_address: Optional[str]
     jibun_address: str
     si_do: str
     si_gun_gu: str
     dong_myun: str
-    ri: str
-    road_name: str
-    road_number: str
+    ri: Optional[str]
+    road_name: Optional[str]
+    road_number: Optional[str]
     land_number: str
     is_available: bool
     latitude: float
@@ -196,15 +199,15 @@ class RealEstateWithPrivateSaleEntity(BaseModel):
 
 class HousePublicDetailEntity(BaseModel):
     id: int
-    name: str
-    road_address: str
+    name: Optional[str]
+    road_address: Optional[str]
     jibun_address: str
     si_do: str
     si_gun_gu: str
     dong_myun: str
-    ri: str
-    road_name: str
-    road_number: str
+    ri: Optional[str]
+    road_name: Optional[str]
+    road_number: Optional[str]
     land_number: str
     is_available: bool
     latitude: float
@@ -228,7 +231,7 @@ class HousePublicDetailEntity(BaseModel):
 class PublicSaleDetailCalendarEntity(BaseModel):
     id: int
     real_estate_id: int
-    name: str
+    name: Optional[str]
     trade_type: Enum
     offer_date: Optional[str]
     subscription_start_date: Optional[str]
