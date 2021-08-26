@@ -215,8 +215,3 @@ def test_get_search_house_list_when_get_keywords(
         result = HouseRepository().get_search_house_list(dto=dto)
 
     assert isinstance(result, GetSearchHouseListEntity)
-
-
-def test_get_public_sale_info(session, create_real_estate_with_public_sale):
-    result = HouseRepository().get_public_sale_info(house_id=1)
-    assert 1 == 1

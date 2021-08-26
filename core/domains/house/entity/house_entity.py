@@ -354,6 +354,14 @@ class GetHouseMainEntity(BaseModel):
     calendar_infos: List[SimpleCalendarInfoEntity] = None
 
 
+class RealEstateReportEntity(BaseModel):
+    id: int
+    jibun_address: Optional[str]
+    si_gun_gu: Optional[str]
+    latitude: float
+    longitude: float
+
+
 class SpecialSupplyResultReportEntity(BaseModel):
     region: Optional[str]
     region_percent: Optional[int]
@@ -393,6 +401,7 @@ class PublicSaleDetailReportEntity(BaseModel):
 
 class PublicSaleReportEntity(BaseModel):
     id: int
+    name: Optional[str]
     real_estate_id: int
     supply_household: int
     offer_date: Optional[str]
@@ -408,3 +417,4 @@ class PublicSaleReportEntity(BaseModel):
     notice_winner_date: Optional[str]
     public_sale_photo: Optional[PublicSalePhotoEntity]
     public_sale_details: List[PublicSaleDetailReportEntity] = None
+    real_estates: RealEstateReportEntity
