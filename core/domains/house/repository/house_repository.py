@@ -434,6 +434,7 @@ class HouseRepository:
             .options(contains_eager("private_sales.private_sale_details"))
             .filter(*filters)
             .group_by(RealEstateModel.id, PrivateSaleModel.id, PrivateSaleDetailModel.id)
+            .limit(10)
         )
         house_with_private_queryset = query.all()
 
