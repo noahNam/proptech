@@ -430,12 +430,19 @@ class HouseRepository:
                     "avg_private_supply_area"
                 ),
             )
-            .join(PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id)
-            .join(PrivateSaleDetailModel, PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id)
+            .join(
+                PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
+            )
+            .join(
+                PrivateSaleDetailModel,
+                PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id,
+            )
             .options(contains_eager(RealEstateModel.private_sales))
             .options(contains_eager("private_sales.private_sale_details"))
             .filter(*filters)
-            .group_by(RealEstateModel.id, PrivateSaleModel.id, PrivateSaleDetailModel.id)
+            .group_by(
+                RealEstateModel.id, PrivateSaleModel.id, PrivateSaleDetailModel.id
+            )
             .limit(10)
         )
         house_with_private_queryset = query.all()

@@ -37,7 +37,7 @@ class GetSaleInfoPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = GetSaleInfoResponseSchema(result=output.value)
+                schema = output.value
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
@@ -48,7 +48,30 @@ class GetSaleInfoPresenter:
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
             result = {
-                "data": schema.result.dict(),
+                "data": schema.dict(),
+                "meta": output.meta,
+            }
+            return success_response(result=result)
+        elif isinstance(output, UseCaseFailureOutput):
+            return failure_response(output=output, status_code=output.code)
+
+
+class GetRecentlySalePresenter:
+    def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
+        if isinstance(output, UseCaseSuccessOutput):
+            try:
+                schema = output.value
+            except ValidationError:
+                return failure_response(
+                    UseCaseFailureOutput(
+                        type="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            result = {
+                "data": schema.dict(),
                 "meta": output.meta,
             }
             return success_response(result=result)
