@@ -94,7 +94,7 @@ class PublicSaleDetailModel(db.Model):
             price_per_meter=int(
                 self.supply_price
                 / (self.supply_area / PricePerMeterEnum.CALC_VAR.value)
-            ),
+            ) if self.supply_price else None,
             special_supply_results=[
                 special_supply_result.to_report_entity()
                 for special_supply_result in self.special_supply_results
