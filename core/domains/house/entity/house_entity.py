@@ -34,6 +34,7 @@ class PublicSaleDetailEntity(BaseModel):
     supply_area: float
     supply_price: int
     acquisition_tax: int
+    area_type: Optional[str]
     public_sale_detail_photos: PublicSaleDetailPhotoEntity = None
 
 
@@ -59,6 +60,7 @@ class PublicSaleEntity(BaseModel):
     supply_household: int
     is_available: bool
     offer_date: Optional[str]
+    offer_notice_url: Optional[str]
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
     special_supply_date: Optional[str]
@@ -148,16 +150,16 @@ class AdministrativeDivisionEntity(BaseModel):
 
 class BoundingRealEstateEntity(BaseModel):
     id: int
-    name: str
-    road_address: str
+    name: Optional[str]
+    road_address: Optional[str]
     jibun_address: str
     si_do: str
     si_gun_gu: str
     dong_myun: str
-    ri: str
-    road_name: str
-    road_number: str
-    land_number: str
+    ri: Optional[str]
+    road_name: Optional[str]
+    road_number: Optional[str]
+    land_number: Optional[str]
     is_available: bool
     latitude: float
     longitude: float
