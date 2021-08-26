@@ -6,9 +6,15 @@ import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from app.persistence.model import PredictedCompetitionModel
-from core.domains.report.dto.report_dto import GetExpectedCompetitionDto
+from core.domains.house.entity.house_entity import PublicSaleReportEntity
+from core.domains.house.enum import HouseTopicEnum
+from core.domains.report.dto.report_dto import GetExpectedCompetitionDto, GetSaleInfoDto
 from core.domains.report.repository.report_repository import ReportRepository
-from core.domains.report.schema.report_schema import GetExpectedCompetitionBaseSchema
+from core.domains.report.schema.report_schema import (
+    GetExpectedCompetitionBaseSchema,
+    GetSaleInfoBaseSchema,
+    RecentlyPublicSaleReportSchema,
+)
 from core.domains.user.entity.user_entity import UserProfileEntity
 from core.domains.user.enum import UserTopicEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -24,6 +30,19 @@ class ReportBaseUseCase:
             topic_name=UserTopicEnum.GET_USER_PROFILE, user_id=user_id,
         )
         return get_event_object(topic_name=UserTopicEnum.GET_USER_PROFILE)
+
+    def _get_public_sale_info(self, house_id: int) -> PublicSaleReportEntity:
+        send_message(
+            topic_name=HouseTopicEnum.GET_PUBLIC_SALE_INFO, house_id=house_id,
+        )
+        return get_event_object(topic_name=HouseTopicEnum.GET_PUBLIC_SALE_INFO)
+
+    def _get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
+        send_message(
+            topic_name=HouseTopicEnum.GET_RECENTLY_PUBLIC_SALE_INFO,
+            si_gun_gu=si_gun_gu,
+        )
+        return get_event_object(topic_name=HouseTopicEnum.GET_RECENTLY_PUBLIC_SALE_INFO)
 
 
 class GetExpectedCompetitionUseCase(ReportBaseUseCase):
@@ -59,7 +78,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             user_id=dto.user_id
         )
 
-        result = self._make_response_schema(
+        result: GetExpectedCompetitionBaseSchema = self._make_response_schema(
             expected_competitions=expected_competitions,
             nickname=user_profile.nickname,
             sort_competitions=sort_competitions,
@@ -164,3 +183,50 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                 )
             )
         return sorted_result
+
+
+class GetSaleInfoUseCase(ReportBaseUseCase):
+    def execute(
+        self, dto: GetSaleInfoDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        report_public_sale_info: PublicSaleReportEntity = self._get_public_sale_info(
+            house_id=dto.house_id
+        )
+
+        # 근처 가장 최근 청약정보
+        report_recently_public_sale_info: PublicSaleReportEntity = self._get_recently_public_sale_info(
+            si_gun_gu=report_public_sale_info.real_estates.si_gun_gu
+        )
+
+        result: GetSaleInfoBaseSchema = self._make_response_schema(
+            report_public_sale_info, report_recently_public_sale_info
+        )
+
+        return UseCaseSuccessOutput(value=result)
+
+    def _make_response_schema(
+        self,
+        report_public_sale_info: PublicSaleReportEntity,
+        report_recently_public_sale_info: PublicSaleReportEntity,
+    ) -> GetSaleInfoBaseSchema:
+        report_recently_public_sale_info = RecentlyPublicSaleReportSchema(
+            id=report_recently_public_sale_info.id,
+            name=report_recently_public_sale_info.name,
+            supply_household=report_recently_public_sale_info.supply_household,
+            si_gun_gu=report_recently_public_sale_info.real_estates.si_gun_gu,
+            jibun_address=report_recently_public_sale_info.real_estates.jibun_address,
+            latitude=report_recently_public_sale_info.real_estates.latitude,
+            longitude=report_recently_public_sale_info.real_estates.longitude,
+        )
+
+        return GetSaleInfoBaseSchema(
+            sale_info=report_public_sale_info,
+            recently_sale_info=report_recently_public_sale_info,
+        )

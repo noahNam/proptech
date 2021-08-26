@@ -64,6 +64,42 @@ def upgrade():
     op.add_column(
         "public_sale_details",
         sa.Column(
+            "multi_children_house_hold",
+            sa.SmallInteger(),
+            nullable=False,
+            server_default=text("0"),
+        ),
+    )
+    op.add_column(
+        "public_sale_details",
+        sa.Column(
+            "newlywed_house_hold",
+            sa.SmallInteger(),
+            nullable=False,
+            server_default=text("0"),
+        ),
+    )
+    op.add_column(
+        "public_sale_details",
+        sa.Column(
+            "old_parent_house_hold",
+            sa.SmallInteger(),
+            nullable=False,
+            server_default=text("0"),
+        ),
+    )
+    op.add_column(
+        "public_sale_details",
+        sa.Column(
+            "first_life_house_hold",
+            sa.SmallInteger(),
+            nullable=False,
+            server_default=text("0"),
+        ),
+    )
+    op.add_column(
+        "public_sale_details",
+        sa.Column(
             "general_household",
             sa.SmallInteger(),
             nullable=False,
@@ -72,16 +108,29 @@ def upgrade():
     )
 
     # public_sales 기타-경기 칼럼 추가
-    op.add_column('public_sales', sa.Column('special_etc_gyeonggi_date', sa.String(length=8), nullable=True))
-    op.add_column('public_sales', sa.Column('first_etc_gyeonggi_date', sa.String(length=8), nullable=True))
-    op.add_column('public_sales', sa.Column('second_etc_gyeonggi_date', sa.String(length=8), nullable=True))
+    op.add_column(
+        "public_sales",
+        sa.Column("special_etc_gyeonggi_date", sa.String(length=8), nullable=True),
+    )
+    op.add_column(
+        "public_sales",
+        sa.Column("first_etc_gyeonggi_date", sa.String(length=8), nullable=True),
+    )
+    op.add_column(
+        "public_sales",
+        sa.Column("second_etc_gyeonggi_date", sa.String(length=8), nullable=True),
+    )
 
 
 def downgrade():
     op.drop_column("public_sale_details", "general_household")
     op.drop_column("public_sale_details", "special_household")
-    op.drop_table("special_supply_results")
+    op.drop_column("public_sale_details", "multi_children_house_hold")
+    op.drop_column("public_sale_details", "newlywed_house_hold")
+    op.drop_column("public_sale_details", "old_parent_house_hold")
+    op.drop_column("public_sale_details", "first_life_house_hold")
     op.drop_table("general_supply_results")
-    op.drop_column('public_sales', 'second_etc_gyeonggi_date')
-    op.drop_column('public_sales', 'first_etc_gyeonggi_date')
-    op.drop_column('public_sales', 'special_etc_gyeonggi_date')
+    op.drop_table("special_supply_results")
+    op.drop_column("public_sales", "second_etc_gyeonggi_date")
+    op.drop_column("public_sales", "first_etc_gyeonggi_date")
+    op.drop_column("public_sales", "special_etc_gyeonggi_date")

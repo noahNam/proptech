@@ -1,0 +1,160 @@
+openapi: "3.0.2"
+tags:
+  - Report
+security:
+  - userAuth: []
+responses:
+  '200':
+    description:
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                recently_sale_info:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      example: 16789
+                    jibun_address:
+                      type: string
+                      example: 서울특별시 은평구 수색동 115-5
+                    latitude:
+                      type: integer
+                      example: 37.48341
+                    longitude:
+                      type: integer
+                      example: 37.48123
+                    name:
+                      type: string
+                      example: DM파인시티자이
+                    si_gun_gu:
+                      type: string
+                      example: 은평구
+                    supply_household:
+                      type: integer
+                      example: 453
+                sale_info:
+                  type: object
+                  properties:
+                    public_sale_photo:
+                      type: object
+                      properties:
+                        path:
+                          type: string
+                          example: img/abcd.png
+                    real_estates:
+                      type: object
+                      properties:
+                        jibun_address:
+                          type: string
+                          example: 서울특별시 은평구 수색동
+                    special_supply_date:
+                      type: string
+                      example: 20200818
+                    special_supply_etc_date:
+                      type: string
+                      example: 20200818
+                    special_etc_gyeonggi_date:
+                      type: string
+                      example: 20200818
+                    first_supply_date:
+                      type: string
+                      example: 20200818
+                    first_supply_etc_date:
+                      type: string
+                      example: 20200818
+                    first_etc_gyeonggi_date:
+                      type: string
+                      example: 20200818
+                    second_supply_date:
+                      type: string
+                      example: 20200818
+                    second_supply_etc_date:
+                      type: string
+                      example: 20200818
+                    second_etc_gyeonggi_date:
+                      type: string
+                      example: 20200818
+                    notice_winner_date:
+                      type: string
+                      example: 20200818
+                    offer_date:
+                      type: string
+                      example: 20200818
+                    supply_household:
+                      type: integer
+                      example: 183
+                    public_sale_details:
+                      type: array
+                      items:
+                        properties:
+                          area_type:
+                            type: integer
+                            example: 39
+                          first_life_house_hold:
+                            type: integer
+                            example: 20
+                          general_household:
+                            type: integer
+                            example: 20
+                          multi_children_house_hold:
+                            type: integer
+                            example: 20
+                          newlywed_house_hold:
+                            type: integer
+                            example: 20
+                          old_parent_house_hold:
+                            type: integer
+                            example: 20
+                          price_per_meter:
+                            type: integer
+                            example: 2036
+                          private_area:
+                            type: float
+                            example: 39.97
+                          supply_area:
+                            type: float
+                            example: 58.542
+                          supply_price:
+                            type: integer
+                            example: 36060
+                          public_sale_detail_photo:
+                            type: object
+                            properties:
+                              path:
+                                type: string
+                                example: img/akxjdflja.png
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'
