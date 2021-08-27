@@ -1,0 +1,141 @@
+openapi: "3.0.2"
+tags:
+  - Report
+security:
+  - userAuth: []
+responses:
+  '200':
+    description: survey_step=0(미진행), 1(1단계설문중), 2(2단계설문중), 3(설문완료)
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                user:
+                  type: object
+                  properties:
+                    nickname:
+                      type: string
+                      example: veronica
+                    age:
+                      type: integer
+                      example: 31
+                    survey_step:
+                      type: integer
+                      example: 3
+                    is_ticket_usage_for_user:
+                      type: bool
+                      example: true
+                survey_result:
+                  type: object
+                  properties:
+                    total_point:
+                      type: integer
+                      example: 32
+                    detail_point_house:
+                      type: integer
+                      example: 21
+                    detail_point_family:
+                      type: integer
+                      example: 21
+                    detail_point_bank:
+                      type: integer
+                      example: 21
+                    public_newly_married:
+                      type: integer
+                      example: 21
+                    public_first_life:
+                      type: integer
+                      example: 21
+                    public_multiple_children:
+                      type: integer
+                      example: 21
+                    public_old_parent:
+                      type: integer
+                      example: 21
+                    public_agency_recommend:
+                      type: integer
+                      example: 21
+                    public_normal:
+                      type: integer
+                      example: 21
+                    private_newly_married:
+                      type: integer
+                      example: 21
+                    private_first_life:
+                      type: integer
+                      example: 21
+                    private_multiple_children:
+                      type: integer
+                      example: 21
+                    private_old_parent:
+                      type: integer
+                      example: 21
+                    private_agency_recommend:
+                      type: integer
+                      example: 21
+                    private_normal:
+                      type: integer
+                      example: 21
+                    hope_town_phase_one:
+                      type: integer
+                      example: 21
+                    hope_town_phase_two:
+                      type: integer
+                      example: 21
+                    public_newly_married_div:
+                      type: string
+                      example: 우선
+                    private_newly_married_div:
+                      type: string
+                      example: 잔여
+                    public_first_life_div:
+                      type: string
+                      example: 우선
+                    private_first_life_div:
+                      type: string
+                      example: 잔여
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404 #1':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '404 #2':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: string
+              example: survey_result
+            message:
+              type: string
+              example: not_found_error
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

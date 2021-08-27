@@ -16,30 +16,6 @@ responses:
                 recently_sale_info:
                   type: object
                   properties:
-                    id:
-                      type: integer
-                      example: 16789
-                    jibun_address:
-                      type: string
-                      example: 서울특별시 은평구 수색동 115-5
-                    latitude:
-                      type: integer
-                      example: 37.48341
-                    longitude:
-                      type: integer
-                      example: 37.48123
-                    name:
-                      type: string
-                      example: DM파인시티자이
-                    si_gun_gu:
-                      type: string
-                      example: 은평구
-                    supply_household:
-                      type: integer
-                      example: 453
-                sale_info:
-                  type: object
-                  properties:
                     public_sale_photo:
                       type: object
                       properties:
@@ -95,22 +71,10 @@ responses:
                           area_type:
                             type: integer
                             example: 39
-                          first_life_house_hold:
-                            type: integer
-                            example: 20
                           general_household:
                             type: integer
                             example: 20
                           speical_household:
-                            type: integer
-                            example: 20
-                          multi_children_house_hold:
-                            type: integer
-                            example: 20
-                          newlywed_house_hold:
-                            type: integer
-                            example: 20
-                          old_parent_house_hold:
                             type: integer
                             example: 20
                           price_per_meter:
@@ -125,12 +89,50 @@ responses:
                           supply_price:
                             type: integer
                             example: 36060
-                          public_sale_detail_photo:
-                            type: object
-                            properties:
-                              path:
-                                type: string
-                                example: img/akxjdflja.png
+                          general_supply_results:
+                            type: array
+                            items:
+                              properties:
+                                applicant_num:
+                                  type: integer
+                                  example: 10
+                                competition_rate:
+                                  type: integer
+                                  example: 220
+                                region:
+                                  type: string
+                                  example: 당해
+                                region_percent:
+                                  type: integer
+                                  example: 30
+                                win_point:
+                                  type: integer
+                                  example: 60
+                          speical_supply_results:
+                            type: array
+                            items:
+                              properties:
+                                first_life_vol:
+                                  type: integer
+                                  example: 10
+                                multi_children_vol:
+                                  type: integer
+                                  example: 10
+                                newlywed_vol:
+                                  type: integer
+                                  example: 10
+                                old_parent_vol:
+                                  type: integer
+                                  example: 10
+                                total_vol:
+                                  type: integer
+                                  example: 40
+                                region:
+                                  type: string
+                                  example: 당해
+                                region_percent:
+                                  type: integer
+                                  example: 30
   '400':
     description: invalid_request_error
     content:
