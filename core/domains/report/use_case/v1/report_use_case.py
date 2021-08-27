@@ -296,7 +296,7 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
         is_ticket_usage_for_user: bool = self._report_repo.is_ticket_usage_for_user(user_id=dto.user_id)
 
         survey_result, age = None, None
-        if user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value and is_ticket_usage_for_user:
+        if user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value:
             survey_result: Optional[SurveyResultEntity] = self._report_repo.get_user_survey_results(
                 user_id=dto.user_id
             )
