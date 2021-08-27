@@ -36,6 +36,7 @@ class PredictedCompetitionEntity(BaseModel):
 class UserAnalysisEntity(BaseModel):
     id: int
     ticket_usage_result_id: int
+    div: str
     category: int
     created_at: datetime
 
@@ -80,3 +81,16 @@ class SurveyResultEntity(BaseModel):
     hope_town_phase_two: Optional[int]
     created_at = datetime
     updated_at = datetime
+
+
+class UserAnalysisCategoryEntity(BaseModel):
+    id: int
+    div: str
+    category: int
+    output_text: str
+
+
+class UserAnalysisCategoryDetailEntity(BaseModel):
+    id: int
+    user_analysis_category_id: int
+    format_text: str

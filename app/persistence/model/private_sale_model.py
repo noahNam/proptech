@@ -29,6 +29,7 @@ class PrivateSaleModel(db.Model):
     building_type = Column(
         Enum(BuildTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
+        index=True
     )
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
