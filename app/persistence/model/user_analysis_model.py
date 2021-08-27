@@ -3,7 +3,8 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     SmallInteger,
-    DateTime, String,
+    DateTime,
+    String,
 )
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp

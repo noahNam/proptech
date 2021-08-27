@@ -16,9 +16,9 @@ from core.domains.payment.entity.payment_entity import (
 from core.domains.payment.enum.payment_enum import (
     TicketSignEnum,
     PromotionDivEnum,
-    TicketUsageTypeEnum,
 )
 from core.domains.payment.repository.payment_repository import PaymentRepository
+from core.domains.report.enum.report_enum import TicketUsageTypeEnum
 from core.domains.report.repository.report_repository import ReportRepository
 
 
@@ -34,7 +34,9 @@ def test_get_ticket_usage_results_then_return_public_sale_ids(
     session.add(public_sale_photo)
     session.commit()
 
-    result = ReportRepository().get_ticket_usage_results(user_id=create_users[0].id)
+    result = ReportRepository().get_ticket_usage_results(
+        user_id=create_users[0].id, type_=TicketUsageTypeEnum.HOUSE.value
+    )
 
     assert len(result) == 1
     assert result[0] == public_sales_id

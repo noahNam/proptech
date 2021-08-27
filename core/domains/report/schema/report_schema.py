@@ -6,7 +6,10 @@ from core.domains.house.entity.house_entity import (
     SpecialSupplyResultReportEntity,
     GeneralSupplyResulReportEntity,
 )
-from core.domains.report.entity.report_entity import PredictedCompetitionEntity, SurveyResultEntity
+from core.domains.report.entity.report_entity import (
+    PredictedCompetitionEntity,
+    SurveyResultEntity,
+)
 
 
 class SortCompetitionBaseSchema(BaseModel):

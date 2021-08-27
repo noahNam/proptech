@@ -1,7 +1,9 @@
 from sqlalchemy import (
     Column,
     Integer,
-    SmallInteger, Text, ForeignKey,
+    SmallInteger,
+    Text,
+    ForeignKey,
 )
 
 from app import db
@@ -13,7 +15,9 @@ class UserAnalysisCategoryDetailModel(db.Model):
     __tablename__ = "user_analysis_category_details"
 
     id = Column(SmallInteger().with_variant(Integer, "sqlite"), primary_key=True)
-    user_analysis_category_id = Column(SmallInteger, ForeignKey(UserAnalysisCategoryModel.id), nullable=False)
+    user_analysis_category_id = Column(
+        SmallInteger, ForeignKey(UserAnalysisCategoryModel.id), nullable=False
+    )
     format_text = Column(Text, nullable=False)
 
     def to_entity(self) -> UserAnalysisCategoryDetailEntity:

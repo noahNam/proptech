@@ -8,7 +8,8 @@ from app.extensions.utils.log_helper import logger_
 from core.domains.report.dto.report_dto import (
     GetExpectedCompetitionDto,
     GetSaleInfoDto,
-    GetRecentlySaleDto, ReportUserDto,
+    GetRecentlySaleDto,
+    ReportUserDto,
 )
 from core.exceptions import InvalidRequestException
 
@@ -94,7 +95,7 @@ class GetUserSurveysRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserSurveysSchema(user_id=self.user_id, ).dict()
+            schema = GetUserSurveysSchema(user_id=self.user_id,).dict()
             return ReportUserDto(**schema)
         except ValidationError as e:
             logger.error(
