@@ -1,6 +1,6 @@
 """alter_tables_until_MVP
 
-Revision ID: 483bc2b4f3e3
+Revision ID: 657f05d6c187
 Revises: 3453a0306302
 Create Date: 2021-08-23 16:19:22.630168
 
