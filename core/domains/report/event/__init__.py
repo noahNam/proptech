@@ -7,9 +7,9 @@ from core.domains.report.enum import ReportTopicEnum
 from core.domains.report.repository.report_repository import ReportRepository
 
 
-def get_ticket_usage_results(user_id: int,):
+def get_ticket_usage_results(user_id: int, type_: str):
     ticket_usage_result_ids: List[int] = ReportRepository().get_ticket_usage_results(
-        user_id=user_id
+        user_id=user_id, type_=type_
     )
 
     setattr(g, ReportTopicEnum.GET_TICKET_USAGE_RESULTS, ticket_usage_result_ids)

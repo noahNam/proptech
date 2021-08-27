@@ -2,7 +2,8 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
-    SmallInteger, Text,
+    SmallInteger,
+    Text,
 )
 from sqlalchemy.orm import relationship
 
@@ -18,7 +19,11 @@ class UserAnalysisCategoryModel(db.Model):
     category = Column(SmallInteger, nullable=False)
     output_text = Column(Text, nullable=False)
 
-    user_analysis_category_details = relationship("UserAnalysisCategoryDetailModel", backref="user_analysis_categories", uselist=True)
+    user_analysis_category_details = relationship(
+        "UserAnalysisCategoryDetailModel",
+        backref="user_analysis_categories",
+        uselist=True,
+    )
 
     def to_entity(self) -> UserAnalysisCategoryEntity:
         return UserAnalysisCategoryEntity(
@@ -27,7 +32,8 @@ class UserAnalysisCategoryModel(db.Model):
             category=self.category,
             output_text=self.output_text,
             user_analysis_category_details=[
-                user_analysis_category_detail.to_entity() for user_analysis_category_detail in self.user_analysis_category_details
+                user_analysis_category_detail.to_entity()
+                for user_analysis_category_detail in self.user_analysis_category_details
             ]
             if self.user_analysis_category_details
             else None,

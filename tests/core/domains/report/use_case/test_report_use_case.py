@@ -1,7 +1,7 @@
 from typing import List
 
 from core.domains.report.dto.report_dto import GetExpectedCompetitionDto
-from core.domains.report.event.report_enum import SortCompetitionEnum
+from core.domains.report.enum.report_enum import SortCompetitionEnum
 from core.domains.report.schema.report_schema import GetExpectedCompetitionBaseSchema
 from core.domains.report.use_case.v1.report_use_case import (
     GetExpectedCompetitionUseCase,
