@@ -34,6 +34,16 @@ class SpecialSupplyResultModel(db.Model):
     first_life_vol = Column(SmallInteger, nullable=True)
 
     def to_report_entity(self) -> SpecialSupplyResultReportEntity:
+        total_vol = 0
+        if isinstance(self.multi_children_vol, int):
+            total_vol += total_vol + self.multi_children_vol
+        if isinstance(self.newlywed_vol, int):
+            total_vol += total_vol + self.newlywed_vol
+        if isinstance(self.old_parent_vol, int):
+            total_vol += total_vol + self.old_parent_vol
+        if isinstance(self.first_life_vol, int):
+            total_vol += total_vol + self.first_life_vol
+
         return SpecialSupplyResultReportEntity(
             region=self.region,
             region_percent=self.region_percent,
@@ -41,4 +51,5 @@ class SpecialSupplyResultModel(db.Model):
             newlywed_vol=self.newlywed_vol,
             old_parent_vol=self.old_parent_vol,
             first_life_vol=self.first_life_vol,
+            total_vol=total_vol,
         )
