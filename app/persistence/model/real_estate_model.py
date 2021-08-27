@@ -137,7 +137,6 @@ class RealEstateModel(db.Model):
         supply_price_per_pyoung: Optional[float],
         min_acquisition_tax: int,
         max_acquisition_tax: int,
-        near_houses: Optional[list],
     ) -> HousePublicDetailEntity:
         return HousePublicDetailEntity(
             id=self.id,
@@ -164,7 +163,6 @@ class RealEstateModel(db.Model):
             min_acquisition_tax=min_acquisition_tax,
             max_acquisition_tax=max_acquisition_tax,
             public_sales=self.public_sales.to_entity() if self.public_sales else None,
-            near_houses=near_houses,
         )
 
     def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:

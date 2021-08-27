@@ -292,7 +292,7 @@ class HouseRepository:
             return None
         return interest_house
 
-    def _get_house_with_public_sales(self, house_id: int) -> list:
+    def get_house_with_public_sales(self, house_id: int) -> list:
         filters = list()
         filters.append(PublicSaleModel.id == house_id)
         filters.append(
@@ -317,7 +317,6 @@ class HouseRepository:
             )
             .join(RealEstateModel.public_sales)
             .join(PublicSaleModel.public_sale_details)
-            .join(PublicSaleModel.public_sale_photos)
             .filter(*filters)
             .group_by(RealEstateModel.id)
         )
@@ -351,11 +350,8 @@ class HouseRepository:
             return 0
         return supply_price / avg_pyoung_number
 
-    def _make_house_public_detail_entity(
-        self,
-        house_with_public_sales: list,
-        house_with_private_entities: Optional[list],
-        is_like: bool,
+    def make_house_public_detail_entity(
+        self, house_with_public_sales: list, is_like: bool,
     ) -> HousePublicDetailEntity:
         return house_with_public_sales[0].to_house_with_public_detail_entity(
             is_like=is_like,
@@ -374,12 +370,11 @@ class HouseRepository:
             ),
             min_acquisition_tax=house_with_public_sales[5],
             max_acquisition_tax=house_with_public_sales[6],
-            near_houses=house_with_private_entities,
         )
 
     def get_house_public_detail(
-        self, dto: GetHousePublicDetailDto, degree: float, is_like: bool
-    ) -> Optional[HousePublicDetailEntity]:
+        self, house_with_public_sales: List, degree: float
+    ) -> Optional[List[RealEstateWithPrivateSaleEntity]]:
         """
             <주변 실거래가 매물 List 가져오기>
             Postgis func- ST_DWithin(A_Geometry, B_Geometry, degree) -> bool
@@ -391,10 +386,6 @@ class HouseRepository:
             <최종 Entity 구성>
             : 분양 매물 상세 queryset + is_like + 주변 실거래가 queryset -> HousePublicDetailEntity
         """
-        # 분양 매물 상세 query -> house_with_public_sales
-        house_with_public_sales = self._get_house_with_public_sales(
-            house_id=dto.house_id
-        )
 
         if not house_with_public_sales:
             return None
@@ -430,24 +421,25 @@ class HouseRepository:
                     "avg_private_supply_area"
                 ),
             )
-            .join(PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id)
-            .join(PrivateSaleDetailModel, PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id)
+            .join(
+                PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
+            )
+            .join(
+                PrivateSaleDetailModel,
+                PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id,
+            )
             .options(contains_eager(RealEstateModel.private_sales))
             .options(contains_eager("private_sales.private_sale_details"))
             .filter(*filters)
-            .group_by(RealEstateModel.id, PrivateSaleModel.id, PrivateSaleDetailModel.id)
+            .group_by(
+                RealEstateModel.id, PrivateSaleModel.id, PrivateSaleDetailModel.id
+            )
             .limit(10)
         )
         house_with_private_queryset = query.all()
 
-        house_with_private_entities = self._make_house_with_private_entities(
+        return self._make_house_with_private_entities(
             queryset=house_with_private_queryset
-        )
-
-        return self._make_house_public_detail_entity(
-            house_with_public_sales=house_with_public_sales,
-            house_with_private_entities=house_with_private_entities,
-            is_like=is_like,
         )
 
     def _make_detail_calendar_info_entity(

@@ -225,7 +225,6 @@ class HousePublicDetailEntity(BaseModel):
     min_acquisition_tax: int
     max_acquisition_tax: int
     public_sales: PublicSaleEntity = None
-    near_houses: List[RealEstateWithPrivateSaleEntity] = None
 
     class Config:
         use_enum_values = True
