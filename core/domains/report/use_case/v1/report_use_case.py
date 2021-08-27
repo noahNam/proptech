@@ -19,6 +19,7 @@ from core.domains.report.entity.report_entity import (
     PredictedCompetitionEntity,
     SurveyResultEntity,
 )
+from core.domains.report.enum.report_enum import TicketUsageTypeEnum
 from core.domains.report.repository.report_repository import ReportRepository
 from core.domains.report.schema.report_schema import (
     GetExpectedCompetitionBaseSchema,
@@ -310,7 +311,7 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
             ] = self._report_repo.get_user_survey_results(user_id=dto.user_id)
 
         if is_ticket_usage_for_user:
-            pass
+            self._report_repo.get_ticket_usage_results(user_id=dto.user_id, type_=TicketUsageTypeEnum.USER.value)
 
         for user_info in user_profile.user_infos:
             if user_info.code == CodeEnum.BIRTHDAY.value:
