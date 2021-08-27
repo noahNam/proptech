@@ -27,6 +27,7 @@ from core.domains.house.entity.house_entity import (
     GetHouseMainEntity,
     SimpleCalendarInfoEntity,
     InterestHouseListEntity,
+    HousePublicDetailEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -137,15 +138,23 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             self._house_repo.get_public_interest_house(dto=dto)
         )
 
+        # 분양 매물 상세 query -> house_with_public_sales
+        house_with_public_sales = self._house_repo.get_house_with_public_sales(
+            house_id=dto.house_id
+        )
+
+        entities: HousePublicDetailEntity = self._house_repo.make_house_public_detail_entity(
+            house_with_public_sales=house_with_public_sales, is_like=is_like,
+        )
+
         # get HousePublicDetailEntity (degree 조절 필요)
         # <degree> -> 반경이 넓어지면 쿼리 속도가 느려집니다
         # 1도 : 111km
         # 0.1도 : 11.11km
         # 0.01도 : 1.11km
         # 0.001도 : 111m
-        entities = self._house_repo.get_house_public_detail(
-            dto=dto, degree=0.01, is_like=is_like
-        )
+        # entities = self._house_repo.get_house_public_detail(
+        #     house_with_public_sales=house_with_public_sales, degree=0.01)
 
         recently_view_dto = RecentlyViewDto(
             user_id=dto.user_id,
@@ -266,7 +275,7 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
             )
         # degree 테스트 필요: app에 나오는 반경 범위를 보면서 degree 조절 필요합니다.
         bounding_filter = self._house_repo.get_bounding_filter_with_radius(
-            geometry_coordinates=coordinates, degree=1
+            geometry_coordinates=coordinates, degree=0.001
         )
         bounding_entities = self._house_repo.get_bounding(
             bounding_filter=bounding_filter
