@@ -10,7 +10,10 @@ from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.report.entity.report_entity import TicketUsageResultEntity
+from core.domains.report.entity.report_entity import (
+    TicketUsageResultEntity,
+    TicketUsageResultUserReportEntity,
+)
 
 
 class TicketUsageResultModel(db.Model):

@@ -39,7 +39,7 @@ def test_get_ticket_usage_results_then_return_public_sale_ids(
     )
 
     assert len(result) == 1
-    assert result[0] == public_sales_id
+    assert result[0].public_house_id == public_sales_id
 
 
 def test_is_ticket_usage_for_house_then_return_true(

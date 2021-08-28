@@ -18,8 +18,9 @@ from core.domains.report.dto.report_dto import (
 from core.domains.report.entity.report_entity import (
     PredictedCompetitionEntity,
     SurveyResultEntity,
+    UserAnalysisEntity,
+    UserAnalysisCategoryEntity,
 )
-from core.domains.report.enum.report_enum import TicketUsageTypeEnum
 from core.domains.report.repository.report_repository import ReportRepository
 from core.domains.report.schema.report_schema import (
     GetExpectedCompetitionBaseSchema,
@@ -304,14 +305,41 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
             user_id=dto.user_id
         )
 
-        survey_result, age = None, None
+        # 변수 초기화
+        survey_result, age, user_analysis, user_analysis_category, analysis_text = (
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+
+        # 유저 설문 분석 결과 조회
         if user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value:
             survey_result: Optional[
                 SurveyResultEntity
             ] = self._report_repo.get_user_survey_results(user_id=dto.user_id)
 
+        # 유저별 category 유형 조회
         if is_ticket_usage_for_user:
-            self._report_repo.get_ticket_usage_results(user_id=dto.user_id, type_=TicketUsageTypeEnum.USER.value)
+            user_analysis: Optional[
+                UserAnalysisEntity
+            ] = self._report_repo.get_user_analysis(user_id=dto.user_id)
+
+        # 유저별 category 분석 메세지 조회
+        if user_analysis:
+            user_analysis_category: Optional[
+                UserAnalysisCategoryEntity
+            ] = self._report_repo.get_user_analysis_category_text(
+                category=user_analysis.category, div=user_analysis.div
+            )
+
+        if user_analysis_category:
+            format_text = [
+                user_analysis_category_detail.format_text
+                for user_analysis_category_detail in user_analysis_category.user_analysis_category_details
+            ]
+            analysis_text = user_analysis_category.output_text.format(*format_text)
 
         for user_info in user_profile.user_infos:
             if user_info.code == CodeEnum.BIRTHDAY.value:
@@ -323,6 +351,7 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
             age=age,
             survey_result=survey_result,
             is_ticket_usage_for_user=is_ticket_usage_for_user,
+            analysis_text=analysis_text,
         )
 
         return UseCaseSuccessOutput(value=result)
@@ -333,6 +362,7 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
         age: Optional[int],
         survey_result: Optional[SurveyResultEntity],
         is_ticket_usage_for_user: bool,
+        analysis_text: str,
     ) -> GetUserSurveysResponseSchema:
         get_surveys_user_report_schema = GetSurveysUserReportSchema(
             is_ticket_usage_for_user=is_ticket_usage_for_user,
@@ -342,7 +372,9 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
         )
 
         return GetUserSurveysResponseSchema(
-            user=get_surveys_user_report_schema, survey_result=survey_result
+            user=get_surveys_user_report_schema,
+            survey_result=survey_result,
+            analysis_text=analysis_text,
         )
 
     def _calc_age(self, birthday: str) -> int:
