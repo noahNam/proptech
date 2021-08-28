@@ -9,3 +9,13 @@ class SortCompetitionEnum(Enum):
     """
 
     LIMIT_NUM = 3
+
+
+class TicketUsageTypeEnum(Enum):
+    """
+        사용모델 : TicketUsageResultModel
+    """
+
+    HOUSE = "house"
+    USER = "user"
+    SUBS = "subs"

@@ -4,19 +4,22 @@ from flask import request
 from app.http.requests.v1.report_request import (
     GetExpectedCompetitionRequestSchema,
     GetSaleInfoRequestSchema,
-    GetRecentlySaleRequestSchema, GetUserSurveysRequestSchema,
+    GetRecentlySaleRequestSchema,
+    GetUserSurveysRequestSchema,
 )
 from app.http.responses.presenters.v1.report_presenter import (
     GetExpectedCompetitionPresenter,
     GetSaleInfoPresenter,
-    GetRecentlySalePresenter, GetUserSurveysPresenter,
+    GetRecentlySalePresenter,
+    GetUserSurveysPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 
 from core.domains.report.use_case.v1.report_use_case import (
     GetExpectedCompetitionUseCase,
     GetSaleInfoUseCase,
-    GetRecentlySaleUseCase, GetUserSurveysUseCase,
+    GetRecentlySaleUseCase,
+    GetUserSurveysUseCase,
 )
 
 
@@ -69,6 +72,4 @@ def get_user_surveys_view():
         user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return GetUserSurveysPresenter().transform(
-        GetUserSurveysUseCase().execute(dto=dto)
-    )
+    return GetUserSurveysPresenter().transform(GetUserSurveysUseCase().execute(dto=dto))
