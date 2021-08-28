@@ -54,6 +54,17 @@ class TicketUsageResultEntity(BaseModel):
     predicted_competitions: List[PredictedCompetitionEntity]
 
 
+class TicketUsageResultUserReportEntity(BaseModel):
+    id: int
+    user_id: int
+    type: str
+    public_house_id: Optional[int]
+    ticket_id: Optional[int]
+    is_active: bool
+    created_at: datetime
+    user_analysis: List[UserAnalysisEntity]
+
+
 class SurveyResultEntity(BaseModel):
     id = int
     user_id = int
@@ -83,14 +94,15 @@ class SurveyResultEntity(BaseModel):
     updated_at = datetime
 
 
+class UserAnalysisCategoryDetailEntity(BaseModel):
+    id: int
+    user_analysis_category_id: int
+    format_text: str
+
+
 class UserAnalysisCategoryEntity(BaseModel):
     id: int
     div: str
     category: int
     output_text: str
-
-
-class UserAnalysisCategoryDetailEntity(BaseModel):
-    id: int
-    user_analysis_category_id: int
-    format_text: str
+    user_analysis_category_details: List[UserAnalysisCategoryDetailEntity]

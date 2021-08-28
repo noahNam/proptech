@@ -132,3 +132,4 @@ class GetSurveysUserReportSchema(BaseModel):
 class GetUserSurveysResponseSchema(BaseModel):
     user: GetSurveysUserReportSchema
     survey_result: Optional[SurveyResultEntity]
+    analysis_text: Optional[str]
