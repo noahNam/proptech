@@ -36,6 +36,7 @@ class PredictedCompetitionEntity(BaseModel):
 class UserAnalysisEntity(BaseModel):
     id: int
     ticket_usage_result_id: int
+    div: str
     category: int
     created_at: datetime
 
@@ -51,6 +52,17 @@ class TicketUsageResultEntity(BaseModel):
     house_type_ranks: List[HouseTypeRankEntity]
     user_analysis: List[UserAnalysisEntity]
     predicted_competitions: List[PredictedCompetitionEntity]
+
+
+class TicketUsageResultUserReportEntity(BaseModel):
+    id: int
+    user_id: int
+    type: str
+    public_house_id: Optional[int]
+    ticket_id: Optional[int]
+    is_active: bool
+    created_at: datetime
+    user_analysis: List[UserAnalysisEntity]
 
 
 class SurveyResultEntity(BaseModel):
@@ -80,3 +92,17 @@ class SurveyResultEntity(BaseModel):
     hope_town_phase_two: Optional[int]
     created_at = datetime
     updated_at = datetime
+
+
+class UserAnalysisCategoryDetailEntity(BaseModel):
+    id: int
+    user_analysis_category_id: int
+    format_text: str
+
+
+class UserAnalysisCategoryEntity(BaseModel):
+    id: int
+    div: str
+    category: int
+    output_text: str
+    user_analysis_category_details: List[UserAnalysisCategoryDetailEntity]

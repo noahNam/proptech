@@ -25,7 +25,9 @@ from core.domains.payment.enum.payment_enum import (
     PromotionDivEnum,
 )
 from core.domains.payment.repository.payment_repository import PaymentRepository
+from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.report.enum import ReportTopicEnum
+from core.domains.report.enum.report_enum import TicketUsageTypeEnum
 from core.domains.user.entity.user_entity import UserProfileEntity
 from core.domains.user.enum import UserTopicEnum
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
@@ -83,22 +85,31 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        public_house_ids: List[int] = self._get_ticket_usage_results(
-            user_id=dto.user_id
+        ticket_usage_results: List[
+            TicketUsageResultEntity
+        ] = self._get_ticket_usage_results(
+            user_id=dto.user_id, type_=TicketUsageTypeEnum.HOUSE.value
         )
         result = list()
-        if public_house_ids:
+        if ticket_usage_results:
             result: List[
                 GetPublicSaleOfTicketUsageEntity
             ] = self._get_public_sales_of_ticket_usage(
-                public_house_ids=public_house_ids
+                public_house_ids=[
+                    ticket_usage_result.public_house_id
+                    for ticket_usage_result in ticket_usage_results
+                ]
             )
 
         return UseCaseSuccessOutput(value=result)
 
-    def _get_ticket_usage_results(self, user_id: int) -> List[int]:
+    def _get_ticket_usage_results(
+        self, user_id: int, type_: str
+    ) -> List[TicketUsageResultEntity]:
         send_message(
-            topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS, user_id=user_id,
+            topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS,
+            user_id=user_id,
+            type_=type_,
         )
         return get_event_object(topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS)
 

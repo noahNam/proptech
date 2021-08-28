@@ -68,12 +68,12 @@ from core.domains.payment.enum.payment_enum import (
     TicketSignEnum,
     PromotionTypeEnum,
     PromotionDivEnum,
-    TicketUsageTypeEnum,
 )
 from core.domains.post.enum.post_enum import (
     PostCategoryEnum,
     PostCategoryDetailEnum,
 )
+from core.domains.report.enum.report_enum import TicketUsageTypeEnum
 from core.domains.user.enum.user_enum import UserTicketCreatedByEnum
 
 # factory에 사용해야 하는 Model을 가져온다

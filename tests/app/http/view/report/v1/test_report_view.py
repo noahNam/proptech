@@ -1,5 +1,5 @@
 from flask import url_for
-from core.domains.report.event.report_enum import SortCompetitionEnum
+from core.domains.report.enum.report_enum import SortCompetitionEnum
 
 
 def test_get_expected_competition_view_then_return_response_schema(
