@@ -68,6 +68,8 @@ def get_recently_sale_view():
 @auth_required
 @swag_from("get_user_surveys.yml", methods=["GET"])
 def get_user_surveys_view():
-    dto = GetUserSurveysRequestSchema(user_id=current_user.id,).validate_request_and_make_dto()
+    dto = GetUserSurveysRequestSchema(
+        user_id=current_user.id,
+    ).validate_request_and_make_dto()
 
     return GetUserSurveysPresenter().transform(GetUserSurveysUseCase().execute(dto=dto))
