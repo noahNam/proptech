@@ -41,6 +41,7 @@ class PrivateSaleDetailModel(db.Model):
     trade_type = Column(
         Enum(RealTradeTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
+        index=True,
     )
     is_available = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
