@@ -10,7 +10,10 @@ from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.report.entity.report_entity import TicketUsageResultEntity
+from core.domains.report.entity.report_entity import (
+    TicketUsageResultEntity,
+    TicketUsageResultUserReportEntity,
+)
 
 
 class TicketUsageResultModel(db.Model):
@@ -31,6 +34,7 @@ class TicketUsageResultModel(db.Model):
         backref=backref("ticket_usage_results"),
         uselist=True,
         primaryjoin="foreign(TicketUsageResultModel.id)== HouseTypeRankModel.ticket_usage_result_id",
+        viewonly=True,
     )
 
     user_analysis = relationship(
@@ -38,6 +42,7 @@ class TicketUsageResultModel(db.Model):
         backref=backref("ticket_usage_results"),
         uselist=True,
         primaryjoin="foreign(TicketUsageResultModel.id)== UserAnalysisModel.ticket_usage_result_id",
+        viewonly=True,
     )
 
     predicted_competitions = relationship(
@@ -45,6 +50,7 @@ class TicketUsageResultModel(db.Model):
         backref=backref("ticket_usage_results"),
         uselist=True,
         primaryjoin="foreign(TicketUsageResultModel.id)== PredictedCompetitionModel.ticket_usage_result_id",
+        viewonly=True,
     )
 
     def to_entity(self) -> TicketUsageResultEntity:

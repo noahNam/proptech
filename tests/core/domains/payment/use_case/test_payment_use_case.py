@@ -19,7 +19,6 @@ from core.domains.payment.enum.payment_enum import (
     PromotionTypeEnum,
     TicketTypeDivisionEnum,
     TicketSignEnum,
-    TicketUsageTypeEnum,
     PromotionDivEnum,
 )
 from core.domains.payment.use_case.v1.payment_use_case import (
@@ -30,6 +29,7 @@ from core.domains.payment.use_case.v1.payment_use_case import (
     UseRecommendCodeUseCase,
     UseUserTicketUseCase,
 )
+from core.domains.report.enum.report_enum import TicketUsageTypeEnum
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput
 

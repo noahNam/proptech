@@ -1,6 +1,6 @@
 """create analysis_ref table
 
-Revision ID: 657f05d6c187
+Revision ID: 483bc2b4f3e3
 Revises: 483bc2b4f3e3
 Create Date: 2021-08-24 14:57:28.711515
 
@@ -52,6 +52,7 @@ def upgrade():
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("ticket_usage_result_id", sa.BigInteger(), nullable=False),
+        sa.Column("div", sa.String(length=1), nullable=False),
         sa.Column("category", sa.SmallInteger(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
