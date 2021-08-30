@@ -28,7 +28,7 @@ def upgrade():
         sa.Column("public_sale_details_id", sa.BigInteger(), nullable=False),
         sa.Column("region", sa.String(length=10), nullable=True),
         sa.Column("region_percent", sa.SmallInteger(), nullable=True),
-        sa.Column("applicant_num", sa.SmallInteger(), nullable=True),
+        sa.Column("applicant_num", sa.Integer(), nullable=True),
         sa.Column("competition_rate", sa.SmallInteger(), nullable=True),
         sa.Column("win_point", sa.SmallInteger(), nullable=True),
         sa.ForeignKeyConstraint(

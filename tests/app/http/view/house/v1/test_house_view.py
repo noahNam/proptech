@@ -57,13 +57,13 @@ bounding_entitiy = BoundingRealEstateEntity(
 
 
 def test_upsert_interest_house_view_when_like_public_sales_then_insert_success(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_real_estate_with_public_sale,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_real_estate_with_public_sale,
 ):
     user_id = create_users[0].id
     house_id = 1
@@ -90,13 +90,13 @@ def test_upsert_interest_house_view_when_like_public_sales_then_insert_success(
 
 
 def test_upsert_interest_house_view_when_unlike_public_sales_then_update_is_like_equals_false(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    interest_house_factory,
-    create_real_estate_with_public_sale,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        interest_house_factory,
+        create_real_estate_with_public_sale,
 ):
     interest_house = interest_house_factory.build()
     session.add(interest_house)
@@ -140,12 +140,12 @@ def test_upsert_interest_house_view_when_unlike_public_sales_then_update_is_like
 
 
 def test_bounding_view_when_level_is_grater_than_queryset_flag_then_success_with_bounding_presenter(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_real_estate_with_bounding,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_real_estate_with_bounding,
 ):
     """
         geometry 함수가 사용되는 구간
@@ -169,11 +169,11 @@ def test_bounding_view_when_level_is_grater_than_queryset_flag_then_success_with
     level = BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value
 
     with patch(
-        "app.http.responses.presenters.v1.house_presenter.BoundingPresenter.transform"
+            "app.http.responses.presenters.v1.house_presenter.BoundingPresenter.transform"
     ) as mock_result:
         mock_result.return_value = success_response(result=bounding_entitiy.dict())
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_bounding"
+                "core.domains.house.repository.house_repository.HouseRepository.get_bounding"
         ) as mock_get_bounding:
             mock_get_bounding.return_value = create_real_estate_with_bounding
             with test_request_context:
@@ -197,12 +197,12 @@ def test_bounding_view_when_level_is_grater_than_queryset_flag_then_success_with
 
 
 def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_bounding_administrative_presenter(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_real_estate_with_bounding,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_real_estate_with_bounding,
 ):
     """
         geometry 함수가 사용되는 구간
@@ -242,11 +242,11 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
     )
 
     with patch(
-        "app.http.responses.presenters.v1.house_presenter.BoundingAdministrativePresenter.transform"
+            "app.http.responses.presenters.v1.house_presenter.BoundingAdministrativePresenter.transform"
     ) as mock_result:
         mock_result.return_value = success_response(result=bounding_entitiy.dict())
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
+                "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
         ) as mock_get_bounding:
             mock_get_bounding.return_value = create_real_estate_with_bounding
             with test_request_context:
@@ -270,12 +270,12 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
 
 
 def test_house_calendar_list_view_when_included_request_date_then_show_info_list(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_real_estate_with_public_sale,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_real_estate_with_public_sale,
 ):
     # request header
     user_id = 1
@@ -316,7 +316,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
+            "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
         with test_request_context:
@@ -333,12 +333,12 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
 
 
 def test_house_public_detail_view_when_valid_request_id(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_real_estate_with_public_sale,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_real_estate_with_public_sale,
 ):
     # request header
     user_id = 1
@@ -349,7 +349,7 @@ def test_house_public_detail_view_when_valid_request_id(
         accept="application/json",
     )
 
-    sample_entity = HousePublicDetailEntity(
+    mock_entity = HousePublicDetailEntity(
         id=1,
         name="분양아파트",
         road_address="서울특별시 서초구 어딘가1길 10",
@@ -374,39 +374,42 @@ def test_house_public_detail_view_when_valid_request_id(
         min_acquisition_tax=2000,
         max_acquisition_tax=3000,
         public_sales=None,
-        near_houses=None,
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.is_enable_public_sale_house"
+            "core.domains.house.repository.house_repository.HouseRepository.is_enable_public_sale_house"
     ) as mock_enable:
         mock_enable.return_value = True
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
+                "core.domains.house.repository.house_repository.HouseRepository.get_house_with_public_sales"
         ) as mock_house_public_detail:
-            mock_house_public_detail.return_value = sample_entity
-            with test_request_context:
-                response = client.get(
-                    url_for("api/tanos.house_public_detail_view", house_id=1),
-                    headers=headers,
-                )
+            mock_house_public_detail.return_value = create_real_estate_with_public_sale[0]
+            with patch(
+                    "core.domains.house.repository.house_repository.HouseRepository.make_house_public_detail_entity"
+            ) as mock_result:
+                mock_result.return_value = mock_entity
+                with test_request_context:
+                    response = client.get(
+                        url_for("api/tanos.house_public_detail_view", house_id=1),
+                        headers=headers,
+                    )
 
     data = response.get_json()["data"]
 
     assert response.status_code == 200
     assert mock_house_public_detail.called is True
     assert mock_enable.called is True
-    assert data["house"]["name"] == sample_entity.name
+    assert data["house"]["name"] == mock_entity.name
 
 
 def test_get_interest_house_list_view_when_like_one_public_sale_then_return_result_one(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_real_estate_with_public_sale,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_real_estate_with_public_sale,
 ):
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
@@ -428,7 +431,7 @@ def test_get_interest_house_list_view_when_like_one_public_sale_then_return_resu
 
 
 def test_get_interest_house_list_view_when_like_nothing_then_return_no_result(
-    client, session, test_request_context, make_header, make_authorization, create_users
+        client, session, test_request_context, make_header, make_authorization, create_users
 ):
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
@@ -448,14 +451,14 @@ def test_get_interest_house_list_view_when_like_nothing_then_return_no_result(
 
 
 def test_get_recent_view_list_use_case_when_watch_recently_view_then_result_one(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_real_estate_with_public_sale,
-    public_sale_photo_factory,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_real_estate_with_public_sale,
+        public_sale_photo_factory,
 ):
     public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
     session.add(public_sale_photo)
@@ -480,13 +483,13 @@ def test_get_recent_view_list_use_case_when_watch_recently_view_then_result_one(
 
 
 def test_get_search_house_list_view_when_get_no_keywords_then_fail(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_real_estate_with_public_sale,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_real_estate_with_public_sale,
 ):
     """
         keywords 값 없으면 실패
@@ -507,13 +510,13 @@ def test_get_search_house_list_view_when_get_no_keywords_then_fail(
 
 
 def test_get_search_house_list_view_when_get_less_then_1_word_keywords_then_return_null(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_real_estate_with_public_sale,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_real_estate_with_public_sale,
 ):
     """
         keywords : 한글자 -> return null
@@ -537,13 +540,13 @@ def test_get_search_house_list_view_when_get_less_then_1_word_keywords_then_retu
 
 
 def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_real_estate_with_public_sale,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_real_estate_with_public_sale,
 ):
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
@@ -569,7 +572,7 @@ def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_search_house_list"
+            "core.domains.house.repository.house_repository.HouseRepository.get_search_house_list"
     ) as mock_search:
         mock_search.return_value = mock_result
         with test_request_context:
@@ -583,23 +586,23 @@ def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
     assert response.status_code == 200
     assert mock_search.called is True
     assert (
-        data["houses"]["administrative_divisions"][0]["name"]
-        == administrative_divisions[0].name
+            data["houses"]["administrative_divisions"][0]["name"]
+            == administrative_divisions[0].name
     )
     assert (
-        data["houses"]["real_estates"][0]["jibun_address"]
-        == real_estates[0].jibun_address
+            data["houses"]["real_estates"][0]["jibun_address"]
+            == real_estates[0].jibun_address
     )
     assert data["houses"]["public_sales"][0]["name"] == public_sales[0].name
 
 
 def test_get_bounding_within_radius_view_when_no_search_type_then_fail(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
 ):
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
@@ -618,12 +621,12 @@ def test_get_bounding_within_radius_view_when_no_search_type_then_fail(
 
 
 def test_get_bounding_within_radius_view_when_wrong_search_type_then_fail(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
 ):
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
@@ -644,13 +647,13 @@ def test_get_bounding_within_radius_view_when_wrong_search_type_then_fail(
 
 
 def test_get_bounding_within_radius_view_when_valid_search_type_then_success(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    create_users,
-    create_real_estate_with_bounding,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        create_users,
+        create_real_estate_with_bounding,
 ):
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
@@ -663,13 +666,13 @@ def test_get_bounding_within_radius_view_when_valid_search_type_then_success(
     mock_output.value = create_real_estate_with_bounding
 
     with patch(
-        "app.http.responses.presenters.v1.house_presenter.BoundingPresenter.transform"
+            "app.http.responses.presenters.v1.house_presenter.BoundingPresenter.transform"
     ) as mock_response:
         mock_response.return_value = success_response(result=bounding_entitiy.dict())
 
         with patch(
-            "core.domains.house.use_case.v1.house_use_case"
-            ".BoundingWithinRadiusUseCase.execute"
+                "core.domains.house.use_case.v1.house_use_case"
+                ".BoundingWithinRadiusUseCase.execute"
         ) as mock_result:
             mock_result.return_value = mock_output
             with test_request_context:
@@ -688,12 +691,12 @@ def test_get_bounding_within_radius_view_when_valid_search_type_then_success(
 
 
 def test_get_home_banner_view_when_present_date_then_return_banner_list_with_calendar_info(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    banner_factory,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        banner_factory,
 ):
     # request header
     user_id = 1
@@ -748,7 +751,7 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
+            "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
         with test_request_context:
@@ -767,18 +770,18 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     assert len(data["banners"]["banner_list"]) == 2
     assert data["banners"]["calendar_infos"][0]["name"] == sample_calendar_info.name
     assert (
-        data["banners"]["calendar_infos"][0]["is_like"] == sample_calendar_info.is_like
+            data["banners"]["calendar_infos"][0]["is_like"] == sample_calendar_info.is_like
     )
 
 
 def test_when_get_pre_subscription_banner_view_then_return_banner_list_with_button_link_list(
-    client,
-    session,
-    test_request_context,
-    make_header,
-    make_authorization,
-    banner_factory,
-    button_link_factory,
+        client,
+        session,
+        test_request_context,
+        make_header,
+        make_authorization,
+        banner_factory,
+        button_link_factory,
 ):
     # request header
     user_id = 1

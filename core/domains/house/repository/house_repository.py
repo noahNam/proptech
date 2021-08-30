@@ -8,6 +8,7 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
@@ -19,7 +20,6 @@ from app.persistence.model import (
     PrivateSaleDetailModel,
     RecentlyViewModel,
     PublicSalePhotoModel,
-    SpecialSupplyResultModel,
 )
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
@@ -264,8 +264,8 @@ class HouseRepository:
             return False
         return True
 
-    def is_enable_public_sale_house(self, dto: GetHousePublicDetailDto) -> bool:
-        house = session.query(PublicSaleModel).filter_by(id=dto.house_id).first()
+    def is_enable_public_sale_house(self, house_id: int) -> bool:
+        house = session.query(PublicSaleModel).filter_by(id=house_id).first()
 
         if not house or house.is_available == "False":
             return False
@@ -372,8 +372,8 @@ class HouseRepository:
             max_acquisition_tax=house_with_public_sales[6],
         )
 
-    def get_house_public_detail(
-        self, house_with_public_sales: List, degree: float
+    def get_public_with_private_sales_in_radius(
+        self, house_with_public_sales: list, degree: float
     ) -> Optional[List[RealEstateWithPrivateSaleEntity]]:
         """
             <주변 실거래가 매물 List 가져오기>
