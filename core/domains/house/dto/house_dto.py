@@ -48,3 +48,7 @@ class SectionTypeDto(BaseModel):
 class GetHouseMainDto(BaseModel):
     section_type: int
     user_id: int
+
+
+class GetHousePublicNearPrivateSalesDto(BaseModel):
+    house_id: int

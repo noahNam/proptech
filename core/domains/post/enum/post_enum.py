@@ -10,9 +10,8 @@ class PostCategoryEnum(Enum):
     NOTICE = 0
     FAQ = 1
     SUBSCRIPTION_FAQ = 2
-    SUBSCRIPTION_GUIDE = 3
-    SUBSCRIPTION_WORDS = 4
-    ABOUT_SUBSCRIPTION = 5
+    SUBSCRIPTION_WORDS = 3
+    ABOUT_SUBSCRIPTION = 4
 
 
 class PostCategoryDetailEnum(Enum):

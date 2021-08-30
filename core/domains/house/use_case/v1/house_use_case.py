@@ -18,6 +18,7 @@ from core.domains.house.dto.house_dto import (
     BoundingWithinRadiusDto,
     SectionTypeDto,
     GetHouseMainDto,
+    GetHousePublicNearPrivateSalesDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
@@ -33,7 +34,7 @@ from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
     HouseTypeEnum,
     SearchTypeEnum,
-    SectionType,
+    SectionType, BoundingDegreeEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import RecentlyViewDto, GetUserDto
@@ -55,7 +56,7 @@ class HouseBaseUseCase:
 
 class UpsertInterestHouseUseCase(HouseBaseUseCase):
     def execute(
-        self, dto: UpsertInterestHouseDto
+            self, dto: UpsertInterestHouseDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -85,7 +86,7 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
 
 class BoundingUseCase(HouseBaseUseCase):
     def execute(
-        self, dto: CoordinatesRangeDto
+            self, dto: CoordinatesRangeDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
             <dto.level condition>
@@ -101,8 +102,8 @@ class BoundingUseCase(HouseBaseUseCase):
             )
         # dto.level range check
         if (
-            dto.level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
-            or dto.level > BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value
+                dto.level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
+                or dto.level > BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value
         ):
             return UseCaseFailureOutput(
                 type="level",
@@ -125,9 +126,9 @@ class BoundingUseCase(HouseBaseUseCase):
 
 class GetHousePublicDetailUseCase(HouseBaseUseCase):
     def execute(
-        self, dto: GetHousePublicDetailDto
+            self, dto: GetHousePublicDetailDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        if not self._house_repo.is_enable_public_sale_house(dto=dto):
+        if not self._house_repo.is_enable_public_sale_house(house_id=dto.house_id):
             return UseCaseFailureOutput(
                 type="house_id",
                 message=FailureType.NOT_FOUND_ERROR,
@@ -147,15 +148,6 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             house_with_public_sales=house_with_public_sales, is_like=is_like,
         )
 
-        # get HousePublicDetailEntity (degree 조절 필요)
-        # <degree> -> 반경이 넓어지면 쿼리 속도가 느려집니다
-        # 1도 : 111km
-        # 0.1도 : 11.11km
-        # 0.01도 : 1.11km
-        # 0.001도 : 111m
-        # entities = self._house_repo.get_house_public_detail(
-        #     house_with_public_sales=house_with_public_sales, degree=0.01)
-
         recently_view_dto = RecentlyViewDto(
             user_id=dto.user_id,
             house_id=dto.house_id,
@@ -172,9 +164,32 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         return get_event_object(topic_name=UserTopicEnum.CREATE_RECENTLY_VIEW)
 
 
+class GetHousePublicNearPrivateSalesUseCase(HouseBaseUseCase):
+    def execute(
+            self, dto: GetHousePublicNearPrivateSalesDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not self._house_repo.is_enable_public_sale_house(house_id=dto.house_id):
+            return UseCaseFailureOutput(
+                type="house_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+            # 분양 매물 상세 query -> house_with_public_sales
+        house_with_public_sales = self._house_repo.get_house_with_public_sales(
+            house_id=dto.house_id
+        )
+
+        entities = self._house_repo.get_public_with_private_sales_in_radius(
+            house_with_public_sales=house_with_public_sales,
+            degree=BoundingDegreeEnum.DEGREE.value)
+
+        return UseCaseSuccessOutput(value=entities)
+
+
 class GetCalendarInfoUseCase(HouseBaseUseCase):
     def execute(
-        self, dto: GetCalendarInfoDto
+            self, dto: GetCalendarInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         year_month = dto.year + dto.month
         search_filters = self._house_repo.get_calendar_info_filters(
@@ -189,7 +204,7 @@ class GetCalendarInfoUseCase(HouseBaseUseCase):
 
 class GetInterestHouseListUseCase(HouseBaseUseCase):
     def execute(
-        self, dto: GetUserDto
+            self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -207,7 +222,7 @@ class GetInterestHouseListUseCase(HouseBaseUseCase):
 
 class GetRecentViewListUseCase(HouseBaseUseCase):
     def execute(
-        self, dto: GetUserDto
+            self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -225,7 +240,7 @@ class GetRecentViewListUseCase(HouseBaseUseCase):
 
 class GetSearchHouseListUseCase(HouseBaseUseCase):
     def execute(
-        self, dto: GetSearchHouseListDto
+            self, dto: GetSearchHouseListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.keywords or dto.keywords == "" or len(dto.keywords) < 2:
             result = None
@@ -240,13 +255,13 @@ class GetSearchHouseListUseCase(HouseBaseUseCase):
 
 class BoundingWithinRadiusUseCase(HouseBaseUseCase):
     def execute(
-        self, dto: BoundingWithinRadiusDto
+            self, dto: BoundingWithinRadiusDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
 
         if (
-            not dto
-            or dto.search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
-            or dto.search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
+                not dto
+                or dto.search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
+                or dto.search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
         ):
             return UseCaseFailureOutput(
                 type="BoundingWithinRadiusDto",
@@ -275,7 +290,7 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
             )
         # degree 테스트 필요: app에 나오는 반경 범위를 보면서 degree 조절 필요합니다.
         bounding_filter = self._house_repo.get_bounding_filter_with_radius(
-            geometry_coordinates=coordinates, degree=0.001
+            geometry_coordinates=coordinates, degree=BoundingDegreeEnum.DEGREE.value
         )
         bounding_entities = self._house_repo.get_bounding(
             bounding_filter=bounding_filter
@@ -286,16 +301,16 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
 
 class GetHouseMainUseCase(HouseBaseUseCase):
     def _make_house_main_entity(
-        self,
-        banner_list: List[BannerEntity],
-        calendar_entities: List[SimpleCalendarInfoEntity],
+            self,
+            banner_list: List[BannerEntity],
+            calendar_entities: List[SimpleCalendarInfoEntity],
     ) -> GetHouseMainEntity:
         return GetHouseMainEntity(
             banner_list=banner_list, calendar_infos=calendar_entities
         )
 
     def execute(
-        self, dto: GetHouseMainDto
+            self, dto: GetHouseMainDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if dto.section_type != SectionType.HOME_SCREEN.value:
             return UseCaseFailureOutput(
@@ -337,14 +352,14 @@ class GetMainPreSubscriptionUseCase(HouseBaseUseCase):
         return get_event_object(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST)
 
     def _make_house_main_pre_subscription_entity(
-        self, banner_list: List[BannerEntity], button_links: List[ButtonLinkEntity]
+            self, banner_list: List[BannerEntity], button_links: List[ButtonLinkEntity]
     ) -> GetMainPreSubscriptionEntity:
         return GetMainPreSubscriptionEntity(
             banner_list=banner_list, button_links=button_links
         )
 
     def execute(
-        self, dto: SectionTypeDto
+            self, dto: SectionTypeDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if dto.section_type != SectionType.PRE_SUBSCRIPTION_INFO.value:
             return UseCaseFailureOutput(

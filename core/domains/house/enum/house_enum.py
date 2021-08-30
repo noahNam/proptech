@@ -147,3 +147,15 @@ class PricePerMeterEnum(Enum):
     """
 
     CALC_VAR = 3.3058
+
+
+class BoundingDegreeEnum(Enum):
+    """
+        반경 내 매물 검색시 사용할 반경 값(단위: 도)
+        <degree> -> 반경이 넓어지면 쿼리 속도가 느려집니다
+        1도 : 111km
+        0.1도 : 11.11km
+        0.01도 : 1.11km
+        0.001도 : 111m
+    """
+    DEGREE = 0.01

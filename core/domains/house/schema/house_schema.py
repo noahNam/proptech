@@ -1,6 +1,6 @@
 from typing import List, Union, Optional
 
-from pydantic import BaseModel, StrictStr
+from pydantic import BaseModel
 
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
@@ -9,8 +9,7 @@ from core.domains.house.entity.house_entity import (
     GetSearchHouseListEntity,
     GetHouseMainEntity,
     GetMainPreSubscriptionEntity,
-    SimpleCalendarInfoEntity,
-    DetailCalendarInfoEntity,
+    SimpleCalendarInfoEntity, RealEstateWithPrivateSaleEntity,
 )
 
 
@@ -36,7 +35,7 @@ class BoundingResponseSchema(BaseModel):
 
 
 class BoundingAdministrativeResponseSchema(BaseModel):
-    houses: Union[List[AdministrativeDivisionEntity], str]
+    houses: Union[Optional[List[AdministrativeDivisionEntity]], str]
 
 
 class GetHousePublicDetailResponseSchema(BaseModel):
@@ -69,3 +68,7 @@ class GetHouseMainResponseSchema(BaseModel):
 
 class GetMainPreSubscriptionResponseSchema(BaseModel):
     banners: Optional[GetMainPreSubscriptionEntity]
+
+
+class GetHousePublicPrivateSalesResponseSchema(BaseModel):
+    near_houses: Optional[List[RealEstateWithPrivateSaleEntity]]
