@@ -109,6 +109,7 @@ def house_public_detail_view(house_id: int):
 @api.route("/v1/houses/public/<int:house_id>/near_houses", methods=["GET"])
 @jwt_required
 @auth_required
+@swag_from("house_public_near_private_sales_view.yml", methods=["GET"])
 def house_public_near_private_sales_view(house_id: int):
     dto = GetHousePublicNearPrivateSalesRequestSchema(
         house_id=house_id
