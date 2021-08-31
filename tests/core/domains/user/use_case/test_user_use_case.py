@@ -46,7 +46,7 @@ from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput
 
 
 def test_get_user_use_case_then_success(session, create_users):
-    dto = GetUserDto(user_id=create_users[0].id, )
+    dto = GetUserDto(user_id=create_users[0].id,)
 
     result = GetUserUseCase().execute(dto=dto)
 
@@ -79,7 +79,7 @@ def test_create_user_use_case_when_first_login_then_success(session, create_user
 
 
 def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_error(
-        session, create_users
+    session, create_users
 ):
     user = create_users[0]
 
@@ -100,7 +100,7 @@ def test_create_user_when_first_login_with_duplicate_user_id_then_raise_unique_e
 
 
 def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_success(
-        session, create_users, interest_region_group_factory
+    session, create_users, interest_region_group_factory
 ):
     user = create_users[0]
     interest_region_group_factory.create()
@@ -122,7 +122,7 @@ def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_s
 
 
 def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_success(
-        session,
+    session,
 ):
     create_user_dto = CreateUserDto(
         user_id=1,
@@ -149,18 +149,18 @@ def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_s
     user = session.query(UserModel).filter_by(id=create_user_dto.user_id).first()
     app_agree_term = (
         session.query(AppAgreeTermsModel)
-            .filter_by(user_id=create_app_agree_term_dto.user_id)
-            .first()
+        .filter_by(user_id=create_app_agree_term_dto.user_id)
+        .first()
     )
 
     assert user.is_required_agree_terms is True
     assert app_agree_term.user_id == create_app_agree_term_dto.user_id
     assert (
-            app_agree_term.private_user_info_yn
-            == create_app_agree_term_dto.private_user_info_yn
+        app_agree_term.private_user_info_yn
+        == create_app_agree_term_dto.private_user_info_yn
     )
     assert (
-            app_agree_term.required_terms_yn == create_app_agree_term_dto.required_terms_yn
+        app_agree_term.required_terms_yn == create_app_agree_term_dto.required_terms_yn
     )
     assert app_agree_term.receive_marketing_yn is True
     assert app_agree_term.receive_marketing_date is not None
@@ -171,7 +171,7 @@ def test_agree_terms_repo_when_app_first_start_with_not_receive_marketing_then_s
     return_value=True,
 )
 def test_upsert_user_info_when_create_nickname_then_success(
-        _send_sqs_message, session, create_users
+    _send_sqs_message, session, create_users
 ):
     upsert_user_info_dto = UpsertUserInfoDto(
         user_id=create_users[0].id, user_profile_id=None, codes=[1000], values=["noah"]
@@ -180,8 +180,8 @@ def test_upsert_user_info_when_create_nickname_then_success(
     UpsertUserInfoUseCase().execute(dto=upsert_user_info_dto)
     user_profile = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
     )
 
     assert user_profile.id == 1
@@ -195,7 +195,7 @@ def test_upsert_user_info_when_create_nickname_then_success(
     return_value=True,
 )
 def test_upsert_user_info_when_update_nickname_then_success(
-        _send_sqs_message, session, create_users
+    _send_sqs_message, session, create_users
 ):
     upsert_user_info_dto = UpsertUserInfoDto(
         user_id=create_users[0].id, user_profile_id=None, codes=[1000], values=["noah"]
@@ -208,8 +208,8 @@ def test_upsert_user_info_when_update_nickname_then_success(
 
     user_profile = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
     )
 
     assert user_profile.id == 1
@@ -223,7 +223,7 @@ def test_upsert_user_info_when_update_nickname_then_success(
     return_value=True,
 )
 def test_upsert_user_info_when_create_user_data_then_success(
-        _send_sqs_message, session, create_users
+    _send_sqs_message, session, create_users
 ):
     upsert_user_info_dto = UpsertUserInfoDto(
         user_id=create_users[0].id, user_profile_id=None, codes=[1005], values=["1"]
@@ -233,21 +233,21 @@ def test_upsert_user_info_when_create_user_data_then_success(
 
     user_profile = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
     )
     user_info = (
         session.query(UserInfoModel)
-            .filter_by(user_profile_id=user_profile.id, code=upsert_user_info_dto.codes[0])
-            .first()
+        .filter_by(user_profile_id=user_profile.id, code=upsert_user_info_dto.codes[0])
+        .first()
     )
     ticket = (
         session.query(TicketModel)
-            .filter_by(
+        .filter_by(
             user_id=upsert_user_info_dto.user_id,
             type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,
         )
-            .first()
+        .first()
     )
 
     assert user_profile.last_update_code == upsert_user_info_dto.codes[0]
@@ -262,7 +262,7 @@ def test_upsert_user_info_when_create_user_data_then_success(
     return_value=True,
 )
 def test_upsert_user_info_when_update_user_data_then_success(
-        _send_sqs_message, session, create_users
+    _send_sqs_message, session, create_users
 ):
     upsert_user_info_dto = UpsertUserInfoDto(
         user_id=create_users[0].id, user_profile_id=None, codes=[1005], values=["1"]
@@ -275,13 +275,13 @@ def test_upsert_user_info_when_update_user_data_then_success(
 
     user_profile = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
     )
     user_info = (
         session.query(UserInfoModel)
-            .filter_by(user_profile_id=user_profile.id, code=upsert_user_info_dto.codes[0])
-            .first()
+        .filter_by(user_profile_id=user_profile.id, code=upsert_user_info_dto.codes[0])
+        .first()
     )
 
     assert user_profile.last_update_code == upsert_user_info_dto.codes[0]
@@ -291,7 +291,7 @@ def test_upsert_user_info_when_update_user_data_then_success(
 
 
 def test_get_user_info_when_first_input_surveys_then_get_none_user_data(
-        session, create_users
+    session, create_users
 ):
     get_user_info_dto = GetUserInfoDto(
         user_id=create_users[0].id, user_profile_id=None, survey_step=1,
@@ -313,7 +313,7 @@ def test_get_user_info_when_first_input_surveys_then_get_none_user_data(
     return_value=True,
 )
 def test_get_user_info_when_secondary_input_nickname_then_get_user_data(
-        _send_sqs_message, session
+    _send_sqs_message, session
 ):
     user_id = 1
     upsert_user_info_dto = UpsertUserInfoDto(
@@ -337,7 +337,7 @@ def test_get_user_info_when_secondary_input_nickname_then_get_user_data(
 
 
 def test_get_user_info_when_first_input_data_then_get_none_user_data(
-        session, create_users
+    session, create_users
 ):
     get_user_info_dto = GetUserInfoDto(
         user_id=create_users[0].id, user_profile_id=None, survey_step=1,
@@ -361,7 +361,7 @@ def test_get_user_info_when_first_input_data_then_get_none_user_data(
     return_value=True,
 )
 def test_get_user_info_when_secondary_input_data_then_get_user_data(
-        _send_sqs_message, session, create_users
+    _send_sqs_message, session, create_users
 ):
     user_id = 1
     upsert_user_info_dto = UpsertUserInfoDto(
@@ -385,7 +385,7 @@ def test_get_user_info_when_secondary_input_data_then_get_user_data(
     return_value=True,
 )
 def test_get_user_info_when_monthly_income_then_success(
-        _send_sqs_message, session, create_users, avg_monthly_income_worker_factory
+    _send_sqs_message, session, create_users, avg_monthly_income_worker_factory
 ):
     avg_monthly_income_workers = avg_monthly_income_worker_factory.build()
     session.add(avg_monthly_income_workers)
@@ -446,7 +446,7 @@ def test_patch_user_out_info_when_user_request_then_success(session, create_user
 
 
 def test_get_user_main_use_case_when_enter_my_page_main_then_ticket_is_0_and_survey_step_is_step_one_and_badge_is_true(
-        session, create_users, create_notifications
+    session, create_users, create_notifications
 ):
     get_user_dto = GetUserDto(user_id=create_users[0].id)
     result = GetUserMainUseCase().execute(dto=get_user_dto)
@@ -458,7 +458,7 @@ def test_get_user_main_use_case_when_enter_my_page_main_then_ticket_is_0_and_sur
 
 
 def test_get_user_profile_use_case_when_enter_setting_page_return_success(
-        session, create_users
+    session, create_users
 ):
     user_1 = GetUserDto(user_id=create_users[1].id)
     user_2 = GetUserDto(user_id=4)
@@ -473,7 +473,7 @@ def test_get_user_profile_use_case_when_enter_setting_page_return_success(
 
 
 def test_update_user_profile_use_case_when_enter_setting_page_return_success(
-        session, create_users
+    session, create_users
 ):
     dto = UpdateUserProfileDto(user_id=create_users[0].id, nickname="harry")
     result_1 = UpdateUserProfileUseCase().execute(dto=dto)
@@ -487,7 +487,7 @@ def test_update_user_profile_use_case_when_enter_setting_page_return_success(
 
 
 def test_update_user_profile_use_case_when_enter_duplicate_nickname_return_failure(
-        session, create_users
+    session, create_users
 ):
     dto = UpdateUserProfileDto(user_id=create_users[0].id, nickname="noah")
     result = UpdateUserProfileUseCase().execute(dto=dto)
@@ -502,7 +502,7 @@ def test_update_user_profile_use_case_when_enter_duplicate_nickname_return_failu
     return_value=True,
 )
 def test_upsert_user_info_when_update_is_house_owner_then_chain_update_user_data(
-        _send_sqs_message, session, create_users
+    _send_sqs_message, session, create_users
 ):
     """
         1. 1005: 주택 소유 여부 질문 (3) -> "있어요", "없어요", "과거에 있었지만 현재는 처분했어요"
@@ -528,16 +528,16 @@ def test_upsert_user_info_when_update_is_house_owner_then_chain_update_user_data
     # Then
     user_profile = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
     )
     user_infos = (
         session.query(UserInfoModel)
-            .filter(
+        .filter(
             UserInfoModel.user_profile_id == user_profile.id,
             UserInfoModel.code.in_([1005, 1006]),
         )
-            .all()
+        .all()
     )
 
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_ONE.value
@@ -551,7 +551,7 @@ def test_upsert_user_info_when_update_is_house_owner_then_chain_update_user_data
     return_value=True,
 )
 def test_upsert_user_info_when_update_is_sub_account_then_chain_update_user_data(
-        _send_sqs_message, session, create_users
+    _send_sqs_message, session, create_users
 ):
     """
         1. 1016: 청약 통장 여부 질문 (1) -> "있어요", "없어요"
@@ -579,25 +579,25 @@ def test_upsert_user_info_when_update_is_sub_account_then_chain_update_user_data
     # Then
     user_profile = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
     )
     user_infos = (
         session.query(UserInfoModel)
-            .filter(
+        .filter(
             UserInfoModel.user_profile_id == user_profile.id,
             UserInfoModel.code.in_([1016, 1017, 1018, 1019]),
         )
-            .all()
+        .all()
     )
 
     ticket = (
         session.query(TicketModel)
-            .filter_by(
+        .filter_by(
             user_id=upsert_user_info_dto.user_id,
             type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,
         )
-            .first()
+        .first()
     )
 
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_TWO.value
@@ -614,7 +614,7 @@ def test_upsert_user_info_when_update_is_sub_account_then_chain_update_user_data
     return_value=True,
 )
 def test_upsert_user_info_when_update_is_sub_account_then_survey_step_is_two(
-        _send_sqs_message, session, create_users
+    _send_sqs_message, session, create_users
 ):
     """
         1. 1016: 청약 통장 여부 질문 (2) -> "있어요", "없어요"
@@ -629,8 +629,8 @@ def test_upsert_user_info_when_update_is_sub_account_then_survey_step_is_two(
     # Then
     user_profile = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
     )
 
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_TWO.value
@@ -641,7 +641,7 @@ def test_upsert_user_info_when_update_is_sub_account_then_survey_step_is_two(
     return_value=True,
 )
 def test_upsert_user_info_when_update_is_sub_account_then_survey_step_is_one(
-        _send_sqs_message, session, create_users
+    _send_sqs_message, session, create_users
 ):
     """
         1. 1016: 청약 통장 여부 질문 (1) -> "있어요", "없어요"
@@ -656,8 +656,8 @@ def test_upsert_user_info_when_update_is_sub_account_then_survey_step_is_one(
     # Then
     user_profile = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
     )
 
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_ONE.value
@@ -668,7 +668,7 @@ def test_upsert_user_info_when_update_is_sub_account_then_survey_step_is_one(
     return_value=True,
 )
 def test_upsert_user_info_when_update_speical_cond_then_survey_step_is_comepte(
-        _send_sqs_message, session, create_users
+    _send_sqs_message, session, create_users
 ):
     """
         1. code == 1026
@@ -689,17 +689,17 @@ def test_upsert_user_info_when_update_speical_cond_then_survey_step_is_comepte(
     # Then
     user_profile = (
         session.query(UserProfileModel)
-            .filter_by(user_id=upsert_user_info_dto.user_id)
-            .first()
+        .filter_by(user_id=upsert_user_info_dto.user_id)
+        .first()
     )
 
     ticket = (
         session.query(TicketModel)
-            .filter_by(
+        .filter_by(
             user_id=upsert_user_info_dto.user_id,
             type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,
         )
-            .first()
+        .first()
     )
 
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
@@ -707,7 +707,7 @@ def test_upsert_user_info_when_update_speical_cond_then_survey_step_is_comepte(
 
 
 def test_upsert_user_info_when_update_duplicate_nickname_then_failure(
-        session, create_users
+    session, create_users
 ):
     upsert_user_info_dto = UpsertUserInfoDto(
         user_id=create_users[0].id, user_profile_id=None, codes=[1000], values=["noah"],

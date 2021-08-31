@@ -73,6 +73,13 @@ class SurveyResultEntity(BaseModel):
     detail_point_family: Optional[int]
     detail_point_bank: Optional[int]
     public_newly_married: Optional[int]
+    public_married_income_point: Optional[int]
+    public_married_child_point: Optional[int]
+    public_married_address_point: Optional[int]
+    public_married_bank_point: Optional[int]
+    public_married_date_point: Optional[int]
+    private_married_child_num: Optional[int]
+    private_married_rank: Optional[int]
     public_newly_married_div: Optional[str]
     public_first_life: Optional[int]
     public_first_life_div: Optional[str]
@@ -90,6 +97,13 @@ class SurveyResultEntity(BaseModel):
     private_normal: Optional[int]
     hope_town_phase_one: Optional[int]
     hope_town_phase_two: Optional[int]
+    hope_one_income_point: Optional[int]
+    hope_one_address_point: Optional[int]
+    hope_one_bank_point: Optional[int]
+    hope_two_child_point: Optional[int]
+    hope_two_household_point: Optional[int]
+    hope_two_address_point: Optional[int]
+    hope_two_bank_point: Optional[int]
     created_at = datetime
     updated_at = datetime
 

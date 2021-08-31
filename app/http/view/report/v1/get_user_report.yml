@@ -100,6 +100,48 @@ responses:
                     private_first_life_div:
                       type: string
                       example: 잔여
+                    public_married_income_point:
+                      type: integer
+                      example: 1
+                    public_married_child_point:
+                      type: integer
+                      example: 1
+                    public_married_address_point:
+                      type: integer
+                      example: 1
+                    public_married_bank_point:
+                      type: integer
+                      example: 1
+                    public_married_date_point:
+                      type: integer
+                      example: 1
+                    private_married_child_num:
+                      type: integer
+                      example: 1
+                    private_married_rank:
+                      type: integer
+                      example: 1
+                    hope_one_income_point:
+                      type: integer
+                      example: 1
+                    hope_one_address_point:
+                      type: integer
+                      example: 1
+                    hope_one_bank_point:
+                      type: integer
+                      example: 1
+                    hope_two_child_point:
+                      type: integer
+                      example: 1
+                    hope_two_household_point:
+                      type: integer
+                      example: 1
+                    hope_two_address_point:
+                      type: integer
+                      example: 1
+                    hope_two_bank_point:
+                      type: integer
+                      example: 1
                 user_infos:
                   type: array
                   items:
