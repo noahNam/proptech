@@ -109,7 +109,7 @@ def test_get_promotion_then_return_list_for_promotion_entity(
     session.add(promotion)
     session.commit()
 
-    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
+    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1, auth_header="auth_header")
     result = PaymentRepository().get_promotion(
         user_id=dto.user_id, div=PromotionDivEnum.HOUSE.value
     )
@@ -127,7 +127,7 @@ def test_get_promotion_then_return_none(session, create_users, promotion_factory
     session.add(promotion)
     session.commit()
 
-    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
+    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1, auth_header="auth_header")
     result = PaymentRepository().get_promotion(
         user_id=dto.user_id, div=PromotionDivEnum.HOUSE.value
     )
@@ -140,14 +140,14 @@ def test_get_number_of_ticket_then_return_2(session, create_users, ticket_factor
     session.add_all(tickets)
     session.commit()
 
-    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
+    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1, auth_header="auth_header")
     result = PaymentRepository().get_number_of_ticket(user_id=dto.user_id)
 
     assert result == 2
 
 
 def test_get_number_of_ticket_then_return_0(session, create_users):
-    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
+    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1, auth_header="auth_header")
     result = PaymentRepository().get_number_of_ticket(user_id=dto.user_id)
 
     assert result == 0
@@ -221,7 +221,7 @@ def test_update_ticket_usage_result_when_not_exist_public_house_id_then_update_t
 
 def test_create_promotion_usage_count(session, create_users):
     promotion_id = 1
-    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
+    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1, auth_header="auth_header")
 
     PaymentRepository().create_promotion_usage_count(
         user_id=dto.user_id, promotion_id=promotion_id
@@ -241,7 +241,7 @@ def test_create_promotion_usage_count(session, create_users):
 
 def test_update_promotion_usage_count(session, create_users):
     promotion_id = 1
-    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
+    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1, auth_header="auth_header")
 
     PaymentRepository().create_promotion_usage_count(
         user_id=dto.user_id, promotion_id=promotion_id
@@ -264,7 +264,7 @@ def test_update_promotion_usage_count(session, create_users):
 
 def test_create_ticket_target(session, create_users):
     ticket_id = 1
-    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1)
+    dto = UseHouseTicketDto(user_id=create_users[0].id, house_id=1, auth_header="auth_header")
 
     PaymentRepository().create_ticket_target(dto=dto, ticket_id=ticket_id)
 
