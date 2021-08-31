@@ -5,7 +5,6 @@ from pydantic import ValidationError
 from app.http.responses import failure_response, success_response
 from core.domains.report.schema.report_schema import (
     GetExpectedCompetitionResponseSchema,
-    GetSaleInfoResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -79,7 +78,7 @@ class GetRecentlySalePresenter:
             return failure_response(output=output, status_code=output.code)
 
 
-class GetUserSurveysPresenter:
+class GetUserReportPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:

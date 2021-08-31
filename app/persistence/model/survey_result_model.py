@@ -21,6 +21,13 @@ class SurveyResultModel(db.Model):
     detail_point_family = Column(SmallInteger, nullable=True)
     detail_point_bank = Column(SmallInteger, nullable=True)
     public_newly_married = Column(SmallInteger, nullable=True)
+    public_married_income_point = Column(SmallInteger, nullable=True)
+    public_married_child_point = Column(SmallInteger, nullable=True)
+    public_married_address_point = Column(SmallInteger, nullable=True)
+    public_married_bank_point = Column(SmallInteger, nullable=True)
+    public_married_date_point = Column(SmallInteger, nullable=True)
+    private_married_child_num = Column(SmallInteger, nullable=True)
+    private_married_rank = Column(SmallInteger, nullable=True)
     public_newly_married_div = Column(String(2), nullable=True)
     public_first_life = Column(SmallInteger, nullable=True)
     public_first_life_div = Column(String(2), nullable=True)
@@ -38,6 +45,13 @@ class SurveyResultModel(db.Model):
     private_normal = Column(SmallInteger, nullable=True)
     hope_town_phase_one = Column(SmallInteger, nullable=True)
     hope_town_phase_two = Column(SmallInteger, nullable=True)
+    hope_one_income_point = Column(SmallInteger, nullable=True)
+    hope_one_address_point = Column(SmallInteger, nullable=True)
+    hope_one_bank_point = Column(SmallInteger, nullable=True)
+    hope_two_child_point = Column(SmallInteger, nullable=True)
+    hope_two_household_point = Column(SmallInteger, nullable=True)
+    hope_two_address_point = Column(SmallInteger, nullable=True)
+    hope_two_bank_point = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
@@ -50,6 +64,13 @@ class SurveyResultModel(db.Model):
             detail_point_family=self.detail_point_family,
             detail_point_bank=self.detail_point_bank,
             public_newly_married=self.public_newly_married,
+            public_married_income_point=self.public_married_income_point,
+            public_married_child_point=self.public_married_child_point,
+            public_married_address_point=self.public_married_address_point,
+            public_married_bank_point=self.public_married_bank_point,
+            public_married_date_point=self.public_married_date_point,
+            private_married_child_num=self.private_married_child_num,
+            private_married_rank=self.private_married_rank,
             public_newly_married_div=self.public_newly_married_div,
             public_first_life=self.public_first_life,
             public_first_life_div=self.public_first_life_div,
@@ -67,6 +88,13 @@ class SurveyResultModel(db.Model):
             private_normal=self.private_normal,
             hope_town_phase_one=self.hope_town_phase_one,
             hope_town_phase_two=self.hope_town_phase_two,
+            hope_one_income_point=self.hope_one_income_point,
+            hope_one_address_point=self.hope_one_address_point,
+            hope_one_bank_point=self.hope_one_bank_point,
+            hope_two_child_point=self.hope_two_child_point,
+            hope_two_household_point=self.hope_two_household_point,
+            hope_two_address_point=self.hope_two_address_point,
+            hope_two_bank_point=self.hope_two_bank_point,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )
