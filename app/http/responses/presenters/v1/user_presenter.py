@@ -3,7 +3,6 @@ from typing import Union
 
 from pydantic import ValidationError
 
-from app.extensions.utils.time_helper import get_server_timestamp
 from app.http.responses import failure_response, success_response
 from core.domains.user.schema.user_schema import (
     CreateUserResponseSchema,
@@ -13,7 +12,7 @@ from core.domains.user.schema.user_schema import (
     GetUserResponseSchema,
     PatchUserOutResponseSchema,
     GetUserMainResponseSchema,
-    GetSurveyResultResponseSchema,
+    GetSurveysResponseSchema,
     GetUserProfileResponseSchema,
     UpdateUserProfileResponseSchema,
 )
@@ -183,14 +182,11 @@ class GetUserMainPresenter:
             return failure_response(output=output, status_code=output.code)
 
 
-class GetSurveyResultPresenter:
+class GetSurveysPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                age = output.value["age"]
-                schema = GetSurveyResultResponseSchema(
-                    result=output.value["user_profile_entity"]
-                )
+                schema = GetSurveysResponseSchema(user_infos=output.value)
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
@@ -200,15 +196,8 @@ class GetSurveyResultPresenter:
                     ),
                     status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
                 )
-            user_dict = schema.result.dict(include={"nickname"})
-            user_dict["age"] = age
-            survey_result_dict = schema.result.dict(include={"survey_result"})
-
             result = {
-                "data": {
-                    "user": user_dict,
-                    "survey_result": survey_result_dict["survey_result"],
-                },
+                "data": schema.dict(),
                 "meta": output.meta,
             }
             return success_response(result=result)

@@ -1,28 +1,32 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
-from pydantic import BaseModel, StrictStr
+from pydantic import BaseModel, StrictStr, StrictInt, StrictBool
 
 from core.domains.user.entity.user_entity import (
-    UserProfileEntity,
     UserInfoResultEntity,
 )
 
 
 class GetUserBaseSchema(BaseModel):
-    is_required_agree_terms: bool
-    is_active: bool
-    is_out: bool
+    is_required_agree_terms: StrictBool
+    is_active: StrictBool
+    is_out: StrictBool
 
 
 class GetUserMainBaseSchema(BaseModel):
-    survey_step: int
-    tickets: int
-    is_badge: bool
-    nickname: Optional[str]
+    survey_step: StrictInt
+    tickets: StrictInt
+    is_badge: StrictBool
+    nickname: Optional[StrictStr]
+
+
+class GetSurveysBaseSchema(BaseModel):
+    code: StrictInt
+    value: Union[StrictStr, List]
 
 
 class GetUserProfileBaseSchema(BaseModel):
-    nickname: str
+    nickname: StrictStr
 
 
 class GetUserResponseSchema(BaseModel):
@@ -53,8 +57,8 @@ class GetUserMainResponseSchema(BaseModel):
     result: GetUserMainBaseSchema
 
 
-class GetSurveyResultResponseSchema(BaseModel):
-    result: UserProfileEntity
+class GetSurveysResponseSchema(BaseModel):
+    user_infos: List[GetSurveysBaseSchema]
 
 
 class GetUserProfileResponseSchema(BaseModel):
