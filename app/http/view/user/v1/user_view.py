@@ -157,9 +157,7 @@ def get_surveys_view():
         user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return GetSurveysPresenter().transform(
-        GetSurveysUseCase().execute(dto=dto)
-    )
+    return GetSurveysPresenter().transform(GetSurveysUseCase().execute(dto=dto))
 
 
 @api.route("/v1/users/profile", methods=["GET"])

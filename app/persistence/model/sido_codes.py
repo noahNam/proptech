@@ -17,7 +17,5 @@ class SidoCodeModel(db.Model):
 
     def to_entity(self) -> SidoCodeEntity:
         return SidoCodeEntity(
-            id=self.id,
-            sido_name=self.sido_name,
-            sigugun_name=self.sigugun_name,
+            id=self.id, sido_name=self.sido_name, sigugun_name=self.sigugun_name,
         )
