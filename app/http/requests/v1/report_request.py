@@ -31,7 +31,7 @@ class GetRecentlySaleSchema(BaseModel):
     house_id: StrictInt
 
 
-class GetUserSurveysSchema(BaseModel):
+class GetUserReportSchema(BaseModel):
     user_id: StrictInt
 
 
@@ -89,16 +89,16 @@ class GetRecentlySaleRequestSchema:
             raise InvalidRequestException(message=e.errors())
 
 
-class GetUserSurveysRequestSchema:
+class GetUserReportRequestSchema:
     def __init__(self, user_id):
         self.user_id = int(user_id) if user_id else None
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetUserSurveysSchema(user_id=self.user_id,).dict()
+            schema = GetUserReportSchema(user_id=self.user_id,).dict()
             return ReportUserDto(**schema)
         except ValidationError as e:
             logger.error(
-                f"[GetUserSurveysRequestSchema][validate_request_and_make_dto] error : {e}"
+                f"[GetUserReportRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

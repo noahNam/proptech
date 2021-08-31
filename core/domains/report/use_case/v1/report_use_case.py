@@ -29,11 +29,21 @@ from core.domains.report.schema.report_schema import (
     GetSaleInfoResponseSchema,
     GetUserSurveysResponseSchema,
     GetSurveysUserReportSchema,
+    GetSurveysResultBaseSchema,
 )
-from core.domains.user.entity.user_entity import UserProfileEntity
+from core.domains.user.dto.user_dto import AvgMonthlyIncomeWokrerDto
+from core.domains.user.entity.user_entity import UserProfileEntity, SidoCodeEntity
 from core.domains.user.enum import UserTopicEnum
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
-from core.domains.user.enum.user_info_enum import CodeEnum
+from core.domains.user.enum.user_info_enum import (
+    CodeEnum,
+    IsHouseHolderCodeEnum,
+    IsHouseOwnerCodeEnum,
+    IsSubAccountEnum,
+    AssetsRealEstateEnum,
+    AssetsCarEnum,
+    AssetsTotalEnum,
+)
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
@@ -47,6 +57,18 @@ class ReportBaseUseCase:
             topic_name=UserTopicEnum.GET_USER_PROFILE, user_id=user_id,
         )
         return get_event_object(topic_name=UserTopicEnum.GET_USER_PROFILE)
+
+    def _get_sido_name(self, sido_id: int, sigugun_id: int) -> SidoCodeEntity:
+        send_message(
+            topic_name=UserTopicEnum.GET_SIDO_NAME,
+            sido_id=sido_id,
+            sigugun_id=sigugun_id,
+        )
+        return get_event_object(topic_name=UserTopicEnum.GET_SIDO_NAME)
+
+    def _get_avg_monthly_income_workers(self) -> AvgMonthlyIncomeWokrerDto:
+        send_message(topic_name=UserTopicEnum.GET_AVG_MONTHLY_INCOME_WORKERS,)
+        return get_event_object(topic_name=UserTopicEnum.GET_AVG_MONTHLY_INCOME_WORKERS)
 
     def _get_public_sale_info(self, house_id: int) -> PublicSaleReportEntity:
         send_message(
@@ -278,7 +300,7 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
         )
 
 
-class GetUserSurveysUseCase(ReportBaseUseCase):
+class GetUserReportUseCase(ReportBaseUseCase):
     def execute(
         self, dto: ReportUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
@@ -299,6 +321,11 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
                 message=FailureType.NOT_FOUND_ERROR,
                 code=HTTPStatus.NOT_FOUND,
             )
+
+        # 유저 설문 데이터 맵핑
+        user_infos: List[GetSurveysResultBaseSchema] = self._make_user_info_object(
+            user_profile=user_profile
+        )
 
         # 유저분석 티켓 사용 유무
         is_ticket_usage_for_user: bool = self._report_repo.is_ticket_usage_for_user(
@@ -334,6 +361,7 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
                 category=user_analysis.category, div=user_analysis.div
             )
 
+        # 유저별 category 분석 메세지 formatting
         if user_analysis_category:
             format_text = [
                 user_analysis_category_detail.format_text
@@ -341,6 +369,7 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
             ]
             analysis_text = user_analysis_category.output_text.format(*format_text)
 
+        # 생일 계산
         for user_info in user_profile.user_infos:
             if user_info.code == CodeEnum.BIRTHDAY.value:
                 age = self._calc_age(birthday=user_info.user_value)
@@ -352,9 +381,96 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
             survey_result=survey_result,
             is_ticket_usage_for_user=is_ticket_usage_for_user,
             analysis_text=analysis_text,
+            user_infos=user_infos,
         )
 
         return UseCaseSuccessOutput(value=result)
+
+    def _make_user_info_object(
+        self, user_profile: UserProfileEntity
+    ) -> List[GetSurveysResultBaseSchema]:
+        result = list()
+        code_dict = {
+            # subjective = 주관식 변수 또는 바인딩 필요한 코드(거주지, 월소득)
+            CodeEnum.NICKNAME.value: "subjective",
+            CodeEnum.BIRTHDAY.value: "subjective",
+            # 주택 소유 여부
+            CodeEnum.IS_HOUSE_OWNER.value: dict(
+                zip(
+                    IsHouseOwnerCodeEnum.COND_CD.value,
+                    IsHouseOwnerCodeEnum.COND_NM.value,
+                )
+            ),
+            # 세대주 여부
+            CodeEnum.IS_HOUSE_HOLDER.value: dict(
+                zip(
+                    IsHouseHolderCodeEnum.COND_CD.value,
+                    IsHouseHolderCodeEnum.COND_NM.value,
+                )
+            ),
+            # 주소
+            CodeEnum.ADDRESS.value: "subjective",
+            CodeEnum.ADDRESS_DETAIL.value: "subjective",
+            CodeEnum.ADDRESS_DATE.value: "subjective",
+            # 청약통장
+            CodeEnum.IS_SUB_ACCOUNT.value: dict(
+                zip(IsSubAccountEnum.COND_CD.value, IsSubAccountEnum.COND_NM.value)
+            ),
+            CodeEnum.SUB_ACCOUNT_TIMES.value: "subjective",
+            CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value: "subjective",
+            # 자산
+            CodeEnum.ASSETS_REAL_ESTATE.value: dict(
+                zip(
+                    AssetsRealEstateEnum.COND_CD.value,
+                    AssetsRealEstateEnum.COND_NM.value,
+                )
+            ),
+            CodeEnum.ASSETS_CAR.value: dict(
+                zip(AssetsCarEnum.COND_CD.value, AssetsCarEnum.COND_NM.value)
+            ),
+            CodeEnum.ASSETS_TOTAL.value: dict(
+                zip(AssetsTotalEnum.COND_CD.value, AssetsTotalEnum.COND_NM.value)
+            ),
+        }
+
+        # 주소 맵핑 변수 초기화
+        address_cnt, address_dict = 0, dict()
+
+        for user_info in user_profile.user_infos:
+            if value := code_dict.get(user_info.code):
+                value = (
+                    value.get(int(user_info.user_value))
+                    if value != "subjective"
+                    else user_info.user_value
+                )
+
+                if (
+                    user_info.code == CodeEnum.ADDRESS.value
+                    or user_info.code == CodeEnum.ADDRESS_DETAIL.value
+                ):
+                    # 주소 맵핑
+                    address_cnt += 1
+                    address_dict[user_info.code] = user_info.user_value
+                else:
+                    base_schema = GetSurveysResultBaseSchema(
+                        code=user_info.code, value=value
+                    )
+                    result.append(base_schema)
+
+        if address_cnt == 2:
+            sido_entity: SidoCodeEntity = self._get_sido_name(
+                sido_id=int(address_dict.get(CodeEnum.ADDRESS.value)),
+                sigugun_id=int(address_dict.get(CodeEnum.ADDRESS_DETAIL.value)),
+            )
+            address_schema = GetSurveysResultBaseSchema(
+                code=CodeEnum.ADDRESS.value, value=sido_entity.sido_name
+            )
+            address_detail_schema = GetSurveysResultBaseSchema(
+                code=CodeEnum.ADDRESS_DETAIL.value, value=sido_entity.sigugun_name
+            )
+            result.extend([address_schema, address_detail_schema])
+
+        return result
 
     def _make_response_schema(
         self,
@@ -363,6 +479,7 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
         survey_result: Optional[SurveyResultEntity],
         is_ticket_usage_for_user: bool,
         analysis_text: str,
+        user_infos: List[GetSurveysResultBaseSchema],
     ) -> GetUserSurveysResponseSchema:
         get_surveys_user_report_schema = GetSurveysUserReportSchema(
             is_ticket_usage_for_user=is_ticket_usage_for_user,
@@ -375,6 +492,7 @@ class GetUserSurveysUseCase(ReportBaseUseCase):
             user=get_surveys_user_report_schema,
             survey_result=survey_result,
             analysis_text=analysis_text,
+            user_infos=user_infos,
         )
 
     def _calc_age(self, birthday: str) -> int:

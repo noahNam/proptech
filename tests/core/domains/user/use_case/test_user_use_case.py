@@ -37,7 +37,7 @@ from core.domains.user.use_case.v1.user_use_case import (
     GetUserUseCase,
     UserOutUseCase,
     GetUserMainUseCase,
-    GetSurveyResultUseCase,
+    GetSurveysUseCase,
     GetUserProfileUseCase,
     UpdateUserProfileUseCase,
 )
@@ -455,34 +455,6 @@ def test_get_user_main_use_case_when_enter_my_page_main_then_ticket_is_0_and_sur
     assert result.value["survey_step"] == UserSurveyStepEnum.STEP_ONE.value
     assert result.value["tickets"] == 0
     assert result.value["is_badge"] is True
-
-
-def test_get_survey_result_use_case_then_return_user_nickname_and_birth_and_survey_results(
-    session, create_users
-):
-    get_user_dto = GetUserDto(user_id=create_users[0].id)
-    result = GetSurveyResultUseCase().execute(dto=get_user_dto)
-
-    assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, dict)
-    assert result.value["age"] == 36
-    assert result.value["user_profile_entity"].nickname == "noah"
-    assert result.value["user_profile_entity"].user_infos[0].user_value == "19850509"
-    assert result.value["user_profile_entity"].survey_result.total_point == 32
-
-
-def test_get_survey_result_use_case_then_return_survey_result_is_none(
-    session, create_users
-):
-    get_user_dto = GetUserDto(user_id=create_users[1].id)
-    result = GetSurveyResultUseCase().execute(dto=get_user_dto)
-
-    assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, dict)
-    assert result.value["age"] == 36
-    assert result.value["user_profile_entity"].nickname == "noah"
-    assert result.value["user_profile_entity"].user_infos[0].user_value == "19850509"
-    assert result.value["user_profile_entity"].survey_result is None
 
 
 def test_get_user_profile_use_case_when_enter_setting_page_return_success(
