@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from sqlalchemy import exc, exists
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
@@ -412,25 +412,6 @@ class UserRepository:
                 f"[UserRepository][create_recently_view] user_id : {dto.user_id} house_id: {dto.house_id} error : {e}"
             )
 
-    def get_survey_result(self, dto: GetUserDto) -> UserProfileEntity:
-        query = (
-            session.query(UserProfileModel)
-                .options(joinedload(UserProfileModel.survey_result))
-                .join(
-                UserInfoModel,
-                (UserProfileModel.id == UserInfoModel.user_profile_id)
-                & (UserInfoModel.code == CodeEnum.BIRTHDAY.value),
-            )
-                .filter(UserProfileModel.user_id == dto.user_id)
-        )
-
-        user_profile = query.first()
-
-        if not user_profile:
-            return None
-
-        return user_profile.to_entity()
-
     def update_user_nickname_of_profile_setting(
             self, dto: UpsertUserInfoDetailDto
     ) -> None:
@@ -458,14 +439,3 @@ class UserRepository:
         return session.query(
             session.query(UserProfileModel).filter_by(nickname=nickname).exists()
         ).scalar()
-
-    # def get_user_info_value(self, user_id: int) -> Optional[UserProfileEntity]:
-    #     query = (
-    #         session.query(UserProfileModel)
-    #         .options(selectinload(UserInfoModel))
-    #         .filter_by(user_id=user_id)
-    #     )
-    #     query_set = query.first()
-    #     if not query_set:
-    #         return None
-    #     return query_set.to_entity()

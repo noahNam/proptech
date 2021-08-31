@@ -11,7 +11,7 @@ from app.http.requests.v1.user_request import (
     GetUserInfoRequestSchema,
     GetUserRequestSchema,
     GetUserMainRequestSchema,
-    GetSurveyResultRequestSchema,
+    GetSurveysRequestSchema,
     UpdateUserProfileRequestSchema,
 )
 from app.http.responses.presenters.v1.user_presenter import (
@@ -22,7 +22,7 @@ from app.http.responses.presenters.v1.user_presenter import (
     GetUserPresenter,
     PatchUserOutPresenter,
     GetUserMainPresenter,
-    GetSurveyResultPresenter,
+    GetSurveysPresenter,
     GetUserProfilePresenter,
     UpdateUserProfilePresenter,
 )
@@ -36,7 +36,7 @@ from core.domains.user.use_case.v1.user_use_case import (
     GetUserUseCase,
     UserOutUseCase,
     GetUserMainUseCase,
-    GetSurveyResultUseCase,
+    GetSurveysUseCase,
     GetUserProfileUseCase,
     UpdateUserProfileUseCase,
 )
@@ -148,17 +148,17 @@ def get_user_main_view():
     return GetUserMainPresenter().transform(GetUserMainUseCase().execute(dto=dto))
 
 
-@api.route("/v1/users/survey/result", methods=["GET"])
+@api.route("/v1/users/surveys", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_survey_result.yml", methods=["GET"])
-def get_survey_result_view():
-    dto = GetSurveyResultRequestSchema(
+@swag_from("get_surveys.yml", methods=["GET"])
+def get_surveys_view():
+    dto = GetSurveysRequestSchema(
         user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return GetSurveyResultPresenter().transform(
-        GetSurveyResultUseCase().execute(dto=dto)
+    return GetSurveysPresenter().transform(
+        GetSurveysUseCase().execute(dto=dto)
     )
 
 

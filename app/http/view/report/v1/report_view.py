@@ -5,13 +5,13 @@ from app.http.requests.v1.report_request import (
     GetExpectedCompetitionRequestSchema,
     GetSaleInfoRequestSchema,
     GetRecentlySaleRequestSchema,
-    GetUserSurveysRequestSchema,
+    GetUserReportRequestSchema,
 )
 from app.http.responses.presenters.v1.report_presenter import (
     GetExpectedCompetitionPresenter,
     GetSaleInfoPresenter,
     GetRecentlySalePresenter,
-    GetUserSurveysPresenter,
+    GetUserReportPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 
@@ -19,7 +19,7 @@ from core.domains.report.use_case.v1.report_use_case import (
     GetExpectedCompetitionUseCase,
     GetSaleInfoUseCase,
     GetRecentlySaleUseCase,
-    GetUserSurveysUseCase,
+    GetUserReportUseCase,
 )
 
 
@@ -63,13 +63,13 @@ def get_recently_sale_view():
     )
 
 
-@api.route("/v1/reports/user-surveys", methods=["GET"])
+@api.route("/v1/reports/user", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_user_surveys.yml", methods=["GET"])
-def get_user_surveys_view():
-    dto = GetUserSurveysRequestSchema(
+@swag_from("get_user_report.yml", methods=["GET"])
+def get_user_report_view():
+    dto = GetUserReportRequestSchema(
         user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return GetUserSurveysPresenter().transform(GetUserSurveysUseCase().execute(dto=dto))
+    return GetUserReportPresenter().transform(GetUserReportUseCase().execute(dto=dto))
