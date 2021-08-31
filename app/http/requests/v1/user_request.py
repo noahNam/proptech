@@ -66,7 +66,7 @@ class GetUserMainSchema(BaseModel):
     user_id: StrictInt
 
 
-class GetSurveyResultSchema(BaseModel):
+class GetSurveysSchema(BaseModel):
     user_id: StrictInt
 
 
@@ -208,17 +208,17 @@ class GetUserMainRequestSchema:
             raise InvalidRequestException(message=e.errors())
 
 
-class GetSurveyResultRequestSchema:
+class GetSurveysRequestSchema:
     def __init__(self, user_id):
         self.user_id = int(user_id) if user_id else None
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetSurveyResultSchema(user_id=self.user_id,).dict()
+            schema = GetSurveysSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
-                f"[GetSurveyResultRequestSchema][validate_request_and_make_dto] error : {e}"
+                f"[GetSurveysRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 
