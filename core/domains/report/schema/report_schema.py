@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
-from pydantic import BaseModel, StrictStr, StrictInt, StrictFloat
+from pydantic import BaseModel, StrictStr, StrictInt, StrictFloat, StrictBool
 
 from core.domains.house.entity.house_entity import (
     SpecialSupplyResultReportEntity,
@@ -123,13 +123,19 @@ class GetRecentlySaleResponseSchema(BaseModel):
 
 
 class GetSurveysUserReportSchema(BaseModel):
-    is_ticket_usage_for_user: bool
-    survey_step: int
-    nickname: str
-    age: Optional[int]
+    is_ticket_usage_for_user: StrictBool
+    survey_step: StrictInt
+    nickname: StrictStr
+    age: Optional[StrictInt]
+
+
+class GetSurveysResultBaseSchema(BaseModel):
+    code: StrictInt
+    value: Union[StrictStr, List]
 
 
 class GetUserSurveysResponseSchema(BaseModel):
     user: GetSurveysUserReportSchema
     survey_result: Optional[SurveyResultEntity]
-    analysis_text: Optional[str]
+    analysis_text: Optional[StrictStr]
+    user_infos: Optional[List[GetSurveysResultBaseSchema]]

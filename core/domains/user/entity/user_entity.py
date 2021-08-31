@@ -95,3 +95,9 @@ class RecentlyViewEntity(BaseModel):
     house_id: int
     type: int
     created_at: datetime
+
+
+class SidoCodeEntity(BaseModel):
+    id: int
+    sido_name: str
+    sigugun_name: str

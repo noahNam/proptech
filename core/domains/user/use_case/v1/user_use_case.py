@@ -1,6 +1,5 @@
 import os
 import uuid
-from datetime import datetime
 from http import HTTPStatus
 from typing import Union, Optional, List
 
@@ -33,6 +32,7 @@ from core.domains.user.entity.user_entity import (
     UserEntity,
     UserProfileEntity,
     UserInfoResultEntity,
+    SidoCodeEntity,
 )
 from core.domains.user.enum.user_enum import UserSqsTypeEnum, UserSurveyStepEnum
 from core.domains.user.enum.user_info_enum import (
@@ -54,6 +54,7 @@ from core.domains.user.enum.user_info_enum import (
     IsSupportParentCodeEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
+from core.domains.user.schema.user_schema import GetSurveysBaseSchema
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
@@ -604,7 +605,7 @@ class GetUserMainUseCase(UserBaseUseCase):
         return get_event_object(topic_name=NotificationTopicEnum.GET_BADGE)
 
 
-class GetSurveyResultUseCase(UserBaseUseCase):
+class GetSurveysUseCase(UserBaseUseCase):
     def execute(
         self, dto: GetUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
@@ -615,36 +616,182 @@ class GetSurveyResultUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        user_profile_entity: Optional[
-            UserProfileEntity
-        ] = self._user_repo.get_survey_result(dto=dto)
+        user_profile: Optional[UserProfileEntity] = self._user_repo.get_user_profile(
+            user_id=dto.user_id
+        )
 
-        if not user_profile_entity:
+        if not user_profile:
             return UseCaseFailureOutput(
                 type="survey_result",
                 message=FailureType.NOT_FOUND_ERROR,
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        if not user_profile_entity.user_infos:
-            return UseCaseFailureOutput(
-                type="wrong_survey_step",
-                message=FailureType.NOT_FOUND_ERROR,
-                code=HTTPStatus.NOT_FOUND,
-            )
-
-        age: int = self._calc_age(user_profile_entity=user_profile_entity)
-        return UseCaseSuccessOutput(
-            value=dict(age=age, user_profile_entity=user_profile_entity)
+        # 유저 설문 데이터 맵핑
+        user_infos: List[GetSurveysBaseSchema] = self._make_user_info_object(
+            user_profile=user_profile
         )
 
-    def _calc_age(self, user_profile_entity: UserProfileEntity) -> int:
-        # 생일로 나이 계산
-        birth = user_profile_entity.user_infos[0].user_value
-        birth = datetime.strptime(birth, "%Y%m%d")
-        today = get_server_timestamp()
+        return UseCaseSuccessOutput(value=user_infos)
 
-        return today.year - birth.year
+    def _make_user_info_object(
+        self, user_profile: UserProfileEntity
+    ) -> List[GetSurveysBaseSchema]:
+        result = list()
+        code_dict = {
+            # subjective = 주관식 변수 또는 바인딩 필요한 코드(거주지, 월소득)
+            CodeEnum.NICKNAME.value: "subjective",
+            CodeEnum.BIRTHDAY.value: "subjective",
+            # 주택 소유 여부
+            CodeEnum.IS_HOUSE_OWNER.value: dict(
+                zip(
+                    IsHouseOwnerCodeEnum.COND_CD.value,
+                    IsHouseOwnerCodeEnum.COND_NM.value,
+                )
+            ),
+            # 세대주 여부
+            CodeEnum.IS_HOUSE_HOLDER.value: dict(
+                zip(
+                    IsHouseHolderCodeEnum.COND_CD.value,
+                    IsHouseHolderCodeEnum.COND_NM.value,
+                )
+            ),
+            # 주소
+            CodeEnum.ADDRESS.value: "subjective",
+            CodeEnum.ADDRESS_DETAIL.value: "subjective",
+            CodeEnum.ADDRESS_DATE.value: "subjective",
+            # 혼인
+            CodeEnum.IS_MARRIED.value: dict(
+                zip(IsMarriedCodeEnum.COND_CD.value, IsMarriedCodeEnum.COND_NM.value)
+            ),
+            CodeEnum.MARRIAGE_REG_DATE.value: "subjective",
+            CodeEnum.IS_CHILD.value: dict(
+                zip(IsChildEnum.COND_CD.value, IsChildEnum.COND_NM.value)
+            ),
+            # 청약통장
+            CodeEnum.IS_SUB_ACCOUNT.value: dict(
+                zip(IsSubAccountEnum.COND_CD.value, IsSubAccountEnum.COND_NM.value)
+            ),
+            CodeEnum.SUB_ACCOUNT_DATE.value: "subjective",
+            CodeEnum.SUB_ACCOUNT_TIMES.value: "subjective",
+            CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value: "subjective",
+            # 소득
+            CodeEnum.NUMBER_DEPENDENTS.value: dict(
+                zip(
+                    NumberDependentsEnum.COND_CD.value,
+                    NumberDependentsEnum.COND_NM.value,
+                )
+            ),
+            CodeEnum.MONTHLY_INCOME.value: "subjective",
+            # 자산
+            CodeEnum.ASSETS_REAL_ESTATE.value: dict(
+                zip(
+                    AssetsRealEstateEnum.COND_CD.value,
+                    AssetsRealEstateEnum.COND_NM.value,
+                )
+            ),
+            CodeEnum.ASSETS_CAR.value: dict(
+                zip(AssetsCarEnum.COND_CD.value, AssetsCarEnum.COND_NM.value)
+            ),
+            CodeEnum.ASSETS_TOTAL.value: dict(
+                zip(AssetsTotalEnum.COND_CD.value, AssetsTotalEnum.COND_NM.value)
+            ),
+            # 노부모 부양
+            CodeEnum.IS_SUPPORT_PARENT.value: dict(
+                zip(
+                    IsSupportParentCodeEnum.COND_CD.value,
+                    IsSupportParentCodeEnum.COND_NM.value,
+                )
+            ),
+            # 기관 추천
+            CodeEnum.SPECIAL_COND.value: dict(
+                zip(SpecialCondEnum.COND_CD.value, SpecialCondEnum.COND_NM.value)
+            ),
+        }
+
+        # 주소 맵핑 변수 초기화
+        address_cnt, address_dict = 0, dict()
+        # 총월소득 맵핑 변수 초기화
+        monthly_income_flag, number_dependents, monthly_income_user_value = (
+            False,
+            0,
+            None,
+        )
+
+        for user_info in user_profile.user_infos:
+            if value := code_dict.get(user_info.code):
+                value = (
+                    value.get(int(user_info.user_value))
+                    if value != "subjective"
+                    else user_info.user_value
+                )
+
+                if (
+                    user_info.code == CodeEnum.ADDRESS.value
+                    or user_info.code == CodeEnum.ADDRESS_DETAIL.value
+                ):
+                    # 주소 맵핑
+                    address_cnt += 1
+                    address_dict[user_info.code] = user_info.user_value
+                elif user_info.code == CodeEnum.MONTHLY_INCOME.value:
+                    monthly_income_flag = True
+                    monthly_income_user_value = value
+                else:
+                    base_schema = GetSurveysBaseSchema(code=user_info.code, value=value)
+                    result.append(base_schema)
+
+                    # 총월소득 계산위해 value 할당
+                    if user_info.code == CodeEnum.NUMBER_DEPENDENTS.value:
+                        number_dependents = int(user_info.user_value)
+
+        if address_cnt == 2:
+            sido_entity: SidoCodeEntity = self._user_repo.get_sido_name(
+                sido_id=int(address_dict.get(CodeEnum.ADDRESS.value)),
+                sigugun_id=int(address_dict.get(CodeEnum.ADDRESS_DETAIL.value)),
+            )
+
+            address_schema = GetSurveysBaseSchema(
+                code=CodeEnum.ADDRESS.value, value=sido_entity.sido_name
+            )
+            address_detail_schema = GetSurveysBaseSchema(
+                code=CodeEnum.ADDRESS_DETAIL.value, value=sido_entity.sigugun_name
+            )
+            result.extend([address_schema, address_detail_schema])
+
+        if monthly_income_flag:
+            # 월소득 맵핑
+            # 부양가족별 basic 소득
+            income_result: AvgMonthlyIncomeWokrerDto = self._user_repo.get_avg_monthly_income_workers()
+            income_result_dict = {
+                1: income_result.three,
+                2: income_result.three,
+                3: income_result.three,
+                4: income_result.four,
+                5: income_result.five,
+                6: income_result.six,
+                7: income_result.seven,
+                8: income_result.eight,
+                9: income_result.three,  # 0명
+            }
+
+            my_basic_income = income_result_dict.get(number_dependents)
+
+            income_by_segment = my_basic_income * (int(monthly_income_user_value) / 100)
+            income_by_segment = format(round(income_by_segment), ",d")
+            result_income_by_segment = str(income_by_segment)
+
+            if my_basic_income == income_result_dict.get(8):
+                result_income_by_segment += "원 초과"
+            else:
+                result_income_by_segment += "원 이하"
+
+            base_schema = GetSurveysBaseSchema(
+                code=CodeEnum.MONTHLY_INCOME.value,
+                value=[result_income_by_segment, monthly_income_user_value],
+            )
+            result.append(base_schema)
+
+        return result
 
 
 class GetUserProfileUseCase(UserBaseUseCase):
