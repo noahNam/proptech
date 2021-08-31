@@ -89,14 +89,9 @@ def test_get_ticket_usage_result_view_then_return_no_list(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
-@patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._get_user_survey_step",
-    return_value=UserSurveyStepEnum.STEP_COMPLETE,
-)
 def test_use_house_ticket_when_used_ticket_then_success(
     _call_jarvis_house_analytics_api,
     _is_ticket_usage_for_house,
-    _get_user_survey_step,
     client,
     session,
     test_request_context,
@@ -110,6 +105,8 @@ def test_use_house_ticket_when_used_ticket_then_success(
         프로모션이 없고 티켓은 있는 경우
     """
     # data set #############################################################
+    create_users[0].user_profile.survey_step = UserSurveyStepEnum.STEP_COMPLETE.value
+
     ticket_usage_result = ticket_usage_result_factory.build()
     session.add(ticket_usage_result)
     session.commit()
@@ -148,14 +145,9 @@ def test_use_house_ticket_when_used_ticket_then_success(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
-@patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._get_user_survey_step",
-    return_value=UserSurveyStepEnum.STEP_COMPLETE,
-)
 def test_use_house_ticket_when_used_promotion_then_success(
     _call_jarvis_house_analytics_api,
     _is_ticket_usage_for_house,
-    _get_user_survey_step,
     client,
     session,
     test_request_context,
@@ -172,6 +164,8 @@ def test_use_house_ticket_when_used_promotion_then_success(
             2. 프로모션 횟수가 남아있는 경우 -> 프로모션 사용
     """
     # data set #############################################################
+    create_users[0].user_profile.survey_step = UserSurveyStepEnum.STEP_COMPLETE.value
+
     promotion = promotion_factory.build(
         promotion_houses=False, promotion_usage_count=False
     )
@@ -216,14 +210,10 @@ def test_use_house_ticket_when_used_promotion_then_success(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
-@patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._get_user_survey_step",
-    return_value=UserSurveyStepEnum.STEP_COMPLETE,
-)
 def test_use_house_ticket_when_error_on_jarvis_then_failure(
     _call_jarvis_house_analytics_api,
     _is_ticket_usage_for_house,
-    _get_user_survey_step,
+    user_profile_factory,
     client,
     session,
     test_request_context,
@@ -237,6 +227,8 @@ def test_use_house_ticket_when_error_on_jarvis_then_failure(
         티켓 사용시에 jarvis 에서 에러가 발생한 경우
     """
     # data set #############################################################
+    create_users[0].user_profile.survey_step = UserSurveyStepEnum.STEP_COMPLETE.value
+
     ticket_usage_result = ticket_usage_result_factory.build()
     session.add(ticket_usage_result)
     session.commit()
@@ -563,14 +555,9 @@ def test_use_recommend_code_view_when_when_code_already_been_all_used_then_failu
     "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._is_ticket_usage_for_user",
     return_value=False,
 )
-@patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._get_user_survey_step",
-    return_value=UserSurveyStepEnum.STEP_COMPLETE,
-)
 def test_use_user_ticket_view_when_used_ticket_then_success(
     _call_jarvis_user_analytics_api,
     _is_ticket_usage_for_user,
-    _get_user_survey_step,
     client,
     session,
     test_request_context,
@@ -584,13 +571,15 @@ def test_use_user_ticket_view_when_used_ticket_then_success(
         프로모션이 없고 티켓은 있는 경우
     """
     # data set #############################################################
+    create_users[0].user_profile.survey_step = UserSurveyStepEnum.STEP_COMPLETE.value
+
     ticket_usage_result = ticket_usage_result_factory.build(
         type=TicketUsageTypeEnum.USER.value
     )
     session.add(ticket_usage_result)
     session.commit()
 
-    ticket = ticket_factory.build(user_id=1, ticket_targets=False)
+    ticket = ticket_factory.build(user_id=create_users[0].id, ticket_targets=False)
     session.add(ticket)
     session.commit()
     ########################################################################
@@ -620,14 +609,9 @@ def test_use_user_ticket_view_when_used_ticket_then_success(
     "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._is_ticket_usage_for_user",
     return_value=False,
 )
-@patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._get_user_survey_step",
-    return_value=UserSurveyStepEnum.STEP_COMPLETE,
-)
 def test_use_user_ticket_view_when_no_prom_no_ticket_then_return_failure_output(
     _call_jarvis_user_analytics_api,
     _is_ticket_usage_for_user,
-    _get_user_survey_step,
     client,
     session,
     test_request_context,
@@ -638,6 +622,9 @@ def test_use_user_ticket_view_when_no_prom_no_ticket_then_return_failure_output(
     """
         프로모션이 없고 티켓도 없는 경우
     """
+    create_users[0].user_profile.survey_step = UserSurveyStepEnum.STEP_COMPLETE.value
+    session.commit()
+
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
         authorization=authorization,
@@ -664,14 +651,9 @@ def test_use_user_ticket_view_when_no_prom_no_ticket_then_return_failure_output(
     "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._is_ticket_usage_for_user",
     return_value=False,
 )
-@patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._get_user_survey_step",
-    return_value=UserSurveyStepEnum.STEP_COMPLETE,
-)
 def test_use_user_ticket_view_when_used_promotion_then_success(
     _call_jarvis_user_analytics_api,
     _is_ticket_usage_for_user,
-    _get_user_survey_step,
     client,
     session,
     test_request_context,
@@ -687,7 +669,7 @@ def test_use_user_ticket_view_when_used_promotion_then_success(
         유저 티켓 유무는 상관 없음
     """
     # data set #############################################################
-    user_id = 1
+    create_users[0].user_profile.survey_step = UserSurveyStepEnum.STEP_COMPLETE.value
 
     promotion = promotion_factory.build(
         promotion_houses=False,
@@ -733,14 +715,9 @@ def test_use_user_ticket_view_when_used_promotion_then_success(
     "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._is_ticket_usage_for_user",
     return_value=True,
 )
-@patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseUserTicketUseCase._get_user_survey_step",
-    return_value=UserSurveyStepEnum.STEP_COMPLETE,
-)
 def test_use_user_ticket_view_when_reused_ticket_then_success(
     _call_jarvis_user_analytics_api,
     _is_ticket_usage_for_user,
-    _get_user_survey_step,
     client,
     session,
     test_request_context,
@@ -755,6 +732,8 @@ def test_use_user_ticket_view_when_reused_ticket_then_success(
         유저 분석 프로모션은 한번 구입 시 무제한 사용 가능 -> 유저 설문을 바꿔보면서 분석 가능
     """
     # data set #############################################################
+    create_users[0].user_profile.survey_step = UserSurveyStepEnum.STEP_COMPLETE.value
+
     ticket_usage_result = ticket_usage_result_factory.build(
         type=TicketUsageTypeEnum.USER.value
     )
