@@ -12,15 +12,8 @@ from core.domains.user.enum import UserTopicEnum
 from core.domains.user.repository.user_repository import UserRepository
 
 
-def get_user_survey_step(user_id: int):
-    user_profile: Optional[UserProfileEntity] = UserRepository().get_user_profile(
-        user_id=user_id
-    )
-    setattr(g, UserTopicEnum.GET_USER_SURVEY_STEP, user_profile)
-
-
 def update_app_agree_terms_to_receive_marketing(
-    dto: UpdateReceiveNotificationSettingDto,
+        dto: UpdateReceiveNotificationSettingDto,
 ):
     UserRepository().update_app_agree_terms_to_receive_marketing(dto=dto)
     setattr(g, UserTopicEnum.UPDATE_APP_AGREE_TERMS_TO_RECEIVE_MARKETING, None)
@@ -55,7 +48,6 @@ pub.subscribe(
     UserTopicEnum.UPDATE_APP_AGREE_TERMS_TO_RECEIVE_MARKETING,
 )
 pub.subscribe(create_recently_view, UserTopicEnum.CREATE_RECENTLY_VIEW)
-pub.subscribe(get_user_survey_step, UserTopicEnum.GET_USER_SURVEY_STEP)
 pub.subscribe(get_user_profile, UserTopicEnum.GET_USER_PROFILE)
 pub.subscribe(get_sido_name, UserTopicEnum.GET_SIDO_NAME)
 pub.subscribe(

@@ -8,6 +8,12 @@ class PaymentUserDto(BaseModel):
 class UseHouseTicketDto(BaseModel):
     user_id: int
     house_id: int
+    auth_header: str
+
+
+class UseUserTicketDto(BaseModel):
+    user_id: int
+    auth_header: str
 
 
 class CreateTicketDto(BaseModel):

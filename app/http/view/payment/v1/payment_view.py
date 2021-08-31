@@ -47,8 +47,10 @@ def get_ticket_usage_result_view():
 @auth_required
 @swag_from("use_ticket_house.yml", methods=["POST"])
 def use_house_ticket_view():
+    auth_header = request.headers.get("Authorization")
+
     dto = UseHouseTicketRequestSchema(
-        **request.get_json(), user_id=current_user.id,
+        **request.get_json(), user_id=current_user.id, auth_header=auth_header
     ).validate_request_and_make_dto()
 
     return UseHouseTicketPresenter().transform(UseHouseTicketUseCase().execute(dto=dto))
@@ -59,8 +61,10 @@ def use_house_ticket_view():
 @auth_required
 @swag_from("use_ticket_user.yml", methods=["POST"])
 def use_user_ticket_view():
+    auth_header = request.headers.get("Authorization")
+
     dto = UseUserTicketRequestSchema(
-        user_id=current_user.id,
+        user_id=current_user.id, auth_header=auth_header
     ).validate_request_and_make_dto()
 
     return UseUserTicketPresenter().transform(UseUserTicketUseCase().execute(dto=dto))
