@@ -3,6 +3,7 @@ from http import HTTPStatus
 from typing import Union, List, Optional
 
 import inject
+import requests
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from core.domains.house.entity.house_entity import GetPublicSaleOfTicketUsageEntity
@@ -11,7 +12,7 @@ from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
     UseHouseTicketDto,
     CreateTicketDto,
-    UseRecommendCodeDto,
+    UseRecommendCodeDto, UseUserTicketDto,
 )
 from core.domains.payment.entity.payment_entity import (
     PromotionEntity,
@@ -39,11 +40,11 @@ class PaymentBaseUseCase:
     def __init__(self, payment_repo: PaymentRepository):
         self._payment_repo = payment_repo
 
-    def _get_user_survey_step(self, user_id: int) -> Optional[UserProfileEntity]:
+    def _get_user_profile(self, user_id: int) -> Optional[UserProfileEntity]:
         send_message(
-            topic_name=UserTopicEnum.GET_USER_SURVEY_STEP, user_id=user_id,
+            topic_name=UserTopicEnum.GET_USER_PROFILE, user_id=user_id,
         )
-        return get_event_object(topic_name=UserTopicEnum.GET_USER_SURVEY_STEP)
+        return get_event_object(topic_name=UserTopicEnum.GET_USER_PROFILE)
 
     def _make_create_use_ticket_dto(
         self, user_id: int, type_: int, amount: int, sign: TicketSignEnum
@@ -138,8 +139,8 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
 
         # 유저 설문을 완료하지 않은 경우 사용 X
         if (
-            self._get_user_survey_step(user_id=dto.user_id)
-            != UserSurveyStepEnum.STEP_COMPLETE
+            self._get_user_profile(user_id=dto.user_id).survey_step
+            != UserSurveyStepEnum.STEP_COMPLETE.value
         ):
             return UseCaseFailureOutput(
                 type=HTTPStatus.BAD_REQUEST,
@@ -294,14 +295,23 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
     def _make_failure_dict(self, message: str) -> dict:
         return dict(type="failure", message=message)
 
-    def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> HTTPStatus:
-        # todo. jarvis 분석 api 호출
-        pass
+    def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> int:
+        # todo. 자비스 API 만들어지면 변경 필요
+        response = requests.get(
+            url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id={}&user_id={}".format(dto.house_id, dto.user_id),
+            headers={
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
+                "Authorization": dto.auth_header,
+            },
+        )
+
+        return response.status_code
 
     def _use_ticket_to_house_by_charged(
         self, dto: UseHouseTicketDto
     ) -> Optional[UseCaseFailureOutput]:
-        response: HTTPStatus = self._call_jarvis_house_analytics_api(dto=dto)
+        response: int = self._call_jarvis_house_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
             # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
@@ -331,7 +341,7 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
     def _use_ticket_to_house_by_promotion(
         self, dto: UseHouseTicketDto, promotion: PromotionEntity
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        response: HTTPStatus = self._call_jarvis_house_analytics_api(dto=dto)
+        response: int = self._call_jarvis_house_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
             # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
@@ -373,7 +383,7 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
 
 class UseUserTicketUseCase(PaymentBaseUseCase):
     def execute(
-        self, dto: PaymentUserDto
+        self, dto: UseUserTicketDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -384,8 +394,8 @@ class UseUserTicketUseCase(PaymentBaseUseCase):
 
         # 유저 설문을 완료하지 않은 경우 사용 X
         if (
-            self._get_user_survey_step(user_id=dto.user_id)
-            != UserSurveyStepEnum.STEP_COMPLETE
+            self._get_user_profile(user_id=dto.user_id).survey_step
+            != UserSurveyStepEnum.STEP_COMPLETE.value
         ):
             return UseCaseFailureOutput(
                 type=HTTPStatus.BAD_REQUEST,
@@ -396,7 +406,7 @@ class UseUserTicketUseCase(PaymentBaseUseCase):
         # 유저 분석 프로모션은 한번 구입 시 무제한 사용 가능 -> 유저 설문을 바꿔보면서 분석 가능
         if self._is_ticket_usage_for_user(user_id=dto.user_id):
             # 재분석 실행(무료)
-            response: HTTPStatus = self._call_jarvis_user_analytics_api(dto=dto)
+            response: int = self._call_jarvis_user_analytics_api(dto=dto)
             if response == HTTPStatus.OK:
                 return UseCaseSuccessOutput(
                     value=dict(type="success", message="ticket reused")
@@ -448,14 +458,24 @@ class UseUserTicketUseCase(PaymentBaseUseCase):
         )
         return get_event_object(topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_USER)
 
-    def _call_jarvis_user_analytics_api(self, dto: PaymentUserDto) -> HTTPStatus:
-        # todo. jarvis 분석 api 호출
-        pass
+    def _call_jarvis_user_analytics_api(self, dto: UseUserTicketDto) -> int:
+        # todo. 자비스 API 만들어지면 변경 필요
+        response = requests.get(
+            url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id=1",
+            headers={
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
+                "Authorization": dto.auth_header,
+            },
+        )
+
+        return response.status_code
+
 
     def _use_ticket_to_user_by_charged(
-        self, dto: PaymentUserDto
+        self, dto: UseUserTicketDto
     ) -> Optional[UseCaseFailureOutput]:
-        response: HTTPStatus = self._call_jarvis_user_analytics_api(dto=dto)
+        response: int = self._call_jarvis_user_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
             """
             유저 분석시에는 ticket_targets 생성 X
@@ -483,9 +503,9 @@ class UseUserTicketUseCase(PaymentBaseUseCase):
         return None
 
     def _use_ticket_to_user_by_promotion(
-        self, dto: PaymentUserDto, promotion: PromotionEntity
+        self, dto: UseUserTicketDto, promotion: PromotionEntity
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        response: HTTPStatus = self._call_jarvis_user_analytics_api(dto=dto)
+        response: int = self._call_jarvis_user_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
             """
             유저 분석시에는 ticket_targets 생성 X
