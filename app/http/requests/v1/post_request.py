@@ -12,6 +12,7 @@ logger = logger_.getLogger(__name__)
 class GetPostListSchema(BaseModel):
     post_category: int
     post_category_detail: int
+    previous_post_id: int = None
 
 
 class UpdatePostReadCountSchema(BaseModel):
@@ -19,15 +20,17 @@ class UpdatePostReadCountSchema(BaseModel):
 
 
 class GetPostListRequestSchema:
-    def __init__(self, post_category, post_category_detail):
+    def __init__(self, post_category, post_category_detail, previous_post_id):
         self.post_category = int(post_category)
         self.post_category_detail = int(post_category_detail)
+        self.previous_post_id = previous_post_id
 
     def validate_request_and_make_dto(self):
         try:
             schema = GetPostListSchema(
                 post_category=self.post_category,
                 post_category_detail=self.post_category_detail,
+                previous_post_id=self.previous_post_id,
             ).dict()
             return GetPostListDto(**schema)
         except ValidationError as e:

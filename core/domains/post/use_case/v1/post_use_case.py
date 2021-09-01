@@ -15,19 +15,27 @@ class PostBaseUseCase:
     def __init__(self, post_repo: PostRepository):
         self._post_repo = post_repo
 
+    def _make_cursor(self, last_post_id: int = None) -> dict:
+        return {"cursor": {"last_post_id": last_post_id}}
+
 
 class GetPostListUseCase(PostBaseUseCase):
     def execute(
-        self, dto: GetPostListDto
+            self, dto: GetPostListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         post_list = self._post_repo.get_post_list_include_contents(dto=dto)
 
-        return UseCaseSuccessOutput(value=post_list)
+        return UseCaseSuccessOutput(
+            value=post_list,
+            meta=self._make_cursor(
+                last_post_id=post_list[-1].id if post_list else None
+            ),
+        )
 
 
 class UpdatePostReadCountUseCase(PostBaseUseCase):
     def execute(
-        self, dto: UpdatePostReadCountDto
+            self, dto: UpdatePostReadCountDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         self._post_repo.update_read_count(post_id=dto.post_id)
         return UseCaseSuccessOutput()
