@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
@@ -12,6 +12,7 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, backref, column_property
 
 from app import db
+from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     RealEstateWithPrivateSaleEntity,
@@ -20,6 +21,7 @@ from core.domains.house.entity.house_entity import (
     SimpleCalendarInfoEntity,
     RealEstateReportEntity,
 )
+from core.domains.report.entity.report_entity import TicketUsageResultEntity
 
 
 class RealEstateModel(db.Model):
@@ -66,13 +68,13 @@ class RealEstateModel(db.Model):
     )
 
     def to_bounding_entity(
-        self,
-        avg_trade: Optional[float],
-        avg_deposit: Optional[float],
-        avg_rent: Optional[float],
-        avg_supply: Optional[float],
-        avg_private_pyoung: Optional[float],
-        avg_public_pyoung: Optional[float],
+            self,
+            avg_trade: Optional[float],
+            avg_deposit: Optional[float],
+            avg_rent: Optional[float],
+            avg_supply: Optional[float],
+            avg_private_pyoung: Optional[float],
+            avg_public_pyoung: Optional[float],
     ) -> BoundingRealEstateEntity:
         return BoundingRealEstateEntity(
             id=self.id,
@@ -102,7 +104,7 @@ class RealEstateModel(db.Model):
         )
 
     def to_estate_with_private_sales_entity(
-        self, avg_trade: Optional[float], avg_private_pyoung: Optional[float]
+            self, avg_trade: Optional[float], avg_private_pyoung: Optional[float]
     ) -> RealEstateWithPrivateSaleEntity:
         return RealEstateWithPrivateSaleEntity(
             id=self.id,
@@ -127,16 +129,18 @@ class RealEstateModel(db.Model):
         )
 
     def to_house_with_public_detail_entity(
-        self,
-        is_like: bool,
-        min_pyoung_number: Optional[float],
-        max_pyoung_number: Optional[float],
-        min_supply_area: Optional[float],
-        max_supply_area: Optional[float],
-        avg_supply_price: Optional[float],
-        supply_price_per_pyoung: Optional[float],
-        min_acquisition_tax: int,
-        max_acquisition_tax: int,
+            self,
+            is_like: bool,
+            min_pyoung_number: Optional[float],
+            max_pyoung_number: Optional[float],
+            min_supply_area: Optional[float],
+            max_supply_area: Optional[float],
+            avg_supply_price: Optional[float],
+            supply_price_per_pyoung: Optional[float],
+            min_acquisition_tax: int,
+            max_acquisition_tax: int,
+            button_links: List[ButtonLinkEntity],
+            ticket_usage_results: List[TicketUsageResultEntity]
     ) -> HousePublicDetailEntity:
         return HousePublicDetailEntity(
             id=self.id,
@@ -163,6 +167,8 @@ class RealEstateModel(db.Model):
             min_acquisition_tax=min_acquisition_tax,
             max_acquisition_tax=max_acquisition_tax,
             public_sales=self.public_sales.to_entity() if self.public_sales else None,
+            button_links=button_links if button_links else None,
+            ticket_usage_results=ticket_usage_results if ticket_usage_results else None
         )
 
     def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:

@@ -116,6 +116,7 @@ class SectionType(Enum):
 
     HOME_SCREEN = 0
     PRE_SUBSCRIPTION_INFO = 1
+    PUBLIC_SALE_DETAIL = 2
 
 
 class BannerSubTopic(Enum):
