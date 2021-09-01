@@ -159,4 +159,5 @@ class BoundingDegreeEnum(Enum):
         0.01도 : 1.11km
         0.001도 : 111m
     """
+
     DEGREE = 0.01

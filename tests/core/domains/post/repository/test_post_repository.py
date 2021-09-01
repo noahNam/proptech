@@ -53,7 +53,7 @@ def test_get_post_list_repo_then_return_post_list(session, post_factory):
 
 
 def test_update_read_count_repo_when_read_post_then_read_count_plus_one(
-        session, create_users, post_factory
+    session, create_users, post_factory
 ):
     post = post_factory(
         article=True,
@@ -77,7 +77,7 @@ def test_update_read_count_repo_when_read_post_then_read_count_plus_one(
 
 
 def test_get_post_list_repo_when_load_more_notice_post_then_return_post_list(
-        session, create_users, post_factory
+    session, create_users, post_factory
 ):
     post_list = []
     for index in range(25):
@@ -96,7 +96,7 @@ def test_get_post_list_repo_when_load_more_notice_post_then_return_post_list(
     get_post_list_dto = GetPostListDto(
         post_category=PostCategoryEnum.NOTICE.value,
         post_category_detail=PostCategoryDetailEnum.NO_DETAIL.value,
-        previous_post_id=None
+        previous_post_id=None,
     )
 
     post_result_1 = PostRepository().get_post_list_include_contents(
@@ -106,7 +106,7 @@ def test_get_post_list_repo_when_load_more_notice_post_then_return_post_list(
     get_post_list_dto2 = GetPostListDto(
         post_category=PostCategoryEnum.NOTICE.value,
         post_category_detail=PostCategoryDetailEnum.NO_DETAIL.value,
-        previous_post_id=6
+        previous_post_id=6,
     )
 
     post_result_2 = PostRepository().get_post_list_include_contents(
