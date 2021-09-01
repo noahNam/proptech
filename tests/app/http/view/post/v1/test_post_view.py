@@ -6,13 +6,13 @@ from core.domains.post.enum.post_enum import PostCategoryEnum, PostCategoryDetai
 
 
 def test_get_post_list_include_contents_view_when_watch_notice_then_return_pagination_post_lists(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-        post_factory,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    post_factory,
 ):
     """
         공지사항 포스트일 경우 Pagination 처리된 리스트 반환
@@ -45,7 +45,7 @@ def test_get_post_list_include_contents_view_when_watch_notice_then_return_pagin
                 "api/tanos.get_post_list_view",
                 post_category=PostCategoryEnum.NOTICE.value,
                 post_category_detail=PostCategoryDetailEnum.NO_DETAIL.value,
-                previous_post_id=None
+                previous_post_id=None,
             ),
             headers=headers,
         )
@@ -62,7 +62,7 @@ def test_get_post_list_include_contents_view_when_watch_notice_then_return_pagin
                 "api/tanos.get_post_list_view",
                 post_category=PostCategoryEnum.NOTICE.value,
                 post_category_detail=PostCategoryDetailEnum.NO_DETAIL.value,
-                previous_post_id=6
+                previous_post_id=6,
             ),
             headers=headers,
         )
@@ -75,13 +75,13 @@ def test_get_post_list_include_contents_view_when_watch_notice_then_return_pagin
 
 
 def test_update_post_read_count_view_when_watch_notice_and_faq_then_return_success(
-        client,
-        session,
-        test_request_context,
-        make_header,
-        make_authorization,
-        create_users,
-        post_factory,
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    post_factory,
 ):
     post = post_factory(
         article=True,

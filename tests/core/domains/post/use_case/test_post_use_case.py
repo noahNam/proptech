@@ -9,7 +9,7 @@ from core.use_case_output import UseCaseSuccessOutput
 
 
 def test_get_post_list_use_case_when_get_notice_list_dto_then_return_post_list(
-        session, create_users, post_factory
+    session, create_users, post_factory
 ):
     """
         공지사항 포스트일 경우 Pagination 적용
@@ -31,18 +31,18 @@ def test_get_post_list_use_case_when_get_notice_list_dto_then_return_post_list(
     dto = GetPostListDto(
         post_category=PostCategoryEnum.NOTICE.value,
         post_category_detail=PostCategoryDetailEnum.NO_DETAIL.value,
-        previous_post_id=None
+        previous_post_id=None,
     )
 
     result = GetPostListUseCase().execute(dto=dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert len(result.value) == 20
-    assert result.meta['cursor']['last_post_id'] == 6
+    assert result.meta["cursor"]["last_post_id"] == 6
 
 
 def test_update_read_count_repo_use_case_when_read_post_then_read_count_plus_one(
-        session, post_factory
+    session, post_factory
 ):
     post = post_factory(
         article=True,

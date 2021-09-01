@@ -13,7 +13,7 @@ from core.domains.user.repository.user_repository import UserRepository
 
 
 def update_app_agree_terms_to_receive_marketing(
-        dto: UpdateReceiveNotificationSettingDto,
+    dto: UpdateReceiveNotificationSettingDto,
 ):
     UserRepository().update_app_agree_terms_to_receive_marketing(dto=dto)
     setattr(g, UserTopicEnum.UPDATE_APP_AGREE_TERMS_TO_RECEIVE_MARKETING, None)

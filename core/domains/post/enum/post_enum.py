@@ -50,4 +50,5 @@ class PostLimitEnum(Enum):
     """
         용도 : 공지사항 Post pagination
     """
+
     LIMIT = 20

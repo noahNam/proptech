@@ -9,7 +9,11 @@ from app.persistence.model import PostAttachmentModel
 from app.persistence.model.post_model import PostModel
 from core.domains.post.dto.post_dto import GetPostListDto
 from core.domains.post.entity.post_entity import PostEntity, ArticleEntity
-from core.domains.post.enum.post_enum import PostLimitEnum, PostCategoryEnum, PostCategoryDetailEnum
+from core.domains.post.enum.post_enum import (
+    PostLimitEnum,
+    PostCategoryEnum,
+    PostCategoryDetailEnum,
+)
 
 logger = logger_.getLogger(__name__)
 
@@ -21,7 +25,7 @@ class PostRepository:
         ).scalar()
 
     def get_post_list_include_contents(
-            self, dto: GetPostListDto
+        self, dto: GetPostListDto
     ) -> Union[List[PostEntity], List]:
         search_filter = list()
         search_filter.append(
@@ -38,26 +42,27 @@ class PostRepository:
         try:
             query = (
                 session.query(PostModel)
-                    .join(PostModel.article, isouter=True)
-                    .join(PostModel.post_attachments, isouter=True)
-                    .filter(*search_filter)
-                    .filter(*previous_post_id_filter)
-
+                .join(PostModel.article, isouter=True)
+                .join(PostModel.post_attachments, isouter=True)
+                .filter(*search_filter)
+                .filter(*previous_post_id_filter)
             )
 
             # 공지사항 포스트일경우 Pagination 적용
-            if dto.post_category == PostCategoryEnum.NOTICE.value and \
-                    dto.post_category_detail == PostCategoryDetailEnum.NO_DETAIL.value:
+            if (
+                dto.post_category == PostCategoryEnum.NOTICE.value
+                and dto.post_category_detail == PostCategoryDetailEnum.NO_DETAIL.value
+            ):
                 post_list = (
                     query.order_by(PostModel.id.desc())
-                        .limit(PostLimitEnum.LIMIT.value)
-                        .all()
+                    .limit(PostLimitEnum.LIMIT.value)
+                    .all()
                 )
             else:
                 post_list = (
                     query.order_by(PostModel.id.asc())
-                        .order_by(PostAttachmentModel.id.asc())
-                        .all()
+                    .order_by(PostAttachmentModel.id.asc())
+                    .all()
                 )
             return [post.to_entity() for post in post_list]
         except Exception as e:

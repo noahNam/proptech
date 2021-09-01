@@ -17,7 +17,8 @@ from core.domains.house.dto.house_dto import (
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
     SectionTypeDto,
-    GetHouseMainDto, GetHousePublicNearPrivateSalesDto,
+    GetHouseMainDto,
+    GetHousePublicNearPrivateSalesDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.enum.house_enum import (
@@ -75,7 +76,7 @@ class GetInterestHouseListRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetInterestHouseListSchema(user_id=self.user_id, ).dict()
+            schema = GetInterestHouseListSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -90,7 +91,7 @@ class GetRecentViewListRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetRecentViewListSchema(user_id=self.user_id, ).dict()
+            schema = GetRecentViewListSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -247,8 +248,8 @@ class GetCalendarInfoSchema(BaseModel):
     def check_year(cls, year) -> str:
         year_to_int = int(year)
         if (
-                year_to_int < CalendarYearThreshHold.MIN_YEAR.value
-                or year_to_int > CalendarYearThreshHold.MAX_YEAR.value
+            year_to_int < CalendarYearThreshHold.MIN_YEAR.value
+            or year_to_int > CalendarYearThreshHold.MAX_YEAR.value
         ):
             raise ValidationError("Out of range: year is currently support 2017 ~ 2030")
         return year
@@ -311,8 +312,8 @@ class GetBoundingWithinRadiusSchema(BaseModel):
     @validator("search_type")
     def check_search_type(cls, search_type) -> int:
         if (
-                search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
-                or search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
+            search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
+            or search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
         ):
             raise ValidationError("Out of range: Available search_type - (1, 2, 3) ")
         return search_type
