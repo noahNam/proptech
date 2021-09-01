@@ -25,7 +25,7 @@ class PostCategoryDetailEnum(Enum):
     NO_DETAIL = 0
 
     # FAQ
-    ACCOUNT_AUTH = 1
+    ALL_LIST = 1
     PERSONAL_INFO = 2
     HOW_TO_USE = 3
     SETTINGS = 4
@@ -44,3 +44,10 @@ class PostTypeEnum(Enum):
 
     PHOTO = 0
     MEDIA = 1
+
+
+class PostLimitEnum(Enum):
+    """
+        용도 : 공지사항 Post pagination
+    """
+    LIMIT = 20
