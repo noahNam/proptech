@@ -37,6 +37,9 @@ from core.domains.house.enum.house_enum import (
     SectionType, BoundingDegreeEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
+from core.domains.report.entity.report_entity import TicketUsageResultEntity
+from core.domains.report.enum import ReportTopicEnum
+from core.domains.report.enum.report_enum import TicketUsageTypeEnum
 from core.domains.user.dto.user_dto import RecentlyViewDto, GetUserDto
 from core.domains.user.enum import UserTopicEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -52,6 +55,12 @@ class HouseBaseUseCase:
             topic_name=BannerTopicEnum.GET_BANNER_LIST, section_type=section_type
         )
         return get_event_object(topic_name=BannerTopicEnum.GET_BANNER_LIST)
+
+    def _get_button_link_list(self, section_type: int) -> List[ButtonLinkEntity]:
+        send_message(
+            topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST, section_type=section_type
+        )
+        return get_event_object(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST)
 
 
 class UpsertInterestHouseUseCase(HouseBaseUseCase):
@@ -144,8 +153,22 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             house_id=dto.house_id
         )
 
+        # get button link list
+        button_link_list = self._get_button_link_list(section_type=SectionType.PUBLIC_SALE_DETAIL.value)
+
+        # get house ticket usage results
+        ticket_usage_results = None
+        if self.__is_ticket_usage_for_house(user_id=dto.user_id, house_id=dto.house_id):
+            ticket_usage_results = self.__get_ticket_usage_results(
+                user_id=dto.user_id,
+                type_=TicketUsageTypeEnum.HOUSE.value
+            )
+
         entities: HousePublicDetailEntity = self._house_repo.make_house_public_detail_entity(
-            house_with_public_sales=house_with_public_sales, is_like=is_like,
+            house_with_public_sales=house_with_public_sales,
+            is_like=is_like,
+            button_link_list=button_link_list,
+            ticket_usage_results=ticket_usage_results
         )
 
         recently_view_dto = RecentlyViewDto(
@@ -162,6 +185,16 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
     def __create_recently_view(self, dto: RecentlyViewDto) -> None:
         send_message(topic_name=UserTopicEnum.CREATE_RECENTLY_VIEW, dto=dto)
         return get_event_object(topic_name=UserTopicEnum.CREATE_RECENTLY_VIEW)
+
+    def __is_ticket_usage_for_house(self, user_id: int, house_id: int) -> bool:
+        send_message(topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_HOUSE,
+                     user_id=user_id, house_id=house_id)
+        return get_event_object(topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_HOUSE)
+
+    def __get_ticket_usage_results(self, user_id: int, type_: str) -> List[TicketUsageResultEntity]:
+        send_message(topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS,
+                     user_id=user_id, type_=type_)
+        return get_event_object(topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS)
 
 
 class GetHousePublicNearPrivateSalesUseCase(HouseBaseUseCase):
@@ -345,12 +378,6 @@ class GetHouseMainUseCase(HouseBaseUseCase):
 
 
 class GetMainPreSubscriptionUseCase(HouseBaseUseCase):
-    def _get_button_link_list(self, section_type: int) -> List[ButtonLinkEntity]:
-        send_message(
-            topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST, section_type=section_type
-        )
-        return get_event_object(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST)
-
     def _make_house_main_pre_subscription_entity(
             self, banner_list: List[BannerEntity], button_links: List[ButtonLinkEntity]
     ) -> GetMainPreSubscriptionEntity:
