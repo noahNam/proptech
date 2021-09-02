@@ -28,13 +28,26 @@ class PostRepository:
         self, dto: GetPostListDto
     ) -> Union[List[PostEntity], List]:
         search_filter = list()
-        search_filter.append(
-            and_(
-                PostModel.is_deleted == False,
-                PostModel.category_id == dto.post_category,
-                PostModel.category_detail_id == dto.post_category_detail,
+
+        # FAQ, All_list
+        if (
+            dto.post_category == PostCategoryEnum.FAQ.value
+            and dto.post_category_detail == PostCategoryDetailEnum.ALL_LIST.value
+        ):
+            search_filter.append(
+                and_(
+                    PostModel.is_deleted == False,
+                    PostModel.category_id == dto.post_category,
+                )
             )
-        )
+        else:
+            search_filter.append(
+                and_(
+                    PostModel.is_deleted == False,
+                    PostModel.category_id == dto.post_category,
+                    PostModel.category_detail_id == dto.post_category_detail,
+                )
+            )
         previous_post_id_filter = list()
         if dto.previous_post_id:
             previous_post_id_filter.append(PostModel.id < dto.previous_post_id)
