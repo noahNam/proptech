@@ -17,6 +17,7 @@ class UserAnalysisCategoryModel(db.Model):
     id = Column(SmallInteger().with_variant(Integer, "sqlite"), primary_key=True)
     div = Column(String(1), nullable=False)
     category = Column(SmallInteger, nullable=False)
+    title = Column(String(20), nullable=False)
     output_text = Column(Text, nullable=False)
 
     user_analysis_category_details = relationship(
@@ -30,6 +31,7 @@ class UserAnalysisCategoryModel(db.Model):
             id=self.id,
             div=self.div,
             category=self.category,
+            title=self.title,
             output_text=self.output_text,
             user_analysis_category_details=[
                 user_analysis_category_detail.to_entity()
