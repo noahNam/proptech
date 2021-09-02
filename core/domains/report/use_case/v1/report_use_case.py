@@ -196,9 +196,8 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             "생애최초",
         ]
         for c in expected_competitions:
-            sort_competition_types: List[
-                str
-            ] = sort_competition_types + sort_competition_list
+            sort_house_structure_types: List[str] = sort_house_structure_types + [c.house_structure_type for _ in range(len(sort_competition_list))]
+            sort_competition_types: List[str] = sort_competition_types + sort_competition_list
             sort_competitions: List[int] = sort_competitions + [
                 c.multiple_children_competition,
                 c.newly_marry_competition,
