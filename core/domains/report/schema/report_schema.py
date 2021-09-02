@@ -19,7 +19,7 @@ class SortCompetitionBaseSchema(BaseModel):
 
 
 class GetExpectedCompetitionBaseSchema(BaseModel):
-    nickname: StrictStr
+    nickname: Optional[StrictStr]
     expected_competitions: List[PredictedCompetitionEntity]
     sort_competitions: List[SortCompetitionBaseSchema]
 

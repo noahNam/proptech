@@ -119,7 +119,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
 
         result: GetExpectedCompetitionBaseSchema = self._make_response_schema(
             expected_competitions=expected_competitions,
-            nickname=user_profile.nickname,
+            nickname=user_profile.nickname if user_profile else None,
             sort_competitions=sort_competitions,
         )
         return UseCaseSuccessOutput(value=result)
@@ -130,49 +130,38 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         calc_special_total_supply = defaultdict(int)
         calc_normal_total_supply = defaultdict(int)
 
-        try:
-            for c in expected_competitions:
-                multiple_children_supply = (
-                    0 if not c.multiple_children_supply else c.multiple_children_supply
-                )
-                newly_marry_supply = (
-                    0 if not c.newly_marry_supply else c.newly_marry_supply
-                )
-                old_parent_supply = (
-                    0 if not c.old_parent_supply else c.old_parent_supply
-                )
-                first_life_supply = (
-                    0 if not c.first_life_supply else c.first_life_supply
-                )
-                normal_supply = 0 if not c.normal_supply else c.normal_supply
+        for c in expected_competitions:
+            multiple_children_supply = (
+                0 if not c.multiple_children_supply else c.multiple_children_supply
+            )
+            newly_marry_supply = 0 if not c.newly_marry_supply else c.newly_marry_supply
+            old_parent_supply = 0 if not c.old_parent_supply else c.old_parent_supply
+            first_life_supply = 0 if not c.first_life_supply else c.first_life_supply
+            normal_supply = 0 if not c.normal_supply else c.normal_supply
 
-                special_calc = (
-                    multiple_children_supply
-                    + newly_marry_supply
-                    + old_parent_supply
-                    + first_life_supply
-                )
+            special_calc = (
+                multiple_children_supply
+                + newly_marry_supply
+                + old_parent_supply
+                + first_life_supply
+            )
 
-                calc_special_total_supply[c.house_structure_type] = (
-                    calc_special_total_supply[c.house_structure_type] + special_calc
-                )
-                calc_normal_total_supply[c.house_structure_type] = (
-                    calc_normal_total_supply[c.house_structure_type] + normal_supply
-                )
-            for c in expected_competitions:
-                c.total_special_supply = calc_special_total_supply.get(
-                    c.house_structure_type
-                )
-                c.total_normal_supply = calc_normal_total_supply.get(
-                    c.house_structure_type
-                )
-        except Exception as e:
-            pass
+            calc_special_total_supply[c.house_structure_type] = (
+                calc_special_total_supply[c.house_structure_type] + special_calc
+            )
+            calc_normal_total_supply[c.house_structure_type] = (
+                calc_normal_total_supply[c.house_structure_type] + normal_supply
+            )
+        for c in expected_competitions:
+            c.total_special_supply = calc_special_total_supply.get(
+                c.house_structure_type
+            )
+            c.total_normal_supply = calc_normal_total_supply.get(c.house_structure_type)
 
     def _make_response_schema(
         self,
         expected_competitions: List[PredictedCompetitionEntity],
-        nickname: str,
+        nickname: Optional[str],
         sort_competitions: List[dict],
     ) -> GetExpectedCompetitionBaseSchema:
         return GetExpectedCompetitionBaseSchema(
@@ -196,8 +185,12 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             "생애최초",
         ]
         for c in expected_competitions:
-            sort_house_structure_types: List[str] = sort_house_structure_types + [c.house_structure_type for _ in range(len(sort_competition_list))]
-            sort_competition_types: List[str] = sort_competition_types + sort_competition_list
+            sort_house_structure_types: List[str] = sort_house_structure_types + [
+                c.house_structure_type for _ in range(len(sort_competition_list))
+            ]
+            sort_competition_types: List[
+                str
+            ] = sort_competition_types + sort_competition_list
             sort_competitions: List[int] = sort_competitions + [
                 c.multiple_children_competition,
                 c.newly_marry_competition,
