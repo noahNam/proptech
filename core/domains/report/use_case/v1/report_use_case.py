@@ -130,25 +130,44 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         calc_special_total_supply = defaultdict(int)
         calc_normal_total_supply = defaultdict(int)
 
-        for c in expected_competitions:
-            special_calc = (
-                c.multiple_children_supply
-                + c.newly_marry_supply
-                + c.old_parent_supply
-                + c.first_life_supply
-            )
+        try:
+            for c in expected_competitions:
+                multiple_children_supply = (
+                    0 if not c.multiple_children_supply else c.multiple_children_supply
+                )
+                newly_marry_supply = (
+                    0 if not c.newly_marry_supply else c.newly_marry_supply
+                )
+                old_parent_supply = (
+                    0 if not c.old_parent_supply else c.old_parent_supply
+                )
+                first_life_supply = (
+                    0 if not c.first_life_supply else c.first_life_supply
+                )
+                normal_supply = 0 if not c.normal_supply else c.normal_supply
 
-            calc_special_total_supply[c.house_structure_type] = (
-                calc_special_total_supply[c.house_structure_type] + special_calc
-            )
-            calc_normal_total_supply[c.house_structure_type] = (
-                calc_normal_total_supply[c.house_structure_type] + c.normal_supply
-            )
-        for c in expected_competitions:
-            c.total_special_supply = calc_special_total_supply.get(
-                c.house_structure_type
-            )
-            c.total_normal_supply = calc_normal_total_supply.get(c.house_structure_type)
+                special_calc = (
+                    multiple_children_supply
+                    + newly_marry_supply
+                    + old_parent_supply
+                    + first_life_supply
+                )
+
+                calc_special_total_supply[c.house_structure_type] = (
+                    calc_special_total_supply[c.house_structure_type] + special_calc
+                )
+                calc_normal_total_supply[c.house_structure_type] = (
+                    calc_normal_total_supply[c.house_structure_type] + normal_supply
+                )
+            for c in expected_competitions:
+                c.total_special_supply = calc_special_total_supply.get(
+                    c.house_structure_type
+                )
+                c.total_normal_supply = calc_normal_total_supply.get(
+                    c.house_structure_type
+                )
+        except Exception as e:
+            pass
 
     def _make_response_schema(
         self,
@@ -170,16 +189,16 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         sort_house_structure_types = list()
 
         # 각 경쟁률을 포함한 list 생성
+        sort_competition_list = [
+            "다자녀",
+            "신혼부부",
+            "노부모부양",
+            "생애최초",
+        ]
         for c in expected_competitions:
-            sort_house_structure_types: List[str] = sort_house_structure_types + [
-                c.house_structure_type for _ in expected_competitions
-            ]
-            sort_competition_types: List[str] = sort_competition_types + [
-                "다자녀",
-                "신혼부부",
-                "노부모부양",
-                "생애최초",
-            ]
+            sort_competition_types: List[
+                str
+            ] = sort_competition_types + sort_competition_list
             sort_competitions: List[int] = sort_competitions + [
                 c.multiple_children_competition,
                 c.newly_marry_competition,
@@ -192,6 +211,16 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         while end > 0:
             last_swap = 0
             for i in range(end):
+                # 예측 경쟁률이 None일 경우, 지원 불가한 경우
+                sort_competitions[i] = (
+                    9999999 if not sort_competitions[i] else sort_competitions[i]
+                )
+                sort_competitions[i + 1] = (
+                    9999999
+                    if not sort_competitions[i + 1]
+                    else sort_competitions[i + 1]
+                )
+
                 if sort_competitions[i] > sort_competitions[i + 1]:
                     sort_competitions[i], sort_competitions[i + 1] = (
                         sort_competitions[i + 1],
@@ -214,6 +243,10 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             if idx == 3:
                 break
 
+            # 예측 경쟁률이 None일 경우, 지원 불가한 경우
+            sort_competitions[idx] = (
+                None if sort_competitions[idx] == 9999999 else sort_competitions[idx]
+            )
             sorted_result.append(
                 dict(
                     competitions=sort_competitions[idx],

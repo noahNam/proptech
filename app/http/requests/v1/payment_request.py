@@ -9,7 +9,8 @@ from app.extensions.utils.log_helper import logger_
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
     UseHouseTicketDto,
-    UseRecommendCodeDto, UseUserTicketDto,
+    UseRecommendCodeDto,
+    UseUserTicketDto,
 )
 from core.exceptions import InvalidRequestException
 
@@ -60,7 +61,9 @@ class UseHouseTicketRequestSchema:
     def validate_request_and_make_dto(self):
         try:
             schema = UseHouseTicketSchema(
-                user_id=self.user_id, house_id=self.house_id, auth_header=self.auth_header
+                user_id=self.user_id,
+                house_id=self.house_id,
+                auth_header=self.auth_header,
             ).dict()
             return UseHouseTicketDto(**schema)
         except ValidationError as e:
@@ -77,7 +80,9 @@ class UseUserTicketRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = UseUserTicketSchema(user_id=self.user_id, auth_header=self.auth_header).dict()
+            schema = UseUserTicketSchema(
+                user_id=self.user_id, auth_header=self.auth_header
+            ).dict()
             return UseUserTicketDto(**schema)
         except ValidationError as e:
             logger.error(
