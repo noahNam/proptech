@@ -48,6 +48,7 @@ class PublicSaleDetailReportSchema(BaseModel):
     first_life_house_hold: StrictInt
     general_household: StrictInt
     price_per_meter: StrictInt
+    pyoung_number: StrictInt
     public_sale_detail_photo: Optional[ReportPublicSaleDetailPhotoSchema]
 
 
@@ -137,5 +138,5 @@ class GetSurveysResultBaseSchema(BaseModel):
 class GetUserSurveysResponseSchema(BaseModel):
     user: GetSurveysUserReportSchema
     survey_result: Optional[SurveyResultEntity]
-    analysis_text: Optional[StrictStr]
+    analysis_text: dict
     user_infos: Optional[List[GetSurveysResultBaseSchema]]

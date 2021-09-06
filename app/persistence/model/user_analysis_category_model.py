@@ -20,10 +20,10 @@ class UserAnalysisCategoryModel(db.Model):
     title = Column(String(20), nullable=False)
     output_text = Column(Text, nullable=False)
 
-    user_analysis_category_details = relationship(
+    user_analysis_category_detail = relationship(
         "UserAnalysisCategoryDetailModel",
         backref="user_analysis_categories",
-        uselist=True,
+        uselist=False,
     )
 
     def to_entity(self) -> UserAnalysisCategoryEntity:
@@ -33,10 +33,5 @@ class UserAnalysisCategoryModel(db.Model):
             category=self.category,
             title=self.title,
             output_text=self.output_text,
-            user_analysis_category_details=[
-                user_analysis_category_detail.to_entity()
-                for user_analysis_category_detail in self.user_analysis_category_details
-            ]
-            if self.user_analysis_category_details
-            else None,
+            user_analysis_category_detail=self.user_analysis_category_detail.to_entity() if self.user_analysis_category_detail else None,
         )
