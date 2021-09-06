@@ -120,4 +120,4 @@ class UserAnalysisCategoryEntity(BaseModel):
     category: int
     title: str
     output_text: str
-    user_analysis_category_details: List[UserAnalysisCategoryDetailEntity]
+    user_analysis_category_detail: Optional[UserAnalysisCategoryDetailEntity]
