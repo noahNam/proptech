@@ -43,7 +43,7 @@ def get_expected_competition_view():
 @swag_from("get_sale_info.yml", methods=["GET"])
 def get_sale_info_view():
     dto = GetSaleInfoRequestSchema(
-        user_id=13, house_id=request.args.get("house_id"),
+        user_id=current_user.id, house_id=request.args.get("house_id"),
     ).validate_request_and_make_dto()
 
     return GetSaleInfoPresenter().transform(GetSaleInfoUseCase().execute(dto=dto))
@@ -69,7 +69,7 @@ def get_recently_sale_view():
 @swag_from("get_user_report.yml", methods=["GET"])
 def get_user_report_view():
     dto = GetUserReportRequestSchema(
-        user_id=13,
+        user_id=current_user.id,
     ).validate_request_and_make_dto()
 
     return GetUserReportPresenter().transform(GetUserReportUseCase().execute(dto=dto))
