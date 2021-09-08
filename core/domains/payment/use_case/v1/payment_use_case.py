@@ -12,7 +12,8 @@ from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
     UseHouseTicketDto,
     CreateTicketDto,
-    UseRecommendCodeDto, UseUserTicketDto,
+    UseRecommendCodeDto,
+    UseUserTicketDto,
 )
 from core.domains.payment.entity.payment_entity import (
     PromotionEntity,
@@ -298,7 +299,9 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
     def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> int:
         # todo. 자비스 API 만들어지면 변경 필요
         response = requests.get(
-            url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id={}&user_id={}".format(dto.house_id, dto.user_id),
+            url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id={}&user_id={}".format(
+                dto.house_id, dto.user_id
+            ),
             headers={
                 "Content-Type": "application/json",
                 "Cache-Control": "no-cache",
@@ -470,7 +473,6 @@ class UseUserTicketUseCase(PaymentBaseUseCase):
         )
 
         return response.status_code
-
 
     def _use_ticket_to_user_by_charged(
         self, dto: UseUserTicketDto

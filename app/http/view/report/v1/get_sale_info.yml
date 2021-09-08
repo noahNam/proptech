@@ -113,6 +113,9 @@ responses:
                           old_parent_house_hold:
                             type: integer
                             example: 20
+                          pyoung_number:
+                            type: integer
+                            example: 27
                           price_per_meter:
                             type: integer
                             example: 2036

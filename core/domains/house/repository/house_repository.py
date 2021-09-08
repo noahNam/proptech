@@ -19,7 +19,6 @@ from app.persistence.model import (
     PrivateSaleDetailModel,
     RecentlyViewModel,
     PublicSalePhotoModel,
-    SpecialSupplyResultModel,
 )
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,

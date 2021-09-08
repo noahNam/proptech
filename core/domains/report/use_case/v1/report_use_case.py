@@ -21,6 +21,7 @@ from core.domains.report.entity.report_entity import (
     UserAnalysisEntity,
     UserAnalysisCategoryEntity,
 )
+from core.domains.report.enum.report_enum import UserAnalysisFormatText
 from core.domains.report.repository.report_repository import ReportRepository
 from core.domains.report.schema.report_schema import (
     GetExpectedCompetitionBaseSchema,
@@ -119,7 +120,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
 
         result: GetExpectedCompetitionBaseSchema = self._make_response_schema(
             expected_competitions=expected_competitions,
-            nickname=user_profile.nickname,
+            nickname=user_profile.nickname if user_profile else None,
             sort_competitions=sort_competitions,
         )
         return UseCaseSuccessOutput(value=result)
@@ -131,18 +132,26 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         calc_normal_total_supply = defaultdict(int)
 
         for c in expected_competitions:
+            multiple_children_supply = (
+                0 if not c.multiple_children_supply else c.multiple_children_supply
+            )
+            newly_marry_supply = 0 if not c.newly_marry_supply else c.newly_marry_supply
+            old_parent_supply = 0 if not c.old_parent_supply else c.old_parent_supply
+            first_life_supply = 0 if not c.first_life_supply else c.first_life_supply
+            normal_supply = 0 if not c.normal_supply else c.normal_supply
+
             special_calc = (
-                c.multiple_children_supply
-                + c.newly_marry_supply
-                + c.old_parent_supply
-                + c.first_life_supply
+                multiple_children_supply
+                + newly_marry_supply
+                + old_parent_supply
+                + first_life_supply
             )
 
             calc_special_total_supply[c.house_structure_type] = (
                 calc_special_total_supply[c.house_structure_type] + special_calc
             )
             calc_normal_total_supply[c.house_structure_type] = (
-                calc_normal_total_supply[c.house_structure_type] + c.normal_supply
+                calc_normal_total_supply[c.house_structure_type] + normal_supply
             )
         for c in expected_competitions:
             c.total_special_supply = calc_special_total_supply.get(
@@ -153,7 +162,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
     def _make_response_schema(
         self,
         expected_competitions: List[PredictedCompetitionEntity],
-        nickname: str,
+        nickname: Optional[str],
         sort_competitions: List[dict],
     ) -> GetExpectedCompetitionBaseSchema:
         return GetExpectedCompetitionBaseSchema(
@@ -170,16 +179,19 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         sort_house_structure_types = list()
 
         # 각 경쟁률을 포함한 list 생성
+        sort_competition_list = [
+            "다자녀",
+            "신혼부부",
+            "노부모부양",
+            "생애최초",
+        ]
         for c in expected_competitions:
             sort_house_structure_types: List[str] = sort_house_structure_types + [
-                c.house_structure_type for _ in expected_competitions
+                c.house_structure_type for _ in range(len(sort_competition_list))
             ]
-            sort_competition_types: List[str] = sort_competition_types + [
-                "다자녀",
-                "신혼부부",
-                "노부모부양",
-                "생애최초",
-            ]
+            sort_competition_types: List[
+                str
+            ] = sort_competition_types + sort_competition_list
             sort_competitions: List[int] = sort_competitions + [
                 c.multiple_children_competition,
                 c.newly_marry_competition,
@@ -192,6 +204,16 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         while end > 0:
             last_swap = 0
             for i in range(end):
+                # 예측 경쟁률이 None일 경우, 지원 불가한 경우
+                sort_competitions[i] = (
+                    9999999 if not sort_competitions[i] else sort_competitions[i]
+                )
+                sort_competitions[i + 1] = (
+                    9999999
+                    if not sort_competitions[i + 1]
+                    else sort_competitions[i + 1]
+                )
+
                 if sort_competitions[i] > sort_competitions[i + 1]:
                     sort_competitions[i], sort_competitions[i + 1] = (
                         sort_competitions[i + 1],
@@ -214,6 +236,10 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             if idx == 3:
                 break
 
+            # 예측 경쟁률이 None일 경우, 지원 불가한 경우
+            sort_competitions[idx] = (
+                None if sort_competitions[idx] == 9999999 else sort_competitions[idx]
+            )
             sorted_result.append(
                 dict(
                     competitions=sort_competitions[idx],
@@ -333,13 +359,14 @@ class GetUserReportUseCase(ReportBaseUseCase):
         )
 
         # 변수 초기화
-        survey_result, age, user_analysis, user_analysis_category, analysis_text = (
-            None,
-            None,
-            None,
-            None,
-            None,
-        )
+        (
+            survey_result,
+            age,
+            user_analyses,
+            user_analysis_category,
+            analysis_text,
+            analysis_text_dict,
+        ) = (None, None, list(), None, None, defaultdict(list))
 
         # 유저 설문 분석 결과 조회
         if user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value:
@@ -349,25 +376,73 @@ class GetUserReportUseCase(ReportBaseUseCase):
 
         # 유저별 category 유형 조회
         if is_ticket_usage_for_user:
-            user_analysis: Optional[
+            user_analyses: List[
                 UserAnalysisEntity
             ] = self._report_repo.get_user_analysis(user_id=dto.user_id)
 
         # 유저별 category 분석 메세지 조회
-        if user_analysis:
-            user_analysis_category: Optional[
+        for user_analysis in user_analyses:
+            user_analysis_categories: List[
                 UserAnalysisCategoryEntity
             ] = self._report_repo.get_user_analysis_category_text(
                 category=user_analysis.category, div=user_analysis.div
             )
 
-        # 유저별 category 분석 메세지 formatting
-        if user_analysis_category:
-            format_text = [
-                user_analysis_category_detail.format_text
-                for user_analysis_category_detail in user_analysis_category.user_analysis_category_details
-            ]
-            analysis_text = user_analysis_category.output_text.format(*format_text)
+            # 유저별 category 분석 메세지 formatting
+            try:
+                user_info_dict = dict()
+                for user_info in user_profile.user_infos:
+                    if user_info.code == CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value:
+                        user_info_dict.setdefault(
+                            "sub_account_total_price",
+                            format(int(user_info.user_value), ",d"),
+                        )
+                    elif user_info.code == CodeEnum.IS_CHILD.value:
+                        user_info_dict.setdefault("child_num", 0)
+                        if int(user_info.user_value) < 4:
+                            user_info_dict.update({"child_num": user_info.user_value})
+
+                user_variable_change_dict = {
+                    UserAnalysisFormatText.NICKNAME.value: user_profile.nickname,
+                    UserAnalysisFormatText.SUB_POINT.value: survey_result.total_point,
+                    UserAnalysisFormatText.SUB_ACCOUNT_TOTAL_AMT.value: user_info_dict.get(
+                        "sub_account_total_price"
+                    ),
+                    UserAnalysisFormatText.CHILD_NUM.value: user_info_dict.get(
+                        "child_num"
+                    ),
+                }
+
+                # response formatting
+                for user_analysis_category in user_analysis_categories:
+                    analysis_text_list = [
+                        user_analysis_category.seq,
+                        user_analysis_category.type,
+                    ]
+
+                    if user_analysis_category.user_analysis_category_detail:
+                        format_text = user_analysis_category.user_analysis_category_detail.format_text.split(
+                            ","
+                        )
+                        for idx, text in enumerate(format_text):
+                            format_text[idx] = user_variable_change_dict.get(text)
+
+                        analysis_text = user_analysis_category.output_text.format(
+                            *format_text
+                        )
+                        analysis_text_list.append(analysis_text)
+
+                        analysis_text_dict[user_analysis_category.title].append(
+                            analysis_text_list
+                        )
+                        continue
+
+                    analysis_text_list.append(user_analysis_category.output_text)
+                    analysis_text_dict[user_analysis_category.title].append(
+                        analysis_text_list
+                    )
+            except Exception as e:
+                pass
 
         # 생일 계산
         for user_info in user_profile.user_infos:
@@ -380,7 +455,7 @@ class GetUserReportUseCase(ReportBaseUseCase):
             age=age,
             survey_result=survey_result,
             is_ticket_usage_for_user=is_ticket_usage_for_user,
-            analysis_text=analysis_text,
+            analysis_text_dict=analysis_text_dict,
             user_infos=user_infos,
         )
 
@@ -478,7 +553,7 @@ class GetUserReportUseCase(ReportBaseUseCase):
         age: Optional[int],
         survey_result: Optional[SurveyResultEntity],
         is_ticket_usage_for_user: bool,
-        analysis_text: str,
+        analysis_text_dict: dict,
         user_infos: List[GetSurveysResultBaseSchema],
     ) -> GetUserSurveysResponseSchema:
         get_surveys_user_report_schema = GetSurveysUserReportSchema(
@@ -491,7 +566,7 @@ class GetUserReportUseCase(ReportBaseUseCase):
         return GetUserSurveysResponseSchema(
             user=get_surveys_user_report_schema,
             survey_result=survey_result,
-            analysis_text=analysis_text,
+            analysis_text=analysis_text_dict,
             user_infos=user_infos,
         )
 

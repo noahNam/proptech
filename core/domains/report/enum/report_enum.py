@@ -1,6 +1,12 @@
 from enum import Enum
 
 
+class ExtendedEnum(Enum):
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
 class SortCompetitionEnum(Enum):
     """
         사용모델 : PredictedCompetitionModel
@@ -19,3 +25,15 @@ class TicketUsageTypeEnum(Enum):
     HOUSE = "house"
     USER = "user"
     SUBS = "subs"
+
+
+class UserAnalysisFormatText(ExtendedEnum):
+    """
+        사용모델 : UserAnalysisCategory, UserAnalysisCategoryDetail
+        유저 분석시 사용할 output text를 convert 한다.
+    """
+
+    NICKNAME = "nickname"
+    SUB_POINT = "청약가점"
+    SUB_ACCOUNT_TOTAL_AMT = "청약저축총금액"
+    CHILD_NUM = "자녀수"
