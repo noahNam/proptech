@@ -13,7 +13,8 @@ from app.persistence.model import (
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
     UseHouseTicketDto,
-    UseRecommendCodeDto, UseUserTicketDto,
+    UseRecommendCodeDto,
+    UseUserTicketDto,
 )
 from core.domains.payment.enum.payment_enum import (
     PromotionTypeEnum,
@@ -53,7 +54,6 @@ def test_get_ticket_usage_result_use_case_then_success(
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, list)
     assert len(result.value) == 1
-
 
 
 def test_use_house_ticket_when_already_been_used_then_return_failure_output(

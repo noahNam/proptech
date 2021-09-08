@@ -5,6 +5,7 @@ from sqlalchemy.orm import selectinload, joinedload
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.persistence.model import (
     TicketUsageResultModel,
     SurveyResultModel,
@@ -113,7 +114,7 @@ class ReportRepository:
 
         return query_set.to_entity()
 
-    def get_user_analysis(self, user_id: int) -> Optional[UserAnalysisEntity]:
+    def get_user_analysis(self, user_id: int) -> List[UserAnalysisEntity]:
         filters = list()
         filters.append(TicketUsageResultModel.user_id == user_id)
         filters.append(TicketUsageResultModel.is_active == True)
@@ -129,32 +130,35 @@ class ReportRepository:
             .order_by(UserAnalysisModel.id.desc())
         )
 
-        query_set = query.first()
+        query_set = query.all()
 
         if not query_set:
-            return None
-        return query_set.to_entity()
+            return []
+        return [query.to_entity() for query in query_set]
 
     def get_user_analysis_category_text(
         self, category: int, div: str
-    ) -> Optional[UserAnalysisCategoryEntity]:
+    ) -> List[UserAnalysisCategoryEntity]:
         filters = list()
         filters.append(UserAnalysisCategoryModel.div == div)
         filters.append(UserAnalysisCategoryModel.category == category)
+        filters.append(UserAnalysisCategoryModel.is_active == True)
 
         query = (
             session.query(UserAnalysisCategoryModel)
             .options(
-                joinedload(
-                    UserAnalysisCategoryModel.user_analysis_category_details,
-                    innerjoin=True,
-                )
+                joinedload(UserAnalysisCategoryModel.user_analysis_category_detail,)
             )
             .filter(*filters)
+            .order_by(
+                UserAnalysisCategoryModel.div,
+                UserAnalysisCategoryModel.category,
+                UserAnalysisCategoryModel.seq,
+            )
         )
 
-        query_set = query.first()
+        query_set = query.all()
 
         if not query_set:
-            return None
-        return query_set.to_entity()
+            return []
+        return [query.to_entity() for query in query_set]
