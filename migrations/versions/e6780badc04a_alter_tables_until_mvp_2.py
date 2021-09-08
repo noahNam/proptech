@@ -78,13 +78,24 @@ def upgrade():
     # add user_analysis_category column
     op.add_column(
         "user_analysis_categories",
+        sa.Column("title", sa.String(length=20), nullable=True),
+    )
+    op.add_column(
+        "user_analysis_categories",
         sa.Column("seq", sa.SmallInteger(), nullable=True),
+    )
+    op.add_column(
+        "user_analysis_categories",
         sa.Column("type", sa.String(length=1), nullable=True),
+    )
+    op.add_column(
+        "user_analysis_categories",
         sa.Column("is_active", sa.Boolean(), nullable=True),
     )
 
 
 def downgrade():
+    op.drop_column("user_analysis_categories", "title")
     op.drop_column("user_analysis_categories", "seq")
     op.drop_column("user_analysis_categories", "type")
     op.drop_column("user_analysis_categories", "is_active")
