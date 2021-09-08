@@ -142,15 +142,19 @@ class ReportRepository:
         filters = list()
         filters.append(UserAnalysisCategoryModel.div == div)
         filters.append(UserAnalysisCategoryModel.category == category)
+        filters.append(UserAnalysisCategoryModel.is_active == True)
 
         query = (
             session.query(UserAnalysisCategoryModel)
             .options(
-                joinedload(
-                    UserAnalysisCategoryModel.user_analysis_category_detail,
-                )
+                joinedload(UserAnalysisCategoryModel.user_analysis_category_detail,)
             )
             .filter(*filters)
+            .order_by(
+                UserAnalysisCategoryModel.div,
+                UserAnalysisCategoryModel.category,
+                UserAnalysisCategoryModel.seq,
+            )
         )
 
         query_set = query.all()

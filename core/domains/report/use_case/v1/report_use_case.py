@@ -68,7 +68,7 @@ class ReportBaseUseCase:
         return get_event_object(topic_name=UserTopicEnum.GET_SIDO_NAME)
 
     def _get_avg_monthly_income_workers(self) -> AvgMonthlyIncomeWokrerDto:
-        send_message(topic_name=UserTopicEnum.GET_AVG_MONTHLY_INCOME_WORKERS, )
+        send_message(topic_name=UserTopicEnum.GET_AVG_MONTHLY_INCOME_WORKERS,)
         return get_event_object(topic_name=UserTopicEnum.GET_AVG_MONTHLY_INCOME_WORKERS)
 
     def _get_public_sale_info(self, house_id: int) -> PublicSaleReportEntity:
@@ -87,7 +87,7 @@ class ReportBaseUseCase:
 
 class GetExpectedCompetitionUseCase(ReportBaseUseCase):
     def execute(
-            self, dto: GetExpectedCompetitionDto
+        self, dto: GetExpectedCompetitionDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -126,7 +126,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _calc_total_supply_by_house_type(
-            self, expected_competitions: List[PredictedCompetitionEntity]
+        self, expected_competitions: List[PredictedCompetitionEntity]
     ):
         calc_special_total_supply = defaultdict(int)
         calc_normal_total_supply = defaultdict(int)
@@ -141,17 +141,17 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             normal_supply = 0 if not c.normal_supply else c.normal_supply
 
             special_calc = (
-                    multiple_children_supply
-                    + newly_marry_supply
-                    + old_parent_supply
-                    + first_life_supply
+                multiple_children_supply
+                + newly_marry_supply
+                + old_parent_supply
+                + first_life_supply
             )
 
             calc_special_total_supply[c.house_structure_type] = (
-                    calc_special_total_supply[c.house_structure_type] + special_calc
+                calc_special_total_supply[c.house_structure_type] + special_calc
             )
             calc_normal_total_supply[c.house_structure_type] = (
-                    calc_normal_total_supply[c.house_structure_type] + normal_supply
+                calc_normal_total_supply[c.house_structure_type] + normal_supply
             )
         for c in expected_competitions:
             c.total_special_supply = calc_special_total_supply.get(
@@ -160,10 +160,10 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             c.total_normal_supply = calc_normal_total_supply.get(c.house_structure_type)
 
     def _make_response_schema(
-            self,
-            expected_competitions: List[PredictedCompetitionEntity],
-            nickname: Optional[str],
-            sort_competitions: List[dict],
+        self,
+        expected_competitions: List[PredictedCompetitionEntity],
+        nickname: Optional[str],
+        sort_competitions: List[dict],
     ) -> GetExpectedCompetitionBaseSchema:
         return GetExpectedCompetitionBaseSchema(
             nickname=nickname,
@@ -172,7 +172,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         )
 
     def _sort_competition_desc(
-            self, expected_competitions: List[PredictedCompetitionEntity]
+        self, expected_competitions: List[PredictedCompetitionEntity]
     ) -> List[dict]:
         sort_competitions = list()
         sort_competition_types = list()
@@ -252,7 +252,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
 
 class GetSaleInfoUseCase(ReportBaseUseCase):
     def execute(
-            self, dto: GetSaleInfoDto
+        self, dto: GetSaleInfoDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -277,9 +277,9 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _make_response_schema(
-            self,
-            report_public_sale_info: PublicSaleReportEntity,
-            report_recently_public_sale_info: PublicSaleReportEntity,
+        self,
+        report_public_sale_info: PublicSaleReportEntity,
+        report_recently_public_sale_info: PublicSaleReportEntity,
     ) -> GetSaleInfoResponseSchema:
         report_recently_public_sale_info = VicinityPublicSaleReportSchema(
             id=report_recently_public_sale_info.id,
@@ -299,7 +299,7 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
 
 class GetRecentlySaleUseCase(ReportBaseUseCase):
     def execute(
-            self, dto: GetRecentlySaleDto
+        self, dto: GetRecentlySaleDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -319,7 +319,7 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _make_response_schema(
-            self, report_recently_public_sale_info: PublicSaleReportEntity,
+        self, report_recently_public_sale_info: PublicSaleReportEntity,
     ) -> GetRecentlySaleResponseSchema:
         return GetRecentlySaleResponseSchema(
             recently_sale_info=report_recently_public_sale_info,
@@ -328,7 +328,7 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
 
 class GetUserReportUseCase(ReportBaseUseCase):
     def execute(
-            self, dto: ReportUserDto
+        self, dto: ReportUserDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -359,14 +359,14 @@ class GetUserReportUseCase(ReportBaseUseCase):
         )
 
         # 변수 초기화
-        survey_result, age, user_analyses, user_analysis_category, analysis_text, analysis_text_dict = (
-            None,
-            None,
-            list(),
-            None,
-            None,
-            defaultdict(list)
-        )
+        (
+            survey_result,
+            age,
+            user_analyses,
+            user_analysis_category,
+            analysis_text,
+            analysis_text_dict,
+        ) = (None, None, list(), None, None, defaultdict(list))
 
         # 유저 설문 분석 결과 조회
         if user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value:
@@ -393,30 +393,54 @@ class GetUserReportUseCase(ReportBaseUseCase):
                 user_info_dict = dict()
                 for user_info in user_profile.user_infos:
                     if user_info.code == CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value:
-                        user_info_dict.setdefault('sub_account_total_price', format(int(user_info.user_value), ',d'))
+                        user_info_dict.setdefault(
+                            "sub_account_total_price",
+                            format(int(user_info.user_value), ",d"),
+                        )
                     elif user_info.code == CodeEnum.IS_CHILD.value:
-                        user_info_dict.setdefault('child_num', 0)
+                        user_info_dict.setdefault("child_num", 0)
                         if int(user_info.user_value) < 4:
-                            user_info_dict.update({'child_num': user_info.user_value})
+                            user_info_dict.update({"child_num": user_info.user_value})
 
                 user_variable_change_dict = {
                     UserAnalysisFormatText.NICKNAME.value: user_profile.nickname,
                     UserAnalysisFormatText.SUB_POINT.value: survey_result.total_point,
-                    UserAnalysisFormatText.SUB_ACCOUNT_TOTAL_AMT.value: user_info_dict.get("sub_account_total_price"),
-                    UserAnalysisFormatText.CHILD_NUM.value: user_info_dict.get("child_num"),
+                    UserAnalysisFormatText.SUB_ACCOUNT_TOTAL_AMT.value: user_info_dict.get(
+                        "sub_account_total_price"
+                    ),
+                    UserAnalysisFormatText.CHILD_NUM.value: user_info_dict.get(
+                        "child_num"
+                    ),
                 }
 
+                # response formatting
                 for user_analysis_category in user_analysis_categories:
+                    analysis_text_list = [
+                        user_analysis_category.seq,
+                        user_analysis_category.type,
+                    ]
+
                     if user_analysis_category.user_analysis_category_detail:
-                        format_text = user_analysis_category.user_analysis_category_detail.format_text.split(',')
+                        format_text = user_analysis_category.user_analysis_category_detail.format_text.split(
+                            ","
+                        )
                         for idx, text in enumerate(format_text):
                             format_text[idx] = user_variable_change_dict.get(text)
 
-                        analysis_text = user_analysis_category.output_text.format(*format_text)
-                        analysis_text_dict[user_analysis_category.title].append(analysis_text)
+                        analysis_text = user_analysis_category.output_text.format(
+                            *format_text
+                        )
+                        analysis_text_list.append(analysis_text)
+
+                        analysis_text_dict[user_analysis_category.title].append(
+                            analysis_text_list
+                        )
                         continue
 
-                    analysis_text_dict[user_analysis_category.title].append(user_analysis_category.output_text)
+                    analysis_text_list.append(user_analysis_category.output_text)
+                    analysis_text_dict[user_analysis_category.title].append(
+                        analysis_text_list
+                    )
             except Exception as e:
                 pass
 
@@ -438,7 +462,7 @@ class GetUserReportUseCase(ReportBaseUseCase):
         return UseCaseSuccessOutput(value=result)
 
     def _make_user_info_object(
-            self, user_profile: UserProfileEntity
+        self, user_profile: UserProfileEntity
     ) -> List[GetSurveysResultBaseSchema]:
         result = list()
         code_dict = {
@@ -496,8 +520,8 @@ class GetUserReportUseCase(ReportBaseUseCase):
                 )
 
                 if (
-                        user_info.code == CodeEnum.ADDRESS.value
-                        or user_info.code == CodeEnum.ADDRESS_DETAIL.value
+                    user_info.code == CodeEnum.ADDRESS.value
+                    or user_info.code == CodeEnum.ADDRESS_DETAIL.value
                 ):
                     # 주소 맵핑
                     address_cnt += 1
@@ -524,13 +548,13 @@ class GetUserReportUseCase(ReportBaseUseCase):
         return result
 
     def _make_response_schema(
-            self,
-            user_profile: UserProfileEntity,
-            age: Optional[int],
-            survey_result: Optional[SurveyResultEntity],
-            is_ticket_usage_for_user: bool,
-            analysis_text_dict: dict,
-            user_infos: List[GetSurveysResultBaseSchema],
+        self,
+        user_profile: UserProfileEntity,
+        age: Optional[int],
+        survey_result: Optional[SurveyResultEntity],
+        is_ticket_usage_for_user: bool,
+        analysis_text_dict: dict,
+        user_infos: List[GetSurveysResultBaseSchema],
     ) -> GetUserSurveysResponseSchema:
         get_surveys_user_report_schema = GetSurveysUserReportSchema(
             is_ticket_usage_for_user=is_ticket_usage_for_user,

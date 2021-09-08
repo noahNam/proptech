@@ -121,3 +121,6 @@ class UserAnalysisCategoryEntity(BaseModel):
     title: str
     output_text: str
     user_analysis_category_detail: Optional[UserAnalysisCategoryDetailEntity]
+    seq: int
+    type: str
+    is_active: bool
