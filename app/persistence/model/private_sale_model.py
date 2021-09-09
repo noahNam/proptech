@@ -5,7 +5,7 @@ from sqlalchemy import (
     ForeignKey,
     DateTime,
     Enum,
-    String,
+    String, SmallInteger, Float,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -31,11 +31,24 @@ class PrivateSaleModel(db.Model):
         nullable=False,
         index=True,
     )
+    supply_household = Column(SmallInteger, nullable=True)
+    move_in_year = Column(String(8), nullable=True)
+    construct_company = Column(String(30), nullable=True)
+    dong_num = Column(SmallInteger, nullable=True)
+    park_space_num = Column(Float, nullable=True)
+    heating_type = Column(String(10), nullable=True)
+    floor_area_ratio = Column(SmallInteger, nullable=True)
+    building_cover_ratio = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
     private_sale_details = relationship(
         "PrivateSaleDetailModel",
+        backref=backref("private_sales", cascade="all, delete"),
+    )
+
+    dong_infos = relationship(
+        "DongInfoModel",
         backref=backref("private_sales", cascade="all, delete"),
     )
 
