@@ -10,7 +10,6 @@ from sqlalchemy import (
     Enum,
     String,
 )
-from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp

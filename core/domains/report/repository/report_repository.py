@@ -5,7 +5,6 @@ from sqlalchemy.orm import selectinload, joinedload
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
-from app.extensions.utils.query_helper import RawQueryHelper
 from app.persistence.model import (
     TicketUsageResultModel,
     SurveyResultModel,

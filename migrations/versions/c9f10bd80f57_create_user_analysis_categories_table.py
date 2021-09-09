@@ -28,6 +28,9 @@ def upgrade():
         sa.Column("category", sa.SmallInteger(), nullable=False),
         sa.Column("title", sa.String(length=20), nullable=False),
         sa.Column("output_text", sa.Text(), nullable=False),
+        sa.Column("seq", sa.SmallInteger(), nullable=False),
+        sa.Column("type", sa.String(length=1), nullable=False),
+        sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
 

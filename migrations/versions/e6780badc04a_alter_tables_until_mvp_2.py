@@ -75,31 +75,8 @@ def upgrade():
         sa.Column("hope_two_bank_point", sa.SmallInteger(), nullable=True),
     )
 
-    # add user_analysis_category column
-    op.add_column(
-        "user_analysis_categories",
-        sa.Column("title", sa.String(length=20), nullable=True),
-    )
-    op.add_column(
-        "user_analysis_categories",
-        sa.Column("seq", sa.SmallInteger(), nullable=True),
-    )
-    op.add_column(
-        "user_analysis_categories",
-        sa.Column("type", sa.String(length=1), nullable=True),
-    )
-    op.add_column(
-        "user_analysis_categories",
-        sa.Column("is_active", sa.Boolean(), nullable=True),
-    )
-
 
 def downgrade():
-    op.drop_column("user_analysis_categories", "title")
-    op.drop_column("user_analysis_categories", "seq")
-    op.drop_column("user_analysis_categories", "type")
-    op.drop_column("user_analysis_categories", "is_active")
-
     op.drop_column("survey_results", "hope_two_bank_point")
     op.drop_column("survey_results", "hope_two_address_point")
     op.drop_column("survey_results", "hope_two_household_point")

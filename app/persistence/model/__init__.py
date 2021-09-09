@@ -41,3 +41,6 @@ from .predicted_competition_model import PredictedCompetitionModel
 from .user_analysis_model import UserAnalysisModel
 from .user_analysis_category_model import UserAnalysisCategoryModel
 from .user_analysis_category_detail_model import UserAnalysisCategoryDetailModel
+from .dong_info_model import DongInfoModel
+from .room_info_model import RoomInfoModel
+from .room_photo_model import RoomPhotoModel
