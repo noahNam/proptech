@@ -64,6 +64,8 @@ def get_recently_sale_view():
 
 
 @api.route("/v1/reports/user", methods=["GET"])
+@jwt_required
+@auth_required
 @swag_from("get_user_report.yml", methods=["GET"])
 def get_user_report_view():
     dto = GetUserReportRequestSchema(

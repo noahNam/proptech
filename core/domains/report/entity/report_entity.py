@@ -118,5 +118,9 @@ class UserAnalysisCategoryEntity(BaseModel):
     id: int
     div: str
     category: int
+    title: str
     output_text: str
-    user_analysis_category_details: List[UserAnalysisCategoryDetailEntity]
+    user_analysis_category_detail: Optional[UserAnalysisCategoryDetailEntity]
+    seq: int
+    type: str
+    is_active: bool
