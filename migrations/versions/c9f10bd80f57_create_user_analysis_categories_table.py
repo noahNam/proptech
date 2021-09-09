@@ -26,6 +26,7 @@ def upgrade():
         ),
         sa.Column("div", sa.String(length=1), nullable=False),
         sa.Column("category", sa.SmallInteger(), nullable=False),
+        sa.Column("title", sa.String(length=20), nullable=False),
         sa.Column("output_text", sa.Text(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
