@@ -11,6 +11,7 @@ from app.http.requests.v1.house_request import (
     GetRecentViewListRequestSchema,
     GetMainPreSubscriptionRequestSchema,
     GetHouseMainRequestSchema,
+    GetHousePublicNearPrivateSalesRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -25,6 +26,7 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetSearchHouseListPresenter,
     GetHouseMainPresenter,
     GetMainPreSubscriptionPresenter,
+    GetHousePublicNearPrivateSalesPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import (
@@ -42,6 +44,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetRecentViewListUseCase,
     GetHouseMainUseCase,
     GetMainPreSubscriptionUseCase,
+    GetHousePublicNearPrivateSalesUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -101,6 +104,20 @@ def house_public_detail_view(house_id: int):
 
     return GetHousePublicDetailPresenter().transform(
         GetHousePublicDetailUseCase().execute(dto=dto)
+    )
+
+
+@api.route("/v1/houses/public/<int:house_id>/near_houses", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("house_public_near_private_sales_view.yml", methods=["GET"])
+def house_public_near_private_sales_view(house_id: int):
+    dto = GetHousePublicNearPrivateSalesRequestSchema(
+        house_id=house_id
+    ).validate_request_and_make_dto()
+
+    return GetHousePublicNearPrivateSalesPresenter().transform(
+        GetHousePublicNearPrivateSalesUseCase().execute(dto=dto)
     )
 
 

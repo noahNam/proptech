@@ -18,6 +18,7 @@ from core.domains.house.dto.house_dto import (
     BoundingWithinRadiusDto,
     SectionTypeDto,
     GetHouseMainDto,
+    GetHousePublicNearPrivateSalesDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.enum.house_enum import (
@@ -388,5 +389,26 @@ class GetMainPreSubscriptionRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetMainPreSubscriptionRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetHousePublicNearPrivateSalesSchema(BaseModel):
+    house_id: StrictInt
+
+
+class GetHousePublicNearPrivateSalesRequestSchema:
+    def __init__(self, house_id):
+        self.house_id = house_id
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetHousePublicNearPrivateSalesSchema(
+                house_id=self.house_id,
+            ).dict()
+            return GetHousePublicNearPrivateSalesDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetHousePublicNearPrivateSalesSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

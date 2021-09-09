@@ -20,6 +20,7 @@ from core.domains.house.entity.house_entity import (
     GetHouseMainEntity,
     SimpleCalendarInfoEntity,
     PublicSaleSimpleCalendarEntity,
+    HousePublicDetailEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -177,34 +178,68 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
 
 
 def test_get_house_public_detail_use_case_when_enable_public_sale_house(
-    session, create_interest_house, create_real_estate_with_public_sale
+    session,
+    create_interest_house,
+    create_real_estate_with_private_sale,
+    create_real_estate_with_public_sale,
 ):
     """
         사용 가능한 분양 매물이면
-        HouseRepository().get_house_public_detail_by_get_house_public_detail_dto 호출
+        HouseRepository().get_house_with_public_sales 호출
         성공시, RecentlyViewModel이 pypubsub에 의해 생성되어야 한다
     """
     get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)
+
+    mock_entity = HousePublicDetailEntity(
+        id=1,
+        name="분양아파트",
+        road_address="서울시 어딘가",
+        jibun_address="서울시 어딘가",
+        si_do="서울특별시",
+        si_gun_gu="서초구",
+        dong_myun="어딘가",
+        ri="-",
+        road_name="어딘가1길",
+        road_number="10",
+        land_number="123-1",
+        is_available=True,
+        latitude=127,
+        longitude=37.71,
+        is_like=True,
+        min_pyoung_number=25,
+        max_pyoung_number=32,
+        min_supply_area=84.0,
+        max_supply_area=112.0,
+        avg_supply_price=50000,
+        supply_price_per_pyoung=123,
+        min_acquisition_tax=100000,
+        max_acquisition_tax=200000,
+        public_sales=None,
+    )
 
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.is_enable_public_sale_house"
     ) as mock_enable:
         mock_enable.return_value = True
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
+            "core.domains.house.repository.house_repository.HouseRepository.get_house_with_public_sales"
         ) as mock_house_public_detail:
             mock_house_public_detail.return_value = create_real_estate_with_public_sale[
                 0
             ]
-            result = GetHousePublicDetailUseCase().execute(
-                dto=get_house_public_detail_dto
-            )
+            with patch(
+                "core.domains.house.repository.house_repository.HouseRepository.make_house_public_detail_entity"
+            ) as mock_result:
+                mock_result.return_value = mock_entity
+                result = GetHousePublicDetailUseCase().execute(
+                    dto=get_house_public_detail_dto
+                )
     view_info = session.query(RecentlyViewModel).first()
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert mock_house_public_detail.called is True
     assert mock_enable.called is True
-    assert result.value == mock_house_public_detail.return_value
+    assert result.value == mock_result.return_value
     assert view_info.user_id == get_house_public_detail_dto.user_id
     assert view_info.house_id == get_house_public_detail_dto.house_id
 
@@ -222,7 +257,7 @@ def test_get_house_public_detail_use_case_when_disable_public_sale_house(
     ) as mock_disable:
         mock_disable.return_value = False
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
+            "core.domains.house.repository.house_repository.HouseRepository.get_house_with_public_sales"
         ) as mock_house_public_detail:
             mock_house_public_detail.return_value = create_real_estate_with_public_sale[
                 0

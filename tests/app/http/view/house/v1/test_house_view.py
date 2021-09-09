@@ -349,7 +349,7 @@ def test_house_public_detail_view_when_valid_request_id(
         accept="application/json",
     )
 
-    sample_entity = HousePublicDetailEntity(
+    mock_entity = HousePublicDetailEntity(
         id=1,
         name="분양아파트",
         road_address="서울특별시 서초구 어딘가1길 10",
@@ -374,7 +374,6 @@ def test_house_public_detail_view_when_valid_request_id(
         min_acquisition_tax=2000,
         max_acquisition_tax=3000,
         public_sales=None,
-        near_houses=None,
     )
 
     with patch(
@@ -382,21 +381,27 @@ def test_house_public_detail_view_when_valid_request_id(
     ) as mock_enable:
         mock_enable.return_value = True
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
+            "core.domains.house.repository.house_repository.HouseRepository.get_house_with_public_sales"
         ) as mock_house_public_detail:
-            mock_house_public_detail.return_value = sample_entity
-            with test_request_context:
-                response = client.get(
-                    url_for("api/tanos.house_public_detail_view", house_id=1),
-                    headers=headers,
-                )
+            mock_house_public_detail.return_value = create_real_estate_with_public_sale[
+                0
+            ]
+            with patch(
+                "core.domains.house.repository.house_repository.HouseRepository.make_house_public_detail_entity"
+            ) as mock_result:
+                mock_result.return_value = mock_entity
+                with test_request_context:
+                    response = client.get(
+                        url_for("api/tanos.house_public_detail_view", house_id=1),
+                        headers=headers,
+                    )
 
     data = response.get_json()["data"]
 
     assert response.status_code == 200
     assert mock_house_public_detail.called is True
     assert mock_enable.called is True
-    assert data["house"]["name"] == sample_entity.name
+    assert data["house"]["name"] == mock_entity.name
 
 
 def test_get_interest_house_list_view_when_like_one_public_sale_then_return_result_one(

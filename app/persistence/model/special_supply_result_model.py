@@ -15,7 +15,11 @@ from core.domains.house.entity.house_entity import SpecialSupplyResultReportEnti
 class SpecialSupplyResultModel(db.Model):
     __tablename__ = "special_supply_results"
 
-    id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True)
+    id = Column(
+        BigInteger().with_variant(Integer, "sqlite"),
+        primary_key=True,
+        autoincrement=True,
+    )
     public_sale_details_id = Column(
         BigInteger,
         ForeignKey(PublicSaleDetailModel.id, ondelete="CASCADE"),

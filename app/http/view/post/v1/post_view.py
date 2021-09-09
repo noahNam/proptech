@@ -24,6 +24,7 @@ def get_post_list_view():
     dto = GetPostListRequestSchema(
         post_category=request.args.get("post_category"),
         post_category_detail=request.args.get("post_category_detail"),
+        previous_post_id=request.args.get("previous_post_id"),
     ).validate_request_and_make_dto()
 
     return GetPostListPresenter().transform(GetPostListUseCase().execute(dto=dto))

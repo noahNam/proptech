@@ -121,16 +121,14 @@ def test_get_house_public_detail_when_get_house_public_detail_dto(
     session, create_real_estate_with_public_sale
 ):
     """
-        get_house_public_detail_by_get_house_public_detail_dto -> return mocking
+        get_house_with_public_sales_by_get_house_public_detail_dto -> return mocking
     """
     dto = get_house_public_detail_dto
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
+        "core.domains.house.repository.house_repository.HouseRepository.get_house_with_public_sales"
     ) as mock_house_public_detail:
         mock_house_public_detail.return_value = create_real_estate_with_public_sale[0]
-        result = HouseRepository().get_house_public_detail(
-            dto=dto, degree=1, is_like=True
-        )
+        result = HouseRepository().get_house_with_public_sales(house_id=dto.house_id)
     assert result == mock_house_public_detail.return_value
     assert mock_house_public_detail.called is True
 

@@ -20,6 +20,7 @@ from app.persistence.model import (
     RecentlyViewModel,
     PublicSalePhotoModel,
 )
+from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
@@ -49,6 +50,7 @@ from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
     DivisionLevelEnum,
 )
+from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import NotUniqueErrorException
 
@@ -263,8 +265,8 @@ class HouseRepository:
             return False
         return True
 
-    def is_enable_public_sale_house(self, dto: GetHousePublicDetailDto) -> bool:
-        house = session.query(PublicSaleModel).filter_by(id=dto.house_id).first()
+    def is_enable_public_sale_house(self, house_id: int) -> bool:
+        house = session.query(PublicSaleModel).filter_by(id=house_id).first()
 
         if not house or house.is_available == "False":
             return False
@@ -291,7 +293,7 @@ class HouseRepository:
             return None
         return interest_house
 
-    def _get_house_with_public_sales(self, house_id: int) -> list:
+    def get_house_with_public_sales(self, house_id: int) -> list:
         filters = list()
         filters.append(PublicSaleModel.id == house_id)
         filters.append(
@@ -316,7 +318,6 @@ class HouseRepository:
             )
             .join(RealEstateModel.public_sales)
             .join(PublicSaleModel.public_sale_details)
-            .join(PublicSaleModel.public_sale_photos)
             .filter(*filters)
             .group_by(RealEstateModel.id)
         )
@@ -350,11 +351,12 @@ class HouseRepository:
             return 0
         return supply_price / avg_pyoung_number
 
-    def _make_house_public_detail_entity(
+    def make_house_public_detail_entity(
         self,
         house_with_public_sales: list,
-        house_with_private_entities: Optional[list],
         is_like: bool,
+        button_link_list: List[ButtonLinkEntity],
+        ticket_usage_results: List[TicketUsageResultEntity],
     ) -> HousePublicDetailEntity:
         return house_with_public_sales[0].to_house_with_public_detail_entity(
             is_like=is_like,
@@ -373,12 +375,13 @@ class HouseRepository:
             ),
             min_acquisition_tax=house_with_public_sales[5],
             max_acquisition_tax=house_with_public_sales[6],
-            near_houses=house_with_private_entities,
+            button_links=button_link_list,
+            ticket_usage_results=ticket_usage_results,
         )
 
-    def get_house_public_detail(
-        self, dto: GetHousePublicDetailDto, degree: float, is_like: bool
-    ) -> Optional[HousePublicDetailEntity]:
+    def get_public_with_private_sales_in_radius(
+        self, house_with_public_sales: list, degree: float
+    ) -> Optional[List[RealEstateWithPrivateSaleEntity]]:
         """
             <주변 실거래가 매물 List 가져오기>
             Postgis func- ST_DWithin(A_Geometry, B_Geometry, degree) -> bool
@@ -390,10 +393,6 @@ class HouseRepository:
             <최종 Entity 구성>
             : 분양 매물 상세 queryset + is_like + 주변 실거래가 queryset -> HousePublicDetailEntity
         """
-        # 분양 매물 상세 query -> house_with_public_sales
-        house_with_public_sales = self._get_house_with_public_sales(
-            house_id=dto.house_id
-        )
 
         if not house_with_public_sales:
             return None
@@ -446,14 +445,8 @@ class HouseRepository:
         )
         house_with_private_queryset = query.all()
 
-        house_with_private_entities = self._make_house_with_private_entities(
+        return self._make_house_with_private_entities(
             queryset=house_with_private_queryset
-        )
-
-        return self._make_house_public_detail_entity(
-            house_with_public_sales=house_with_public_sales,
-            house_with_private_entities=house_with_private_entities,
-            is_like=is_like,
         )
 
     def _make_detail_calendar_info_entity(
