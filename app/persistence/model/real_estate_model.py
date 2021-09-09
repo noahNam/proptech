@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
@@ -12,6 +12,7 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, backref, column_property
 
 from app import db
+from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     RealEstateWithPrivateSaleEntity,
@@ -20,6 +21,7 @@ from core.domains.house.entity.house_entity import (
     SimpleCalendarInfoEntity,
     RealEstateReportEntity,
 )
+from core.domains.report.entity.report_entity import TicketUsageResultEntity
 
 
 class RealEstateModel(db.Model):
@@ -137,7 +139,8 @@ class RealEstateModel(db.Model):
         supply_price_per_pyoung: Optional[float],
         min_acquisition_tax: int,
         max_acquisition_tax: int,
-        near_houses: Optional[list],
+        button_links: List[ButtonLinkEntity],
+        ticket_usage_results: List[TicketUsageResultEntity],
     ) -> HousePublicDetailEntity:
         return HousePublicDetailEntity(
             id=self.id,
@@ -164,7 +167,8 @@ class RealEstateModel(db.Model):
             min_acquisition_tax=min_acquisition_tax,
             max_acquisition_tax=max_acquisition_tax,
             public_sales=self.public_sales.to_entity() if self.public_sales else None,
-            near_houses=near_houses,
+            button_links=button_links if button_links else None,
+            ticket_usage_results=ticket_usage_results if ticket_usage_results else None,
         )
 
     def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:

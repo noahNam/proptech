@@ -10,9 +10,8 @@ class PostCategoryEnum(Enum):
     NOTICE = 0
     FAQ = 1
     SUBSCRIPTION_FAQ = 2
-    SUBSCRIPTION_GUIDE = 3
-    SUBSCRIPTION_WORDS = 4
-    ABOUT_SUBSCRIPTION = 5
+    SUBSCRIPTION_WORDS = 3
+    ABOUT_SUBSCRIPTION = 4
 
 
 class PostCategoryDetailEnum(Enum):
@@ -26,7 +25,7 @@ class PostCategoryDetailEnum(Enum):
     NO_DETAIL = 0
 
     # FAQ
-    ACCOUNT_AUTH = 1
+    ALL_LIST = 1
     PERSONAL_INFO = 2
     HOW_TO_USE = 3
     SETTINGS = 4
@@ -45,3 +44,11 @@ class PostTypeEnum(Enum):
 
     PHOTO = 0
     MEDIA = 1
+
+
+class PostLimitEnum(Enum):
+    """
+        용도 : 공지사항 Post pagination
+    """
+
+    LIMIT = 20

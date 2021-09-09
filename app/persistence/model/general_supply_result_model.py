@@ -15,7 +15,11 @@ from core.domains.house.entity.house_entity import GeneralSupplyResulReportEntit
 class GeneralSupplyResultModel(db.Model):
     __tablename__ = "general_supply_results"
 
-    id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True)
+    id = Column(
+        BigInteger().with_variant(Integer, "sqlite"),
+        primary_key=True,
+        autoincrement=True,
+    )
     public_sale_details_id = Column(
         BigInteger,
         ForeignKey(PublicSaleDetailModel.id, ondelete="CASCADE"),
@@ -24,7 +28,7 @@ class GeneralSupplyResultModel(db.Model):
 
     region = Column(String(10), nullable=True)
     region_percent = Column(SmallInteger, nullable=True)
-    applicant_num = Column(SmallInteger, nullable=True)
+    applicant_num = Column(Integer, nullable=True)
     competition_rate = Column(SmallInteger, nullable=True)
     win_point = Column(SmallInteger, nullable=True)
 

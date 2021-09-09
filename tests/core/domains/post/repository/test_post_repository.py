@@ -27,7 +27,7 @@ def test_get_post_list_repo_then_return_post_list(session, post_factory):
         article=True,
         post_attachments=True,
         category_id=PostCategoryEnum.FAQ.value,
-        category_detail_id=PostCategoryDetailEnum.ACCOUNT_AUTH.value,
+        category_detail_id=PostCategoryDetailEnum.PERSONAL_INFO.value,
     )
 
     session.add_all([post1, post2, post3, post4])
@@ -43,7 +43,7 @@ def test_get_post_list_repo_then_return_post_list(session, post_factory):
     )
 
     get_post_list_dto.post_category = PostCategoryEnum.FAQ.value
-    get_post_list_dto.post_category_detail = PostCategoryDetailEnum.ACCOUNT_AUTH.value
+    get_post_list_dto.post_category_detail = PostCategoryDetailEnum.PERSONAL_INFO.value
     post_list_faq = PostRepository().get_post_list_include_contents(
         dto=get_post_list_dto
     )
@@ -74,3 +74,44 @@ def test_update_read_count_repo_when_read_post_then_read_count_plus_one(
     post_list = PostRepository().get_post_list_include_contents(dto=dto)
 
     assert post_list[0].read_count == 1
+
+
+def test_get_post_list_repo_when_load_more_notice_post_then_return_post_list(
+    session, create_users, post_factory
+):
+    post_list = []
+    for index in range(25):
+        post_list.append(
+            post_factory(
+                article=True,
+                post_attachments=True,
+                category_id=PostCategoryEnum.NOTICE.value,
+                category_detail_id=PostCategoryDetailEnum.NO_DETAIL.value,
+            )
+        )
+
+    session.add_all(post_list)
+    session.commit()
+
+    get_post_list_dto = GetPostListDto(
+        post_category=PostCategoryEnum.NOTICE.value,
+        post_category_detail=PostCategoryDetailEnum.NO_DETAIL.value,
+        previous_post_id=None,
+    )
+
+    post_result_1 = PostRepository().get_post_list_include_contents(
+        dto=get_post_list_dto
+    )
+
+    get_post_list_dto2 = GetPostListDto(
+        post_category=PostCategoryEnum.NOTICE.value,
+        post_category_detail=PostCategoryDetailEnum.NO_DETAIL.value,
+        previous_post_id=6,
+    )
+
+    post_result_2 = PostRepository().get_post_list_include_contents(
+        dto=get_post_list_dto2
+    )
+
+    assert len(post_result_1) == 20
+    assert len(post_result_2) == 5

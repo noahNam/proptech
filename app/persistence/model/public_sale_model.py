@@ -51,7 +51,7 @@ class PublicSaleModel(db.Model):
         Enum(PreSaleTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
     )
-    construct_company = Column(String(30), nullable=True)
+    construct_company = Column(String(50), nullable=True)
     supply_household = Column(Integer, nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
     offer_date = Column(String(8), nullable=True)
