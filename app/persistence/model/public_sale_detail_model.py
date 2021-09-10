@@ -35,12 +35,12 @@ class PublicSaleDetailModel(db.Model):
     supply_price = Column(Integer, nullable=False)
     acquisition_tax = Column(Integer, nullable=False)
     area_type = Column(String(5), nullable=True)
-    special_household = Column(SmallInteger, nullable=False)
-    multi_children_house_hold = Column(SmallInteger, nullable=False)
-    newlywed_house_hold = Column(SmallInteger, nullable=False)
-    old_parent_house_hold = Column(SmallInteger, nullable=False)
-    first_life_house_hold = Column(SmallInteger, nullable=False)
-    general_household = Column(SmallInteger, nullable=False)
+    special_household = Column(SmallInteger, nullable=True)
+    multi_children_house_hold = Column(SmallInteger, nullable=True)
+    newlywed_house_hold = Column(SmallInteger, nullable=True)
+    old_parent_house_hold = Column(SmallInteger, nullable=True)
+    first_life_house_hold = Column(SmallInteger, nullable=True)
+    general_household = Column(SmallInteger, nullable=True)
 
     # 1:1 relationship
     public_sale_detail_photos = relationship(
@@ -66,11 +66,11 @@ class PublicSaleDetailModel(db.Model):
             supply_price=self.supply_price,
             acquisition_tax=self.acquisition_tax,
             area_type=self.area_type,
+            special_household=self.special_household,
+            general_household=self.general_household,
             public_sale_detail_photos=self.public_sale_detail_photos.to_entity()
             if self.public_sale_detail_photos
             else None,
-            special_household=self.special_household,
-            general_household=self.general_household,
         )
 
     def to_report_entity(self) -> PublicSaleDetailReportEntity:

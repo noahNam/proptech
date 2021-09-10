@@ -63,8 +63,7 @@ def upgrade():
         sa.Column(
             "special_household",
             sa.SmallInteger(),
-            nullable=False,
-            server_default=text("0"),
+            nullable=True,
         ),
     )
     op.add_column(
@@ -72,8 +71,7 @@ def upgrade():
         sa.Column(
             "multi_children_house_hold",
             sa.SmallInteger(),
-            nullable=False,
-            server_default=text("0"),
+            nullable=True,
         ),
     )
     op.add_column(
@@ -81,8 +79,7 @@ def upgrade():
         sa.Column(
             "newlywed_house_hold",
             sa.SmallInteger(),
-            nullable=False,
-            server_default=text("0"),
+            nullable=True,
         ),
     )
     op.add_column(
@@ -90,8 +87,7 @@ def upgrade():
         sa.Column(
             "old_parent_house_hold",
             sa.SmallInteger(),
-            nullable=False,
-            server_default=text("0"),
+            nullable=True,
         ),
     )
     op.add_column(
@@ -99,8 +95,7 @@ def upgrade():
         sa.Column(
             "first_life_house_hold",
             sa.SmallInteger(),
-            nullable=False,
-            server_default=text("0"),
+            nullable=True,
         ),
     )
     op.add_column(
@@ -108,8 +103,7 @@ def upgrade():
         sa.Column(
             "general_household",
             sa.SmallInteger(),
-            nullable=False,
-            server_default=text("0"),
+            nullable=True,
         ),
     )
 
