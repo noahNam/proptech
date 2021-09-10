@@ -102,7 +102,7 @@ class PrePrcsNotificationUseCase:
         )
 
     def _convert_message_for_public_sales(
-        self, target_public_sales: List[PublicSalePushEntity]
+            self, target_public_sales: List[PublicSalePushEntity]
     ) -> List[dict]:
         notification_list = list()
         for target_public_sale in target_public_sales:
@@ -168,6 +168,13 @@ class PrePrcsNotificationUseCase:
                     },
                 )
 
+                """
+                    is_pending 
+                    True  -> apt002, apt003 <매일아침 9시에 Lambda 발송>
+                          -> apt001, apt004 <메뉴얼 람다 실행으로 발송>      
+                    False -> 아직 해당 사항 없음 (실시간 푸쉬 발송)
+                """
+                is_pending = True
                 message_dict = MessageConverter.to_dict(message_dto)
                 notification_dict = dict(
                     user_id=target_user.id,
@@ -177,7 +184,7 @@ class PrePrcsNotificationUseCase:
                     badge_type=NotificationBadgeTypeEnum.ALL.value,
                     message=message_dict,
                     is_read=False,
-                    is_pending=False,
+                    is_pending=is_pending,
                     status=NotificationStatusEnum.WAIT.value,
                 )
 
