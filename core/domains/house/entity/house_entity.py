@@ -31,12 +31,14 @@ class PublicSaleDetailPhotoEntity(BaseModel):
 class PublicSaleDetailEntity(BaseModel):
     id: int
     public_sales_id: int
-    area_type: str
     private_area: float
     supply_area: float
     supply_price: int
     acquisition_tax: int
+    area_type: str
     area_type: Optional[str]
+    special_household: Optional[int]
+    general_household: Optional[int]
     public_sale_detail_photos: PublicSaleDetailPhotoEntity = None
 
 
@@ -395,12 +397,12 @@ class PublicSaleDetailReportEntity(BaseModel):
     supply_area: float
     supply_price: int
     acquisition_tax: int
-    special_household: Optional[int] = 0
-    multi_children_house_hold: Optional[int] = 0
-    newlywed_house_hold: Optional[int] = 0
-    old_parent_house_hold: Optional[int] = 0
-    first_life_house_hold: Optional[int] = 0
-    general_household: Optional[int] = 0
+    special_household: Optional[int]
+    multi_children_house_hold: Optional[int]
+    newlywed_house_hold: Optional[int]
+    old_parent_house_hold: Optional[int]
+    first_life_house_hold: Optional[int]
+    general_household: Optional[int]
     pyoung_number: Optional[int] = 0
     price_per_meter: Optional[int] = 0
     public_sale_detail_photos: Optional[PublicSaleDetailPhotoEntity]
