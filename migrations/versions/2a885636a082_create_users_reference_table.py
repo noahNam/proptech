@@ -148,7 +148,6 @@ def upgrade():
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("created_by", sa.String(length=6), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["type"], ["ticket_types.id"],),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -175,5 +174,4 @@ def downgrade():
     op.drop_table("interest_houses")
     op.drop_table("ticket_targets")
     op.drop_table("tickets")
-    op.drop_table("ticket_types")
     op.drop_table("users")
