@@ -44,3 +44,4 @@ from .user_analysis_category_detail_model import UserAnalysisCategoryDetailModel
 from .dong_info_model import DongInfoModel
 from .room_info_model import RoomInfoModel
 from .room_photo_model import RoomPhotoModel
+from .notice_template_model import NoticeTemplateModel
