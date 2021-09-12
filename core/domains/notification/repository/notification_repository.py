@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Optional, List
 
 from sqlalchemy import literal, String
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, contains_eager
 
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -12,7 +12,7 @@ from app.persistence.model import (
     NotificationModel,
     ReceivePushTypeHistoryModel,
     PublicSaleModel,
-    InterestHouseModel,
+    InterestHouseModel, UserModel,
 )
 from app.persistence.model.receive_push_type_model import ReceivePushTypeModel
 from core.domains.house.entity.house_entity import PublicSalePushEntity
@@ -180,19 +180,21 @@ class NotificationRepository:
         query = (
             session.query(InterestHouseModel)
             .options(joinedload(InterestHouseModel.users, innerjoin=True))
+            .options(joinedload("users.device", innerjoin=True))
+            .options(joinedload("users.receive_push_type", innerjoin=True))
+            .options(joinedload("users.device.device_token", innerjoin=True))
             .filter(*filters)
         )
-        interest_houses = query.all()
-
-        return self._make_push_target_user_list(interest_houses=interest_houses)
+        query_set = query.all()
+        return self._make_push_target_user_list(query_set=query_set)
 
     def _make_push_target_user_list(
-        self, interest_houses: List[InterestHouseModel]
+        self, query_set: List[InterestHouseModel]
     ) -> List[Optional[UserEntity]]:
         target_user_list = list()
-        for interest_house in interest_houses:
-            if interest_house.users.receive_push_type.is_private:
-                target_user_list.append(interest_house.users.to_entity())
+        for query in query_set:
+            if query.users.receive_push_type.is_private:
+                target_user_list.append(query.users.to_push_target_entity())
         return target_user_list
 
     def create_notifications(self, notification_list: List[dict]) -> None:
