@@ -157,6 +157,9 @@ class PrePrcsNotificationUseCase:
             )
 
             for target_user in target_user_list:
+                if not target_user.is_active:
+                    continue
+
                 message_dto = PushMessageDto(
                     title=title,
                     content=content,
