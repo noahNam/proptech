@@ -102,7 +102,7 @@ class PrePrcsNotificationUseCase:
         )
 
     def _convert_message_for_public_sales(
-            self, target_public_sales: List[PublicSalePushEntity]
+        self, target_public_sales: List[PublicSalePushEntity]
     ) -> List[dict]:
         notification_list = list()
         for target_public_sale in target_public_sales:
