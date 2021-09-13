@@ -140,26 +140,27 @@ class HouseRepository:
         filters.append(bounding_filter)
         filters.append(
             or_(
+                # and_(
+                #     RealEstateModel.is_available == "True",
+                #     PrivateSaleDetailModel.is_available == "True",
+                #     func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD")
+                #     >= get_month_from_today(),
+                #     func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD")
+                #     <= get_server_timestamp(),
+                # ),
+                # and_(
+                #     RealEstateModel.is_available == "True",
+                #     PublicSaleModel.is_available == "True",
+                # ),
                 and_(
-                    RealEstateModel.is_available == "True",
-                    PrivateSaleDetailModel.is_available == "True",
-                    func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD")
-                    >= get_month_from_today(),
-                    func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD")
-                    <= get_server_timestamp(),
-                ),
-                and_(
-                    RealEstateModel.is_available == "True",
-                    PublicSaleModel.is_available == "True",
-                ),
-                and_(
-                    RealEstateModel.is_available == "True",
-                    PrivateSaleDetailModel.is_available == "True",
-                    PublicSaleModel.is_available == "True",
-                    func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD")
-                    >= get_month_from_today(),
-                    func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD")
-                    <= get_server_timestamp(),
+                    RealEstateModel.is_available == True,
+                    PrivateSaleDetailModel.is_available == True,
+                    PublicSaleModel.is_available == True,
+                    # PrivateSaleDetailModel.contract_date >= '20210730',
+                    PrivateSaleDetailModel.contract_date
+                    >= get_month_from_today().strftime("%Y%m%d"),
+                    PrivateSaleDetailModel.contract_date
+                    <= get_server_timestamp().strftime("%Y%m%d"),
                 ),
             )
         )
@@ -183,13 +184,36 @@ class HouseRepository:
                     "avg_public_supply_area"
                 ),
             )
-            .join(RealEstateModel.private_sales, isouter=True)
-            .join(RealEstateModel.public_sales, isouter=True)
-            .join(PublicSaleModel.public_sale_details, isouter=True)
+            .join(
+                PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
+            )
+            .options(contains_eager(RealEstateModel.private_sales))
+            .join(
+                PrivateSaleDetailModel,
+                PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id,
+            )
+            .options(contains_eager("private_sales.private_sale_details"))
+            .join(PublicSaleModel, RealEstateModel.id == PublicSaleModel.real_estate_id)
+            .options(contains_eager(RealEstateModel.public_sales))
+            .join(
+                PublicSaleDetailModel,
+                PublicSaleModel.id == PublicSaleDetailModel.public_sales_id,
+            )
+            .options(contains_eager("public_sales.public_sale_details"))
             .join(PublicSaleModel.public_sale_photos, isouter=True)
+            .options(contains_eager("public_sales.public_sale_photos"))
             .filter(*filters)
-            .group_by(RealEstateModel.id)
+            .group_by(
+                RealEstateModel.id,
+                PrivateSaleModel.id,
+                PrivateSaleDetailModel.id,
+                PublicSaleModel.id,
+                PublicSaleDetailModel.id,
+                PublicSalePhotoModel.id,
+            )
         )
+
+        # RawQueryHelper.print_raw_query(query)
         queryset = query.all()
 
         return self._make_object_bounding_entity(queryset=queryset)
