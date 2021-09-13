@@ -3,7 +3,9 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     ForeignKey,
-    String, SmallInteger, Float,
+    String,
+    SmallInteger,
+    Float,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -31,6 +33,5 @@ class RoomInfoModel(db.Model):
     summer_administration_cost = Column(SmallInteger, nullable=True)
 
     room_photos = relationship(
-        "RoomPhotoModel",
-        backref=backref("room_infos", cascade="all, delete"),
+        "RoomPhotoModel", backref=backref("room_infos", cascade="all, delete"),
     )

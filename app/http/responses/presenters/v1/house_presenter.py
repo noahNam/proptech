@@ -253,7 +253,9 @@ class GetHousePublicNearPrivateSalesPresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = GetHousePublicPrivateSalesResponseSchema(houses=output.value)
+                schema = GetHousePublicPrivateSalesResponseSchema(
+                    near_houses=output.value
+                )
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(

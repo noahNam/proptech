@@ -1,6 +1,6 @@
 from typing import Optional, List, Any
 
-from geoalchemy2 import Geometry
+from geoalchemy2 import Geometry, func as geo_func
 from sqlalchemy import and_, func, or_, literal, String
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload, selectinload, contains_eager
@@ -8,6 +8,7 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
@@ -400,7 +401,7 @@ class HouseRepository:
         # 주변 실거래가 List queryset -> house_with_private_queryset
         filters = list()
         filters.append(
-            func.ST_DWithin(
+            geo_func.ST_DWithin(
                 house_with_public_sales[0].coordinates,
                 RealEstateModel.coordinates,
                 degree,
@@ -413,10 +414,10 @@ class HouseRepository:
                 PrivateSaleDetailModel.is_available == "True",
                 PrivateSaleDetailModel.trade_type == RealTradeTypeEnum.TRADING.value,
                 PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value,
-                func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD")
-                >= get_month_from_today(),
-                func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD")
-                <= get_server_timestamp(),
+                PrivateSaleDetailModel.contract_date
+                >= get_month_from_today().strftime("%Y%m%d"),
+                PrivateSaleDetailModel.contract_date
+                <= get_server_timestamp().strftime("%Y%m%d"),
             )
         )
         # Slow Query Problem_1
