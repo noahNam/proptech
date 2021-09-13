@@ -3,7 +3,8 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     ForeignKey,
-    String, SmallInteger,
+    String,
+    SmallInteger,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -25,6 +26,5 @@ class DongInfoModel(db.Model):
     structure_type = Column(String(3), nullable=True)
 
     room_infos = relationship(
-        "RoomInfoModel",
-        backref=backref("dong_infos", cascade="all, delete"),
+        "RoomInfoModel", backref=backref("dong_infos", cascade="all, delete"),
     )

@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Optional, List
 
 from sqlalchemy import literal, String
-from sqlalchemy.orm import joinedload, contains_eager
+from sqlalchemy.orm import joinedload
 
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -12,8 +12,10 @@ from app.persistence.model import (
     NotificationModel,
     ReceivePushTypeHistoryModel,
     PublicSaleModel,
-    InterestHouseModel, UserModel,
+    InterestHouseModel,
+    UserModel,
 )
+from app.persistence.model.notice_template_model import NoticeTemplateModel
 from app.persistence.model.receive_push_type_model import ReceivePushTypeModel
 from core.domains.house.entity.house_entity import PublicSalePushEntity
 from core.domains.notification.dto.notification_dto import (
@@ -25,8 +27,9 @@ from core.domains.notification.dto.notification_dto import (
 from core.domains.notification.entity.notification_entity import (
     NotificationEntity,
     ReceivePushTypeEntity,
+    NoticeTemplateEntity,
 )
-from core.domains.user.entity.user_entity import UserEntity
+from core.domains.user.entity.user_entity import PushTargetEntity
 
 logger = logger_.getLogger(__name__)
 
@@ -169,9 +172,9 @@ class NotificationRepository:
             for public_sale in public_sales
         ]
 
-    def get_users_of_push_target(
+    def get_users_of_private_push_target(
         self, house_id: int, type_: int
-    ) -> List[Optional[UserEntity]]:
+    ) -> List[PushTargetEntity]:
         filters = list()
         filters.append(InterestHouseModel.house_id == house_id)
         filters.append(InterestHouseModel.type == type_)
@@ -186,11 +189,11 @@ class NotificationRepository:
             .filter(*filters)
         )
         query_set = query.all()
-        return self._make_push_target_user_list(query_set=query_set)
+        return self._make_private_push_target_user_list(query_set=query_set)
 
-    def _make_push_target_user_list(
+    def _make_private_push_target_user_list(
         self, query_set: List[InterestHouseModel]
-    ) -> List[Optional[UserEntity]]:
+    ) -> List[PushTargetEntity]:
         target_user_list = list()
         for query in query_set:
             if query.users.receive_push_type.is_private:
@@ -206,3 +209,47 @@ class NotificationRepository:
         except Exception as e:
             session.rollback()
             logger.error(f"[NotificationRepository][create_notifications] error : {e}")
+
+    def get_notice_push_message(self) -> Optional[NoticeTemplateEntity]:
+        query = session.query(NoticeTemplateModel).filter_by(is_active=True)
+
+        query_set = query.first()
+        if not query_set:
+            return None
+
+        return query_set.to_entity()
+
+    def get_users_of_notice_push_target(self) -> List[PushTargetEntity]:
+        filters = list()
+        filters.append(UserModel.is_active == True)
+
+        query = (
+            session.query(UserModel)
+            .options(joinedload(UserModel.receive_push_type, innerjoin=True))
+            .options(joinedload(UserModel.device, innerjoin=True))
+            .options(joinedload("device.device_token", innerjoin=True))
+            .filter(*filters)
+        )
+        query_set = query.all()
+        return self._make_notice_push_target_user_list(query_set=query_set)
+
+    def _make_notice_push_target_user_list(
+        self, query_set: List[UserModel]
+    ) -> List[PushTargetEntity]:
+        target_user_list = list()
+        for query in query_set:
+            if query.receive_push_type.is_official:
+                target_user_list.append(query.to_push_target_entity())
+        return target_user_list
+
+    def update_notice_templates_active(self) -> None:
+        try:
+            session.query(NoticeTemplateModel).filter_by(is_active=True).update(
+                {"is_active": False, "updated_at": get_server_timestamp()}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[NotificationRepository][update_notice_templates_active] error : {e}"
+            )

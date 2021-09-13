@@ -60,51 +60,27 @@ def upgrade():
     # alter public_sale_details
     op.add_column(
         "public_sale_details",
-        sa.Column(
-            "special_household",
-            sa.SmallInteger(),
-            nullable=True,
-        ),
+        sa.Column("special_household", sa.SmallInteger(), nullable=True,),
     )
     op.add_column(
         "public_sale_details",
-        sa.Column(
-            "multi_children_house_hold",
-            sa.SmallInteger(),
-            nullable=True,
-        ),
+        sa.Column("multi_children_house_hold", sa.SmallInteger(), nullable=True,),
     )
     op.add_column(
         "public_sale_details",
-        sa.Column(
-            "newlywed_house_hold",
-            sa.SmallInteger(),
-            nullable=True,
-        ),
+        sa.Column("newlywed_house_hold", sa.SmallInteger(), nullable=True,),
     )
     op.add_column(
         "public_sale_details",
-        sa.Column(
-            "old_parent_house_hold",
-            sa.SmallInteger(),
-            nullable=True,
-        ),
+        sa.Column("old_parent_house_hold", sa.SmallInteger(), nullable=True,),
     )
     op.add_column(
         "public_sale_details",
-        sa.Column(
-            "first_life_house_hold",
-            sa.SmallInteger(),
-            nullable=True,
-        ),
+        sa.Column("first_life_house_hold", sa.SmallInteger(), nullable=True,),
     )
     op.add_column(
         "public_sale_details",
-        sa.Column(
-            "general_household",
-            sa.SmallInteger(),
-            nullable=True,
-        ),
+        sa.Column("general_household", sa.SmallInteger(), nullable=True,),
     )
 
     # public_sales 기타-경기 칼럼 추가
