@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import List
+from typing import List, Optional
 
 import inject
 import requests
@@ -12,6 +12,7 @@ from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.house.entity.house_entity import PublicSalePushEntity
 from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.notification.dto.notification_dto import PushMessageDto
+from core.domains.notification.entity.notification_entity import NoticeTemplateEntity
 from core.domains.notification.enum.notification_enum import (
     NotificationTopicEnum,
     NotificationBadgeTypeEnum,
@@ -20,16 +21,20 @@ from core.domains.notification.enum.notification_enum import (
 from core.domains.notification.repository.notification_repository import (
     NotificationRepository,
 )
-from core.domains.user.entity.user_entity import UserEntity
+from core.domains.user.entity.user_entity import PushTargetEntity
 
 logger = logger_.getLogger(__name__)
 
 
-class PrePrcsNotificationUseCase:
+class BaseNotificationWorkerUseCase:
     @inject.autoparams()
     def __init__(self, topic: str, notification_repo: NotificationRepository):
         self._notification_repo = notification_repo
         self.topic = topic
+
+    @property
+    def client_id(self) -> str:
+        return f"{self.topic}-{os.getpid()}"
 
     def send_slack_message(self, message: str):
         channel = "#engineering-class"
@@ -42,6 +47,8 @@ class PrePrcsNotificationUseCase:
             data={"channel": channel, "text": text},
         )
 
+
+class PrePrcsNotificationUseCase(BaseNotificationWorkerUseCase):
     def execute(self):
         logger.info(f"🚀\tPrePrcsNotification Start - {self.client_id}")
 
@@ -92,8 +99,10 @@ class PrePrcsNotificationUseCase:
                 notification_list=notification_list
             )
         except Exception as e:
-            logger.error(f"🚀\tcreate_notifications Error - {e}")
-            self.send_slack_message(message=f"🚀\tcreate_notifications Error - {e}")
+            logger.error(f"🚀\tcreate_private_notifications Error - {e}")
+            self.send_slack_message(
+                message=f"🚀\tcreate_private_notifications Error - {e}"
+            )
             sentry_sdk.capture_exception(e)
             sys.exit(0)
 
@@ -102,7 +111,7 @@ class PrePrcsNotificationUseCase:
         )
 
     def _convert_message_for_public_sales(
-            self, target_public_sales: List[PublicSalePushEntity]
+        self, target_public_sales: List[PublicSalePushEntity]
     ) -> List[dict]:
         notification_list = list()
         for target_public_sale in target_public_sales:
@@ -151,8 +160,8 @@ class PrePrcsNotificationUseCase:
 
             # Push 타겟을 찜한 유저를 조회
             target_user_list: List[
-                UserEntity
-            ] = self._notification_repo.get_users_of_push_target(
+                PushTargetEntity
+            ] = self._notification_repo.get_users_of_private_push_target(
                 house_id=target_public_sale.id, type_=HouseTypeEnum.PUBLIC_SALES.value
             )
 
@@ -195,6 +204,108 @@ class PrePrcsNotificationUseCase:
 
         return notification_list
 
-    @property
-    def client_id(self) -> str:
-        return f"{self.topic}-{os.getpid()}"
+
+class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
+    def execute(self):
+        logger.info(f"🚀\tConvertNoticePushMessage Start - {self.client_id}")
+
+        try:
+            notice_push_message: Optional[
+                NoticeTemplateEntity
+            ] = self._notification_repo.get_notice_push_message()
+            if not notice_push_message:
+                logger.info(f"🚀\t get_notice_push_message - nothing")
+                sys.exit(0)
+
+            logger.info(f"🚀\tget_notice_push_message - {notice_push_message.title}")
+        except Exception as e:
+            logger.error(f"🚀\tget_notice_push_message Error - {e}")
+            self.send_slack_message(message=f"🚀\tget_notice_push_message Error - {e}")
+            sentry_sdk.capture_exception(e)
+            sys.exit(0)
+
+        try:
+            notification_list: List[dict] = self._convert_message_for_notice(
+                notice_push_message=notice_push_message
+            )
+        except Exception as e:
+            logger.error(f"🚀\t_convert_message_for_notice Error - {e}")
+            self.send_slack_message(
+                message=f"🚀\t_convert_message_for_notice Error - {e}"
+            )
+            sentry_sdk.capture_exception(e)
+            sys.exit(0)
+
+        # notifications 테이블에 insert 하고, notice_template 상태를 업데이트 한다.
+        try:
+            if not notification_list:
+                logger.info(
+                    f"🚀\tConvertNoticePushMessage Success - nothing notification_list"
+                )
+                sys.exit(0)
+
+            self._notification_repo.create_notifications(
+                notification_list=notification_list
+            )
+
+            self._notification_repo.update_notice_templates_active()
+
+        except Exception as e:
+            logger.error(f"🚀\tcreate_notice_notifications Error - {e}")
+            self.send_slack_message(
+                message=f"🚀\tcreate_notice_notifications Error - {e}"
+            )
+            sentry_sdk.capture_exception(e)
+            sys.exit(0)
+
+        logger.info(f"🚀\tConvertNoticePushMessage Success - {len(notification_list)}")
+
+    def _convert_message_for_notice(
+        self, notice_push_message: NoticeTemplateEntity
+    ) -> List[dict]:
+        notification_list = list()
+
+        content = notice_push_message.content
+        title = notice_push_message.content
+        topic = NotificationTopicEnum.OFFICIAL.value
+
+        # Push 타겟을 찜한 유저를 조회
+        target_user_list: List[
+            PushTargetEntity
+        ] = self._notification_repo.get_users_of_notice_push_target()
+
+        for target_user in target_user_list:
+            if not target_user.is_active:
+                continue
+
+            message_dto = PushMessageDto(
+                title=title,
+                content=content,
+                created_at=str(get_server_timestamp().replace(microsecond=0)),
+                badge_type=NotificationBadgeTypeEnum.ALL.value,
+                data={"topic": topic,},
+            )
+
+            """
+                is_pending 
+                True  -> apt002, apt003 <매일아침 9시에 Lambda 발송>
+                      -> apt001, apt004 <메뉴얼 람다 실행으로 발송>      
+                False -> 아직 해당 사항 없음 (실시간 푸쉬 발송)
+            """
+            is_pending = True
+            message_dict = MessageConverter.to_dict(message_dto)
+            notification_dict = dict(
+                user_id=target_user.id,
+                token=target_user.device.device_token.token,
+                endpoint=target_user.device.endpoint,
+                topic=topic,
+                badge_type=NotificationBadgeTypeEnum.ALL.value,
+                message=message_dict,
+                is_read=False,
+                is_pending=is_pending,
+                status=NotificationStatusEnum.WAIT.value,
+            )
+
+            notification_list.append(notification_dict)
+
+        return notification_list

@@ -65,7 +65,5 @@ class UserModel(db.Model):
 
     def to_push_target_entity(self) -> PushTargetEntity:
         return PushTargetEntity(
-            id=self.id,
-            is_active=self.is_active,
-            device=self.device.to_entity(),
+            id=self.id, is_active=self.is_active, device=self.device.to_entity(),
         )

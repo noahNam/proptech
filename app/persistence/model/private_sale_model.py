@@ -5,7 +5,9 @@ from sqlalchemy import (
     ForeignKey,
     DateTime,
     Enum,
-    String, SmallInteger, Float,
+    String,
+    SmallInteger,
+    Float,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -48,8 +50,7 @@ class PrivateSaleModel(db.Model):
     )
 
     dong_infos = relationship(
-        "DongInfoModel",
-        backref=backref("private_sales", cascade="all, delete"),
+        "DongInfoModel", backref=backref("private_sales", cascade="all, delete"),
     )
 
     def to_entity(self) -> PrivateSaleEntity:
