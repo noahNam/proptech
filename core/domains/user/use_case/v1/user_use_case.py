@@ -658,6 +658,7 @@ class GetSurveysUseCase(UserBaseUseCase):
                     IsHouseOwnerCodeEnum.COND_NM.value,
                 )
             ),
+            CodeEnum.SELL_HOUSE_DATE.value: "subjective",
             # 세대주 여부
             CodeEnum.IS_HOUSE_HOLDER.value: dict(
                 zip(
@@ -674,9 +675,13 @@ class GetSurveysUseCase(UserBaseUseCase):
                 zip(IsMarriedCodeEnum.COND_CD.value, IsMarriedCodeEnum.COND_NM.value)
             ),
             CodeEnum.MARRIAGE_REG_DATE.value: "subjective",
+            # 자녀
             CodeEnum.IS_CHILD.value: dict(
                 zip(IsChildEnum.COND_CD.value, IsChildEnum.COND_NM.value)
             ),
+            CodeEnum.CHILD_AGE_SIX.value: "subjective",
+            CodeEnum.CHILD_AGE_NINETEEN.value: "subjective",
+            CodeEnum.CHILD_AGE_TWENTY.value: "subjective",
             # 청약통장
             CodeEnum.IS_SUB_ACCOUNT.value: dict(
                 zip(IsSubAccountEnum.COND_CD.value, IsSubAccountEnum.COND_NM.value)
@@ -800,7 +805,6 @@ class GetSurveysUseCase(UserBaseUseCase):
                 value=[result_income_by_segment, monthly_income_user_value],
             )
             result.append(base_schema)
-
         return result
 
 

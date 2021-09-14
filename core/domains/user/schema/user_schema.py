@@ -20,7 +20,7 @@ class GetUserMainBaseSchema(BaseModel):
 
 class GetSurveysBaseSchema(BaseModel):
     code: StrictInt
-    value: Union[StrictStr, List]
+    value: Union[Optional[StrictStr], List]
 
 
 class GetUserProviderBaseSchema(BaseModel):
