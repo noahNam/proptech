@@ -13,7 +13,7 @@ class UserProviderCallEnum(Enum):
 
 class UserTicketTypeDivisionEnum(Enum):
     """
-    ticket_types.division 테이블에서 사용
+    tickets.type 에서 사용
     """
 
     FREE = "free"
