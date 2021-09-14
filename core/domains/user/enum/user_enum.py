@@ -7,7 +7,7 @@ class UserSqsTypeEnum(Enum):
 
 
 class UserProviderCallEnum(Enum):
-    CAPTAIN_BASE_URL = os.environ.get("CAPTAIN_BASE_URL")
+    CAPTAIN_BASE_URL = os.environ.get("CAPTAIN_BASE_URL") or "https://www.apartalk.com"
     CALL_END_POINT = "/api/captain/v1/users/provider"
 
 

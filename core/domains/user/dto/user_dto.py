@@ -97,3 +97,8 @@ class RecentlyViewDto(BaseModel):
     user_id: int
     house_id: int
     type: int
+
+
+class GetUserProviderDto(BaseModel):
+    user_id: int
+    auth_header: str
