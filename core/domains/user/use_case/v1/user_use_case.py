@@ -356,6 +356,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                 CodeEnum.CHILD_AGE_SIX.value,
                 CodeEnum.CHILD_AGE_NINETEEN.value,
                 CodeEnum.CHILD_AGE_TWENTY.value,
+                CodeEnum.MOST_CHILD_YOUNG_AGE.value,
             ],
             "1016": [
                 CodeEnum.SUB_ACCOUNT_DATE.value,
@@ -682,6 +683,7 @@ class GetSurveysUseCase(UserBaseUseCase):
             CodeEnum.CHILD_AGE_SIX.value: "subjective",
             CodeEnum.CHILD_AGE_NINETEEN.value: "subjective",
             CodeEnum.CHILD_AGE_TWENTY.value: "subjective",
+            CodeEnum.MOST_CHILD_YOUNG_AGE.value: "subjective",
             # 청약통장
             CodeEnum.IS_SUB_ACCOUNT.value: dict(
                 zip(IsSubAccountEnum.COND_CD.value, IsSubAccountEnum.COND_NM.value)
