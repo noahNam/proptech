@@ -89,6 +89,12 @@ class UserEntity(BaseModel):
         return 0 if total_amount < 0 else total_amount
 
 
+class PushTargetEntity(BaseModel):
+    id: int
+    is_active: bool
+    device: DeviceEntity
+
+
 class RecentlyViewEntity(BaseModel):
     id: int
     user_id: int
