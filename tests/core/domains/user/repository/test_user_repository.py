@@ -291,19 +291,19 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
         "1008": IsMarriedCodeEnum,
         "1010": NumberDependentsEnum,
         "1011": IsChildEnum,
-        "1015": IsSubAccountEnum,
-        "1019": MonthlyIncomeEnum,
-        "1020": AssetsRealEstateEnum,
-        "1021": AssetsCarEnum,
-        "1022": AssetsTotalEnum,
-        "1025": SpecialCondEnum,
+        "1016": IsSubAccountEnum,
+        "1020": MonthlyIncomeEnum,
+        "1021": AssetsRealEstateEnum,
+        "1022": AssetsCarEnum,
+        "1023": AssetsTotalEnum,
+        "1026": SpecialCondEnum,
     }
 
     user_info = UserInfoResultEntity(code=user_info_code)
     bind_code = bind_detail_code_dict.get(user_info_code)
     # dto.code != "1019" 일 떄로 변경
-    dto_code = "1019"
-    if dto_code != "1019":
+    dto_code = "1020"
+    if dto_code != "1020":
 
         user_info_code_value_entity = UserInfoCodeValueEntity()
         user_info_code_value_entity.detail_code = bind_code.COND_CD.value
