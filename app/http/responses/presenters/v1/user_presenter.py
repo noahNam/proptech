@@ -15,6 +15,7 @@ from core.domains.user.schema.user_schema import (
     GetSurveysResponseSchema,
     GetUserProfileResponseSchema,
     UpdateUserProfileResponseSchema,
+    GetUserProviderResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -244,6 +245,29 @@ class UpdateUserProfilePresenter:
                 )
             result = {
                 "data": schema.dict(),
+                "meta": output.meta,
+            }
+            return success_response(result=result)
+        elif isinstance(output, UseCaseFailureOutput):
+            return failure_response(output=output, status_code=output.code)
+
+
+class GetUserProviderPresenter:
+    def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
+        if isinstance(output, UseCaseSuccessOutput):
+            try:
+                schema = GetUserProviderResponseSchema(result=output.value)
+            except ValidationError:
+                return failure_response(
+                    UseCaseFailureOutput(
+                        type="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            result = {
+                "data": schema.result.dict(),
                 "meta": output.meta,
             }
             return success_response(result=result)

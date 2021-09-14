@@ -4,6 +4,7 @@ from http import HTTPStatus
 from typing import Union, Optional, List
 
 import inject
+import requests
 
 from app.extensions.queue import SqsTypeEnum, SenderDto
 from app.extensions.queue.sender import QueueMessageSender
@@ -25,6 +26,7 @@ from core.domains.user.dto.user_dto import (
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
     UpdateUserProfileDto,
+    GetUserProviderDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
@@ -34,7 +36,11 @@ from core.domains.user.entity.user_entity import (
     UserInfoResultEntity,
     SidoCodeEntity,
 )
-from core.domains.user.enum.user_enum import UserSqsTypeEnum, UserSurveyStepEnum
+from core.domains.user.enum.user_enum import (
+    UserSqsTypeEnum,
+    UserSurveyStepEnum,
+    UserProviderCallEnum,
+)
 from core.domains.user.enum.user_info_enum import (
     IsHouseOwnerCodeEnum,
     IsHouseHolderCodeEnum,
@@ -54,7 +60,10 @@ from core.domains.user.enum.user_info_enum import (
     IsSupportParentCodeEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
-from core.domains.user.schema.user_schema import GetSurveysBaseSchema
+from core.domains.user.schema.user_schema import (
+    GetSurveysBaseSchema,
+    GetUserProviderBaseSchema,
+)
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
@@ -851,3 +860,40 @@ class UpdateUserProfileUseCase(UserBaseUseCase):
             dto=upsert_user_info_detail_dto
         )
         return UseCaseSuccessOutput()
+
+
+class GetUserProviderUseCase(UserBaseUseCase):
+    def execute(
+        self, dto: GetUserProviderDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        response = requests.get(
+            url=UserProviderCallEnum.CAPTAIN_BASE_URL.value
+            + UserProviderCallEnum.CALL_END_POINT.value,
+            headers={
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
+                "Authorization": dto.auth_header,
+            },
+        )
+        if response.status_code != HTTPStatus.OK:
+            return UseCaseFailureOutput(
+                type="provider",
+                message=FailureType.INTERNAL_ERROR,
+                code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+
+        data = response.json()
+        user: UserEntity = self._user_repo.get_user(user_id=dto.user_id)
+
+        return UseCaseSuccessOutput(
+            value=GetUserProviderBaseSchema(
+                provider=data["data"]["provider"], email=user.email if user else None
+            )
+        )
