@@ -706,6 +706,7 @@ class GetSurveysUseCase(UserBaseUseCase):
                 zip(AssetsTotalEnum.COND_CD.value, AssetsTotalEnum.COND_NM.value)
             ),
             # 노부모 부양
+            CodeEnum.SUPPORT_PARENT_DATE.value: "subjective",
             CodeEnum.IS_SUPPORT_PARENT.value: dict(
                 zip(
                     IsSupportParentCodeEnum.COND_CD.value,
