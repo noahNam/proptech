@@ -215,14 +215,14 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
             ] = self._notification_repo.get_notice_push_message()
             if not notice_push_message:
                 logger.info(f"🚀\t get_notice_push_message - nothing")
-                sys.exit(0)
+                sys.exit(f"🚀\t get_notice_push_message - nothing")
 
             logger.info(f"🚀\tget_notice_push_message - {notice_push_message.title}")
         except Exception as e:
             logger.error(f"🚀\tget_notice_push_message Error - {e}")
             self.send_slack_message(message=f"🚀\tget_notice_push_message Error - {e}")
             sentry_sdk.capture_exception(e)
-            sys.exit(0)
+            sys.exit(f"🚀\tget_notice_push_message Error - {e}")
 
         try:
             notification_list: List[dict] = self._convert_message_for_notice(
@@ -234,7 +234,7 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
                 message=f"🚀\t_convert_message_for_notice Error - {e}"
             )
             sentry_sdk.capture_exception(e)
-            sys.exit(0)
+            sys.exit(f"🚀\t_convert_message_for_notice Error - {e}")
 
         # notifications 테이블에 insert 하고, notice_template 상태를 업데이트 한다.
         try:
@@ -242,7 +242,7 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
                 logger.info(
                     f"🚀\tConvertNoticePushMessage Success - nothing notification_list"
                 )
-                sys.exit(0)
+                sys.exit(f"🚀\tConvertNoticePushMessage Success - nothing notification_list")
 
             self._notification_repo.create_notifications(
                 notification_list=notification_list
@@ -256,7 +256,7 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
                 message=f"🚀\tcreate_notice_notifications Error - {e}"
             )
             sentry_sdk.capture_exception(e)
-            sys.exit(0)
+            sys.exit(f"🚀\tcreate_notice_notifications Error - {e}")
 
         logger.info(f"🚀\tConvertNoticePushMessage Success - {len(notification_list)}")
 
