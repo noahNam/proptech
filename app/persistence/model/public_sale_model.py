@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -20,6 +22,7 @@ from core.domains.house.entity.house_entity import (
     PublicSalePushEntity,
     PublicSaleDetailCalendarEntity,
     PublicSaleReportEntity,
+    PublicSaleBoundingEntity,
 )
 from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,
@@ -89,6 +92,14 @@ class PublicSaleModel(db.Model):
         "PublicSaleDetailModel", backref=backref("public_sales", cascade="all, delete")
     )
 
+    public_sale_avg_prices = relationship(
+        "PublicSaleAvgPriceModel",
+        backref=backref("public_sale_avg_prices"),
+        uselist=True,
+        primaryjoin="foreign(PublicSaleModel.id)== PublicSaleAvgPriceModel.public_sales_id",
+        viewonly=True,
+    )
+
     def to_entity(self) -> PublicSaleEntity:
         return PublicSaleEntity(
             id=self.id,
@@ -134,6 +145,36 @@ class PublicSaleModel(db.Model):
             ]
             if self.public_sale_details
             else None,
+        )
+
+    def to_bounding_entity(self) -> PublicSaleBoundingEntity:
+        return PublicSaleBoundingEntity(
+            id=self.id,
+            name=self.name,
+            default_pyoung=self.default_pyoung,
+            housing_category=self.housing_category,
+            rent_type=self.rent_type,
+            trade_type=self.trade_type,
+            is_available=self.is_available,
+            subscription_start_date=self.subscription_start_date,
+            subscription_end_date=self.subscription_end_date,
+            public_sale_photos=self.public_sale_photos.to_entity()
+            if self.public_sale_photos
+            else None,
+            public_sale_avg_prices=[
+                public_sale_avg_price.to_entity()
+                for public_sale_avg_price in self.public_sale_avg_prices
+            ]
+            if self.public_sale_avg_prices
+            else None,
+        )
+
+    @property
+    def default_pyoung(self) -> Optional[int]:
+        return (
+            self.public_sale_avg_prices[0].default_pyoung
+            if self.public_sale_avg_prices
+            else None
         )
 
     def to_push_entity(self, message_type: str) -> PublicSalePushEntity:

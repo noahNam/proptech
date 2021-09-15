@@ -45,3 +45,5 @@ from .dong_info_model import DongInfoModel
 from .room_info_model import RoomInfoModel
 from .room_photo_model import RoomPhotoModel
 from .notice_template_model import NoticeTemplateModel
+from .private_sale_avg_price_model import PrivateSaleAvgPriceModel
+from .public_sale_avg_price_model import PublicSaleAvgPriceModel

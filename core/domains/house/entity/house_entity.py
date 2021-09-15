@@ -152,34 +152,6 @@ class AdministrativeDivisionEntity(BaseModel):
         use_enum_values = True
 
 
-class BoundingRealEstateEntity(BaseModel):
-    id: int
-    name: Optional[str]
-    road_address: Optional[str]
-    jibun_address: str
-    si_do: str
-    si_gun_gu: str
-    dong_myun: str
-    ri: Optional[str]
-    road_name: Optional[str]
-    road_number: Optional[str]
-    land_number: Optional[str]
-    is_available: bool
-    latitude: float
-    longitude: float
-    avg_trade_price: Optional[float]
-    avg_deposit_price: Optional[float]
-    avg_rent_price: Optional[float]
-    avg_supply_price: Optional[float]
-    avg_private_pyoung_number: Optional[float]
-    avg_public_pyoung_number: Optional[float]
-    private_sales: PrivateSaleEntity = None
-    public_sales: PublicSaleEntity = None
-
-    class Config:
-        use_enum_values = True
-
-
 class RealEstateWithPrivateSaleEntity(BaseModel):
     id: int
     name: Optional[str]
@@ -429,3 +401,60 @@ class PublicSaleReportEntity(BaseModel):
     public_sale_photo: Optional[PublicSalePhotoEntity]
     public_sale_details: List[PublicSaleDetailReportEntity] = None
     real_estates: RealEstateReportEntity
+
+
+class PrivateSaleAvgPriceEntity(BaseModel):
+    pyoung: int
+    trade_price: Optional[int]
+    deposit_price: Optional[int]
+
+
+class PublicSaleAvgPriceEntity(BaseModel):
+    pyoung: int
+    supply_price: Optional[int]
+
+
+class PrivateSaleBoundingEntity(BaseModel):
+    id: int
+    building_type: Enum
+    default_pyoung: Optional[int]
+    private_sale_avg_prices: Optional[List[PrivateSaleAvgPriceEntity]]
+
+    class Config:
+        use_enum_values = True
+
+
+class PublicSaleBoundingEntity(BaseModel):
+    id: int
+    name: str
+    default_pyoung: Optional[int]
+    housing_category: Enum
+    rent_type: Enum
+    trade_type: Enum
+    is_available: bool
+    subscription_start_date: Optional[str]
+    subscription_end_date: Optional[str]
+    public_sale_photos: Optional[PublicSalePhotoEntity]
+    public_sale_avg_prices: Optional[List[PublicSaleAvgPriceEntity]]
+
+    class Config:
+        use_enum_values = True
+
+
+class BoundingRealEstateEntity(BaseModel):
+    id: int
+    name: Optional[str]
+    road_address: Optional[str]
+    jibun_address: str
+    si_do: str
+    si_gun_gu: str
+    dong_myun: str
+    ri: Optional[str]
+    road_name: Optional[str]
+    road_number: Optional[str]
+    land_number: Optional[str]
+    is_available: bool
+    latitude: float
+    longitude: float
+    private_sales: Optional[PrivateSaleBoundingEntity]
+    public_sales: Optional[PublicSaleBoundingEntity]
