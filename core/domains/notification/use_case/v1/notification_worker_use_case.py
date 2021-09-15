@@ -222,10 +222,10 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
 
         try:
             if notice_push_message:
-                logger.info(f"🚀\tget_notice_push_message - {notice_push_message.title}")
                 notification_list: List[dict] = self._convert_message_for_notice(
                     notice_push_message=notice_push_message
                 )
+                logger.info(f"🚀\tget_notice_push_message - {notice_push_message.title}")
             else:
                 logger.info(f"🚀\t get_notice_push_message - nothing")
 
@@ -244,6 +244,7 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
                 )
 
                 self._notification_repo.update_notice_templates_active()
+                logger.info(f"🚀\tConvertNoticePushMessage Success - {len(notification_list)}")
             else:
                 logger.info(
                     f"🚀\tConvertNoticePushMessage Success - nothing notification_list"
@@ -256,8 +257,6 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
             )
             sentry_sdk.capture_exception(e)
 
-        logger.info(f"🚀\tget_notice_push_message - {notice_push_message.title}")
-        logger.info(f"🚀\tConvertNoticePushMessage Success - {len(notification_list)}")
 
     def _convert_message_for_notice(
         self, notice_push_message: NoticeTemplateEntity
