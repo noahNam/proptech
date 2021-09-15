@@ -257,6 +257,7 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
             )
             sentry_sdk.capture_exception(e)
 
+        exit(os.EX_OK)
 
     def _convert_message_for_notice(
         self, notice_push_message: NoticeTemplateEntity
