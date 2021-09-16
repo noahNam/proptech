@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -14,7 +16,10 @@ from sqlalchemy.orm import relationship, backref
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
-from core.domains.house.entity.house_entity import PrivateSaleEntity
+from core.domains.house.entity.house_entity import (
+    PrivateSaleEntity,
+    PrivateSaleBoundingEntity,
+)
 from core.domains.house.enum.house_enum import BuildTypeEnum
 
 
@@ -53,6 +58,14 @@ class PrivateSaleModel(db.Model):
         "DongInfoModel", backref=backref("private_sales", cascade="all, delete"),
     )
 
+    private_sale_avg_prices = relationship(
+        "PrivateSaleAvgPriceModel",
+        backref=backref("private_sale_avg_prices"),
+        uselist=True,
+        primaryjoin="foreign(PrivateSaleModel.id)== PrivateSaleAvgPriceModel.private_sales_id",
+        viewonly=True,
+    )
+
     def to_entity(self) -> PrivateSaleEntity:
         return PrivateSaleEntity(
             id=self.id,
@@ -66,4 +79,25 @@ class PrivateSaleModel(db.Model):
             else None,
             created_at=self.created_at,
             updated_at=self.updated_at,
+        )
+
+    def to_bounding_entity(self) -> PrivateSaleBoundingEntity:
+        return PrivateSaleBoundingEntity(
+            id=self.id,
+            building_type=self.building_type,
+            default_pyoung=self.default_pyoung,
+            private_sale_avg_prices=[
+                private_sale_avg_price.to_entity()
+                for private_sale_avg_price in self.private_sale_avg_prices
+            ]
+            if self.private_sale_avg_prices
+            else None,
+        )
+
+    @property
+    def default_pyoung(self) -> Optional[int]:
+        return (
+            self.private_sale_avg_prices[0].default_pyoung
+            if self.private_sale_avg_prices
+            else None
         )

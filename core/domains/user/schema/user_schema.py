@@ -20,7 +20,12 @@ class GetUserMainBaseSchema(BaseModel):
 
 class GetSurveysBaseSchema(BaseModel):
     code: StrictInt
-    value: Union[StrictStr, List]
+    value: Union[Optional[StrictStr], List]
+
+
+class GetUserProviderBaseSchema(BaseModel):
+    provider: StrictStr
+    email: Optional[StrictStr]
 
 
 class GetUserProfileBaseSchema(BaseModel):
@@ -65,3 +70,7 @@ class GetUserProfileResponseSchema(BaseModel):
 
 class UpdateUserProfileResponseSchema(BaseModel):
     result: StrictStr
+
+
+class GetUserProviderResponseSchema(BaseModel):
+    result: GetUserProviderBaseSchema

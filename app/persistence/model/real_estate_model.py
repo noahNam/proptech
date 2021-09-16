@@ -67,15 +67,7 @@ class RealEstateModel(db.Model):
         uselist=False,
     )
 
-    def to_bounding_entity(
-        self,
-        avg_trade: Optional[float],
-        avg_deposit: Optional[float],
-        avg_rent: Optional[float],
-        avg_supply: Optional[float],
-        avg_private_pyoung: Optional[float],
-        avg_public_pyoung: Optional[float],
-    ) -> BoundingRealEstateEntity:
+    def to_bounding_entity(self,) -> BoundingRealEstateEntity:
         return BoundingRealEstateEntity(
             id=self.id,
             name=self.name,
@@ -91,16 +83,12 @@ class RealEstateModel(db.Model):
             is_available=self.is_available,
             latitude=self.latitude,
             longitude=self.longitude,
-            avg_trade_price=avg_trade,
-            avg_deposit_price=avg_deposit,
-            avg_rent_price=avg_rent,
-            avg_supply_price=avg_supply,
-            avg_private_pyoung_number=avg_private_pyoung,
-            avg_public_pyoung_number=avg_public_pyoung,
-            private_sales=self.private_sales.to_entity()
+            private_sales=self.private_sales.to_bounding_entity()
             if self.private_sales
             else None,
-            public_sales=self.public_sales.to_entity() if self.public_sales else None,
+            public_sales=self.public_sales.to_bounding_entity()
+            if self.public_sales and not self.private_sales
+            else None,
         )
 
     def to_estate_with_private_sales_entity(

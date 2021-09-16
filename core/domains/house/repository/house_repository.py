@@ -94,32 +94,6 @@ class HouseRepository:
                 f"[HouseRepository][update_is_like_house] house_id : {dto.house_id} error : {e}"
             )
 
-    def _make_object_bounding_entity(
-        self, queryset: Optional[list]
-    ) -> Optional[List[BoundingRealEstateEntity]]:
-        if not queryset:
-            return None
-
-        # Make Entity
-        results = list()
-        for query in queryset:
-            results.append(
-                query[0].to_bounding_entity(
-                    avg_trade=query[1],
-                    avg_deposit=query[2],
-                    avg_rent=query[3],
-                    avg_supply=query[4],
-                    avg_private_pyoung=self._convert_supply_area_to_pyoung_number(
-                        query[5]
-                    ),
-                    avg_public_pyoung=self._convert_supply_area_to_pyoung_number(
-                        query[6]
-                    ),
-                )
-            )
-
-        return results
-
     def get_bounding_filter_with_two_points(
         self, dto: CoordinatesRangeDto
     ) -> _FunctionGenerator:
@@ -138,85 +112,25 @@ class HouseRepository:
     def get_bounding(self, bounding_filter: Any) -> Optional[list]:
         filters = list()
         filters.append(bounding_filter)
-        filters.append(
-            or_(
-                # and_(
-                #     RealEstateModel.is_available == "True",
-                #     PrivateSaleDetailModel.is_available == "True",
-                #     func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD")
-                #     >= get_month_from_today(),
-                #     func.to_date(PrivateSaleDetailModel.contract_date, "YYYYMMDD")
-                #     <= get_server_timestamp(),
-                # ),
-                # and_(
-                #     RealEstateModel.is_available == "True",
-                #     PublicSaleModel.is_available == "True",
-                # ),
-                and_(
-                    RealEstateModel.is_available == True,
-                    PrivateSaleDetailModel.is_available == True,
-                    PublicSaleModel.is_available == True,
-                    # PrivateSaleDetailModel.contract_date >= '20210730',
-                    PrivateSaleDetailModel.contract_date
-                    >= get_month_from_today().strftime("%Y%m%d"),
-                    PrivateSaleDetailModel.contract_date
-                    <= get_server_timestamp().strftime("%Y%m%d"),
-                ),
-            )
-        )
+        filters.append(RealEstateModel.is_available == "True",)
 
         query = (
-            session.query(
-                RealEstateModel,
-                func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
-                func.avg(PrivateSaleDetailModel.deposit_price)
-                .filter(
-                    PrivateSaleDetailModel.trade_type
-                    == RealTradeTypeEnum.LONG_TERM_RENT.value
-                )
-                .label("avg_deposit_price"),
-                func.avg(PrivateSaleDetailModel.rent_price).label("avg_rent_price"),
-                func.avg(PublicSaleDetailModel.supply_price).label("avg_supply_price"),
-                func.avg(PrivateSaleDetailModel.supply_area).label(
-                    "avg_private_supply_area"
-                ),
-                func.avg(PublicSaleDetailModel.supply_area).label(
-                    "avg_public_supply_area"
-                ),
-            )
-            .join(
-                PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
-            )
-            .options(contains_eager(RealEstateModel.private_sales))
-            .join(
-                PrivateSaleDetailModel,
-                PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id,
-            )
-            .options(contains_eager("private_sales.private_sale_details"))
-            .join(PublicSaleModel, RealEstateModel.id == PublicSaleModel.real_estate_id)
-            .options(contains_eager(RealEstateModel.public_sales))
-            .join(
-                PublicSaleDetailModel,
-                PublicSaleModel.id == PublicSaleDetailModel.public_sales_id,
-            )
-            .options(contains_eager("public_sales.public_sale_details"))
-            .join(PublicSaleModel.public_sale_photos, isouter=True)
-            .options(contains_eager("public_sales.public_sale_photos"))
+            session.query(RealEstateModel,)
+            .options(joinedload(RealEstateModel.private_sales))
+            .options(joinedload("private_sales.private_sale_avg_prices"))
+            .options(joinedload(RealEstateModel.public_sales))
+            .options(joinedload("public_sales.public_sale_avg_prices"))
+            .options(joinedload("public_sales.public_sale_photos"))
             .filter(*filters)
-            .group_by(
-                RealEstateModel.id,
-                PrivateSaleModel.id,
-                PrivateSaleDetailModel.id,
-                PublicSaleModel.id,
-                PublicSaleDetailModel.id,
-                PublicSalePhotoModel.id,
-            )
         )
 
         # RawQueryHelper.print_raw_query(query)
         queryset = query.all()
 
-        return self._make_object_bounding_entity(queryset=queryset)
+        if not queryset:
+            return None
+
+        return [query.to_bounding_entity() for query in queryset]
 
     def _make_bounding_administrative_entity(
         self, queryset: Optional[list]
