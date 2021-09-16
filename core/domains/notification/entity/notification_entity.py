@@ -28,9 +28,18 @@ class NotificationHistoryEntity(BaseModel):
 
 
 class ReceivePushTypeEntity(BaseModel):
-    id: str
+    id: int
     user_id: int
     is_official: bool
     is_private: bool
     is_marketing: bool
+    updated_at: datetime
+
+
+class NoticeTemplateEntity(BaseModel):
+    id: int
+    title: str
+    content: str
+    is_active: bool
+    created_at: datetime
     updated_at: datetime
