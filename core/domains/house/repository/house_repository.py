@@ -123,6 +123,8 @@ class HouseRepository:
             .options(joinedload("public_sales.public_sale_photos"))
             .filter(*filters)
         )
+
+        # RawQueryHelper.print_raw_query(query)
         queryset = query.all()
 
         if not queryset:
