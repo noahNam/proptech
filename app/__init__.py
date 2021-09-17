@@ -29,7 +29,7 @@ from core.domains.report import event
 
 
 def init_config(
-        app: Flask, config_name: str, settings: Optional[Dict[str, Any]] = None
+    app: Flask, config_name: str, settings: Optional[Dict[str, Any]] = None
 ) -> None:
     app_config = config[config_name]
     app.config.from_object(app_config)
@@ -49,7 +49,9 @@ def init_extensions(app: Flask):
     jwt.init_app(app)
     sms.init_app(app)
     redis.init_app(app)
-    cors.init_app(app, resources={r'*': {'origins': IronManServiceEnum.IRONMAN_SERVICE_URL.value}})
+    cors.init_app(
+        app, resources={r"*": {"origins": IronManServiceEnum.IRONMAN_SERVICE_URL.value}}
+    )
 
 
 def init_sentry(app: Flask):
@@ -65,13 +67,13 @@ def init_sentry(app: Flask):
 
 
 def create_app(
-        config_name: str = "default", settings: Optional[Dict[str, Any]] = None
+    config_name: str = "default", settings: Optional[Dict[str, Any]] = None
 ) -> Flask:
     app = Flask(__name__)
 
     if (
-            os.environ.get("FLASK_CONFIG") is not None
-            and os.environ.get("FLASK_CONFIG") is not config_name
+        os.environ.get("FLASK_CONFIG") is not None
+        and os.environ.get("FLASK_CONFIG") is not config_name
     ):
         config_name = os.environ.get("FLASK_CONFIG")
 
