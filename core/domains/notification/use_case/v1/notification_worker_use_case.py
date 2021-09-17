@@ -244,7 +244,9 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
                 )
 
                 self._notification_repo.update_notice_templates_active()
-                logger.info(f"🚀\tConvertNoticePushMessage Success - {len(notification_list)}")
+                logger.info(
+                    f"🚀\tConvertNoticePushMessage Success - {len(notification_list)}"
+                )
             else:
                 logger.info(
                     f"🚀\tConvertNoticePushMessage Success - nothing notification_list"
