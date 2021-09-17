@@ -285,26 +285,17 @@ class GetRecentViewListEntity(BaseModel):
     image_path: Optional[str]
 
 
-class SearchRealEstateEntity(BaseModel):
-    id: int
-    jibun_address: str
-    road_address: str
-
-
-class SearchPublicSaleEntity(BaseModel):
-    id: int
-    name: str
-
-
-class SearchAdministrativeDivisionEntity(BaseModel):
-    id: int
-    name: str
-
-
 class GetSearchHouseListEntity(BaseModel):
-    real_estates: List[SearchRealEstateEntity] = None
-    public_sales: List[SearchPublicSaleEntity] = None
-    administrative_divisions: List[SearchAdministrativeDivisionEntity] = None
+    house_id: int
+    name: str
+    jibun_address: str
+    is_like: bool
+    image_path: Optional[str]
+    subscription_start_date: Optional[str]
+    subscription_end_date: Optional[str]
+    is_receiving: bool
+    avg_down_payment: Optional[float] = 0
+    avg_supply_price: Optional[float] = 0
 
 
 class GetPublicSaleOfTicketUsageEntity(BaseModel):

@@ -287,16 +287,20 @@ class GetCalendarInfoRequestSchema:
 
 
 class GetSearchHouseListSchema(BaseModel):
-    keywords: StrictStr = None
+    keywords: StrictStr
+    user_id: StrictInt
 
 
 class GetSearchHouseListRequestSchema:
-    def __init__(self, keywords):
+    def __init__(self, keywords, user_id):
         self.keywords = keywords
+        self.user_id = int(user_id) if user_id else None
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetSearchHouseListSchema(keywords=self.keywords).dict()
+            schema = GetSearchHouseListSchema(
+                keywords=self.keywords, user_id=self.user_id
+            ).dict()
             return GetSearchHouseListDto(**schema)
         except ValidationError as e:
             logger.error(
