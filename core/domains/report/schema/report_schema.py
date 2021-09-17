@@ -4,7 +4,7 @@ from pydantic import BaseModel, StrictStr, StrictInt, StrictFloat, StrictBool
 
 from core.domains.house.entity.house_entity import (
     SpecialSupplyResultReportEntity,
-    GeneralSupplyResulReportEntity,
+    GeneralSupplyResultReportEntity,
 )
 from core.domains.report.entity.report_entity import (
     PredictedCompetitionEntity,
@@ -98,7 +98,7 @@ class RecentlySaleDetailReportSchema(BaseModel):
     general_household: StrictInt
     price_per_meter: StrictInt
     special_supply_results: List[SpecialSupplyResultReportEntity] = None
-    general_supply_results: List[GeneralSupplyResulReportEntity] = None
+    general_supply_results: List[GeneralSupplyResultReportEntity] = None
 
 
 class RecentlySaleReportSchema(BaseModel):

@@ -353,7 +353,7 @@ class SpecialSupplyResultReportEntity(BaseModel):
     total_vol: Optional[int] = 0
 
 
-class GeneralSupplyResulReportEntity(BaseModel):
+class GeneralSupplyResultReportEntity(BaseModel):
     region: Optional[str]
     region_percent: Optional[int]
     applicant_num: Optional[int] = 0
@@ -379,7 +379,7 @@ class PublicSaleDetailReportEntity(BaseModel):
     price_per_meter: Optional[int] = 0
     public_sale_detail_photos: Optional[PublicSaleDetailPhotoEntity]
     special_supply_results: List[SpecialSupplyResultReportEntity] = None
-    general_supply_results: List[GeneralSupplyResulReportEntity] = None
+    general_supply_results: List[GeneralSupplyResultReportEntity] = None
 
 
 class PublicSaleReportEntity(BaseModel):

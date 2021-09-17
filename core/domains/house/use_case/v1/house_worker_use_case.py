@@ -52,6 +52,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         logger.info(f"🚀\tPreCalculateAverage Start - {self.client_id}")
 
 
+
 class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
     """
         Administrative_divisions 평균 계산

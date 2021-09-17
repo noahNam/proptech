@@ -838,3 +838,10 @@ class HouseRepository:
 
         query_set = query.first()
         return query_set.to_report_entity()
+
+    def get_real_estates_with_private_sales_info_filters(self):
+        pass
+
+    def get_real_estates_with_private_sales_info(self, real_estate_id: int, filters: list):
+        filters = list()
+        pass
