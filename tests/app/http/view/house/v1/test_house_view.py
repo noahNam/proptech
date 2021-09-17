@@ -11,9 +11,6 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
     HousePublicDetailEntity,
-    SearchPublicSaleEntity,
-    SearchRealEstateEntity,
-    SearchAdministrativeDivisionEntity,
     GetSearchHouseListEntity,
     SimpleCalendarInfoEntity,
     PublicSaleSimpleCalendarEntity,
@@ -549,6 +546,7 @@ def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
     make_authorization,
     create_users,
     create_real_estate_with_public_sale,
+    public_sale_photo_factory,
 ):
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
@@ -557,21 +555,24 @@ def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
         accept="application/json",
     )
 
-    real_estates = [
-        SearchRealEstateEntity(
-            id=1, jibun_address="서울시 서초구 어딘가", road_address="서울시 서초구 어딘가길"
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    session.add(public_sale_photo)
+    session.commit()
+
+    mock_result = [
+        GetSearchHouseListEntity(
+            house_id=1,
+            jibun_address="서울시 서초구 어딘가",
+            name="반포자이",
+            is_like=False,
+            image_path=public_sale_photo.path,
+            subscription_start_date="20210901",
+            subscription_end_date="202109018",
+            is_receiving=True,
+            avg_down_payment=100000.75,
+            avg_supply_price=200000.23,
         )
     ]
-    public_sales = [SearchPublicSaleEntity(id=2, name="서울숲아파트")]
-    administrative_divisions = [
-        SearchAdministrativeDivisionEntity(id=3, name="서울특별시 서초구")
-    ]
-
-    mock_result = GetSearchHouseListEntity(
-        real_estates=real_estates,
-        public_sales=public_sales,
-        administrative_divisions=administrative_divisions,
-    )
 
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.get_search_house_list"
@@ -587,15 +588,7 @@ def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
 
     assert response.status_code == 200
     assert mock_search.called is True
-    assert (
-        data["houses"]["administrative_divisions"][0]["name"]
-        == administrative_divisions[0].name
-    )
-    assert (
-        data["houses"]["real_estates"][0]["jibun_address"]
-        == real_estates[0].jibun_address
-    )
-    assert data["houses"]["public_sales"][0]["name"] == public_sales[0].name
+    assert data["houses"][0]["name"] == mock_result[0].name
 
 
 def test_get_bounding_within_radius_view_when_no_search_type_then_fail(

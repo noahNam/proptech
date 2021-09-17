@@ -180,7 +180,7 @@ def get_recent_view_list_view():
 @swag_from("get_search_house_list_view.yml", methods=["GET"])
 def get_search_house_list_view():
     dto = GetSearchHouseListRequestSchema(
-        keywords=request.args.get("keywords"),
+        keywords=request.args.get("keywords"), user_id=current_user.id,
     ).validate_request_and_make_dto()
 
     return GetSearchHouseListPresenter().transform(

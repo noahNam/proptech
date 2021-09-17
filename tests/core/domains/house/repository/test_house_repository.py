@@ -8,12 +8,7 @@ from core.domains.house.dto.house_dto import (
     GetCalendarInfoDto,
     GetSearchHouseListDto,
 )
-from core.domains.house.entity.house_entity import (
-    SearchRealEstateEntity,
-    SearchPublicSaleEntity,
-    SearchAdministrativeDivisionEntity,
-    GetSearchHouseListEntity,
-)
+from core.domains.house.entity.house_entity import GetSearchHouseListEntity
 from core.domains.house.enum.house_enum import HouseTypeEnum
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import GetUserDto
@@ -187,24 +182,30 @@ def test_get_recent_view_list_then_entity_result(
 
 
 def test_get_search_house_list_when_get_keywords(
-    session, create_real_estate_with_public_sale
+    session,
+    create_users,
+    create_real_estate_with_public_sale,
+    public_sale_photo_factory,
 ):
-    dto = GetSearchHouseListDto(keywords="서울")
-    real_estates = [
-        SearchRealEstateEntity(
-            id=1, jibun_address="서울시 서초구 어딘가", road_address="서울시 서초구 어딘가길"
+    dto = GetSearchHouseListDto(keywords="서울", user_id=create_users[0].id)
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    session.add(public_sale_photo)
+    session.commit()
+
+    mock_result = [
+        GetSearchHouseListEntity(
+            house_id=1,
+            jibun_address="서울시 서초구 어딘가",
+            name="반포자이",
+            is_like=False,
+            image_path=public_sale_photo.path,
+            subscription_start_date="20210901",
+            subscription_end_date="202109018",
+            is_receiving=True,
+            avg_down_payment=100000.75,
+            avg_supply_price=200000.23,
         )
     ]
-    public_sales = [SearchPublicSaleEntity(id=2, name="서울숲아파트")]
-    administrative_divisions = [
-        SearchAdministrativeDivisionEntity(id=3, name="서울특별시 서초구")
-    ]
-
-    mock_result = GetSearchHouseListEntity(
-        real_estates=real_estates,
-        public_sales=public_sales,
-        administrative_divisions=administrative_divisions,
-    )
 
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.get_search_house_list"
@@ -212,4 +213,4 @@ def test_get_search_house_list_when_get_keywords(
         mock_search.return_value = mock_result
         result = HouseRepository().get_search_house_list(dto=dto)
 
-    assert isinstance(result, GetSearchHouseListEntity)
+    assert isinstance(result[0], GetSearchHouseListEntity)

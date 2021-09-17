@@ -48,9 +48,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         3. public_sale_details -> 취득세 계산
         - 매물 상세 페이지 -> 최대 최소 취득세의 경우 SQL max, min func() 쿼리 사용
     """
+
     def execute(self):
         logger.info(f"🚀\tPreCalculateAverage Start - {self.client_id}")
-
 
 
 class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
@@ -63,5 +63,6 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
         - public_sales -> 분양가 평균(public_sale_price)을 구한다.
         - 예시) 서울특별시 -> 서울특별시에 해당되는 모든 매물
     """
+
     def execute(self):
         logger.info(f"🚀\tPreCalculateAdministrative Start - {self.client_id}")
