@@ -285,26 +285,17 @@ class GetRecentViewListEntity(BaseModel):
     image_path: Optional[str]
 
 
-class SearchRealEstateEntity(BaseModel):
-    id: int
-    jibun_address: str
-    road_address: str
-
-
-class SearchPublicSaleEntity(BaseModel):
-    id: int
-    name: str
-
-
-class SearchAdministrativeDivisionEntity(BaseModel):
-    id: int
-    name: str
-
-
 class GetSearchHouseListEntity(BaseModel):
-    real_estates: List[SearchRealEstateEntity] = None
-    public_sales: List[SearchPublicSaleEntity] = None
-    administrative_divisions: List[SearchAdministrativeDivisionEntity] = None
+    house_id: int
+    name: str
+    jibun_address: str
+    is_like: bool
+    image_path: Optional[str]
+    subscription_start_date: Optional[str]
+    subscription_end_date: Optional[str]
+    is_receiving: bool
+    avg_down_payment: Optional[float] = 0
+    avg_supply_price: Optional[float] = 0
 
 
 class GetPublicSaleOfTicketUsageEntity(BaseModel):
@@ -353,7 +344,7 @@ class SpecialSupplyResultReportEntity(BaseModel):
     total_vol: Optional[int] = 0
 
 
-class GeneralSupplyResulReportEntity(BaseModel):
+class GeneralSupplyResultReportEntity(BaseModel):
     region: Optional[str]
     region_percent: Optional[int]
     applicant_num: Optional[int] = 0
@@ -379,7 +370,7 @@ class PublicSaleDetailReportEntity(BaseModel):
     price_per_meter: Optional[int] = 0
     public_sale_detail_photos: Optional[PublicSaleDetailPhotoEntity]
     special_supply_results: List[SpecialSupplyResultReportEntity] = None
-    general_supply_results: List[GeneralSupplyResulReportEntity] = None
+    general_supply_results: List[GeneralSupplyResultReportEntity] = None
 
 
 class PublicSaleReportEntity(BaseModel):

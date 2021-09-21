@@ -34,6 +34,7 @@ class GetCalendarInfoDto(BaseModel):
 
 class GetSearchHouseListDto(BaseModel):
     keywords: str
+    user_id: int
 
 
 class BoundingWithinRadiusDto(BaseModel):

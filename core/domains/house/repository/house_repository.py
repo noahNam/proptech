@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional, List, Any
 
 from geoalchemy2 import Geometry, func as geo_func
@@ -20,6 +21,7 @@ from app.persistence.model import (
     PrivateSaleDetailModel,
     RecentlyViewModel,
     PublicSalePhotoModel,
+    PublicSaleAvgPriceModel,
 )
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
@@ -36,9 +38,6 @@ from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
     GetRecentViewListEntity,
     GetSearchHouseListEntity,
-    SearchRealEstateEntity,
-    SearchPublicSaleEntity,
-    SearchAdministrativeDivisionEntity,
     GetPublicSaleOfTicketUsageEntity,
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
@@ -640,93 +639,89 @@ class HouseRepository:
         return result
 
     def _make_get_search_house_list_entity(
-        self,
-        real_estates: Optional[List],
-        public_sales: Optional[List],
-        administrative_divisions: Optional[List],
-    ) -> GetSearchHouseListEntity:
-        search_real_estate_entities = list()
-        search_public_sale_entities = list()
-        search_administrative_divisions_entities = list()
+        self, queryset: Optional[List], user_id: int
+    ) -> List[GetSearchHouseListEntity]:
+        search_entities = list()
 
-        if real_estates:
-            for real_estate in real_estates:
-                search_real_estate_entities.append(
-                    SearchRealEstateEntity(
-                        id=real_estate.id,
-                        jibun_address=real_estate.jibun_address,
-                        road_address=real_estate.road_address,
+        if queryset:
+            for query in queryset:
+                is_like = self.is_user_liked_house(
+                    self.get_public_interest_house(
+                        dto=GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
+                    )
+                )
+                is_receiving = self._is_subscription_receiving(
+                    start_date=query.subscription_start_date,
+                    end_date=query.subscription_end_date,
+                )
+                avg_down_payment = self._get_avg_down_payment(
+                    min_down_payment=query.min_down_payment,
+                    max_down_payment=query.max_down_payment,
+                )
+                # avg_supply_price =
+                search_entities.append(
+                    GetSearchHouseListEntity(
+                        house_id=query.id,
+                        name=query.name,
+                        jibun_address=query.jibun_address,
+                        is_like=is_like,
+                        image_path=query.path,
+                        subscription_start_date=query.subscription_start_date,
+                        subscription_end_date=query.subscription_end_date,
+                        is_receiving=is_receiving,
+                        avg_down_payment=avg_down_payment,
+                        avg_supply_price=query.avg_supply_price
+                        if query.avg_supply_price
+                        else 0,
                     )
                 )
 
-        if public_sales:
-            for public_sale in public_sales:
-                search_public_sale_entities.append(
-                    SearchPublicSaleEntity(id=public_sale.id, name=public_sale.name)
-                )
-
-        if administrative_divisions:
-            for division in administrative_divisions:
-                search_administrative_divisions_entities.append(
-                    SearchAdministrativeDivisionEntity(
-                        id=division.id, name=division.name
-                    )
-                )
-
-        return GetSearchHouseListEntity(
-            real_estates=search_real_estate_entities,
-            public_sales=search_public_sale_entities,
-            administrative_divisions=search_administrative_divisions_entities,
-        )
+        return search_entities
 
     def get_search_house_list(
         self, dto: GetSearchHouseListDto
-    ) -> GetSearchHouseListEntity:
+    ) -> List[GetSearchHouseListEntity]:
         """
             todo: 검색 성능 고도화 필요
             - full_scan 방식
             - %LIKE% : 서로 다른 두 단어부터 검색 불가
             - Full Text Search 필요(ts_vector, pg_trgm, elastic_search...)
         """
-        real_estates_query = session.query(
-            RealEstateModel.id,
-            RealEstateModel.jibun_address,
-            RealEstateModel.road_address,
-        ).filter(
-            (
-                (
-                    (RealEstateModel.is_available == "True")
-                    & (RealEstateModel.jibun_address.contains(dto.keywords))
-                )
-                | (
-                    (RealEstateModel.is_available == "True")
-                    & (RealEstateModel.road_address.contains(dto.keywords))
-                )
-            )
-        )
-
-        real_estates_queryset = real_estates_query.all()
-
-        public_sales_query = session.query(
-            PublicSaleModel.id, PublicSaleModel.name
-        ).filter(
+        filters = list()
+        filters.append(
             and_(
+                RealEstateModel.is_available == "True",
+                RealEstateModel.jibun_address.contains(dto.keywords),
                 PublicSaleModel.is_available == "True",
-                PublicSaleModel.name.contains(dto.keywords),
             )
         )
 
-        public_sales_queryset = public_sales_query.all()
+        query = (
+            session.query(PublicSaleModel)
+            .with_entities(
+                PublicSaleModel.id,
+                PublicSaleModel.name,
+                RealEstateModel.jibun_address,
+                PublicSaleModel.subscription_start_date,
+                PublicSaleModel.subscription_end_date,
+                PublicSaleModel.min_down_payment,
+                PublicSaleModel.max_down_payment,
+                PublicSalePhotoModel.path,
+                func.avg(PublicSaleAvgPriceModel.supply_price).label(
+                    "avg_supply_price"
+                ),
+            )
+            .join(PublicSaleModel.real_estates)
+            .join(PublicSaleModel.public_sale_photos, isouter=True)
+            .join(PublicSaleModel.public_sale_avg_prices)
+            .filter(*filters)
+            .group_by(PublicSaleModel.id, RealEstateModel.id, PublicSalePhotoModel.id)
+        )
 
-        administrative_divisions_query = session.query(
-            AdministrativeDivisionModel.id, AdministrativeDivisionModel.name
-        ).filter(AdministrativeDivisionModel.name.contains(dto.keywords))
-        administrative_divisions_queryset = administrative_divisions_query.all()
+        queryset = query.all()
 
         return self._make_get_search_house_list_entity(
-            real_estates=real_estates_queryset,
-            public_sales=public_sales_queryset,
-            administrative_divisions=administrative_divisions_queryset,
+            queryset=queryset, user_id=dto.user_id,
         )
 
     def get_geometry_coordinates_from_real_estate(
@@ -838,3 +833,34 @@ class HouseRepository:
 
         query_set = query.first()
         return query_set.to_report_entity()
+
+    def _is_subscription_receiving(
+        self, start_date: Optional[str], end_date: Optional[str]
+    ) -> bool:
+        if not start_date or end_date:
+            return False
+        today = get_server_timestamp()
+        start_date_to_datetime = datetime.datetime.strptime(start_date, "%Y%m%d")
+        end_date_to_datetime = datetime.datetime.strptime(end_date, "%Y%m%d")
+        if start_date_to_datetime <= today <= end_date_to_datetime:
+            return True
+        return False
+
+    def _get_avg_down_payment(
+        self, min_down_payment: Optional[int], max_down_payment: Optional[int]
+    ) -> float:
+        if not min_down_payment or max_down_payment:
+            return 0
+        return (min_down_payment + max_down_payment) / 2
+
+    def _get_public_sales_avg_supply_price(self):
+        pass
+
+    def get_real_estates_with_private_sales_info_filters(self):
+        pass
+
+    def get_real_estates_with_private_sales_info(
+        self, real_estate_id: int, filters: list
+    ):
+        filters = list()
+        pass

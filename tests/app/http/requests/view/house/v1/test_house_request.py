@@ -67,19 +67,21 @@ def test_get_calendar_info_request_when_valid_value_then_success():
 
 
 def test_get_search_house_list_request_when_valid_keywords_then_success():
+    user_id = "1"
     keywords = "서울특별시 서초구"
     result = GetSearchHouseListRequestSchema(
-        keywords=keywords
+        keywords=keywords, user_id=user_id
     ).validate_request_and_make_dto()
 
     assert result.keywords == keywords
 
 
 def test_get_search_house_list_request_when_no_keywords_then_fail():
+    user_id = "1"
     keywords = None
     with pytest.raises(InvalidRequestException):
         GetSearchHouseListRequestSchema(
-            keywords=keywords
+            keywords=keywords, user_id=user_id
         ).validate_request_and_make_dto()
 
 
