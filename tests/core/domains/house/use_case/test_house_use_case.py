@@ -12,9 +12,6 @@ from core.domains.house.dto.house_dto import (
     GetHouseMainDto,
 )
 from core.domains.house.entity.house_entity import (
-    SearchRealEstateEntity,
-    SearchPublicSaleEntity,
-    SearchAdministrativeDivisionEntity,
     GetSearchHouseListEntity,
     GetMainPreSubscriptionEntity,
     GetHouseMainEntity,
@@ -378,8 +375,10 @@ def test_get_recent_view_list_use_case_when_watch_recently_view_then_result_one(
     assert result.value[0].image_path == public_sale_photo.path
 
 
-def test_get_search_house_list_use_case_when_no_keywords_then_return_none(session):
-    dto = GetSearchHouseListDto(keywords="")
+def test_get_search_house_list_use_case_when_no_keywords_then_return_none(
+    session, create_users
+):
+    dto = GetSearchHouseListDto(keywords="", user_id=create_users[0].id)
     result = GetSearchHouseListUseCase().execute(dto=dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
@@ -387,9 +386,9 @@ def test_get_search_house_list_use_case_when_no_keywords_then_return_none(sessio
 
 
 def test_get_search_house_list_use_case_when_less_then_1_keywords_then_return_none(
-    session,
+    session, create_users
 ):
-    dto = GetSearchHouseListDto(keywords="글")
+    dto = GetSearchHouseListDto(keywords="글", user_id=create_users[0].id)
     result = GetSearchHouseListUseCase().execute(dto=dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
@@ -397,26 +396,30 @@ def test_get_search_house_list_use_case_when_less_then_1_keywords_then_return_no
 
 
 def test_get_search_house_list_use_case_when_right_keywords_then_return_search_result(
-    session, create_real_estate_with_public_sale
+    session,
+    create_users,
+    create_real_estate_with_public_sale,
+    public_sale_photo_factory,
 ):
     """
         search_result : mocking
     """
-    dto = GetSearchHouseListDto(keywords="서울")
+    dto = GetSearchHouseListDto(keywords="서울", user_id=create_users[0].id)
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    session.add(public_sale_photo)
+    session.commit()
 
-    real_estates = [
-        SearchRealEstateEntity(
-            id=1, jibun_address="서울시 서초구 어딘가", road_address="서울시 서초구 어딘가길"
-        )
-    ]
-    public_sales = [SearchPublicSaleEntity(id=2, name="서울숲아파트")]
-    administrative_divisions = [
-        SearchAdministrativeDivisionEntity(id=3, name="서울특별시 서초구")
-    ]
     mock_result = GetSearchHouseListEntity(
-        real_estates=real_estates,
-        public_sales=public_sales,
-        administrative_divisions=administrative_divisions,
+        house_id=1,
+        jibun_address="서울시 서초구 어딘가",
+        name="반포자이",
+        is_like=False,
+        image_path=public_sale_photo.path,
+        subscription_start_date="20210901",
+        subscription_end_date="202109018",
+        is_receiving=True,
+        avg_down_payment=100000.75,
+        avg_supply_price=200000.23,
     )
 
     with patch(
@@ -427,9 +430,6 @@ def test_get_search_house_list_use_case_when_right_keywords_then_return_search_r
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert mock_search.called is True
-    assert dto.keywords in result.value.real_estates[0].jibun_address
-    assert dto.keywords in result.value.public_sales[0].name
-    assert dto.keywords in result.value.administrative_divisions[0].name
 
 
 def test_bounding_within_radius_use_case_when_wrong_search_type_then_fail(session):

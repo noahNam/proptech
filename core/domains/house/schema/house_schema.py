@@ -60,7 +60,7 @@ class GetRecentViewListResponseSchema(BaseModel):
 
 
 class GetSearchHouseListResponseSchema(BaseModel):
-    houses: Optional[GetSearchHouseListEntity]
+    houses: Optional[List[GetSearchHouseListEntity]]
 
 
 class GetHouseMainResponseSchema(BaseModel):
