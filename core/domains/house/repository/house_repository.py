@@ -2,7 +2,7 @@ import datetime
 from typing import Optional, List, Any
 
 from geoalchemy2 import Geometry, func as geo_func
-from sqlalchemy import and_, func, or_, literal, String
+from sqlalchemy import and_, func, or_, literal, String, exists, union
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload, selectinload, contains_eager
 from sqlalchemy.sql.functions import _FunctionGenerator
@@ -10,7 +10,7 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.query_helper import RawQueryHelper
-from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
+from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp, get_month_from_date
 from app.persistence.model import (
     RealEstateModel,
     PrivateSaleModel,
@@ -21,7 +21,7 @@ from app.persistence.model import (
     PrivateSaleDetailModel,
     RecentlyViewModel,
     PublicSalePhotoModel,
-    PublicSaleAvgPriceModel,
+    PublicSaleAvgPriceModel, PrivateSaleAvgPriceModel,
 )
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
@@ -41,7 +41,7 @@ from core.domains.house.entity.house_entity import (
     GetPublicSaleOfTicketUsageEntity,
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
-    PublicSaleReportEntity,
+    PublicSaleReportEntity, PrivateSaleDetailEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -853,14 +853,100 @@ class HouseRepository:
             return 0
         return (min_down_payment + max_down_payment) / 2
 
-    def _get_public_sales_avg_supply_price(self):
-        pass
-
-    def get_real_estates_with_private_sales_info_filters(self):
-        pass
-
-    def get_real_estates_with_private_sales_info(
-        self, real_estate_id: int, filters: list
-    ):
+    def get_recently_contracted_private_sale_details(self, private_sales_id: int) -> PrivateSaleDetailEntity:
         filters = list()
+        filters.append(
+            and_(
+                PrivateSaleDetailModel.private_sales_id == private_sales_id,
+                PrivateSaleDetailModel.contract_date < get_server_timestamp().strftime("%y%m%d")
+            )
+        )
+        query = (
+            session.query(PrivateSaleDetailModel)
+                .filter(*filters)
+                .order_by(PrivateSaleDetailModel.contract_date.desc())
+                .limit(1)
+        )
+        result = query.first()
+
+        return result.to_entity()
+
+
+    def get_pre_calc_avg_date_filters(self, date_from: str) -> list:
+        """
+            date_from example: 20210915
+            date_filters : date_from 로부터 1달 전 범위
+        """
+        date_filters = list()
+
+        date_filters.append(
+            and_(
+                PrivateSaleDetailModel.contract_date >= get_month_from_date(date_from).strftime("%Y%m%d"),
+                PrivateSaleDetailModel.contract_date <= date_from
+            )
+        )
+
+        return date_filters
+
+    def get_pre_calc_avg_trade_price_target_of_private_sales(
+            self, private_sales_id: int, date_filters: list
+    ) -> list:
+        filters = list()
+        filters.append(
+            and_(
+                PrivateSaleDetailModel.private_sales_id == private_sales_id,
+                PrivateSaleDetailModel.trade_type == "매매"
+            )
+        )
+        query = (
+            session.query(PrivateSaleDetailModel)
+            .with_entities(
+                PrivateSaleDetailModel.supply_area,
+                func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price")
+            )
+            .filter(*date_filters, *filters)
+            .group_by(PrivateSaleDetailModel.private_area)
+        )
+        # row : (supply_area, avg_deposit_price)
+        return query.all()
+
+    def get_pre_calc_avg_deposit_price_target_of_private_sales(
+            self, private_sales_id: int, date_filters: list
+    ) -> list:
+        filters = list()
+        filters.append(
+            and_(
+                PrivateSaleDetailModel.private_sales_id == private_sales_id,
+                PrivateSaleDetailModel.trade_type == "전세"
+            )
+        )
+        query = (
+            session.query(PrivateSaleDetailModel)
+                .with_entities(
+                PrivateSaleDetailModel.supply_area,
+                func.avg(PrivateSaleDetailModel.deposit_price).label("avg_deposit_price")
+            )
+                .filter(*date_filters, *filters)
+                .group_by(PrivateSaleDetailModel.private_area)
+        )
+        # row : (supply_area, avg_deposit_price)
+        return query.all()
+
+    def create_private_sale_avg_trade_price(self, private_sales_id: int, pyoung_number: int):
         pass
+
+    def update_private_sale_avg_trade_price(self, private_sales_id: int, pyoung_number: int):
+        pass
+
+    def is_exists_private_sale_avg_prices(self, private_sales_id: int, pyoung_number: int) -> bool:
+        query = (
+            session.query(
+                exists().where(
+                    PrivateSaleAvgPriceModel.private_sales_id == private_sales_id,
+                    PrivateSaleAvgPriceModel.pyoung == pyoung_number
+                )
+            )
+        )
+        if query.scalar():
+            return True
+        return False
