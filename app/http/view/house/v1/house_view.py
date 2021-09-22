@@ -34,6 +34,7 @@ from core.domains.house.enum.house_enum import (
     CalendarYearThreshHold,
     SectionType,
 )
+from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
@@ -224,3 +225,13 @@ def get_main_pre_subscription_view():
     return GetMainPreSubscriptionPresenter().transform(
         GetMainPreSubscriptionUseCase().execute(dto=dto)
     )
+
+
+@api.route("/v1/houses/worker", methods=["GET"])
+def test_house_worker_view():
+    repo = HouseRepository()
+    print("--result--")
+    date_filters = repo.get_pre_calc_avg_date_filters(date_from="20210501")
+    result = repo.get_pre_calc_avg_trade_price_target_of_private_sales(22, date_filters)
+    for elm in result:
+        print(elm)

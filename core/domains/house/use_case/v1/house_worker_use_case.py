@@ -1,9 +1,12 @@
 import os
+import sys
 
 import inject
 import requests
+import sentry_sdk
 
 from app.extensions.utils.log_helper import logger_
+from core.domains.house.entity.house_entity import PrivateSaleDetailEntity
 from core.domains.house.repository.house_repository import HouseRepository
 
 logger = logger_.getLogger(__name__)
@@ -51,6 +54,39 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
 
     def execute(self):
         logger.info(f"🚀\tPreCalculateAverage Start - {self.client_id}")
+        try:
+            logger.info(f"🚀\tupdate_private_sale_avg_trade_price Start")
+            for idx in range(1000):
+                recent_info: PrivateSaleDetailEntity \
+                    = self._house_repo.get_recently_contracted_private_sale_details(private_sales_id=idx)
+
+                date_filters = self._house_repo.get_pre_calc_avg_date_filters(date_from=recent_info.contract_date)
+                trade_price_info: list = self._house_repo.get_pre_calc_avg_trade_price_target_of_private_sales(
+                    private_sales_id=idx, date_filters=date_filters
+                )
+
+                # trade_price_info : (supply_area, avg_trade_price)
+                for elm in trade_price_info:
+                    pyoung = self._house_repo._convert_supply_area_to_pyoung_number(
+                        supply_area=elm[0]
+                    )
+                    if self._house_repo.is_exists_private_sale_avg_prices(
+                        private_sales_id=idx, pyoung_number=pyoung
+                    ):
+                        self._house_repo.update_private_sale_avg_trade_price(
+                            private_sales_id=idx, pyoung_number=pyoung
+                        )
+                    self._house_repo.create_private_sale_avg_trade_price(
+                        private_sales_id=idx, pyoung_number=pyoung
+                    )
+
+        except Exception as e:
+            logger.error(f"🚀\tupdate_private_sale_avg_trade_price Error - {e}")
+            self.send_slack_message(
+                message=f"🚀\tupdate_private_sale_avg_trade_price Error - {e}"
+            )
+            sentry_sdk.capture_exception(e)
+            sys.exit(0)
 
 
 class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
