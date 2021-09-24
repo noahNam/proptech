@@ -56,28 +56,34 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         logger.info(f"🚀\tPreCalculateAverage Start - {self.client_id}")
         try:
             logger.info(f"🚀\tupdate_private_sale_avg_trade_price Start")
-            for idx in range(1000):
-                recent_info: PrivateSaleDetailEntity \
-                    = self._house_repo.get_recently_contracted_private_sale_details(private_sales_id=idx)
 
-                date_filters = self._house_repo.get_pre_calc_avg_date_filters(date_from=recent_info.contract_date)
-                trade_price_info: list = self._house_repo.get_pre_calc_avg_trade_price_target_of_private_sales(
-                    private_sales_id=idx, date_filters=date_filters
+            # 매매 가격 평균 계산
+            for idx in range(1, 1001):
+                # contract_date 기준 가장 최근에 거래된 row 가져오기
+                recent_info: PrivateSaleDetailEntity = self._house_repo.get_recently_contracted_private_sale_details(
+                    private_sales_id=idx
                 )
-
-                # trade_price_info : (supply_area, avg_trade_price)
-                for elm in trade_price_info:
-                    pyoung = self._house_repo._convert_supply_area_to_pyoung_number(
-                        supply_area=elm[0]
+                if recent_info:
+                    date_filters = self._house_repo.get_pre_calc_avg_date_filters(
+                        date_from=recent_info.contract_date
                     )
-                    if self._house_repo.is_exists_private_sale_avg_prices(
-                        private_sales_id=idx, pyoung_number=pyoung
-                    ):
-                        self._house_repo.update_private_sale_avg_trade_price(
-                            private_sales_id=idx, pyoung_number=pyoung
+                    trade_price_info: list = self._house_repo.get_pre_calc_avg_trade_price_target_of_private_sales(
+                        private_sales_id=idx, date_filters=date_filters
+                    )
+                    if trade_price_info:
+                        # trade_price_info : (supply_area, avg_trade_price)
+                        self._house_repo.create_or_update_private_sale_avg_trade_prices(
+                            private_sales_id=idx, trade_price_info=trade_price_info
                         )
-                    self._house_repo.create_private_sale_avg_trade_price(
-                        private_sales_id=idx, pyoung_number=pyoung
+                    else:
+                        logger.error(
+                            f"get_pre_calc_avg_trade_price_target_of_private_sales "
+                            f"Error - Not found trade_price_info, id: {idx}"
+                        )
+                else:
+                    logger.error(
+                        f"house_repo.get_recently_contracted_private_sale_details "
+                        f"Error - Not found recent_info, id: {idx}"
                     )
 
         except Exception as e:
