@@ -107,6 +107,7 @@ class PrivateSaleDetailEntity(BaseModel):
     private_area: float
     supply_area: float
     contract_date: Optional[str]
+    contract_ym: Optional[int]
     deposit_price: int
     rent_price: int
     trade_price: int
