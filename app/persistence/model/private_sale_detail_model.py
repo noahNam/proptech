@@ -33,6 +33,7 @@ class PrivateSaleDetailModel(db.Model):
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
     contract_date = Column(String(8), nullable=True)
+    contract_ym = Column(SmallInteger, nullable=True, index=True)
     deposit_price = Column(Integer, nullable=False)
     rent_price = Column(Integer, nullable=False)
     trade_price = Column(Integer, nullable=False)
@@ -53,6 +54,7 @@ class PrivateSaleDetailModel(db.Model):
             private_area=self.private_area,
             supply_area=self.supply_area,
             contract_date=self.contract_date,
+            contract_ym=self.contract_ym,
             deposit_price=self.deposit_price,
             rent_price=self.rent_price,
             trade_price=self.trade_price,
