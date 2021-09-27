@@ -1,8 +1,8 @@
 import datetime
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Tuple
 
 from geoalchemy2 import Geometry, func as geo_func
-from sqlalchemy import and_, func, or_, literal, String, exists, union
+from sqlalchemy import and_, func, or_, literal, String, exists, Integer
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload, selectinload, contains_eager
 from sqlalchemy.sql.functions import _FunctionGenerator
@@ -39,7 +39,6 @@ from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
     RealEstateWithPrivateSaleEntity,
     AdministrativeDivisionEntity,
-    BoundingRealEstateEntity,
     InterestHouseListEntity,
     GetRecentViewListEntity,
     GetSearchHouseListEntity,
@@ -880,12 +879,22 @@ class HouseRepository:
 
         return result.to_entity()
 
-    def get_pre_calc_avg_date_filters(self, date_from: str) -> list:
+    def get_pre_calc_avg_prices_target_of_private_sales(
+        self, private_sales_id: int, date_from: str
+    ) -> List[Tuple]:
         """
             date_from example: 20210915
             date_filters : date_from 로부터 1달 전 범위
         """
+        default_filters = list()
         date_filters = list()
+
+        default_filters.append(
+            and_(
+                PrivateSaleDetailModel.private_sales_id == private_sales_id,
+                PrivateSaleDetailModel.is_available == True,
+            )
+        )
 
         date_filters.append(
             and_(
@@ -895,105 +904,104 @@ class HouseRepository:
             )
         )
 
-        return date_filters
-
-    def get_pre_calc_avg_trade_price_target_of_private_sales(
-        self, private_sales_id: int, date_filters: list
-    ) -> list:
-        filters = list()
-        filters.append(
-            and_(
-                PrivateSaleDetailModel.private_sales_id == private_sales_id,
-                PrivateSaleDetailModel.trade_type == "매매",
-                PrivateSaleDetailModel.is_available == True,
-            )
-        )
-        query = (
+        query_cond1 = (
             session.query(PrivateSaleDetailModel)
             .with_entities(
                 PrivateSaleDetailModel.supply_area,
                 func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
+                literal(0, Integer).label("avg_deposit_price"),
             )
-            .filter(*date_filters, *filters)
-            .group_by(PrivateSaleDetailModel.private_area)
+            .filter(
+                *date_filters,
+                *default_filters,
+                PrivateSaleDetailModel.trade_type == "매매",
+            )
+            .group_by(PrivateSaleDetailModel.supply_area)
         )
-        # row : (supply_area, avg_deposit_price)
-        return query.all()
 
-    def get_pre_calc_avg_deposit_price_target_of_private_sales(
-        self, private_sales_id: int, date_filters: list
-    ) -> list:
-        filters = list()
-        filters.append(
-            and_(
-                PrivateSaleDetailModel.private_sales_id == private_sales_id,
-                PrivateSaleDetailModel.trade_type == "전세",
-                PrivateSaleDetailModel.is_available == True,
-            )
-        )
-        query = (
+        query_cond2 = (
             session.query(PrivateSaleDetailModel)
             .with_entities(
                 PrivateSaleDetailModel.supply_area,
+                literal(0, Integer).label("avg_trade_price"),
                 func.avg(PrivateSaleDetailModel.deposit_price).label(
                     "avg_deposit_price"
                 ),
             )
-            .filter(*date_filters, *filters)
-            .group_by(PrivateSaleDetailModel.private_area)
+            .filter(
+                *date_filters,
+                *default_filters,
+                PrivateSaleDetailModel.trade_type == "전세",
+            )
+            .group_by(PrivateSaleDetailModel.supply_area)
         )
-        # row : (supply_area, avg_deposit_price)
+
+        union_query = query_cond1.union_all(query_cond2).subquery()
+
+        query = session.query(
+            union_query.columns.private_sale_details_supply_area.label("supply_area"),
+            func.max(union_query.columns.avg_trade_price).label("avg_trade_prices"),
+            func.max(union_query.columns.avg_deposit_price).label("avg_deposit_prices"),
+        ).group_by(union_query.columns.private_sale_details_supply_area)
+
+        # row: (supply_area, avg_trade_prices, avg_deposit_prices)
         return query.all()
 
-    def _create_private_sale_avg_prices(
-        self,
-        private_sales_id: int,
-        pyoung_number: int,
-        default_pyoung: int,
-        avg_trade_price: float = 0,
-        avg_deposit_price: float = 0,
-    ) -> None:
+    def make_pre_calc_target_private_sale_avg_prices_list(
+        self, private_sales_id: int, query_set: List[Tuple], default_pyoung: int
+    ) -> Optional[Tuple[List[dict], List[dict]]]:
+        if not query_set:
+            return None
+        avg_prices_update_list = list()
+        avg_prices_create_list = list()
 
+        # query_set : [(supply_area, avg_trade_prices, avg_deposit_prices), ...]
+        for query in query_set:
+            avg_price_info = {
+                "private_sales_id": private_sales_id,
+                "pyoung": self._convert_supply_area_to_pyoung_number(
+                    supply_area=query[0]
+                ),
+                "default_pyoung": default_pyoung,
+                "trade_price": query[1],
+                "deposit_price": query[2],
+            }
+            if self._is_exists_private_sale_avg_prices(
+                private_sales_id=avg_price_info["private_sales_id"],
+                pyoung_number=avg_price_info["pyoung"],
+            ):
+                avg_price_info.update({"updated_at": get_server_timestamp()})
+                avg_prices_update_list.append(avg_price_info)
+            else:
+                avg_prices_create_list.append(avg_price_info)
+
+        return avg_prices_update_list, avg_prices_create_list
+
+    def create_private_sale_avg_prices(self, create_list: List[dict]) -> None:
         try:
-            instance = PrivateSaleAvgPriceModel(
-                private_sales_id=private_sales_id,
-                pyoung=pyoung_number,
-                default_pyoung=default_pyoung,
-                trade_price=avg_trade_price,
-                deposit_price=avg_deposit_price,
+            session.bulk_insert_mappings(
+                PrivateSaleAvgPriceModel, [create_info for create_info in create_list]
             )
 
-            session.add(instance)
             session.commit()
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
-                f"[HouseRepository][create_private_sale_avg_trade_price] "
-                f"private_sales_id : {private_sales_id} error : {e}"
+                f"[HouseRepository][create_private_sale_avg_prices] error : {e}"
             )
             raise NotUniqueErrorException
 
-    def _update_private_sale_avg_trade_price(
-        self, private_sales_id: int, pyoung_number: int, avg_trade_price: float
-    ):
+    def update_private_sale_avg_prices(self, update_list: List[dict]) -> None:
         try:
-
-            session.query(PrivateSaleAvgPriceModel).filter_by(
-                private_sales_id=private_sales_id
-            ).update(
-                {
-                    "pyoung": pyoung_number,
-                    "trade_price": avg_trade_price,
-                    "updated_at": get_server_timestamp(),
-                }
+            session.bulk_update_mappings(
+                PrivateSaleAvgPriceModel, [update_info for update_info in update_list]
             )
 
             session.commit()
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[HouseRepository][update_private_sale_avg_trade_price] "
-                f"private_sales_id : {private_sales_id} error : {e}"
+                f"[HouseRepository][update_private_sale_avg_prices] error : {e}"
             )
             raise UpdateFailErrorException
 
@@ -1010,51 +1018,46 @@ class HouseRepository:
             return True
         return False
 
-    def get_default_pyoung_number(
-        self, private_sales_id: int, date_filters: list
+    def get_default_pyoung_number_for_private_sale(
+        self, private_sales_id: int, date_from: str
     ) -> int:
-        filters = list()
-        filters.append(
+        date_filters = list()
+        default_filters = list()
+
+        default_filters.append(
             and_(
                 PrivateSaleDetailModel.private_sales_id == private_sales_id,
                 PrivateSaleDetailModel.is_available == True,
             )
         )
+
+        date_filters.append(
+            and_(
+                PrivateSaleDetailModel.contract_date
+                >= get_month_from_date(date_from).strftime("%Y%m%d"),
+                PrivateSaleDetailModel.contract_date <= date_from,
+            )
+        )
         query = (
-            session.query(PrivateSaleDetailModel)
-            .filter(*date_filters, *filters)
-            .group_by(PrivateSaleDetailModel.id, PrivateSaleDetailModel.private_area)
-            .count()
+            session.query(
+                PrivateSaleDetailModel.supply_area,
+                func.count(PrivateSaleDetailModel.supply_area).label("count"),
+            )
+            .filter(*default_filters, *date_filters)
+            .group_by(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.supply_area,
+            )
+            .order_by(
+                func.count(PrivateSaleDetailModel.supply_area).desc(),
+                PrivateSaleDetailModel.supply_area.asc(),
+            )
+            .limit(1)
         )
 
-        return query.all()
+        # query_set: [(supply_area, max(count))]
+        query_set = query.all()
 
-    def create_or_update_private_sale_avg_trade_prices(
-        self, private_sales_id: int, trade_price_info: List[tuple]
-    ):
-        try:
-            for elm in trade_price_info:
-                pyoung = self._convert_supply_area_to_pyoung_number(supply_area=elm[0])
-                # 이미 private_sale_avg_prices 테이블이 존재하면 업데이트, 없으면 새 Row 생성
-                if self._is_exists_private_sale_avg_prices(
-                    private_sales_id=private_sales_id, pyoung_number=pyoung
-                ):
-                    self._update_private_sale_avg_trade_price(
-                        private_sales_id=private_sales_id,
-                        pyoung_number=pyoung,
-                        avg_trade_price=elm[1],
-                    )
-                else:
-                    # todo: default pyoung_number 선정
-
-                    self._create_private_sale_avg_prices(
-                        private_sales_id=private_sales_id,
-                        pyoung_number=pyoung,
-                        default_pyoung=pyoung,
-                        avg_trade_price=elm[1],
-                    )
-        except Exception as e:
-            logger.error(
-                f"[HouseRepository][create_or_update_private_sale_avg_prices] "
-                f"private_sales_id : {private_sales_id} error : {e}"
-            )
+        return self._convert_supply_area_to_pyoung_number(
+            supply_area=query_set[0][0] if query_set else 0
+        )

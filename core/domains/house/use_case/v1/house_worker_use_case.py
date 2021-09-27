@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import List, Optional, Tuple
 
 import inject
 import requests
@@ -64,17 +65,41 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                     private_sales_id=idx
                 )
                 if recent_info:
-                    date_filters = self._house_repo.get_pre_calc_avg_date_filters(
-                        date_from=recent_info.contract_date
+                    trade_price_info = self._house_repo.get_pre_calc_avg_prices_target_of_private_sales(
+                        private_sales_id=idx, date_from=recent_info.contract_date
                     )
-                    trade_price_info: list = self._house_repo.get_pre_calc_avg_trade_price_target_of_private_sales(
-                        private_sales_id=idx, date_filters=date_filters
+                    default_pyoung = self._house_repo.get_default_pyoung_number_for_private_sale(
+                        private_sales_id=idx, date_from=recent_info.contract_date
                     )
+
                     if trade_price_info:
-                        # trade_price_info : (supply_area, avg_trade_price)
-                        self._house_repo.create_or_update_private_sale_avg_trade_prices(
-                            private_sales_id=idx, trade_price_info=trade_price_info
+                        # trade_price_info : [(supply_area, avg_trade_prices, avg_deposit_prices), ...]
+                        (
+                            avg_price_update_list,
+                            avg_price_create_list,
+                        ) = self._house_repo.make_pre_calc_target_private_sale_avg_prices_list(
+                            private_sales_id=idx,
+                            query_set=trade_price_info,
+                            default_pyoung=default_pyoung,
                         )
+                        try:
+                            self._house_repo.create_private_sale_avg_prices(
+                                create_list=avg_price_create_list
+                            )
+                        except Exception as e:
+                            logger.error(
+                                f"[HouseRepository][create_private_sale_avg_prices] "
+                                f"private_sales_id : {idx} error : {e}"
+                            )
+                        try:
+                            self._house_repo.update_private_sale_avg_prices(
+                                update_list=avg_price_update_list
+                            )
+                        except Exception as e:
+                            logger.error(
+                                f"[HouseRepository][update_private_sale_avg_prices] "
+                                f"private_sales_id : {idx} error : {e}"
+                            )
                     else:
                         logger.error(
                             f"get_pre_calc_avg_trade_price_target_of_private_sales "
