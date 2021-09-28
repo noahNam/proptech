@@ -59,6 +59,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             start_time = time()
             logger.info(f"🚀\tUpsert_private_sale_avg_prices : Start")
 
+            create_private_sale_avg_prices_count = 0
+            update_private_sale_avg_prices_count = 0
+            private_sale_avg_prices_failed_list = list()
             # 매매, 전세 가격 평균 계산
             for idx in range(1, 1001):
                 # contract_date 기준 가장 최근에 거래된 row 가져오기
@@ -66,21 +69,21 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                     private_sales_id=idx
                 )
                 if recent_info:
-                    trade_price_info = self._house_repo.get_pre_calc_avg_prices_target_of_private_sales(
+                    avg_prices_info = self._house_repo.get_pre_calc_avg_prices_target_of_private_sales(
                         private_sales_id=idx, date_from=recent_info.contract_date
                     )
                     default_pyoung = self._house_repo.get_default_pyoung_number_for_private_sale(
                         private_sales_id=idx, date_from=recent_info.contract_date
                     )
 
-                    if trade_price_info:
+                    if avg_prices_info:
                         # trade_price_info : [(supply_area, avg_trade_prices, avg_deposit_prices), ...]
                         (
                             avg_price_update_list,
                             avg_price_create_list,
                         ) = self._house_repo.make_pre_calc_target_private_sale_avg_prices_list(
                             private_sales_id=idx,
-                            query_set=trade_price_info,
+                            query_set=avg_prices_info,
                             default_pyoung=default_pyoung,
                         )
                         if avg_price_create_list:
@@ -88,44 +91,46 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                                 self._house_repo.create_private_sale_avg_prices(
                                     create_list=avg_price_create_list
                                 )
-                                logger.info(
-                                    f"🚀\tUpsert_private_sale_avg_prices : Result - Created_list: "
-                                    f"{len(avg_price_create_list)}"
-                                )
+                                create_private_sale_avg_prices_count += len(avg_price_create_list)
                             except Exception as e:
                                 logger.error(
-                                    f"[HouseRepository][create_private_sale_avg_prices] "
+                                    f"Upsert_private_sale_avg_prices - create_private_sale_avg_prices "
                                     f"private_sales_id : {idx} error : {e}"
                                 )
                         else:
-                            logger.info(f"🚀\tUpsert_private_sale_avg_prices : Nothing avg_price_create_list")
+                            logger.info(
+                                f"🚀\tUpsert_private_sale_avg_prices : Nothing avg_price_create_list"
+                            )
                         if avg_price_update_list:
                             try:
                                 self._house_repo.update_private_sale_avg_prices(
                                     update_list=avg_price_update_list
                                 )
-                                logger.info(
-                                    f"🚀\tUpsert_private_sale_avg_prices : Result - Updated_list: "
-                                    f"{len(avg_price_update_list)}"
-                                )
+                                update_private_sale_avg_prices_count += len(avg_price_update_list)
                             except Exception as e:
                                 logger.error(
-                                    f"[HouseRepository][update_private_sale_avg_prices] "
+                                    f"Upsert_private_sale_avg_prices - update_private_sale_avg_prices "
                                     f"private_sales_id : {idx} error : {e}"
                                 )
                         else:
-                            logger.info(f"🚀\tUpsert_private_sale_avg_prices : Nothing avg_price_update_list")
+                            logger.info(
+                                f"🚀\tUpsert_private_sale_avg_prices : Nothing avg_price_update_list"
+                            )
                     else:
                         logger.error(
-                            f"get_pre_calc_avg_trade_price_target_of_private_sales "
+                            f"Upsert_private_sale_avg_prices - get_pre_calc_avg_trade_price_target_of_private_sales "
                             f"Error - Not found trade_price_info, id: {idx}"
                         )
                 else:
-                    logger.error(
-                        f"house_repo.get_recently_contracted_private_sale_details "
-                        f"Error - Not found recent_info, id: {idx}"
-                    )
-            logger.info(f"🚀\tUpsert_private_sale_avg_prices : Finished !!, records: {time() - start_time} secs")
+                    private_sale_avg_prices_failed_list.append(idx)
+            logger.info(
+                f"🚀\tUpsert_private_sale_avg_prices : Finished !!, "
+                f"records: {time() - start_time} secs, "
+                f"{create_private_sale_avg_prices_count} Created, "
+                f"{update_private_sale_avg_prices_count} Updated, "
+                f"{len(private_sale_avg_prices_failed_list)} Failed, "
+                f"Failed_list : {private_sale_avg_prices_failed_list}, "
+            )
         except Exception as e:
             logger.error(f"🚀\tUpsert_private_sale_avg_prices Error - {e}")
             self.send_slack_message(
@@ -138,11 +143,16 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             start_time = time()
             logger.info(f"🚀\tUpsert_public_sale_avg_prices : Start")
 
-            # 공급 가격 평균 계산 + 취득세 계산 (단위: 만원)
+            # 공급 가격 평균 계산
             for idx in range(1, 1001):
-                pass
+                avg_supply_price_info = self._house_repo.get_pre_calc_avg_prices_target_of_public_sales(
+                    public_sales_id=idx
+                )
 
-            logger.info(f"🚀\tUpsert_public_sale_avg_prices : Finished !!, records: {time() - start_time} secs")
+
+            logger.info(
+                f"🚀\tUpsert_public_sale_avg_prices : Finished !!, records: {time() - start_time} secs"
+            )
         except Exception as e:
             logger.error(f"🚀\tUpsert_public_sale_avg_prices Error - {e}")
             self.send_slack_message(
@@ -150,6 +160,8 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             )
             sentry_sdk.capture_exception(e)
             sys.exit(0)
+
+        exit(os.EX_OK)
 
 
 class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
