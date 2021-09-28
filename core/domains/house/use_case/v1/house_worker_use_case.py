@@ -77,7 +77,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                     )
 
                     if avg_prices_info:
-                        # trade_price_info : [(supply_area, avg_trade_prices, avg_deposit_prices), ...]
+                        # avg_prices_info : [(supply_area, avg_trade_prices, avg_deposit_prices), ...]
                         (
                             avg_price_update_list,
                             avg_price_create_list,
@@ -143,15 +143,67 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             start_time = time()
             logger.info(f"🚀\tUpsert_public_sale_avg_prices : Start")
 
+            create_public_sale_avg_prices_count = 0
+            update_public_sale_avg_prices_count = 0
+            public_sale_avg_prices_failed_list = list()
+
             # 공급 가격 평균 계산
             for idx in range(1, 1001):
                 avg_supply_price_info = self._house_repo.get_pre_calc_avg_prices_target_of_public_sales(
                     public_sales_id=idx
                 )
-
-
+                default_pyoung = self._house_repo.get_default_pyoung_number_for_public_sale(
+                    public_sales_id=idx
+                )
+                # avg_supply_price_info : [(supply_area, avg_trade_prices), ...]
+                if avg_supply_price_info:
+                    (
+                        avg_price_update_list,
+                        avg_price_create_list,
+                    ) = self._house_repo.make_pre_calc_target_public_sale_avg_prices_list(
+                        public_sales_id=idx,
+                        query_set=avg_supply_price_info,
+                        default_pyoung=default_pyoung,
+                    )
+                    if avg_price_create_list:
+                        try:
+                            self._house_repo.create_public_sale_avg_prices(
+                                create_list=avg_price_create_list
+                            )
+                            create_public_sale_avg_prices_count += len(avg_price_create_list)
+                        except Exception as e:
+                            logger.error(
+                                f"Upsert_public_sale_avg_prices - create_public_sale_avg_prices "
+                                f"public_sales_id : {idx} error : {e}"
+                            )
+                    else:
+                        logger.info(
+                            f"🚀\tUpsert_public_sale_avg_prices : Nothing avg_price_create_list"
+                        )
+                    if avg_price_update_list:
+                        try:
+                            self._house_repo.update_public_sale_avg_prices(
+                                update_list=avg_price_update_list
+                            )
+                            update_public_sale_avg_prices_count += len(avg_price_update_list)
+                        except Exception as e:
+                            logger.error(
+                                f"Upsert_public_sale_avg_prices - update_public_sale_avg_prices "
+                                f"public_sales_id : {idx} error : {e}"
+                            )
+                    else:
+                        logger.info(
+                            f"🚀\tUpsert_public_sale_avg_prices : Nothing avg_price_update_list"
+                        )
+                else:
+                    public_sale_avg_prices_failed_list.append(idx)
             logger.info(
-                f"🚀\tUpsert_public_sale_avg_prices : Finished !!, records: {time() - start_time} secs"
+                f"🚀\tUpsert_public_sale_avg_prices : Finished !!, "
+                f"records: {time() - start_time} secs, "
+                f"{create_public_sale_avg_prices_count} Created, "
+                f"{update_public_sale_avg_prices_count} Updated, "
+                f"{len(public_sale_avg_prices_failed_list)} Failed, "
+                f"Failed_list : {public_sale_avg_prices_failed_list}, "
             )
         except Exception as e:
             logger.error(f"🚀\tUpsert_public_sale_avg_prices Error - {e}")
