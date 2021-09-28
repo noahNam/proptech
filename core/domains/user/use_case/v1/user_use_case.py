@@ -276,7 +276,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                     detail_dto.code = code
                     detail_dto.value = None
 
-                    msg: SenderDto = self._make_sqs_send_message(dto=detail_dto)
+                    msg: SenderDto = self._make_sqs_send_message(dto=detail_dto, survey_step=survey_step)
                     self._send_sqs_message(
                         queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg
                     )
