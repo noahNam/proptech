@@ -12,7 +12,7 @@ from sqlalchemy import (
     SmallInteger,
 )
 from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import relationship, backref, column_property
+from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -27,7 +27,8 @@ from core.domains.house.entity.house_entity import (
 from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,
     RentTypeEnum,
-    PreSaleTypeEnum, PublicSaleStatusEnum,
+    PreSaleTypeEnum,
+    PublicSaleStatusEnum,
 )
 
 
@@ -184,12 +185,12 @@ class PublicSaleModel(db.Model):
             todo: 리펙토링 필요, HouseRepository()._get_status() 로직과 겹침
         """
         if (
-                not self.subscription_start_date
-                or self.subscription_start_date == "0"
-                or self.subscription_start_date == "00000000"
-                or not self.subscription_end_date
-                or self.subscription_end_date == "0"
-                or self.subscription_end_date == "00000000"
+            not self.subscription_start_date
+            or self.subscription_start_date == "0"
+            or self.subscription_start_date == "00000000"
+            or not self.subscription_end_date
+            or self.subscription_end_date == "0"
+            or self.subscription_end_date == "00000000"
         ):
             return PublicSaleStatusEnum.UNKNOWN.value
 

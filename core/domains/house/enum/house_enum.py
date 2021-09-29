@@ -172,6 +172,7 @@ class PublicSaleStatusEnum(Enum):
         IS_RECEIVING : 분양중/접수중
         IS_CLOSED : 마감됨
     """
+
     UNKNOWN = 0
     BEFORE_OPEN = 1
     IS_RECEIVING = 2

@@ -23,7 +23,8 @@ from core.domains.house.enum.house_enum import (
     DivisionLevelEnum,
     SectionType,
     BannerSubTopic,
-    PreSaleTypeEnum, PublicSaleStatusEnum,
+    PreSaleTypeEnum,
+    PublicSaleStatusEnum,
 )
 from core.use_case_output import UseCaseSuccessOutput
 
