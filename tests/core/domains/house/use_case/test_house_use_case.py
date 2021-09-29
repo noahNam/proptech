@@ -25,7 +25,8 @@ from core.domains.house.enum.house_enum import (
     SearchTypeEnum,
     SectionType,
     BannerSubTopic,
-    PreSaleTypeEnum, PublicSaleStatusEnum,
+    PreSaleTypeEnum,
+    PublicSaleStatusEnum,
 )
 from core.domains.house.use_case.v1.house_use_case import (
     UpsertInterestHouseUseCase,
