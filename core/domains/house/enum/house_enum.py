@@ -78,10 +78,10 @@ class BoundingLevelEnum(Enum):
         목적: bounding level 조건에 따라 쿼리 필터 조정
     """
 
-    SELECT_QUERYSET_FLAG_LEVEL = 15
-    MIN_SI_GUN_GU_LEVEL = 9
-    MAX_SI_GUN_GU_LEVEL = 11
-    MAX_NAVER_MAP_API_ZOOM_LEVEL = 22
+    SELECT_QUERYSET_FLAG_LEVEL = 16
+    MIN_SI_GUN_GU_LEVEL = 10
+    MAX_SI_GUN_GU_LEVEL = 13
+    MAX_NAVER_MAP_API_ZOOM_LEVEL = 21
     MIN_NAVER_MAP_API_ZOOM_LEVEL = 6
 
 
