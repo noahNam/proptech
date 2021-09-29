@@ -76,13 +76,26 @@ class BoundingLevelEnum(Enum):
                BoundingUseCase,
                HouseRepository - get_administrative_queryset_by_coordinates_range_dto()
         목적: bounding level 조건에 따라 쿼리 필터 조정
+
+        <Request Parameter>
+        [16 ~ 21 level range] (BoundingPresenter()) -> 부동산
+        level < SELECT_QUERYSET_FLAG_LEVEL -> BoundingAdministrativePresenter() else BoundingPresenter()
+
+        [13 ~ 15 level range] (BoundingAdministrativePresenter())
+        MAX_SI_GUN_GU_LEVEL < level -> Level_3 : 읍, 면, 동, 리
+
+        [11 ~ 12 level range]
+        MIN_SI_GUN_GU_LEVEL <= level <= MAX_SI_GUN_GU_LEVEL -> Level_2 : 시, 군, 구
+
+        [8 ~ 10 level range]
+        level < MIN_SI_GUN_GU_LEVEL -> Level_1 : 광역시, 특별시, 도
     """
 
     SELECT_QUERYSET_FLAG_LEVEL = 16
-    MIN_SI_GUN_GU_LEVEL = 10
-    MAX_SI_GUN_GU_LEVEL = 13
+    MIN_SI_GUN_GU_LEVEL = 11
+    MAX_SI_GUN_GU_LEVEL = 12
     MAX_NAVER_MAP_API_ZOOM_LEVEL = 21
-    MIN_NAVER_MAP_API_ZOOM_LEVEL = 6
+    MIN_NAVER_MAP_API_ZOOM_LEVEL = 8
 
 
 class CalendarYearThreshHold(Enum):
