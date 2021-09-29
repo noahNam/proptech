@@ -161,3 +161,18 @@ class BoundingDegreeEnum(Enum):
     """
 
     DEGREE = 0.01
+
+
+class PublicSaleStatusEnum(Enum):
+    """
+        사용 모델 : 분양 테이블
+        사용 목적 : 지도 바운딩시 상태 표시
+        UNKNOWN : 알 수 없음 (값이 없거나 잘못된 값)
+        BEFORE_OPEN : 분양 예정
+        IS_RECEIVING : 분양중/접수중
+        IS_CLOSED : 마감됨
+    """
+    UNKNOWN = 0
+    BEFORE_OPEN = 1
+    IS_RECEIVING = 2
+    IS_CLOSED = 3

@@ -294,7 +294,7 @@ class GetSearchHouseListEntity(BaseModel):
     image_path: Optional[str]
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
-    is_receiving: bool
+    status: int
     avg_down_payment: Optional[float] = 0
     avg_supply_price: Optional[float] = 0
 
@@ -426,6 +426,7 @@ class PublicSaleBoundingEntity(BaseModel):
     is_available: bool
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
+    status: int
     public_sale_photos: Optional[PublicSalePhotoEntity]
     public_sale_avg_prices: Optional[List[PublicSaleAvgPriceEntity]]
 

@@ -25,7 +25,7 @@ from core.domains.house.enum.house_enum import (
     SearchTypeEnum,
     SectionType,
     BannerSubTopic,
-    PreSaleTypeEnum,
+    PreSaleTypeEnum, PublicSaleStatusEnum,
 )
 from core.domains.house.use_case.v1.house_use_case import (
     UpsertInterestHouseUseCase,
@@ -417,7 +417,7 @@ def test_get_search_house_list_use_case_when_right_keywords_then_return_search_r
         image_path=public_sale_photo.path,
         subscription_start_date="20210901",
         subscription_end_date="202109018",
-        is_receiving=True,
+        status=PublicSaleStatusEnum.IS_CLOSED.value,
         avg_down_payment=100000.75,
         avg_supply_price=200000.23,
     )

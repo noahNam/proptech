@@ -72,11 +72,11 @@ def upsert_interest_house_view(house_id):
 def bounding_view():
     try:
         dto = GetCoordinatesRequestSchema(
-            start_x=float(request.args.get("start_x")),
-            start_y=float(request.args.get("start_y")),
-            end_x=float(request.args.get("end_x")),
-            end_y=float(request.args.get("end_y")),
-            level=int(request.args.get("level")),
+            start_x=request.args.get("start_x"),
+            start_y=request.args.get("start_y"),
+            end_x=request.args.get("end_x"),
+            end_y=request.args.get("end_y"),
+            level=request.args.get("level"),
         ).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
