@@ -86,7 +86,7 @@ def bounding_view():
             )
         )
     if dto.level < BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
-        # level 14 이하 : 행정구역 Presenter 변경
+        # level 15 이하 : 행정구역 Presenter 변경
         return BoundingAdministrativePresenter().transform(
             BoundingUseCase().execute(dto=dto)
         )
