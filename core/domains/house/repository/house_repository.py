@@ -240,11 +240,11 @@ class HouseRepository:
 
     def get_house_with_public_sales(self, house_id: int) -> list:
         filters = list()
-        filters.append(PublicSaleModel.id == house_id)
         filters.append(
             and_(
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
+                PublicSaleModel.id == house_id,
             )
         )
         query = (

@@ -114,6 +114,7 @@ class PublicSaleModel(db.Model):
             offer_date=self.offer_date,
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,
+            status=self.status,
             special_supply_date=self.special_supply_date,
             special_supply_etc_date=self.special_supply_etc_date,
             special_etc_gyeonggi_date=self.special_etc_gyeonggi_date,
