@@ -396,10 +396,19 @@ class PublicSaleReportEntity(BaseModel):
     real_estates: RealEstateReportEntity
 
 
-class PrivateSaleAvgPriceEntity(BaseModel):
+class PrivateSaleAvgPriceTradeEntity(BaseModel):
     pyoung: int
     trade_price: Optional[int]
+
+
+class PrivateSaleAvgPriceDepositEntity(BaseModel):
+    pyoung: int
     deposit_price: Optional[int]
+
+
+class PrivateSaleAvgPriceEntity(BaseModel):
+    trade_info: Optional[PrivateSaleAvgPriceTradeEntity]
+    deposit_info: Optional[PrivateSaleAvgPriceDepositEntity]
 
 
 class PublicSaleAvgPriceEntity(BaseModel):
@@ -411,7 +420,8 @@ class PrivateSaleBoundingEntity(BaseModel):
     id: int
     building_type: Enum
     default_pyoung: Optional[int]
-    private_sale_avg_prices: Optional[List[PrivateSaleAvgPriceEntity]]
+    trade_info: Optional[List[PrivateSaleAvgPriceTradeEntity]]
+    deposit_info: Optional[List[PrivateSaleAvgPriceDepositEntity]]
 
     class Config:
         use_enum_values = True
