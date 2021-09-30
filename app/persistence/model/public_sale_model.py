@@ -28,6 +28,7 @@ from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,
     RentTypeEnum,
     PreSaleTypeEnum,
+    PublicSaleStatusEnum,
 )
 
 
@@ -81,7 +82,6 @@ class PublicSaleModel(db.Model):
     offer_notice_url = Column(String(100), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
-
     name_ts = Column(TSVECTOR().with_variant(String(150), "sqlite"), nullable=True)
 
     # 1:1 relationship
@@ -115,6 +115,7 @@ class PublicSaleModel(db.Model):
             offer_date=self.offer_date,
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,
+            status=self.status,
             special_supply_date=self.special_supply_date,
             special_supply_etc_date=self.special_supply_etc_date,
             special_etc_gyeonggi_date=self.special_etc_gyeonggi_date,
@@ -158,6 +159,7 @@ class PublicSaleModel(db.Model):
             is_available=self.is_available,
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,
+            status=self.status,
             public_sale_photos=self.public_sale_photos.to_entity()
             if self.public_sale_photos
             else None,
@@ -176,6 +178,32 @@ class PublicSaleModel(db.Model):
             if self.public_sale_avg_prices
             else None
         )
+
+    @property
+    def status(self) -> int:
+        """
+            todo: 리펙토링 필요, HouseRepository()._get_status() 로직과 겹침
+        """
+        if (
+            not self.subscription_start_date
+            or self.subscription_start_date == "0"
+            or self.subscription_start_date == "00000000"
+            or not self.subscription_end_date
+            or self.subscription_end_date == "0"
+            or self.subscription_end_date == "00000000"
+        ):
+            return PublicSaleStatusEnum.UNKNOWN.value
+
+        today = get_server_timestamp().strftime("%Y%m%d")
+
+        if today < self.subscription_start_date:
+            return PublicSaleStatusEnum.BEFORE_OPEN.value
+        elif self.subscription_start_date <= today <= self.subscription_end_date:
+            return PublicSaleStatusEnum.IS_RECEIVING.value
+        elif self.subscription_end_date < today:
+            return PublicSaleStatusEnum.IS_CLOSED.value
+        else:
+            return PublicSaleStatusEnum.UNKNOWN.value
 
     def to_push_entity(self, message_type: str) -> PublicSalePushEntity:
         return PublicSalePushEntity(
