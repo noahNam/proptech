@@ -137,8 +137,8 @@ def house_calendar_list_view():
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
                 message=f"Invalid Parameter input, "
-                        f"year: {CalendarYearThreshHold.MIN_YEAR.value} ~ {CalendarYearThreshHold.MAX_YEAR.value}, "
-                        f"month: 1 ~ 12 required",
+                f"year: {CalendarYearThreshHold.MIN_YEAR.value} ~ {CalendarYearThreshHold.MAX_YEAR.value}, "
+                f"month: 1 ~ 12 required",
             )
         )
     return GetCalendarInfoPresenter().transform(

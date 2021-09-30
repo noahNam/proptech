@@ -57,7 +57,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     """
 
     def _calculate_house_acquisition_xax(
-            self, private_area: float, supply_price: int
+        self, private_area: float, supply_price: int
     ) -> int:
         """
             todo: 부동산 정책이 매년 변경되므로 정기적으로 세율 변경 시 업데이트 필요합니다.
@@ -86,8 +86,10 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 - acquisition_tax(취득세 본세) + local_education_tax(지방교육세) + rural_special_tax(농어촌특별세)
         """
         if (
-                not private_area or private_area == 0
-                or not supply_price or supply_price == 0
+            not private_area
+            or private_area == 0
+            or not supply_price
+            or supply_price == 0
         ):
             return 0
 
@@ -116,11 +118,15 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             acquisition_tax = supply_price * round(acquisition_tax_rate, 2)
             local_education_tax = local_education_tax_rate
 
-        total_acquisition_tax = round(acquisition_tax + local_education_tax + rural_special_tax)
+        total_acquisition_tax = round(
+            acquisition_tax + local_education_tax + rural_special_tax
+        )
 
         return total_acquisition_tax
 
-    def _make_acquisition_tax_update_list(self, target_list: List[PublicSaleDetailModel]) -> List[dict]:
+    def _make_acquisition_tax_update_list(
+        self, target_list: List[PublicSaleDetailModel]
+    ) -> List[dict]:
         result_dict_list = list()
         for target in target_list:
             result_dict_list.append(
@@ -128,9 +134,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                     "id": target.id,
                     "acquisition_tax": self._calculate_house_acquisition_xax(
                         private_area=target.private_area,
-                        supply_price=target.supply_price
+                        supply_price=target.supply_price,
                     ),
-                    "updated_at": get_server_timestamp()
+                    "updated_at": get_server_timestamp(),
                 }
             )
         return result_dict_list
@@ -315,7 +321,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             target_list = self._house_repo.get_acquisition_tax_calc_target_list()
             update_list = None
             if target_list:
-                update_list = self._make_acquisition_tax_update_list(target_list=target_list)
+                update_list = self._make_acquisition_tax_update_list(
+                    target_list=target_list
+                )
             else:
                 logger.info(
                     f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_target_list"
