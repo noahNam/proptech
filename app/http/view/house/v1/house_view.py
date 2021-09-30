@@ -34,7 +34,6 @@ from core.domains.house.enum.house_enum import (
     CalendarYearThreshHold,
     SectionType,
 )
-from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
