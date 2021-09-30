@@ -188,11 +188,11 @@ class GetCoordinatesSchema(BaseModel):
 
 class GetCoordinatesRequestSchema:
     def __init__(self, start_x, start_y, end_x, end_y, level):
-        self._start_x = start_x
-        self._start_y = start_y
-        self._end_x = end_x
-        self._end_y = end_y
-        self._level = level
+        self._start_x = float(start_x) if start_x else None
+        self._start_y = float(start_y) if start_y else None
+        self._end_x = float(end_x) if end_x else None
+        self._end_y = float(end_y) if end_y else None
+        self._level = int(level) if level else None
 
     def validate_request_and_make_dto(self):
         try:
