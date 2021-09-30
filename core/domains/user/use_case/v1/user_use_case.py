@@ -327,7 +327,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
             if dto.code == CodeEnum.SPECIAL_COND.value:
                 return UserSurveyStepEnum.STEP_COMPLETE.value
 
-        return None
+        return survey_step
 
     def _make_chain_update_user_info(
         self, dto: UpsertUserInfoDetailDto

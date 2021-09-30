@@ -155,11 +155,11 @@ class HouseRepository:
 
     def get_administrative_divisions(self, dto: CoordinatesRangeDto) -> Optional[list]:
         """
-             dto.level: 6 ~ 15
+             dto.level: 8 ~ 15
              <filter condition>
-                12 ~ 15 -> 읍, 면, 동, 리 (AdministrativeDivisionModel.level -> "3")
-                10 ~ 13 -> 시, 군, 구 (AdministrativeDivisionModel.level -> "2")
-                9 이하 -> 시, 도 (AdministrativeDivisionModel.level -> "1")
+                13 ~ 15 -> 읍, 면, 동, 리 (AdministrativeDivisionModel.level -> "3")
+                11 ~ 12 -> 시, 군, 구 (AdministrativeDivisionModel.level -> "2")
+                8 ~ 10  -> 시, 도 (AdministrativeDivisionModel.level -> "1")
         """
         filters = list()
         filters.append(
