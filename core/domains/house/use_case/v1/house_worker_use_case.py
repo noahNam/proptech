@@ -53,8 +53,13 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         - 매물 상세 페이지 -> 최대 최소 취득세의 경우 SQL max, min func() 쿼리 사용
     """
 
+    def calculate_acquisition_tax(self):
+        pass
+
     def execute(self):
         logger.info(f"🚀\tPreCalculateAverage Start - {self.client_id}")
+
+        # Batch_step_1 : Upsert_private_sale_avg_prices
         try:
             start_time = time()
             logger.info(f"🚀\tUpsert_private_sale_avg_prices : Start")
@@ -91,7 +96,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                                 self._house_repo.create_private_sale_avg_prices(
                                     create_list=avg_price_create_list
                                 )
-                                create_private_sale_avg_prices_count += len(avg_price_create_list)
+                                create_private_sale_avg_prices_count += len(
+                                    avg_price_create_list
+                                )
                             except Exception as e:
                                 logger.error(
                                     f"Upsert_private_sale_avg_prices - create_private_sale_avg_prices "
@@ -106,7 +113,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                                 self._house_repo.update_private_sale_avg_prices(
                                     update_list=avg_price_update_list
                                 )
-                                update_private_sale_avg_prices_count += len(avg_price_update_list)
+                                update_private_sale_avg_prices_count += len(
+                                    avg_price_update_list
+                                )
                             except Exception as e:
                                 logger.error(
                                     f"Upsert_private_sale_avg_prices - update_private_sale_avg_prices "
@@ -139,6 +148,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             sentry_sdk.capture_exception(e)
             sys.exit(0)
 
+        # Batch_step_2 : Upsert_public_sale_avg_prices
         try:
             start_time = time()
             logger.info(f"🚀\tUpsert_public_sale_avg_prices : Start")
@@ -170,7 +180,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                             self._house_repo.create_public_sale_avg_prices(
                                 create_list=avg_price_create_list
                             )
-                            create_public_sale_avg_prices_count += len(avg_price_create_list)
+                            create_public_sale_avg_prices_count += len(
+                                avg_price_create_list
+                            )
                         except Exception as e:
                             logger.error(
                                 f"Upsert_public_sale_avg_prices - create_public_sale_avg_prices "
@@ -185,7 +197,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                             self._house_repo.update_public_sale_avg_prices(
                                 update_list=avg_price_update_list
                             )
-                            update_public_sale_avg_prices_count += len(avg_price_update_list)
+                            update_public_sale_avg_prices_count += len(
+                                avg_price_update_list
+                            )
                         except Exception as e:
                             logger.error(
                                 f"Upsert_public_sale_avg_prices - update_public_sale_avg_prices "
@@ -212,6 +226,29 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             )
             sentry_sdk.capture_exception(e)
             sys.exit(0)
+
+        # Batch_step_3 : Update_public_sale_acquisition_tax
+        # try:
+        #     start_time = time()
+        #     logger.info(f"🚀\tUpdate_public_sale_acquisition_tax : Start")
+        #
+        #     update_public_sale_acquisition_tax = 0
+        #     public_sale_acquisition_tax_calc_failed_list = list()
+        #
+        #     # PublicSaleDetails.acquisition_tax == 0 건에 대하여 취득세 계산 후 업데이트
+        #     target_count = self._house_repo.get_acquisition_tax_calc_target_count()
+        #     for idx in range(1, target_count + 1):
+        #         pass
+        #
+        #
+        #
+        # except Exception as e:
+        #     logger.error(f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}")
+        #     self.send_slack_message(
+        #         message=f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}"
+        #     )
+        #     sentry_sdk.capture_exception(e)
+        #     sys.exit(0)
 
         exit(os.EX_OK)
 
