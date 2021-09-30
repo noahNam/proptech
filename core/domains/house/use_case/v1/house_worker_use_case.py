@@ -228,27 +228,27 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             sys.exit(0)
 
         # Batch_step_3 : Update_public_sale_acquisition_tax
-        # try:
-        #     start_time = time()
-        #     logger.info(f"🚀\tUpdate_public_sale_acquisition_tax : Start")
-        #
-        #     update_public_sale_acquisition_tax = 0
-        #     public_sale_acquisition_tax_calc_failed_list = list()
-        #
-        #     # PublicSaleDetails.acquisition_tax == 0 건에 대하여 취득세 계산 후 업데이트
-        #     target_count = self._house_repo.get_acquisition_tax_calc_target_count()
-        #     for idx in range(1, target_count + 1):
-        #         pass
-        #
-        #
-        #
-        # except Exception as e:
-        #     logger.error(f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}")
-        #     self.send_slack_message(
-        #         message=f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}"
-        #     )
-        #     sentry_sdk.capture_exception(e)
-        #     sys.exit(0)
+        try:
+            start_time = time()
+            logger.info(f"🚀\tUpdate_public_sale_acquisition_tax : Start")
+
+            update_public_sale_acquisition_tax = 0
+            public_sale_acquisition_tax_calc_failed_list = list()
+
+            # PublicSaleDetails.acquisition_tax == 0 건에 대하여 취득세 계산 후 업데이트
+            target_list = self._house_repo.get_acquisition_tax_calc_target_list()
+
+
+
+
+
+        except Exception as e:
+            logger.error(f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}")
+            self.send_slack_message(
+                message=f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}"
+            )
+            sentry_sdk.capture_exception(e)
+            sys.exit(0)
 
         exit(os.EX_OK)
 

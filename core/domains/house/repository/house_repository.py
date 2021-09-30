@@ -1192,18 +1192,64 @@ class HouseRepository:
             )
             raise NotUniqueErrorException
 
-    def get_acquisition_tax_calc_target_count(self) -> int:
-        count = (
-            session.query(PublicSaleDetailModel)
-            .filter(PublicSaleDetailModel.acquisition_tax == 0)
-            .count()
-        )
-        return count
-
     def get_acquisition_tax_calc_target_list(self):
-        query = session.query(PublicSaleDetailModel).with_entities(
-            PublicSaleDetailModel.id,
-            PublicSaleDetailModel.public_sales_id,
-            PublicSaleDetailModel.supply_area,
-            PublicSaleDetailModel.supply_price,
+        filters = list()
+        filters.append(PublicSaleDetailModel.acquisition_tax == 0)
+        query = (
+            session.query(PublicSaleDetailModel)
+                .with_entities(
+                    PublicSaleDetailModel.id,
+                    PublicSaleDetailModel.public_sales_id,
+                    PublicSaleDetailModel.private_area,
+                    PublicSaleDetailModel.supply_price,
+                    PublicSaleDetailModel.acquisition_tax
+            )
+                .filter(*filters)
         )
+
+        return query.all()
+
+    def calculate_house_acquisition_xax(
+            self, private_area: float, supply_price: int
+    ) -> int:
+        """
+            todo: 부동산 정책이 매년 변경되므로 정기적으로 세율 변경 시 업데이트 필요합니다.
+            <취득세 계산 2021년도 기준>
+            (부동산 종류가 주택일 경우로 한정합니다 - 상가, 오피스텔, 토지, 건물 제외)
+            [parameters]
+            - private_area: 전용면적
+                if 85 < private_area -> 85(제곱미터) 초과 시 농어촌특별세 0.2% 과세 계산 추가
+                    -> rural_special_tax = supply_price * 0.2%
+            - supply_price: 공급금액 (DB 저장 단위: 만원)
+
+            - acquisition_tax_rate : 취득세 적용세율
+                if supply_price <= 60000: -> [6억원 이하] -> supply_price * 1.0%
+                elif 60000 < supply_price <= 90000: -> [6억 초과 ~ 9억 이하]
+                    -> acquisition_tax_rate = (supply_price * 2 / 30000 - 3) * 0.01 (단위:%)
+                elif 90000 < supply_price: -> [9억 초과] -> supply_price * 3.0%
+
+            - local_education_tax_rate : 지방 교육세율
+                if supply_price < 60000: -> [6억원 이하] -> supply_price * 0.1%
+                elif 60000 < supply_price <= 90000: -> [6억 초과 ~ 9억 이하]
+                    -> local_education_tax_rate = acquisition_tax * 0.1 (취득세의 1/10)
+                elif 90000 < supply_price: -> [9억 초과] -> supply_price * 0.3%
+
+            [return]
+            - total_acquisition_tax : 최종 취득세
+                - acquisition_tax(취득세 본세) + local_education_tax(지방교육세) + rural_special_tax(농어촌특별세)
+        """
+        if (
+                not private_area or private_area == 0
+                or not supply_price or supply_price == 0
+        ):
+            return 0
+
+        rural_special_tax, rural_special_tax_rate = 0, 0.0
+        acquisition_tax, acquisition_tax_rate = 0, 0.0
+
+        if 85 < private_area:
+            rural_special_tax = supply_price * 0.2 * 0.01
+        if supply_price <= 60000:
+            acquisition_tax = supply_price * 0.01
+        elif 60000 < supply_price <= 90000:
+            pass
