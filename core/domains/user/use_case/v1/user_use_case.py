@@ -265,7 +265,9 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
             # SQS Data 전송 -> Data Lake
             # 닉네임일 때는 제외
             if detail_dto.value and detail_dto.code != CodeEnum.NICKNAME.value:
-                msg: SenderDto = self._make_sqs_send_message(dto=detail_dto)
+                msg: SenderDto = self._make_sqs_send_message(
+                    dto=detail_dto, survey_step=survey_step
+                )
                 self._send_sqs_message(
                     queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg
                 )
@@ -276,7 +278,9 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
                     detail_dto.code = code
                     detail_dto.value = None
 
-                    msg: SenderDto = self._make_sqs_send_message(dto=detail_dto)
+                    msg: SenderDto = self._make_sqs_send_message(
+                        dto=detail_dto, survey_step=survey_step
+                    )
                     self._send_sqs_message(
                         queue_type=SqsTypeEnum.USER_DATA_SYNC_TO_LAKE, msg=msg
                     )
@@ -370,12 +374,15 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
         return codes
 
-    def _make_sqs_send_message(self, dto: UpsertUserInfoDetailDto) -> SenderDto:
+    def _make_sqs_send_message(
+        self, dto: UpsertUserInfoDetailDto, survey_step
+    ) -> SenderDto:
         send_user_info_to_lake_dto = SendUserInfoToLakeDto(
             user_id=dto.user_id,
             user_profile_id=dto.user_profile_id,
             code=dto.code,
             value=dto.value,
+            survey_step=survey_step,
         )
 
         return SenderDto(
