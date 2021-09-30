@@ -8,7 +8,8 @@ from sqlalchemy import (
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.house.entity.house_entity import PrivateSaleAvgPriceEntity
+from core.domains.house.entity.house_entity import PrivateSaleAvgPriceEntity, PrivateSaleAvgPriceTradeEntity, \
+    PrivateSaleAvgPriceDepositEntity
 
 
 class PrivateSaleAvgPriceModel(db.Model):
@@ -27,7 +28,12 @@ class PrivateSaleAvgPriceModel(db.Model):
 
     def to_entity(self) -> PrivateSaleAvgPriceEntity:
         return PrivateSaleAvgPriceEntity(
-            pyoung=self.pyoung,
-            trade_price=self.trade_price,
-            deposit_price=self.deposit_price,
+            trade_info=PrivateSaleAvgPriceTradeEntity(
+                pyoung=self.pyoung,
+                trade_price=self.trade_price,
+            ),
+            deposit_info=PrivateSaleAvgPriceDepositEntity(
+                pyoung=self.pyoung,
+                deposit_price=self.deposit_price,
+            )
         )
