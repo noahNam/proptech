@@ -100,8 +100,8 @@ class BoundingUseCase(HouseBaseUseCase):
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
             <dto.level condition>
-                level 15 이상 : 매물 쿼리
-                level 14 이하 : 행정구역별 평균 가격 쿼리
+                level 16 이상 : 매물 쿼리
+                level 15 이하 : 행정구역별 평균 가격 쿼리
                 level 값 조절시 bounding_view()의 presenter 선택 조건 고려해야 합니다.
         """
         if not (dto.start_x and dto.start_y and dto.end_x and dto.end_y and dto.level):

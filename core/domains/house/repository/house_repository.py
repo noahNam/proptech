@@ -1,4 +1,3 @@
-import datetime
 from typing import Optional, List, Any
 
 from geoalchemy2 import Geometry, func as geo_func
@@ -9,7 +8,6 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
-from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_month_from_today, get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
@@ -34,7 +32,6 @@ from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
     RealEstateWithPrivateSaleEntity,
     AdministrativeDivisionEntity,
-    BoundingRealEstateEntity,
     InterestHouseListEntity,
     GetRecentViewListEntity,
     GetSearchHouseListEntity,
@@ -49,6 +46,7 @@ from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
     HouseTypeEnum,
     DivisionLevelEnum,
+    PublicSaleStatusEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -111,19 +109,24 @@ class HouseRepository:
     def get_bounding(self, bounding_filter: Any) -> Optional[list]:
         filters = list()
         filters.append(bounding_filter)
-        filters.append(RealEstateModel.is_available == "True",)
+        filters.append(
+            and_(
+                RealEstateModel.is_available == "True",
+                # PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value
+            )
+        )
 
+        # .join(RealEstateModel.private_sales, isouter=True)
+        # .options(contains_eager(RealEstateModel.private_sales))
         query = (
             session.query(RealEstateModel,)
             .options(joinedload(RealEstateModel.private_sales))
-            .options(joinedload("private_sales.private_sale_avg_prices"))
             .options(joinedload(RealEstateModel.public_sales))
+            .options(joinedload("private_sales.private_sale_avg_prices"))
             .options(joinedload("public_sales.public_sale_avg_prices"))
             .options(joinedload("public_sales.public_sale_photos"))
             .filter(*filters)
         )
-
-        # RawQueryHelper.print_raw_query(query)
         queryset = query.all()
 
         if not queryset:
@@ -145,11 +148,11 @@ class HouseRepository:
 
     def get_administrative_divisions(self, dto: CoordinatesRangeDto) -> Optional[list]:
         """
-             dto.level: 6 ~ 14
+             dto.level: 6 ~ 15
              <filter condition>
-                12 ~ 14 -> 읍, 면, 동, 리 (AdministrativeDivisionModel.level -> "3")
-                9 ~ 11 -> 시, 군, 구 (AdministrativeDivisionModel.level -> "2")
-                8 이하 -> 시, 도 (AdministrativeDivisionModel.level -> "1")
+                12 ~ 15 -> 읍, 면, 동, 리 (AdministrativeDivisionModel.level -> "3")
+                10 ~ 13 -> 시, 군, 구 (AdministrativeDivisionModel.level -> "2")
+                9 이하 -> 시, 도 (AdministrativeDivisionModel.level -> "1")
         """
         filters = list()
         filters.append(
@@ -233,11 +236,11 @@ class HouseRepository:
 
     def get_house_with_public_sales(self, house_id: int) -> list:
         filters = list()
-        filters.append(PublicSaleModel.id == house_id)
         filters.append(
             and_(
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
+                PublicSaleModel.id == house_id,
             )
         )
         query = (
@@ -638,6 +641,30 @@ class HouseRepository:
 
         return result
 
+    def _get_status(
+        self, subscription_start_date: str, subscription_end_date: str
+    ) -> [int]:
+        if (
+            not subscription_start_date
+            or subscription_start_date == "0"
+            or subscription_start_date == "00000000"
+            or not subscription_end_date
+            or subscription_end_date == "0"
+            or subscription_end_date == "00000000"
+        ):
+            return PublicSaleStatusEnum.UNKNOWN.value
+
+        today = get_server_timestamp().strftime("%Y%m%d")
+
+        if today < subscription_start_date:
+            return PublicSaleStatusEnum.BEFORE_OPEN.value
+        elif subscription_start_date <= today <= subscription_end_date:
+            return PublicSaleStatusEnum.IS_RECEIVING.value
+        elif subscription_end_date < today:
+            return PublicSaleStatusEnum.IS_CLOSED.value
+        else:
+            return PublicSaleStatusEnum.UNKNOWN.value
+
     def _make_get_search_house_list_entity(
         self, queryset: Optional[List], user_id: int
     ) -> List[GetSearchHouseListEntity]:
@@ -649,10 +676,6 @@ class HouseRepository:
                     self.get_public_interest_house(
                         dto=GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
                     )
-                )
-                is_receiving = self._is_subscription_receiving(
-                    start_date=query.subscription_start_date,
-                    end_date=query.subscription_end_date,
                 )
                 avg_down_payment = self._get_avg_down_payment(
                     min_down_payment=query.min_down_payment,
@@ -668,7 +691,10 @@ class HouseRepository:
                         image_path=query.path,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
-                        is_receiving=is_receiving,
+                        status=self._get_status(
+                            subscription_start_date=query.subscription_start_date,
+                            subscription_end_date=query.subscription_end_date,
+                        ),
                         avg_down_payment=avg_down_payment,
                         avg_supply_price=query.avg_supply_price
                         if query.avg_supply_price
@@ -834,33 +860,9 @@ class HouseRepository:
         query_set = query.first()
         return query_set.to_report_entity()
 
-    def _is_subscription_receiving(
-        self, start_date: Optional[str], end_date: Optional[str]
-    ) -> bool:
-        if not start_date or end_date:
-            return False
-        today = get_server_timestamp()
-        start_date_to_datetime = datetime.datetime.strptime(start_date, "%Y%m%d")
-        end_date_to_datetime = datetime.datetime.strptime(end_date, "%Y%m%d")
-        if start_date_to_datetime <= today <= end_date_to_datetime:
-            return True
-        return False
-
     def _get_avg_down_payment(
         self, min_down_payment: Optional[int], max_down_payment: Optional[int]
     ) -> float:
         if not min_down_payment or max_down_payment:
             return 0
         return (min_down_payment + max_down_payment) / 2
-
-    def _get_public_sales_avg_supply_price(self):
-        pass
-
-    def get_real_estates_with_private_sales_info_filters(self):
-        pass
-
-    def get_real_estates_with_private_sales_info(
-        self, real_estate_id: int, filters: list
-    ):
-        filters = list()
-        pass
