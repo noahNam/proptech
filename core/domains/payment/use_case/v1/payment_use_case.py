@@ -3,16 +3,17 @@ from http import HTTPStatus
 from typing import Union, List, Optional
 
 import inject
+import requests
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from core.domains.house.entity.house_entity import GetPublicSaleOfTicketUsageEntity
 from core.domains.house.enum import HouseTopicEnum
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
-    UseTicketDto,
+    UseHouseTicketDto,
     CreateTicketDto,
-    UpdateTicketUsageResultDto,
     UseRecommendCodeDto,
+    UseUserTicketDto,
 )
 from core.domains.payment.entity.payment_entity import (
     PromotionEntity,
@@ -23,8 +24,15 @@ from core.domains.payment.enum.payment_enum import (
     TicketSignEnum,
     PromotionTypeEnum,
     RecommendCodeMaxCountEnum,
+    PromotionDivEnum,
 )
 from core.domains.payment.repository.payment_repository import PaymentRepository
+from core.domains.report.entity.report_entity import TicketUsageResultEntity
+from core.domains.report.enum import ReportTopicEnum
+from core.domains.report.enum.report_enum import TicketUsageTypeEnum
+from core.domains.user.entity.user_entity import UserProfileEntity
+from core.domains.user.enum import UserTopicEnum
+from core.domains.user.enum.user_enum import UserSurveyStepEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
 
@@ -32,6 +40,40 @@ class PaymentBaseUseCase:
     @inject.autoparams()
     def __init__(self, payment_repo: PaymentRepository):
         self._payment_repo = payment_repo
+
+    def _get_user_profile(self, user_id: int) -> Optional[UserProfileEntity]:
+        send_message(
+            topic_name=UserTopicEnum.GET_USER_PROFILE, user_id=user_id,
+        )
+        return get_event_object(topic_name=UserTopicEnum.GET_USER_PROFILE)
+
+    def _make_create_use_ticket_dto(
+        self, user_id: int, type_: int, amount: int, sign: TicketSignEnum
+    ) -> CreateTicketDto:
+        return CreateTicketDto(
+            user_id=user_id, type=type_, amount=amount, sign=sign, created_by="system",
+        )
+
+    def _update_ticket_usage_result(
+        self, user_id: int, house_id: Optional[int], ticket_id: int
+    ) -> bool:
+        send_message(
+            topic_name=ReportTopicEnum.UPDATE_TICKET_USAGE_RESULT,
+            user_id=user_id,
+            house_id=house_id,
+            ticket_id=ticket_id,
+        )
+        return get_event_object(topic_name=ReportTopicEnum.UPDATE_TICKET_USAGE_RESULT)
+
+    def _is_promotion_available(self, promotion: PromotionEntity) -> bool:
+        if not promotion.promotion_usage_count:
+            return True
+
+        return (
+            True
+            if promotion.max_count > promotion.promotion_usage_count.usage_count
+            else False
+        )
 
 
 class GetTicketUsageResultUseCase(PaymentBaseUseCase):
@@ -45,18 +87,33 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        public_house_ids: List[int] = self._payment_repo.get_ticket_usage_results(
-            dto=dto
+        ticket_usage_results: List[
+            TicketUsageResultEntity
+        ] = self._get_ticket_usage_results(
+            user_id=dto.user_id, type_=TicketUsageTypeEnum.HOUSE.value
         )
         result = list()
-        if public_house_ids:
+        if ticket_usage_results:
             result: List[
                 GetPublicSaleOfTicketUsageEntity
             ] = self._get_public_sales_of_ticket_usage(
-                public_house_ids=public_house_ids
+                public_house_ids=[
+                    ticket_usage_result.public_house_id
+                    for ticket_usage_result in ticket_usage_results
+                ]
             )
 
         return UseCaseSuccessOutput(value=result)
+
+    def _get_ticket_usage_results(
+        self, user_id: int, type_: str
+    ) -> List[TicketUsageResultEntity]:
+        send_message(
+            topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS,
+            user_id=user_id,
+            type_=type_,
+        )
+        return get_event_object(topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS)
 
     def _get_public_sales_of_ticket_usage(
         self, public_house_ids: List[int]
@@ -70,9 +127,9 @@ class GetTicketUsageResultUseCase(PaymentBaseUseCase):
         )
 
 
-class UseBasicTicketUseCase(PaymentBaseUseCase):
+class UseHouseTicketUseCase(PaymentBaseUseCase):
     def execute(
-        self, dto: UseTicketDto
+        self, dto: UseHouseTicketDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.user_id:
             return UseCaseFailureOutput(
@@ -81,18 +138,33 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
+        # 유저 설문을 완료하지 않은 경우 사용 X
+        if (
+            self._get_user_profile(user_id=dto.user_id).survey_step
+            != UserSurveyStepEnum.STEP_COMPLETE.value
+        ):
+            return UseCaseFailureOutput(
+                type=HTTPStatus.BAD_REQUEST,
+                message="needs user surveys",
+                code=HTTPStatus.BAD_REQUEST,
+            )
+
         # 이미 티켓을 사용한 분양건인 경우 사용 X
-        if self._payment_repo.is_ticket_usage(dto=dto):
+        if self._is_ticket_usage_for_house(user_id=dto.user_id, house_id=dto.house_id):
             return UseCaseFailureOutput(
                 type=HTTPStatus.BAD_REQUEST,
                 message="this is product where tickets have already been used",
                 code=HTTPStatus.BAD_REQUEST,
             )
 
-        promotion: Optional[PromotionEntity] = self._payment_repo.get_promotion(dto=dto)
+        promotion: Optional[PromotionEntity] = self._payment_repo.get_promotion(
+            user_id=dto.user_id, div=PromotionDivEnum.HOUSE.value
+        )
         if not promotion:
             # 프로모션은 없지만 유료 티켓을 사용하는 경우
-            number_of_ticket: int = self._payment_repo.get_number_of_ticket(dto=dto)
+            number_of_ticket: int = self._payment_repo.get_number_of_ticket(
+                user_id=dto.user_id
+            )
             if not number_of_ticket:
                 # 티켓 수가 부족할 때
                 return UseCaseFailureOutput(
@@ -101,7 +173,9 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                     code=HTTPStatus.BAD_REQUEST,
                 )
 
-            result: Optional[UseCaseFailureOutput] = self._usage_charged_ticket(dto=dto)
+            result: Optional[
+                UseCaseFailureOutput
+            ] = self._use_ticket_to_house_by_charged(dto=dto)
             if isinstance(result, UseCaseFailureOutput):
                 return result
         else:
@@ -123,7 +197,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                 if not is_promotion_available:
                     # 프로모션 횟수는 전부 사용했지만 유료 티켓이 있는 경우
                     number_of_ticket: int = self._payment_repo.get_number_of_ticket(
-                        dto=dto
+                        user_id=dto.user_id
                     )
                     if not number_of_ticket:
                         # 티켓 수가 부족할 때
@@ -133,15 +207,17 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                             )
                         )
 
-                    result: Optional[UseCaseFailureOutput] = self._usage_charged_ticket(
-                        dto=dto
-                    )
+                    result: Optional[
+                        UseCaseFailureOutput
+                    ] = self._use_ticket_to_house_by_charged(dto=dto)
                     if isinstance(result, UseCaseFailureOutput):
                         return result
 
                 else:
                     # 프로모션 횟수가 남아있는 경우
-                    return self._usage_promotion_ticket(dto=dto, promotion=promotion)
+                    return self._use_ticket_to_house_by_promotion(
+                        dto=dto, promotion=promotion
+                    )
             elif promotion.type == PromotionTypeEnum.SOME.value:
                 """
                 특정 분양에 프로모션을 적용하는 경우
@@ -161,7 +237,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                 if dto.house_id not in promotion_house_id:
                     # 프로모션에 속하지 않은 분양건이면 유료티켓 사용
                     number_of_ticket: int = self._payment_repo.get_number_of_ticket(
-                        dto=dto
+                        user_id=dto.user_id
                     )
                     if not number_of_ticket:
                         # 티켓 수가 부족할 때
@@ -171,9 +247,9 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                             code=HTTPStatus.BAD_REQUEST,
                         )
 
-                    result: Optional[UseCaseFailureOutput] = self._usage_charged_ticket(
-                        dto=dto
-                    )
+                    result: Optional[
+                        UseCaseFailureOutput
+                    ] = self._use_ticket_to_house_by_charged(dto=dto)
                     if isinstance(result, UseCaseFailureOutput):
                         return result
                 else:
@@ -186,7 +262,7 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
                     if not is_promotion_available:
                         # 프로모션 횟수는 전부 사용했지만 유료 티켓이 있는 경우
                         number_of_ticket: int = self._payment_repo.get_number_of_ticket(
-                            dto=dto
+                            user_id=dto.user_id
                         )
                         if not number_of_ticket:
                             # 티켓 수가 부족할 때
@@ -198,59 +274,52 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
 
                         result: Optional[
                             UseCaseFailureOutput
-                        ] = self._usage_charged_ticket(dto=dto)
+                        ] = self._use_ticket_to_house_by_charged(dto=dto)
                         if isinstance(result, UseCaseFailureOutput):
                             return result
 
                     else:
                         # 프로모션 횟수가 남아있는 경우
-                        return self._usage_promotion_ticket(
+                        return self._use_ticket_to_house_by_promotion(
                             dto=dto, promotion=promotion
                         )
         return UseCaseSuccessOutput(value=dict(type="success", message="ticket used"))
 
-    def _is_promotion_available(self, promotion: PromotionEntity) -> bool:
-        if not promotion.promotion_usage_count:
-            return True
-
-        return (
-            True
-            if promotion.max_count > promotion.promotion_usage_count.usage_count
-            else False
+    def _is_ticket_usage_for_house(self, user_id: int, house_id: int) -> bool:
+        send_message(
+            topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_HOUSE,
+            user_id=user_id,
+            house_id=house_id,
         )
+        return get_event_object(topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_HOUSE)
 
     def _make_failure_dict(self, message: str) -> dict:
         return dict(type="failure", message=message)
 
-    def _make_create_use_ticket_dto(
-        self, dto: UseTicketDto, type_: int, amount: int, sign: TicketSignEnum
-    ) -> CreateTicketDto:
-        return CreateTicketDto(
-            user_id=dto.user_id,
-            type=type_,
-            amount=amount,
-            sign=sign,
-            created_by="system",
+    def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> int:
+        # todo. 자비스 API 만들어지면 변경 필요
+        response = requests.get(
+            url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id={}&user_id={}".format(
+                dto.house_id, dto.user_id
+            ),
+            headers={
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
+                "Authorization": dto.auth_header,
+            },
         )
 
-    def _make_update_ticket_usage_result_dto(self, dto: UseTicketDto, ticket_id: int):
-        return UpdateTicketUsageResultDto(
-            user_id=dto.user_id, public_house_id=dto.house_id, ticket_id=ticket_id,
-        )
+        return response.status_code
 
-    def _call_jarvis_analytics_api(self, dto: UseTicketDto) -> HTTPStatus:
-        # todo. jarvis 분석 api 호출
-        pass
-
-    def _usage_charged_ticket(
-        self, dto: UseTicketDto
+    def _use_ticket_to_house_by_charged(
+        self, dto: UseHouseTicketDto
     ) -> Optional[UseCaseFailureOutput]:
-        response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
+        response: int = self._call_jarvis_house_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
             # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
-                dto=dto,
-                type_=TicketTypeDivisionEnum.USED_TICKET.value,
+                user_id=dto.user_id,
+                type_=TicketTypeDivisionEnum.USED_TICKET_TO_HOUSE.value,
                 amount=1,
                 sign=TicketSignEnum.MINUS.value,
             )
@@ -260,30 +329,27 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
             self._payment_repo.create_ticket_target(dto=dto, ticket_id=ticket_id)
 
             # 티켓 사용 결과 ticket_id 업데이트 (ticket_usage_results 스키마)
-            update_ticket_usage_result_dto: UpdateTicketUsageResultDto = self._make_update_ticket_usage_result_dto(
-                dto=dto, ticket_id=ticket_id
-            )
-            self._payment_repo.update_ticket_usage_result(
-                dto=update_ticket_usage_result_dto
+            self._update_ticket_usage_result(
+                user_id=dto.user_id, house_id=dto.house_id, ticket_id=ticket_id
             )
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
             return UseCaseFailureOutput(
                 type=HTTPStatus.INTERNAL_SERVER_ERROR,
-                message="error on jarvis (usage_charged_ticket)",
+                message="error on jarvis (use_ticket_to_house_by_charged)",
                 code=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
         return None
 
-    def _usage_promotion_ticket(
-        self, dto: UseTicketDto, promotion: PromotionEntity
+    def _use_ticket_to_house_by_promotion(
+        self, dto: UseHouseTicketDto, promotion: PromotionEntity
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        response: HTTPStatus = self._call_jarvis_analytics_api(dto=dto)
+        response: int = self._call_jarvis_house_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
             # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
-                dto=dto,
-                type_=TicketTypeDivisionEnum.USED_PROMOTION.value,
+                user_id=dto.user_id,
+                type_=TicketTypeDivisionEnum.USED_PROMOTION_TO_HOUSE.value,
                 amount=0,
                 sign=TicketSignEnum.MINUS.value,
             )
@@ -293,27 +359,182 @@ class UseBasicTicketUseCase(PaymentBaseUseCase):
             self._payment_repo.create_ticket_target(dto=dto, ticket_id=ticket_id)
 
             # 티켓 사용 결과 ticket_id 업데이트 (ticket_usage_results 스키마)
-            update_ticket_usage_result_dto: UpdateTicketUsageResultDto = self._make_update_ticket_usage_result_dto(
-                dto=dto, ticket_id=ticket_id
-            )
-            self._payment_repo.update_ticket_usage_result(
-                dto=update_ticket_usage_result_dto
+            self._update_ticket_usage_result(
+                user_id=dto.user_id, house_id=dto.house_id, ticket_id=ticket_id
             )
 
             #  프로모션 사용횟수 생성 (promotion_usage_counts 스키마)
             if promotion.promotion_usage_count:
                 self._payment_repo.update_promotion_usage_count(
-                    dto=dto, promotion_id=promotion.id
+                    user_id=dto.user_id, promotion_id=promotion.id
                 )
             else:
                 self._payment_repo.create_promotion_usage_count(
-                    dto=dto, promotion_id=promotion.id
+                    user_id=dto.user_id, promotion_id=promotion.id
                 )
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
             return UseCaseFailureOutput(
                 type=HTTPStatus.INTERNAL_SERVER_ERROR,
-                message="error on jarvis (usage_promotion_ticket)",
+                message="error on jarvis (use_ticket_to_house_by_promotion)",
+                code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+        return UseCaseSuccessOutput(
+            value=dict(type="success", message="promotion used")
+        )
+
+
+class UseUserTicketUseCase(PaymentBaseUseCase):
+    def execute(
+        self, dto: UseUserTicketDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        # 유저 설문을 완료하지 않은 경우 사용 X
+        if (
+            self._get_user_profile(user_id=dto.user_id).survey_step
+            != UserSurveyStepEnum.STEP_COMPLETE.value
+        ):
+            return UseCaseFailureOutput(
+                type=HTTPStatus.BAD_REQUEST,
+                message="needs user surveys",
+                code=HTTPStatus.BAD_REQUEST,
+            )
+
+        # 유저 분석 프로모션은 한번 구입 시 무제한 사용 가능 -> 유저 설문을 바꿔보면서 분석 가능
+        if self._is_ticket_usage_for_user(user_id=dto.user_id):
+            # 재분석 실행(무료)
+            response: int = self._call_jarvis_user_analytics_api(dto=dto)
+            if response == HTTPStatus.OK:
+                return UseCaseSuccessOutput(
+                    value=dict(type="success", message="ticket reused")
+                )
+            else:
+                # jarvis response 로 200 이외의 값을 받았을 때
+                return UseCaseFailureOutput(
+                    type=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    message="error on jarvis (reuse_ticket_to_user)",
+                    code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+        else:
+            promotion: Optional[PromotionEntity] = self._payment_repo.get_promotion(
+                user_id=dto.user_id, div=PromotionDivEnum.USER.value
+            )
+            if not promotion:
+                # 프로모션은 없지만 유료 티켓을 사용하는 경우
+                number_of_ticket: int = self._payment_repo.get_number_of_ticket(
+                    user_id=dto.user_id
+                )
+                if not number_of_ticket:
+                    # 티켓 수가 부족할 때
+                    return UseCaseFailureOutput(
+                        type=HTTPStatus.BAD_REQUEST,
+                        message="insufficient number of tickets",
+                        code=HTTPStatus.BAD_REQUEST,
+                    )
+
+                result: Optional[
+                    UseCaseFailureOutput
+                ] = self._use_ticket_to_user_by_charged(dto=dto)
+                if isinstance(result, UseCaseFailureOutput):
+                    return result
+            else:
+                # 적용 프로모션이 있는 경우 무조건 사용 가능
+                """
+                    MVP 때는 promoion.type == all  +  promoion.max_count = 1
+                    1. 유저분석 프로모션은 1회 사용 시 평생 무료이므로 max_count 즉, 사용횟수는 의미가 없다. 즉, 입력되는 1은 무시해도 되는 값
+                    2. 유저분석 프로모션은 1회 사용 시 평생 무료이므로 promotion_usage_counts 가 의미가 없으나 어느시점의 프로모션에서 유저가 사용을 했는지 히스토리성으로 사용하기로 한다.
+                """
+                return self._use_ticket_to_user_by_promotion(
+                    dto=dto, promotion=promotion
+                )
+        return UseCaseSuccessOutput(value=dict(type="success", message="ticket used"))
+
+    def _is_ticket_usage_for_user(self, user_id: int) -> bool:
+        send_message(
+            topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_USER, user_id=user_id,
+        )
+        return get_event_object(topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_USER)
+
+    def _call_jarvis_user_analytics_api(self, dto: UseUserTicketDto) -> int:
+        # todo. 자비스 API 만들어지면 변경 필요
+        response = requests.get(
+            url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id=1",
+            headers={
+                "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
+                "Authorization": dto.auth_header,
+            },
+        )
+
+        return response.status_code
+
+    def _use_ticket_to_user_by_charged(
+        self, dto: UseUserTicketDto
+    ) -> Optional[UseCaseFailureOutput]:
+        response: int = self._call_jarvis_user_analytics_api(dto=dto)
+        if response == HTTPStatus.OK:
+            """
+            유저 분석시에는 ticket_targets 생성 X
+            """
+            # 티켓 사용 히스토리 생성 (tickets 스키마)
+            create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
+                user_id=dto.user_id,
+                type_=TicketTypeDivisionEnum.USED_TICKET_TO_USER.value,
+                amount=1,
+                sign=TicketSignEnum.MINUS.value,
+            )
+            ticket_id: int = self._payment_repo.create_ticket(dto=create_use_ticket_dto)
+
+            # 티켓 사용 결과 ticket_id 업데이트 (ticket_usage_results 스키마)
+            self._update_ticket_usage_result(
+                user_id=dto.user_id, house_id=None, ticket_id=ticket_id
+            )
+        else:
+            # jarvis response 로 200 이외의 값을 받았을 때
+            return UseCaseFailureOutput(
+                type=HTTPStatus.INTERNAL_SERVER_ERROR,
+                message="error on jarvis (use_ticket_to_user_by_charged)",
+                code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            )
+        return None
+
+    def _use_ticket_to_user_by_promotion(
+        self, dto: UseUserTicketDto, promotion: PromotionEntity
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        response: int = self._call_jarvis_user_analytics_api(dto=dto)
+        if response == HTTPStatus.OK:
+            """
+            유저 분석시에는 ticket_targets 생성 X
+            """
+            # 티켓 사용 히스토리 생성 (tickets 스키마)
+            create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
+                user_id=dto.user_id,
+                type_=TicketTypeDivisionEnum.USED_PROMOTION_TO_USER.value,
+                amount=0,
+                sign=TicketSignEnum.MINUS.value,
+            )
+            ticket_id: int = self._payment_repo.create_ticket(dto=create_use_ticket_dto)
+
+            # 티켓 사용 결과 ticket_id 업데이트 (ticket_usage_results 스키마)
+            self._update_ticket_usage_result(
+                user_id=dto.user_id, house_id=None, ticket_id=ticket_id
+            )
+
+            #  프로모션 사용횟수 생성 (promotion_usage_counts 스키마)
+            self._payment_repo.create_promotion_usage_count(
+                user_id=dto.user_id, promotion_id=promotion.id
+            )
+        else:
+            # jarvis response 로 200 이외의 값을 받았을 때
+            return UseCaseFailureOutput(
+                type=HTTPStatus.INTERNAL_SERVER_ERROR,
+                message="error on jarvis (use_ticket_to_user_by_promotion)",
                 code=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
         return UseCaseSuccessOutput(
@@ -432,7 +653,7 @@ class UseRecommendCodeUseCase(PaymentBaseUseCase):
 
         # 무료 ticket 추가, 티켓 히스토리 생성 (tickets 스키마)
         create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
-            dto=dto,
+            user_id=dto.user_id,
             type_=TicketTypeDivisionEnum.SHARE_PROMOTION.value,
             amount=1,
             sign=TicketSignEnum.PLUS.value,
@@ -452,17 +673,7 @@ class UseRecommendCodeUseCase(PaymentBaseUseCase):
         return UseCaseSuccessOutput()
 
     def _split_code_by_code_group(self, full_code: str) -> dict:
+        # todo. 잘못된 형식에 대한 return 필요함
         code_group_list = re.findall("\d", full_code)
         code_group = "".join(code_group_list)
         return dict(code=full_code.split(code_group)[1], code_group=code_group)
-
-    def _make_create_use_ticket_dto(
-        self, dto: UseRecommendCodeDto, type_: int, amount: int, sign: TicketSignEnum
-    ) -> CreateTicketDto:
-        return CreateTicketDto(
-            user_id=dto.user_id,
-            type=type_,
-            amount=amount,
-            sign=sign,
-            created_by="system",
-        )

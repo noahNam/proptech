@@ -65,10 +65,11 @@ class GetUserInfoDto(BaseModel):
 
 
 class SendUserInfoToLakeDto(BaseModel):
-    user_id: int = None
+    user_id: Optional[int]
     user_profile_id: int
     code: int
-    value: str = None
+    value: Optional[str]
+    survey_step: Optional[int]
 
     def to_dict(self):
         return self.dict()
@@ -97,3 +98,8 @@ class RecentlyViewDto(BaseModel):
     user_id: int
     house_id: int
     type: int
+
+
+class GetUserProviderDto(BaseModel):
+    user_id: int
+    auth_header: str

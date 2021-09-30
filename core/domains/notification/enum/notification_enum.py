@@ -35,7 +35,7 @@ class NotificationPushTypeEnum(Enum):
         MARKETING = 마케 Push
 
         사용처 : 1. 코드레벨에서 사용처 현재 없음. 설정쪽에서 같은 value를 쓰기는 하지만 Enum을 가져와서 사용하지는 않음 (Parameter로 동일 value 값이 바로 들어옴)
-                    1-1. UpdateReceiveNotificationSettingUseCase 에서 유저 마케팅 동의여부 업데이트 용도로 사용. 그외 사용처 없음.
+                    1-1. UpdateReceiveNotificationSettingUseCase 에서 유저 마케팅 동의여부 체크 용도로 사용. 그외 사용처 없음.
                2. 추후 Push 고도화 시 코드레벨에서도 필요할 듯 하여 남겨둠.
                3. AWS SNS Topic Level로 사용중
     """

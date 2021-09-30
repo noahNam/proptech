@@ -11,7 +11,7 @@ from sqlalchemy import (
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.post_model import PostModel
-from core.domains.post.entity.article_entity import ArticleEntity
+from core.domains.post.entity.post_entity import ArticleEntity
 
 
 class ArticleModel(db.Model):
@@ -24,10 +24,4 @@ class ArticleModel(db.Model):
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
     def to_entity(self) -> ArticleEntity:
-        return ArticleEntity(
-            id=self.id,
-            post_id=self.post_id,
-            body=self.body,
-            created_at=self.created_at,
-            updated_at=self.updated_at,
-        )
+        return ArticleEntity(body=self.body,)

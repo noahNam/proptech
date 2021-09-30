@@ -10,13 +10,12 @@ from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
-    CalendarInfoEntity,
-    PublicSaleCalendarEntity,
     HousePublicDetailEntity,
-    SearchPublicSaleEntity,
-    SearchRealEstateEntity,
-    SearchAdministrativeDivisionEntity,
     GetSearchHouseListEntity,
+    SimpleCalendarInfoEntity,
+    PublicSaleSimpleCalendarEntity,
+    PublicSaleDetailCalendarEntity,
+    DetailCalendarInfoEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -25,6 +24,7 @@ from core.domains.house.enum.house_enum import (
     SectionType,
     BannerSubTopic,
     PreSaleTypeEnum,
+    PublicSaleStatusEnum,
 )
 from core.use_case_output import UseCaseSuccessOutput
 
@@ -55,7 +55,13 @@ bounding_entitiy = BoundingRealEstateEntity(
 
 
 def test_upsert_interest_house_view_when_like_public_sales_then_insert_success(
-    client, session, test_request_context, make_header, make_authorization, create_users
+    client,
+    session,
+    test_request_context,
+    make_header,
+    make_authorization,
+    create_users,
+    create_real_estate_with_public_sale,
 ):
     user_id = create_users[0].id
     house_id = 1
@@ -78,7 +84,7 @@ def test_upsert_interest_house_view_when_like_public_sales_then_insert_success(
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"] == "success"
+    assert data["house"]["jibun_address"] is not None
 
 
 def test_upsert_interest_house_view_when_unlike_public_sales_then_update_is_like_equals_false(
@@ -88,6 +94,7 @@ def test_upsert_interest_house_view_when_unlike_public_sales_then_update_is_like
     make_header,
     make_authorization,
     interest_house_factory,
+    create_real_estate_with_public_sale,
 ):
     interest_house = interest_house_factory.build()
     session.add(interest_house)
@@ -126,7 +133,7 @@ def test_upsert_interest_house_view_when_unlike_public_sales_then_update_is_like
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["result"] == "success"
+    assert isinstance(data["house"], dict)
     assert result.is_like is False
 
 
@@ -277,7 +284,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         accept="application/json",
     )
 
-    public_sale_calendar = PublicSaleCalendarEntity(
+    public_sale_detail_calendar = PublicSaleDetailCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
@@ -297,17 +304,17 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calendar_info = CalendarInfoEntity(
+    sample_calendar_info = DetailCalendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
-        public_sale=public_sale_calendar,
+        public_sale=public_sale_detail_calendar,
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
         with test_request_context:
@@ -340,7 +347,7 @@ def test_house_public_detail_view_when_valid_request_id(
         accept="application/json",
     )
 
-    sample_entity = HousePublicDetailEntity(
+    mock_entity = HousePublicDetailEntity(
         id=1,
         name="분양아파트",
         road_address="서울특별시 서초구 어딘가1길 10",
@@ -365,7 +372,6 @@ def test_house_public_detail_view_when_valid_request_id(
         min_acquisition_tax=2000,
         max_acquisition_tax=3000,
         public_sales=None,
-        near_houses=None,
     )
 
     with patch(
@@ -373,21 +379,27 @@ def test_house_public_detail_view_when_valid_request_id(
     ) as mock_enable:
         mock_enable.return_value = True
         with patch(
-            "core.domains.house.repository.house_repository.HouseRepository.get_house_public_detail"
+            "core.domains.house.repository.house_repository.HouseRepository.get_house_with_public_sales"
         ) as mock_house_public_detail:
-            mock_house_public_detail.return_value = sample_entity
-            with test_request_context:
-                response = client.get(
-                    url_for("api/tanos.house_public_detail_view", house_id=1),
-                    headers=headers,
-                )
+            mock_house_public_detail.return_value = create_real_estate_with_public_sale[
+                0
+            ]
+            with patch(
+                "core.domains.house.repository.house_repository.HouseRepository.make_house_public_detail_entity"
+            ) as mock_result:
+                mock_result.return_value = mock_entity
+                with test_request_context:
+                    response = client.get(
+                        url_for("api/tanos.house_public_detail_view", house_id=1),
+                        headers=headers,
+                    )
 
     data = response.get_json()["data"]
 
     assert response.status_code == 200
     assert mock_house_public_detail.called is True
     assert mock_enable.called is True
-    assert data["house"]["name"] == sample_entity.name
+    assert data["house"]["name"] == mock_entity.name
 
 
 def test_get_interest_house_list_view_when_like_one_public_sale_then_return_result_one(
@@ -535,6 +547,7 @@ def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
     make_authorization,
     create_users,
     create_real_estate_with_public_sale,
+    public_sale_photo_factory,
 ):
     authorization = make_authorization(user_id=create_users[0].id)
     headers = make_header(
@@ -543,21 +556,24 @@ def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
         accept="application/json",
     )
 
-    real_estates = [
-        SearchRealEstateEntity(
-            id=1, jibun_address="서울시 서초구 어딘가", road_address="서울시 서초구 어딘가길"
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    session.add(public_sale_photo)
+    session.commit()
+
+    mock_result = [
+        GetSearchHouseListEntity(
+            house_id=1,
+            jibun_address="서울시 서초구 어딘가",
+            name="반포자이",
+            is_like=False,
+            image_path=public_sale_photo.path,
+            subscription_start_date="20210901",
+            subscription_end_date="202109018",
+            status=PublicSaleStatusEnum.IS_CLOSED.value,
+            avg_down_payment=100000.75,
+            avg_supply_price=200000.23,
         )
     ]
-    public_sales = [SearchPublicSaleEntity(id=2, name="서울숲아파트")]
-    administrative_divisions = [
-        SearchAdministrativeDivisionEntity(id=3, name="서울특별시 서초구")
-    ]
-
-    mock_result = GetSearchHouseListEntity(
-        real_estates=real_estates,
-        public_sales=public_sales,
-        administrative_divisions=administrative_divisions,
-    )
 
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.get_search_house_list"
@@ -573,15 +589,7 @@ def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
 
     assert response.status_code == 200
     assert mock_search.called is True
-    assert (
-        data["houses"]["administrative_divisions"][0]["name"]
-        == administrative_divisions[0].name
-    )
-    assert (
-        data["houses"]["real_estates"][0]["jibun_address"]
-        == real_estates[0].jibun_address
-    )
-    assert data["houses"]["public_sales"][0]["name"] == public_sales[0].name
+    assert data["houses"][0]["name"] == mock_result[0].name
 
 
 def test_get_bounding_within_radius_view_when_no_search_type_then_fail(
@@ -709,7 +717,7 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     session.add_all([banner1, banner2])
     session.commit()
 
-    public_sale_calendar = PublicSaleCalendarEntity(
+    public_sale_simple_calendar = PublicSaleSimpleCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
@@ -729,17 +737,17 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         move_in_year=2023,
         move_in_month=12,
     )
-    sample_calendar_info = CalendarInfoEntity(
+    sample_calendar_info = SimpleCalendarInfoEntity(
         is_like=True,
         id=1,
         name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
-        public_sale=public_sale_calendar,
+        public_sale=public_sale_simple_calendar,
     )
 
     with patch(
-        "core.domains.house.repository.house_repository.HouseRepository.get_calendar_info"
+        "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
         with test_request_context:

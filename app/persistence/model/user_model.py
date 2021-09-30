@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.user.entity.user_entity import UserEntity
+from core.domains.user.entity.user_entity import UserEntity, PushTargetEntity
 
 
 class UserModel(db.Model):
@@ -61,4 +61,9 @@ class UserModel(db.Model):
             tickets=[ticket.to_entity() for ticket in self.tickets]
             if self.tickets
             else None,
+        )
+
+    def to_push_target_entity(self) -> PushTargetEntity:
+        return PushTargetEntity(
+            id=self.id, is_active=self.is_active, device=self.device.to_entity(),
         )

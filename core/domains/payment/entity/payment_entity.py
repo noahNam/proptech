@@ -4,11 +4,6 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
-class TicketTypeEntity(BaseModel):
-    id: int
-    division: str
-
-
 class TicketTargetEntity(BaseModel):
     id: int
     ticket_id: int
@@ -24,26 +19,7 @@ class TicketEntity(BaseModel):
     is_active: bool
     created_by: str
     created_at: datetime
-    ticket_type: Optional[TicketTypeEntity]
     ticket_targets: Optional[List[TicketTargetEntity]]
-
-
-class TicketUsageResultDetailEntity(BaseModel):
-    id: int
-    ticket_usage_result_id: int
-    house_type: str
-    subscription_type: str
-    rank: int
-
-
-class TicketUsageResultEntity(BaseModel):
-    id: int
-    user_id: int
-    house_id: int
-    ticket_id: int
-    is_active: bool
-    created_at: datetime
-    ticket_usage_result_details: TicketUsageResultDetailEntity
 
 
 class PromotionHouseEntity(BaseModel):
@@ -62,6 +38,7 @@ class PromotionUsageCountEntity(BaseModel):
 class PromotionEntity(BaseModel):
     id: int
     type: str
+    div: str
     max_count: int
     is_active: bool
     created_at: datetime

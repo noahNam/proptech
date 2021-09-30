@@ -11,6 +11,7 @@ from app.http.requests.v1.house_request import (
     GetRecentViewListRequestSchema,
     GetMainPreSubscriptionRequestSchema,
     GetHouseMainRequestSchema,
+    GetHousePublicNearPrivateSalesRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -25,6 +26,7 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetSearchHouseListPresenter,
     GetHouseMainPresenter,
     GetMainPreSubscriptionPresenter,
+    GetHousePublicNearPrivateSalesPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
 from core.domains.house.enum.house_enum import (
@@ -42,6 +44,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetRecentViewListUseCase,
     GetHouseMainUseCase,
     GetMainPreSubscriptionUseCase,
+    GetHousePublicNearPrivateSalesUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -69,11 +72,11 @@ def upsert_interest_house_view(house_id):
 def bounding_view():
     try:
         dto = GetCoordinatesRequestSchema(
-            start_x=float(request.args.get("start_x")),
-            start_y=float(request.args.get("start_y")),
-            end_x=float(request.args.get("end_x")),
-            end_y=float(request.args.get("end_y")),
-            level=int(request.args.get("level")),
+            start_x=request.args.get("start_x"),
+            start_y=request.args.get("start_y"),
+            end_x=request.args.get("end_x"),
+            end_y=request.args.get("end_y"),
+            level=request.args.get("level"),
         ).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
@@ -83,7 +86,7 @@ def bounding_view():
             )
         )
     if dto.level < BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
-        # level 14 이하 : 행정구역 Presenter 변경
+        # level 15 이하 : 행정구역 Presenter 변경
         return BoundingAdministrativePresenter().transform(
             BoundingUseCase().execute(dto=dto)
         )
@@ -101,6 +104,20 @@ def house_public_detail_view(house_id: int):
 
     return GetHousePublicDetailPresenter().transform(
         GetHousePublicDetailUseCase().execute(dto=dto)
+    )
+
+
+@api.route("/v1/houses/public/<int:house_id>/near_houses", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("house_public_near_private_sales_view.yml", methods=["GET"])
+def house_public_near_private_sales_view(house_id: int):
+    dto = GetHousePublicNearPrivateSalesRequestSchema(
+        house_id=house_id
+    ).validate_request_and_make_dto()
+
+    return GetHousePublicNearPrivateSalesPresenter().transform(
+        GetHousePublicNearPrivateSalesUseCase().execute(dto=dto)
     )
 
 
@@ -163,7 +180,7 @@ def get_recent_view_list_view():
 @swag_from("get_search_house_list_view.yml", methods=["GET"])
 def get_search_house_list_view():
     dto = GetSearchHouseListRequestSchema(
-        keywords=request.args.get("keywords"),
+        keywords=request.args.get("keywords"), user_id=current_user.id,
     ).validate_request_and_make_dto()
 
     return GetSearchHouseListPresenter().transform(

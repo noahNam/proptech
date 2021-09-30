@@ -137,17 +137,6 @@ def upgrade():
     )
 
     op.create_table(
-        "ticket_types",
-        sa.Column(
-            "id",
-            sa.SmallInteger().with_variant(sa.SmallInteger(), "sqlite"),
-            nullable=False,
-        ),
-        sa.Column("division", sa.String(length=20), nullable=False),
-        sa.PrimaryKeyConstraint("id"),
-    )
-
-    op.create_table(
         "tickets",
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
@@ -159,7 +148,6 @@ def upgrade():
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("created_by", sa.String(length=6), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(["type"], ["ticket_types.id"],),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"],),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -175,9 +163,6 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
 
-    with open("./migrations/seeds/default_ticket_types.sql") as fp:
-        op.execute(fp.read())
-
 
 def downgrade():
     op.drop_table("user_infos")
@@ -189,5 +174,4 @@ def downgrade():
     op.drop_table("interest_houses")
     op.drop_table("ticket_targets")
     op.drop_table("tickets")
-    op.drop_table("ticket_types")
     op.drop_table("users")

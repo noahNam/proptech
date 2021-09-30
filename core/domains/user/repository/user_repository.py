@@ -15,7 +15,6 @@ from app.persistence.model import (
     AvgMonthlyIncomeWokrerModel,
     SidoCodeModel,
     ReceivePushTypeModel,
-    TicketModel,
     UserModel,
     RecentlyViewModel,
 )
@@ -36,7 +35,7 @@ from core.domains.user.entity.user_entity import (
     UserEntity,
     UserInfoCodeValueEntity,
     UserProfileEntity,
-    UserInfoResultEntity,
+    SidoCodeEntity,
 )
 from core.domains.user.enum.user_info_enum import CodeEnum, CodeStepEnum
 from core.exceptions import NotUniqueErrorException
@@ -356,6 +355,14 @@ class UserRepository:
 
         return user_info_code_value_entity
 
+    def get_sido_name(self, sido_id: int, sigugun_id: int) -> SidoCodeEntity:
+        query_set = (
+            session.query(SidoCodeModel)
+            .filter_by(sido_code=sido_id, sigugun_code=sigugun_id)
+            .first()
+        )
+        return query_set.to_entity()
+
     def update_user_status_to_out(self, user_id: int) -> None:
         try:
             session.query(UserModel).filter_by(id=user_id).update(
@@ -390,7 +397,7 @@ class UserRepository:
         query = (
             session.query(UserModel)
             .options(joinedload(UserModel.user_profile))
-            .options(joinedload(UserModel.tickets).joinedload(TicketModel.ticket_type))
+            .options(joinedload(UserModel.tickets))
             .filter(UserModel.id == dto.user_id)
         )
         user = query.first()
@@ -409,25 +416,6 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][create_recently_view] user_id : {dto.user_id} house_id: {dto.house_id} error : {e}"
             )
-
-    def get_survey_result(self, dto: GetUserDto) -> UserProfileEntity:
-        query = (
-            session.query(UserProfileModel)
-            .options(joinedload(UserProfileModel.survey_result))
-            .join(
-                UserInfoModel,
-                (UserProfileModel.id == UserInfoModel.user_profile_id)
-                & (UserInfoModel.code == CodeEnum.BIRTHDAY.value),
-            )
-            .filter(UserProfileModel.user_id == dto.user_id)
-        )
-
-        user_profile = query.first()
-
-        if not user_profile:
-            return None
-
-        return user_profile.to_entity()
 
     def update_user_nickname_of_profile_setting(
         self, dto: UpsertUserInfoDetailDto

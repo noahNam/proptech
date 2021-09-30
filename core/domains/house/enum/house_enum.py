@@ -78,10 +78,10 @@ class BoundingLevelEnum(Enum):
         목적: bounding level 조건에 따라 쿼리 필터 조정
     """
 
-    SELECT_QUERYSET_FLAG_LEVEL = 15
-    MIN_SI_GUN_GU_LEVEL = 9
-    MAX_SI_GUN_GU_LEVEL = 11
-    MAX_NAVER_MAP_API_ZOOM_LEVEL = 22
+    SELECT_QUERYSET_FLAG_LEVEL = 16
+    MIN_SI_GUN_GU_LEVEL = 10
+    MAX_SI_GUN_GU_LEVEL = 13
+    MAX_NAVER_MAP_API_ZOOM_LEVEL = 21
     MIN_NAVER_MAP_API_ZOOM_LEVEL = 6
 
 
@@ -116,6 +116,7 @@ class SectionType(Enum):
 
     HOME_SCREEN = 0
     PRE_SUBSCRIPTION_INFO = 1
+    PUBLIC_SALE_DETAIL = 2
 
 
 class BannerSubTopic(Enum):
@@ -139,3 +140,40 @@ class BannerSubTopic(Enum):
     # 공통
     TOP_SCREEN_BANNER = 8
     BOTTOM_SCREEN_BANNER = 9
+
+
+class PricePerMeterEnum(Enum):
+    """
+        평당가격 계산할 때 사용
+    """
+
+    CALC_VAR = 3.3058
+
+
+class BoundingDegreeEnum(Enum):
+    """
+        반경 내 매물 검색시 사용할 반경 값(단위: 도)
+        <degree> -> 반경이 넓어지면 쿼리 속도가 느려집니다
+        1도 : 111km
+        0.1도 : 11.11km
+        0.01도 : 1.11km
+        0.001도 : 111m
+    """
+
+    DEGREE = 0.01
+
+
+class PublicSaleStatusEnum(Enum):
+    """
+        사용 모델 : 분양 테이블
+        사용 목적 : 지도 바운딩시 상태 표시
+        UNKNOWN : 알 수 없음 (값이 없거나 잘못된 값)
+        BEFORE_OPEN : 분양 예정
+        IS_RECEIVING : 분양중/접수중
+        IS_CLOSED : 마감됨
+    """
+
+    UNKNOWN = 0
+    BEFORE_OPEN = 1
+    IS_RECEIVING = 2
+    IS_CLOSED = 3

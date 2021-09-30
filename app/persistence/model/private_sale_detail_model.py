@@ -10,7 +10,6 @@ from sqlalchemy import (
     Enum,
     String,
 )
-from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -34,6 +33,7 @@ class PrivateSaleDetailModel(db.Model):
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
     contract_date = Column(String(8), nullable=True)
+    contract_ym = Column(SmallInteger, nullable=True, index=True)
     deposit_price = Column(Integer, nullable=False)
     rent_price = Column(Integer, nullable=False)
     trade_price = Column(Integer, nullable=False)
@@ -41,6 +41,7 @@ class PrivateSaleDetailModel(db.Model):
     trade_type = Column(
         Enum(RealTradeTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
+        index=True,
     )
     is_available = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
@@ -53,6 +54,7 @@ class PrivateSaleDetailModel(db.Model):
             private_area=self.private_area,
             supply_area=self.supply_area,
             contract_date=self.contract_date,
+            contract_ym=self.contract_ym,
             deposit_price=self.deposit_price,
             rent_price=self.rent_price,
             trade_price=self.trade_price,

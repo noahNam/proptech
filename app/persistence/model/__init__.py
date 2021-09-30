@@ -5,7 +5,6 @@ from .device_token_model import DeviceTokenModel
 from .receive_push_type_model import ReceivePushTypeModel
 from .user_profile_model import UserProfileModel
 from .user_info_model import UserInfoModel
-from .ticket_type_model import TicketTypeModel
 from .ticket_model import TicketModel
 from .app_agree_terms_model import AppAgreeTermsModel
 from .avg_monthly_income_worker_model import AvgMonthlyIncomeWokrerModel
@@ -26,7 +25,7 @@ from .recently_view_model import RecentlyViewModel
 from .private_sale_detail_model import PrivateSaleDetailModel
 from .survey_result_model import SurveyResultModel
 from .ticket_usage_result_model import TicketUsageResultModel
-from .ticket_usage_result_detail_model import TicketUsageResultDetailModel
+from .house_type_rank_model import HouseTypeRankModel
 from .ticket_target_model import TicketTargetModel
 from .promotion_model import PromotionModel
 from .promotion_house_model import PromotionHouseModel
@@ -36,3 +35,15 @@ from .recommend_code_model import RecommendCodeModel
 from .banner_model import BannerModel
 from .banner_image_model import BannerImageModel
 from .button_link_model import ButtonLinkModel
+from .special_supply_result_model import SpecialSupplyResultModel
+from .general_supply_result_model import GeneralSupplyResultModel
+from .predicted_competition_model import PredictedCompetitionModel
+from .user_analysis_model import UserAnalysisModel
+from .user_analysis_category_model import UserAnalysisCategoryModel
+from .user_analysis_category_detail_model import UserAnalysisCategoryDetailModel
+from .dong_info_model import DongInfoModel
+from .room_info_model import RoomInfoModel
+from .room_photo_model import RoomPhotoModel
+from .notice_template_model import NoticeTemplateModel
+from .private_sale_avg_price_model import PrivateSaleAvgPriceModel
+from .public_sale_avg_price_model import PublicSaleAvgPriceModel

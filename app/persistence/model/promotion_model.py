@@ -20,6 +20,7 @@ class PromotionModel(db.Model):
         SmallInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     type = Column(String(4), nullable=False)
+    div = Column(String(5), nullable=False)
     max_count = Column(SmallInteger, nullable=False)
     is_active = Column(Boolean, nullable=False)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
@@ -36,6 +37,7 @@ class PromotionModel(db.Model):
         return PromotionEntity(
             id=self.id,
             type=self.type,
+            div=self.div,
             max_count=self.max_count,
             is_active=self.is_active,
             created_at=self.created_at,

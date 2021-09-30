@@ -10,6 +10,7 @@ from core.domains.user.dto.user_dto import (
     GetUserInfoDto,
     GetUserDto,
     UpdateUserProfileDto,
+    GetUserProviderDto,
 )
 from core.exceptions import InvalidRequestException
 
@@ -66,13 +67,18 @@ class GetUserMainSchema(BaseModel):
     user_id: StrictInt
 
 
-class GetSurveyResultSchema(BaseModel):
+class GetSurveysSchema(BaseModel):
     user_id: StrictInt
 
 
 class UpdateUserProfileSchema(BaseModel):
     user_id: StrictInt
     nickname: str
+
+
+class GetUserProviderSchema(BaseModel):
+    user_id: StrictInt
+    auth_header: str
 
 
 class GetUserRequestSchema:
@@ -208,17 +214,17 @@ class GetUserMainRequestSchema:
             raise InvalidRequestException(message=e.errors())
 
 
-class GetSurveyResultRequestSchema:
+class GetSurveysRequestSchema:
     def __init__(self, user_id):
         self.user_id = int(user_id) if user_id else None
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetSurveyResultSchema(user_id=self.user_id,).dict()
+            schema = GetSurveysSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
-                f"[GetSurveyResultRequestSchema][validate_request_and_make_dto] error : {e}"
+                f"[GetSurveysRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 
@@ -237,5 +243,23 @@ class UpdateUserProfileRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[UpdateUserProfileRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetUserProviderRequestSchema:
+    def __init__(self, user_id, auth_header):
+        self.user_id = int(user_id) if user_id else None
+        self.auth_header = auth_header
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetUserProviderSchema(
+                user_id=self.user_id, auth_header=self.auth_header
+            ).dict()
+            return GetUserProviderDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetUserProviderRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

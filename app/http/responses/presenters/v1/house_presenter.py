@@ -12,6 +12,7 @@ from core.domains.house.schema.house_schema import (
     GetRecentViewListResponseSchema,
     GetMainPreSubscriptionResponseSchema,
     GetHouseMainResponseSchema,
+    GetHousePublicPrivateSalesResponseSchema,
 )
 from pydantic import ValidationError
 from app.http.responses import failure_response, success_response
@@ -22,7 +23,7 @@ class UpsertInterestHousePresenter:
     def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
         if isinstance(output, UseCaseSuccessOutput):
             try:
-                schema = UpsertInterestHouseResponseSchema(result=output.type)
+                schema = UpsertInterestHouseResponseSchema(house=output.value)
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
@@ -230,6 +231,31 @@ class GetMainPreSubscriptionPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = GetMainPreSubscriptionResponseSchema(banners=output.value)
+            except ValidationError:
+                return failure_response(
+                    UseCaseFailureOutput(
+                        type="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            result = {
+                "data": schema.dict(),
+                "meta": output.meta,
+            }
+            return success_response(result=result)
+        elif isinstance(output, UseCaseFailureOutput):
+            return failure_response(output=output, status_code=output.code)
+
+
+class GetHousePublicNearPrivateSalesPresenter:
+    def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
+        if isinstance(output, UseCaseSuccessOutput):
+            try:
+                schema = GetHousePublicPrivateSalesResponseSchema(
+                    near_houses=output.value
+                )
             except ValidationError:
                 return failure_response(
                     UseCaseFailureOutput(
