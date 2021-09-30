@@ -1,12 +1,15 @@
 import os
 import sys
 from time import time
+from typing import List
 
 import inject
 import requests
 import sentry_sdk
 
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.time_helper import get_server_timestamp
+from app.persistence.model import PublicSaleDetailModel
 from core.domains.house.entity.house_entity import PrivateSaleDetailEntity
 from core.domains.house.repository.house_repository import HouseRepository
 
@@ -53,8 +56,84 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         - 매물 상세 페이지 -> 최대 최소 취득세의 경우 SQL max, min func() 쿼리 사용
     """
 
-    def calculate_acquisition_tax(self):
-        pass
+    def _calculate_house_acquisition_xax(
+            self, private_area: float, supply_price: int
+    ) -> int:
+        """
+            todo: 부동산 정책이 매년 변경되므로 정기적으로 세율 변경 시 업데이트 필요합니다.
+            <취득세 계산 2021년도 기준>
+            (부동산 종류가 주택일 경우로 한정합니다 - 상가, 오피스텔, 토지, 건물 제외)
+            [parameters]
+            - private_area: 전용면적
+                if 85 < private_area -> 85(제곱미터) 초과 시 농어촌특별세 0.2% 과세 계산 추가
+                    -> rural_special_tax = supply_price * 0.2%
+            - supply_price: 공급금액 (DB 저장 단위: 만원)
+
+            - acquisition_tax_rate : 취득세 적용세율
+                if supply_price <= 60000: -> [6억원 이하] -> 1.0%
+                elif 60000 < supply_price <= 90000: -> [6억 초과 ~ 9억 이하]
+                    -> acquisition_tax_rate = (supply_price * 2 / 30000 - 3) * 1.0%
+                elif 90000 < supply_price: -> [9억 초과] -> 3.0%
+
+            - local_education_tax_rate : 지방 교육세율
+                if supply_price < 60000: -> [6억원 이하] -> 0.1%
+                elif 60000 < supply_price <= 90000: -> [6억 초과 ~ 9억 이하]
+                    -> local_education_tax_rate = acquisition_tax * 0.1 (취득세의 1/10)
+                elif 90000 < supply_price: -> [9억 초과] -> 0.3%
+
+            [return]
+            - total_acquisition_tax : 최종 취득세
+                - acquisition_tax(취득세 본세) + local_education_tax(지방교육세) + rural_special_tax(농어촌특별세)
+        """
+        if (
+                not private_area or private_area == 0
+                or not supply_price or supply_price == 0
+        ):
+            return 0
+
+        rural_special_tax, rural_special_tax_rate = 0, 0.0
+        acquisition_tax, acquisition_tax_rate = 0, 0.0
+        local_education_tax, local_education_tax_rate = 0, 0.0
+
+        if 85 < private_area:
+            rural_special_tax_rate = 0.2
+            rural_special_tax = supply_price * rural_special_tax_rate * 0.01
+
+        if supply_price <= 60000:
+            acquisition_tax_rate = 0.01
+            local_education_tax_rate = 0.01
+
+            acquisition_tax = supply_price * round(acquisition_tax_rate, 2)
+            local_education_tax = local_education_tax_rate
+
+        elif 60000 < supply_price <= 90000:
+            acquisition_tax_rate = (supply_price * 2 / 30000 - 3) * 0.01
+            acquisition_tax = supply_price * round(acquisition_tax_rate, 2)
+            local_education_tax = acquisition_tax * 0.1
+
+        elif 90000 < supply_price:
+            acquisition_tax_rate = 0.03
+            acquisition_tax = supply_price * round(acquisition_tax_rate, 2)
+            local_education_tax = local_education_tax_rate
+
+        total_acquisition_tax = round(acquisition_tax + local_education_tax + rural_special_tax)
+
+        return total_acquisition_tax
+
+    def _make_acquisition_tax_update_list(self, target_list: List[PublicSaleDetailModel]) -> List[dict]:
+        result_dict_list = list()
+        for target in target_list:
+            result_dict_list.append(
+                {
+                    "id": target.id,
+                    "acquisition_tax": self._calculate_house_acquisition_xax(
+                        private_area=target.private_area,
+                        supply_price=target.supply_price
+                    ),
+                    "updated_at": get_server_timestamp()
+                }
+            )
+        return result_dict_list
 
     def execute(self):
         logger.info(f"🚀\tPreCalculateAverage Start - {self.client_id}")
@@ -232,16 +311,32 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             start_time = time()
             logger.info(f"🚀\tUpdate_public_sale_acquisition_tax : Start")
 
-            update_public_sale_acquisition_tax = 0
-            public_sale_acquisition_tax_calc_failed_list = list()
-
             # PublicSaleDetails.acquisition_tax == 0 건에 대하여 취득세 계산 후 업데이트
             target_list = self._house_repo.get_acquisition_tax_calc_target_list()
-
-
-
-
-
+            update_list = None
+            if target_list:
+                update_list = self._make_acquisition_tax_update_list(target_list=target_list)
+            else:
+                logger.info(
+                    f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_target_list"
+                )
+            if update_list:
+                try:
+                    self._house_repo.update_acquisition_taxes(update_list=update_list)
+                except Exception as e:
+                    logger.error(
+                        f"Update_public_sale_acquisition_tax - update_acquisition_taxes "
+                        f"error : {e}"
+                    )
+            else:
+                logger.info(
+                    f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_update_list"
+                )
+            logger.info(
+                f"🚀\tUpdate_public_sale_acquisition_tax : Finished !!, "
+                f"records: {time() - start_time} secs, "
+                f"{len(update_list)} Updated, "
+            )
         except Exception as e:
             logger.error(f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}")
             self.send_slack_message(
