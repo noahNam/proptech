@@ -1,5 +1,5 @@
 from flasgger import swag_from
-from flask import request
+from flask import request, jsonify
 
 from app.http.requests.v1.house_request import (
     GetCoordinatesRequestSchema,
@@ -34,6 +34,7 @@ from core.domains.house.enum.house_enum import (
     CalendarYearThreshHold,
     SectionType,
 )
+from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.house.use_case.v1.house_use_case import (
     BoundingUseCase,
     GetHousePublicDetailUseCase,
@@ -224,3 +225,13 @@ def get_main_pre_subscription_view():
     return GetMainPreSubscriptionPresenter().transform(
         GetMainPreSubscriptionUseCase().execute(dto=dto)
     )
+
+
+@api.route("/v1/houses/worker", methods=["GET"])
+def worker_test_view():
+    repo = HouseRepository()
+
+    result = repo.get_acquisition_tax_calc_target_list()
+
+    return jsonify(result)
+
