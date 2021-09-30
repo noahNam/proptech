@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
@@ -12,12 +12,16 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, backref, column_property
 
 from app import db
+from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     RealEstateWithPrivateSaleEntity,
     HousePublicDetailEntity,
-    CalendarInfoEntity,
+    DetailCalendarInfoEntity,
+    SimpleCalendarInfoEntity,
+    RealEstateReportEntity,
 )
+from core.domains.report.entity.report_entity import TicketUsageResultEntity
 
 
 class RealEstateModel(db.Model):
@@ -63,15 +67,7 @@ class RealEstateModel(db.Model):
         uselist=False,
     )
 
-    def to_bounding_entity(
-        self,
-        avg_trade: Optional[float],
-        avg_deposit: Optional[float],
-        avg_rent: Optional[float],
-        avg_supply: Optional[float],
-        avg_private_pyoung: Optional[float],
-        avg_public_pyoung: Optional[float],
-    ) -> BoundingRealEstateEntity:
+    def to_bounding_entity(self,) -> BoundingRealEstateEntity:
         return BoundingRealEstateEntity(
             id=self.id,
             name=self.name,
@@ -87,16 +83,12 @@ class RealEstateModel(db.Model):
             is_available=self.is_available,
             latitude=self.latitude,
             longitude=self.longitude,
-            avg_trade_price=avg_trade,
-            avg_deposit_price=avg_deposit,
-            avg_rent_price=avg_rent,
-            avg_supply_price=avg_supply,
-            avg_private_pyoung_number=avg_private_pyoung,
-            avg_public_pyoung_number=avg_public_pyoung,
-            private_sales=self.private_sales.to_entity()
+            private_sales=self.private_sales.to_bounding_entity()
             if self.private_sales
             else None,
-            public_sales=self.public_sales.to_entity() if self.public_sales else None,
+            public_sales=self.public_sales.to_bounding_entity()
+            if self.public_sales and not self.private_sales
+            else None,
         )
 
     def to_estate_with_private_sales_entity(
@@ -135,7 +127,8 @@ class RealEstateModel(db.Model):
         supply_price_per_pyoung: Optional[float],
         min_acquisition_tax: int,
         max_acquisition_tax: int,
-        near_houses: Optional[list],
+        button_links: List[ButtonLinkEntity],
+        ticket_usage_results: List[TicketUsageResultEntity],
     ) -> HousePublicDetailEntity:
         return HousePublicDetailEntity(
             id=self.id,
@@ -162,11 +155,12 @@ class RealEstateModel(db.Model):
             min_acquisition_tax=min_acquisition_tax,
             max_acquisition_tax=max_acquisition_tax,
             public_sales=self.public_sales.to_entity() if self.public_sales else None,
-            near_houses=near_houses,
+            button_links=button_links if button_links else None,
+            ticket_usage_results=ticket_usage_results if ticket_usage_results else None,
         )
 
-    def to_calendar_info_entity(self, is_like: bool) -> CalendarInfoEntity:
-        return CalendarInfoEntity(
+    def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:
+        return DetailCalendarInfoEntity(
             is_like=is_like,
             id=self.id,
             name=self.name,
@@ -175,4 +169,25 @@ class RealEstateModel(db.Model):
             public_sale=self.public_sales.to_calendar_entity()
             if self.public_sales
             else None,
+        )
+
+    def to_simple_calendar_info_entity(self, is_like: bool) -> SimpleCalendarInfoEntity:
+        return SimpleCalendarInfoEntity(
+            is_like=is_like,
+            id=self.id,
+            name=self.name,
+            road_address=self.road_address,
+            jibun_address=self.jibun_address,
+            public_sale=self.public_sales.to_calendar_entity()
+            if self.public_sales
+            else None,
+        )
+
+    def to_report_entity(self) -> RealEstateReportEntity:
+        return RealEstateReportEntity(
+            id=self.id,
+            jibun_address=self.jibun_address,
+            si_gun_gu=self.si_gun_gu,
+            latitude=self.latitude,
+            longitude=self.longitude,
         )

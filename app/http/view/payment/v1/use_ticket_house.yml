@@ -1,0 +1,129 @@
+openapi: "3.0.2"
+tags:
+  - Payment
+security:
+  - userAuth: []
+requestBody:
+  required: true
+  description:
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - house_id
+        properties:
+          house_id:
+            type: integer
+            example: 1
+responses:
+  '200':
+    description: 참고링크 -> https://www.notion.so/apartalk/tanos-v1-payments-ticket-749e9cef60a64347a0ec6afd698a47f8
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                ticket_usage_result:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      example: success
+                    message:
+                      type: string
+                      example: ticket used
+            meta:
+              type: null
+  '400 #1':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: integer
+              example: 400
+            message:
+              type: string
+              example: insufficient number of tickets
+  '400 #2':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: integer
+              example: 400
+            message:
+              type: string
+              example: this is product where tickets have already been used
+  '400 #3':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: integer
+              example: 400
+            message:
+              type: string
+              example: needs user surveys
+  '400 #4':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'
+  '500 #3':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: integer
+              example: 500
+            message:
+              type: string
+              example: error on jarvis (use_ticket_to_house_by_charged)
+  '500 #4':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          properties:
+            detail:
+              type: integer
+              example: 500
+            message:
+              type: string
+              example: error on jarvis (use_ticket_to_house_by_promotion)

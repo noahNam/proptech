@@ -26,6 +26,9 @@ house_main:
               sub_topic:
                 type: integer
                 example: 1
+              contents_num:
+                type: integer
+                example: 1
               is_active:
                 type: boolean
                 example: True
@@ -91,12 +94,6 @@ house_main:
                         trade_type:
                           type: string
                           example: "분양 or 사전청약"
-                        contract_start_date:
-                          type: string
-                          example: "20210709"
-                        contract_end_date:
-                          type: string
-                          example: "20210714"
                         first_supply_date:
                           type: string
                           example: "20210701"
@@ -121,9 +118,3 @@ house_main:
                         subscription_end_date:
                           type: string
                           example: "20210715"
-                        move_in_year:
-                          type: integer
-                          example: 2023
-                        move_in_month:
-                          type: integer
-                          example: 12

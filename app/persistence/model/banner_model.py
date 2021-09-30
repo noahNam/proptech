@@ -20,6 +20,7 @@ class BannerModel(db.Model):
     desc = Column(String(100), nullable=True)
     section_type = Column(SmallInteger, nullable=False)
     sub_topic = Column(SmallInteger, nullable=False)
+    contents_num = Column(SmallInteger, nullable=False)
     reference_url = Column(String(150), nullable=True)
     is_active = Column(Boolean, nullable=False, default=False)
     is_event = Column(Boolean, nullable=False, default=False)
@@ -33,6 +34,7 @@ class BannerModel(db.Model):
             desc=self.desc,
             section_type=self.section_type,
             sub_topic=self.sub_topic,
+            contents_num=self.contents_num,
             reference_url=self.reference_url,
             banner_image=self.banner_image.to_entity() if self.banner_image else None,
             is_active=self.is_active,

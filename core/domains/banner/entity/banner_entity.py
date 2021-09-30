@@ -19,6 +19,7 @@ class BannerEntity(BaseModel):
     desc: str = None
     section_type: int
     sub_topic: int
+    contents_num: int
     reference_url: str = None
     is_active: bool
     is_event: bool

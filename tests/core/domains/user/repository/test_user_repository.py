@@ -41,7 +41,6 @@ from core.domains.user.enum.user_info_enum import (
     AssetsTotalEnum,
     SpecialCondEnum,
     CodeEnum,
-    CodeStepEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
 from core.exceptions import NotUniqueErrorException
@@ -292,19 +291,19 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
         "1008": IsMarriedCodeEnum,
         "1010": NumberDependentsEnum,
         "1011": IsChildEnum,
-        "1015": IsSubAccountEnum,
-        "1019": MonthlyIncomeEnum,
-        "1020": AssetsRealEstateEnum,
-        "1021": AssetsCarEnum,
-        "1022": AssetsTotalEnum,
-        "1025": SpecialCondEnum,
+        "1016": IsSubAccountEnum,
+        "1020": MonthlyIncomeEnum,
+        "1021": AssetsRealEstateEnum,
+        "1022": AssetsCarEnum,
+        "1023": AssetsTotalEnum,
+        "1026": SpecialCondEnum,
     }
 
     user_info = UserInfoResultEntity(code=user_info_code)
     bind_code = bind_detail_code_dict.get(user_info_code)
     # dto.code != "1019" 일 떄로 변경
-    dto_code = "1019"
-    if dto_code != "1019":
+    dto_code = "1020"
+    if dto_code != "1020":
 
         user_info_code_value_entity = UserInfoCodeValueEntity()
         user_info_code_value_entity.detail_code = bind_code.COND_CD.value
@@ -445,27 +444,6 @@ def test_create_recently_view(session):
     assert view_info.user_id == recently_view_dto.user_id
     assert view_info.house_id == recently_view_dto.house_id
     assert view_info.type == recently_view_dto.type
-
-
-def test_get_survey_result_then_return_user_nickname_and_birth_survey_results(
-    session, create_users
-):
-    dto = GetUserDto(user_id=create_users[0].id)
-    result = UserRepository().get_survey_result(dto=dto)
-
-    assert result.nickname == create_users[0].user_profile.nickname
-    assert (
-        result.user_infos[0].user_value
-        == create_users[0].user_profile.user_infos[0].value
-    )
-    assert (
-        result.survey_result.total_point
-        == create_users[0].user_profile.survey_result.total_point
-    )
-    assert (
-        result.survey_result.hope_town_phase_one
-        == create_users[0].user_profile.survey_result.hope_town_phase_one
-    )
 
 
 def test_get_user_profile_when_enter_setting_page_return_nickname(

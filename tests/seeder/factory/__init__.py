@@ -20,7 +20,6 @@ from app.persistence.model import (
     InterestHouseModel,
     ReceivePushTypeModel,
     AppAgreeTermsModel,
-    TicketTypeModel,
     TicketModel,
     UserModel,
     ArticleModel,
@@ -37,7 +36,7 @@ from app.persistence.model import (
     SurveyResultModel,
     UserInfoModel,
     TicketUsageResultModel,
-    TicketUsageResultDetailModel,
+    HouseTypeRankModel,
     PromotionModel,
     PromotionHouseModel,
     PromotionUsageCountModel,
@@ -47,6 +46,7 @@ from app.persistence.model import (
     BannerModel,
     BannerImageModel,
     ButtonLinkModel,
+    PredictedCompetitionModel,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -64,15 +64,17 @@ from core.domains.notification.enum.notification_enum import (
     NotificationBadgeTypeEnum,
     NotificationStatusEnum,
 )
-from core.domains.payment.enum.payment_enum import TicketSignEnum, PromotionTypeEnum
+from core.domains.payment.enum.payment_enum import (
+    TicketSignEnum,
+    PromotionTypeEnum,
+    PromotionDivEnum,
+)
 from core.domains.post.enum.post_enum import (
     PostCategoryEnum,
     PostCategoryDetailEnum,
 )
-from core.domains.user.enum.user_enum import (
-    UserTicketTypeDivisionEnum,
-    UserTicketCreatedByEnum,
-)
+from core.domains.report.enum.report_enum import TicketUsageTypeEnum
+from core.domains.user.enum.user_enum import UserTicketCreatedByEnum
 
 # factory에 사용해야 하는 Model을 가져온다
 
@@ -115,13 +117,17 @@ class SurveyResultFactory(BaseFactory):
     detail_point_family = 25
     detail_point_bank = 26
     public_newly_married = 10
+    public_newly_married_div = "우선"
     public_first_life = 11
+    public_first_life_div = "잔여"
     public_multiple_children = 12
     public_old_parent = 13
     public_agency_recommend = 14
     public_normal = 15
     private_newly_married = 16
+    private_newly_married_div = "잔여"
     private_first_life = 17
+    private_first_life_div = "우선"
     private_old_parent = 19
     private_agency_recommend = 20
     private_normal = 21
@@ -178,13 +184,6 @@ class TicketTargetFactory(BaseFactory):
     public_house_id = factory.Sequence(lambda n: n + 1)
 
 
-class TicketTypeFactory(BaseFactory):
-    class Meta:
-        model = TicketTypeModel
-
-    division = UserTicketTypeDivisionEnum.CHARGED.value
-
-
 class TicketFactory(BaseFactory):
     class Meta:
         model = TicketModel
@@ -197,20 +196,15 @@ class TicketFactory(BaseFactory):
     created_at = get_server_timestamp()
 
     @factory.post_generation
-    def ticket_type(obj, create, extracted, **kwargs):
-        if extracted:
-            TicketTypeFactory(users=obj, **kwargs)
-
-    @factory.post_generation
     def ticket_targets(obj, create, extracted, **kwargs):
         if extracted:
             for _ in range(3):
                 TicketTargetFactory(users=obj, **kwargs)
 
 
-class TicketUsageResultDetailFactory(BaseFactory):
+class HouseTypeRankFactory(BaseFactory):
     class Meta:
-        model = TicketUsageResultDetailModel
+        model = HouseTypeRankModel
 
     ticket_usage_result_id = 1
     house_structure_type = factory.Sequence(lambda n: f"59B_{n}")
@@ -218,19 +212,39 @@ class TicketUsageResultDetailFactory(BaseFactory):
     rank = factory.Sequence(lambda n: n + 1)
 
 
+class PredictedCompetitionFactory(BaseFactory):
+    class Meta:
+        model = PredictedCompetitionModel
+
+    ticket_usage_result_id = 1
+    house_structure_type = "084A"
+    region = "당해"
+    region_percentage = "30"
+    multiple_children_competition = random.randint(1, 1000)
+    newly_marry_competition = random.randint(1, 1000)
+    old_parent_competition = random.randint(1, 1000)
+    first_life_competition = random.randint(1, 1000)
+    multiple_children_supply = random.randint(1, 20)
+    newly_marry_supply = random.randint(1, 20)
+    old_parent_supply = random.randint(1, 20)
+    first_life_supply = random.randint(1, 20)
+    normal_competition = random.randint(100, 1000)
+    normal_supply = random.randint(10, 200)
+    normal_passing_score = random.randint(60, 80)
+
+
 class TicketUsageResultFactory(BaseFactory):
     class Meta:
         model = TicketUsageResultModel
 
     user_id = 1
+    type = TicketUsageTypeEnum.HOUSE.value
     public_house_id = 1
     ticket_id = None
     is_active = True
     created_at = get_server_timestamp()
 
-    ticket_usage_result_details = factory.List(
-        [factory.SubFactory(TicketUsageResultDetailFactory)]
-    )
+    house_type_ranks = factory.List([factory.SubFactory(HouseTypeRankFactory)])
 
 
 class UserFactory(BaseFactory):
@@ -345,9 +359,7 @@ class PostAttachmentFactory(BaseFactory):
 
     post_id = 1
     file_name = "photo_file"
-    path = (
-        "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
-    )
+    path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
     type = 0
     created_at = get_server_timestamp()
@@ -364,6 +376,7 @@ class PostFactory(BaseFactory):
     read_count = 0
     category_id = PostCategoryEnum.NOTICE.value
     category_detail_id = PostCategoryDetailEnum.NO_DETAIL.value
+    contents_num = factory.Sequence(lambda n: n + 1)
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
 
@@ -416,9 +429,7 @@ class PublicSaleDetailPhotoFactory(BaseFactory):
 
     public_sale_details_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
-    path = (
-        "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
-    )
+    path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
@@ -433,6 +444,8 @@ class PublicSaleDetailFactory(BaseFactory):
     supply_area = random.uniform(50, 130)
     supply_price = random.randint(10000, 50000)
     acquisition_tax = random.randint(1000000, 5000000)
+    special_household = random.randint(100, 300)
+    general_household = random.randint(100, 300)
 
     @factory.post_generation
     def private_sale_detail_photos(obj, create, extracted, **kwargs):
@@ -446,9 +459,7 @@ class PublicSalePhotoFactory(BaseFactory):
 
     public_sales_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
-    path = (
-        "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
-    )
+    path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
@@ -481,12 +492,21 @@ class PublicSaleFactory(BaseFactory):
     special_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
         "%Y%m%d"
     )
+    special_etc_gyeonggi_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
     first_supply_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
     first_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
         "%Y%m%d"
     )
+    first_etc_gyeonggi_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
     second_supply_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
     second_supply_etc_date = get_random_date_about_one_month_from_today().strftime(
+        "%Y%m%d"
+    )
+    second_etc_gyeonggi_date = get_random_date_about_one_month_from_today().strftime(
         "%Y%m%d"
     )
     notice_winner_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
@@ -597,6 +617,7 @@ class PromotionFactory(BaseFactory):
         model = PromotionModel
 
     type = PromotionTypeEnum.ALL.value
+    div = PromotionDivEnum.HOUSE.value
     max_count = 1
     is_active = True
     created_at = get_server_timestamp()
@@ -631,9 +652,7 @@ class BannerImageFactory(BaseFactory):
 
     banner_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
-    path = (
-        "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
-    )
+    path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
@@ -647,6 +666,7 @@ class BannerFactory(BaseFactory):
     desc = factory.Sequence(lambda n: f"배너설명_{n}")
     section_type = SectionType.HOME_SCREEN.value
     sub_topic = BannerSubTopic.HOME_SUBSCRIPTION_BY_REGION.value
+    contents_num = factory.Sequence(lambda n: n + 1)
     reference_url = "https://www.reference.com"
     is_active = True
     is_event = True

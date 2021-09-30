@@ -22,7 +22,6 @@ from core.domains.user.enum.user_info_enum import (
     CodeStepEnum,
 )
 from core.domains.user.repository.user_repository import UserRepository
-from core.exceptions import InvalidRequestException
 
 
 def test_get_user_view_then_success(
@@ -833,50 +832,6 @@ def test_get_user_main_view_then_success_then_ticket_is_0_and_survey_step_is_zer
     assert data["result"]["tickets"] == 1
     assert data["result"]["is_badge"] is False
     assert data["result"]["nickname"] is None
-
-
-def test_get_survey_result_view_then_return_survey_result(
-    client, session, test_request_context, make_header, make_authorization, create_users
-):
-    authorization = make_authorization(user_id=create_users[0].id)
-    headers = make_header(
-        authorization=authorization,
-        content_type="application/json",
-        accept="application/json",
-    )
-
-    with test_request_context:
-        response = client.get(
-            url_for("api/tanos.get_survey_result_view"), headers=headers,
-        )
-
-    data = response.get_json()["data"]
-    assert response.status_code == 200
-    assert data["survey_result"]["total_point"] == 32
-    assert data["user"]["nickname"] == "noah"
-    assert data["user"]["age"] == 36
-
-
-def test_get_survey_result_view_then_return_survey_result_is_none(
-    client, session, test_request_context, make_header, make_authorization, create_users
-):
-    authorization = make_authorization(user_id=create_users[1].id)
-    headers = make_header(
-        authorization=authorization,
-        content_type="application/json",
-        accept="application/json",
-    )
-
-    with test_request_context:
-        response = client.get(
-            url_for("api/tanos.get_survey_result_view"), headers=headers,
-        )
-
-    data = response.get_json()["data"]
-    assert response.status_code == 200
-    assert data["user"]["nickname"] == "noah"
-    assert data["user"]["age"] == 36
-    assert data["survey_result"] is None
 
 
 def test_get_user_profile_view_when_enter_setting_page_return_success(

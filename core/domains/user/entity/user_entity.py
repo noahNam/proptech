@@ -7,8 +7,7 @@ from core.domains.house.entity.house_entity import InterestHouseEntity
 from core.domains.notification.entity.notification_entity import ReceivePushTypeEntity
 from core.domains.payment.entity.payment_entity import TicketEntity
 from core.domains.payment.enum.payment_enum import TicketSignEnum
-from core.domains.user.enum.user_enum import UserSurveyStepEnum
-from core.domains.user.enum.user_info_enum import CodeStepEnum
+from core.domains.report.entity.report_entity import SurveyResultEntity
 
 
 class UserInfoCodeValueEntity(BaseModel):
@@ -46,31 +45,6 @@ class DeviceEntity(BaseModel):
     created_at: datetime
     updated_at: datetime
     device_token: DeviceTokenEntity = None
-
-
-class SurveyResultEntity(BaseModel):
-    id = int
-    user_id = int
-    total_point: Optional[int]
-    detail_point_house: Optional[int]
-    detail_point_family: Optional[int]
-    detail_point_bank: Optional[int]
-    public_newly_married: Optional[int]
-    public_first_life: Optional[int]
-    public_multiple_children: Optional[int]
-    public_old_parent: Optional[int]
-    public_agency_recommend: Optional[int]
-    public_normal: Optional[int]
-    private_newly_married: Optional[int]
-    private_first_life: Optional[int]
-    private_multiple_children: Optional[int]
-    private_old_parent: Optional[int]
-    private_agency_recommend: Optional[int]
-    private_normal: Optional[int]
-    hope_town_phase_one: Optional[int]
-    hope_town_phase_two: Optional[int]
-    created_at = datetime
-    updated_at = datetime
 
 
 class UserProfileEntity(BaseModel):
@@ -115,9 +89,21 @@ class UserEntity(BaseModel):
         return 0 if total_amount < 0 else total_amount
 
 
+class PushTargetEntity(BaseModel):
+    id: int
+    is_active: bool
+    device: DeviceEntity
+
+
 class RecentlyViewEntity(BaseModel):
     id: int
     user_id: int
     house_id: int
     type: int
     created_at: datetime
+
+
+class SidoCodeEntity(BaseModel):
+    id: int
+    sido_name: str
+    sigugun_name: str

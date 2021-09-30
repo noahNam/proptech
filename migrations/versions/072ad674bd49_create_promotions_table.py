@@ -22,6 +22,7 @@ def upgrade():
             "id", sa.SmallInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
         sa.Column("type", sa.String(length=4), nullable=False),
+        sa.Column("div", sa.String(length=5), nullable=False),
         sa.Column("max_count", sa.SmallInteger(), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
@@ -54,7 +55,6 @@ def upgrade():
         sa.Column("usage_count", sa.SmallInteger(), nullable=False),
         sa.ForeignKeyConstraint(["promotion_id"], ["promotions.id"],),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("promotion_id"),
     )
     op.create_index(
         op.f("ix_promotion_usage_counts_user_id"),

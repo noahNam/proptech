@@ -1,0 +1,119 @@
+openapi: "3.0.2"
+tags:
+  - Report
+security:
+  - userAuth: []
+responses:
+  '200':
+    description:
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                nickname:
+                  type: object
+                  example: noah
+                sort_competitions:
+                  type: array
+                  items:
+                    properties:
+                      competitions:
+                        type: integer
+                        example: 24
+                      house_structure_types:
+                        type: string
+                        example: 084A
+                      competition_types:
+                        type: string
+                        example: 신혼부부
+                expected_competitions:
+                  type: array
+                  items:
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      house_structure_type:
+                        type: string
+                        example: 084A
+                      region:
+                        type: string
+                        example: 당해
+                      region_percentage:
+                        type: integer
+                        example: 30
+                      first_life_competition:
+                        type: integer
+                        example: 100
+                      multiple_children_competition:
+                        type: integer
+                        example: 200
+                      newly_marry_competition:
+                        type: integer
+                        example: 300
+                      old_parent_competition:
+                        type: integer
+                        example: 400
+                      normal_competition:
+                        type: integer
+                        example: 500
+                      first_life_supply:
+                        type: integer
+                        example: 10
+                      multiple_children_supply:
+                        type: integer
+                        example: 15
+                      newly_marry_supply:
+                        type: integer
+                        example: 20
+                      old_parent_supply:
+                        type: integer
+                        example: 30
+                      normal_supply:
+                        type: integer
+                        example: 40
+                      normal_passing_score:
+                        type: integer
+                        example: 67
+                      ticket_usage_result_id:
+                        type: integer
+                        example: 1
+                      total_normal_supply:
+                        type: integer
+                        example: 507
+                      total_special_supply:
+                        type: integer
+                        example: 146
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'

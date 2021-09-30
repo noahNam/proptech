@@ -82,7 +82,7 @@ class GetNotificationUseCase(NotificationBaseUseCase):
                 round((get_server_timestamp() - notification.created_at).seconds / 60)
             )
 
-            message = MessageConverter.get_message(notification.message)
+            message = MessageConverter.get_notification_content(notification.message)
 
             notification_history_entity = NotificationHistoryEntity(
                 category=dto.category,

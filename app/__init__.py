@@ -8,10 +8,11 @@ from flask_sqlalchemy import SQLAlchemy
 
 from app.commands import init_commands
 from app.config import config
-from app.extensions import jwt, sms, redis
+from app.extensions import jwt, sms, redis, cors
 from app.extensions.database import db, migrate
 from app.extensions.ioc_container import init_provider
 from app.extensions.swagger import swagger_config
+from app.extensions.utils.enum.ironman_enum import IronManServiceEnum
 from app.http.view import api
 
 # alembic auto-generate detected
@@ -23,6 +24,8 @@ from core.domains.user import event
 from core.domains.notification import event
 from core.domains.house import event
 from core.domains.banner import event
+from core.domains.payment import event
+from core.domains.report import event
 
 
 def init_config(
@@ -46,6 +49,9 @@ def init_extensions(app: Flask):
     jwt.init_app(app)
     sms.init_app(app)
     redis.init_app(app)
+    cors.init_app(
+        app, resources={r"*": {"origins": IronManServiceEnum.IRONMAN_SERVICE_URL.value}}
+    )
 
 
 def init_sentry(app: Flask):

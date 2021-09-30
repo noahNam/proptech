@@ -1,9 +1,3 @@
-import re
-import string
-from random import random
-
-from strgen import StringGenerator
-
 from app.persistence.model import (
     TicketUsageResultModel,
     PromotionUsageCountModel,
@@ -12,17 +6,20 @@ from app.persistence.model import (
 )
 from core.domains.payment.dto.payment_dto import (
     PaymentUserDto,
-    UseTicketDto,
+    UseHouseTicketDto,
     CreateTicketDto,
-    UpdateTicketUsageResultDto,
 )
 from core.domains.payment.entity.payment_entity import (
     PromotionEntity,
     RecommendCodeEntity,
 )
-from core.domains.payment.enum.payment_enum import TicketSignEnum
+from core.domains.payment.enum.payment_enum import (
+    TicketSignEnum,
+    PromotionDivEnum,
+)
 from core.domains.payment.repository.payment_repository import PaymentRepository
-from core.domains.user.dto.user_dto import CreateUserDto
+from core.domains.report.enum.report_enum import TicketUsageTypeEnum
+from core.domains.report.repository.report_repository import ReportRepository
 
 
 def test_get_ticket_usage_results_then_return_public_sale_ids(
@@ -37,36 +34,67 @@ def test_get_ticket_usage_results_then_return_public_sale_ids(
     session.add(public_sale_photo)
     session.commit()
 
-    dto = PaymentUserDto(user_id=create_users[0].id)
-    result = PaymentRepository().get_ticket_usage_results(dto=dto)
+    result = ReportRepository().get_ticket_usage_results(
+        user_id=create_users[0].id, type_=TicketUsageTypeEnum.HOUSE.value
+    )
 
     assert len(result) == 1
-    assert result[0] == public_sales_id
+    assert result[0].public_house_id == public_sales_id
 
 
-def test_is_ticket_usage_then_return_true(
+def test_is_ticket_usage_for_house_then_return_true(
     session, create_users, ticket_usage_result_factory
 ):
     ticket_usage_result = ticket_usage_result_factory.build()
     session.add(ticket_usage_result)
     session.commit()
 
-    dto = UseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().is_ticket_usage(dto=dto)
+    result = ReportRepository().is_ticket_usage_for_house(
+        user_id=create_users[0].id, house_id=1
+    )
 
     assert isinstance(result, bool)
     assert result is True
 
 
-def test_is_ticket_usage_then_return_false(
+def test_is_ticket_usage_for_house_then_return_false(
     session, create_users, ticket_usage_result_factory
 ):
     ticket_usage_result = ticket_usage_result_factory.build()
     session.add(ticket_usage_result)
     session.commit()
 
-    dto = UseTicketDto(user_id=create_users[0].id, house_id=2)
-    result = PaymentRepository().is_ticket_usage(dto=dto)
+    result = ReportRepository().is_ticket_usage_for_house(
+        user_id=create_users[0].id, house_id=2
+    )
+
+    assert isinstance(result, bool)
+    assert result is False
+
+
+def test_is_ticket_usage_for_user_then_return_true(
+    session, create_users, ticket_usage_result_factory
+):
+    ticket_usage_result = ticket_usage_result_factory.build(
+        type=TicketUsageTypeEnum.USER.value
+    )
+    session.add(ticket_usage_result)
+    session.commit()
+
+    result = ReportRepository().is_ticket_usage_for_user(user_id=create_users[0].id)
+
+    assert isinstance(result, bool)
+    assert result is True
+
+
+def test_is_ticket_usage_for_user_then_return_false(
+    session, create_users, ticket_usage_result_factory
+):
+    ticket_usage_result = ticket_usage_result_factory.build()
+    session.add(ticket_usage_result)
+    session.commit()
+
+    result = ReportRepository().is_ticket_usage_for_user(user_id=create_users[0].id)
 
     assert isinstance(result, bool)
     assert result is False
@@ -81,8 +109,12 @@ def test_get_promotion_then_return_list_for_promotion_entity(
     session.add(promotion)
     session.commit()
 
-    dto = UseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().get_promotion(dto=dto)
+    dto = UseHouseTicketDto(
+        user_id=create_users[0].id, house_id=1, auth_header="auth_header"
+    )
+    result = PaymentRepository().get_promotion(
+        user_id=dto.user_id, div=PromotionDivEnum.HOUSE.value
+    )
 
     assert isinstance(result, PromotionEntity)
     assert result.max_count == 1
@@ -97,8 +129,12 @@ def test_get_promotion_then_return_none(session, create_users, promotion_factory
     session.add(promotion)
     session.commit()
 
-    dto = UseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().get_promotion(dto=dto)
+    dto = UseHouseTicketDto(
+        user_id=create_users[0].id, house_id=1, auth_header="auth_header"
+    )
+    result = PaymentRepository().get_promotion(
+        user_id=dto.user_id, div=PromotionDivEnum.HOUSE.value
+    )
 
     assert result is None
 
@@ -108,15 +144,19 @@ def test_get_number_of_ticket_then_return_2(session, create_users, ticket_factor
     session.add_all(tickets)
     session.commit()
 
-    dto = UseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().get_number_of_ticket(dto=dto)
+    dto = UseHouseTicketDto(
+        user_id=create_users[0].id, house_id=1, auth_header="auth_header"
+    )
+    result = PaymentRepository().get_number_of_ticket(user_id=dto.user_id)
 
     assert result == 2
 
 
 def test_get_number_of_ticket_then_return_0(session, create_users):
-    dto = UseTicketDto(user_id=create_users[0].id, house_id=1)
-    result = PaymentRepository().get_number_of_ticket(dto=dto)
+    dto = UseHouseTicketDto(
+        user_id=create_users[0].id, house_id=1, auth_header="auth_header"
+    )
+    result = PaymentRepository().get_number_of_ticket(user_id=dto.user_id)
 
     assert result == 0
 
@@ -134,35 +174,68 @@ def test_create_ticket_then_return_ticket_id_is_1(session, create_users):
     assert result == 1
 
 
-def test_update_ticket_usage_result_then_update_ticket_id(
+def test_update_ticket_usage_result_when_exist_public_house_id_then_update_ticket_id(
     session, create_users, ticket_usage_result_factory
 ):
     ticket_usage_result = ticket_usage_result_factory.build()
     session.add(ticket_usage_result)
     session.commit()
 
-    dto = UpdateTicketUsageResultDto(
-        user_id=create_users[0].id, public_house_id=1, ticket_id=1
+    public_house_id = 1
+    ticket_id = 1
+    ReportRepository().update_ticket_usage_result(
+        user_id=create_users[0].id, public_house_id=public_house_id, ticket_id=1
     )
-    PaymentRepository().update_ticket_usage_result(dto=dto)
 
     ticket_usage_result_model = (
         session.query(TicketUsageResultModel)
         .filter(
-            TicketUsageResultModel.user_id == dto.user_id,
-            TicketUsageResultModel.public_house_id == dto.public_house_id,
+            TicketUsageResultModel.user_id == create_users[0].id,
+            TicketUsageResultModel.public_house_id == public_house_id,
+            TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value,
         )
         .first()
     )
 
-    assert ticket_usage_result_model.ticket_id == 1
+    assert ticket_usage_result_model.ticket_id == ticket_id
+
+
+def test_update_ticket_usage_result_when_not_exist_public_house_id_then_update_ticket_id(
+    session, create_users, ticket_usage_result_factory
+):
+    ticket_usage_result = ticket_usage_result_factory.build(
+        type=TicketUsageTypeEnum.USER.value
+    )
+    session.add(ticket_usage_result)
+    session.commit()
+
+    public_house_id = None
+    ticket_id = 1
+    ReportRepository().update_ticket_usage_result(
+        user_id=create_users[0].id, public_house_id=public_house_id, ticket_id=1
+    )
+
+    ticket_usage_result_model = (
+        session.query(TicketUsageResultModel)
+        .filter(
+            TicketUsageResultModel.user_id == create_users[0].id,
+            TicketUsageResultModel.type == TicketUsageTypeEnum.USER.value,
+        )
+        .first()
+    )
+
+    assert ticket_usage_result_model.ticket_id == ticket_id
 
 
 def test_create_promotion_usage_count(session, create_users):
     promotion_id = 1
-    dto = UseTicketDto(user_id=create_users[0].id, house_id=1)
+    dto = UseHouseTicketDto(
+        user_id=create_users[0].id, house_id=1, auth_header="auth_header"
+    )
 
-    PaymentRepository().create_promotion_usage_count(dto=dto, promotion_id=promotion_id)
+    PaymentRepository().create_promotion_usage_count(
+        user_id=dto.user_id, promotion_id=promotion_id
+    )
 
     promotion_usage_count_model = (
         session.query(PromotionUsageCountModel)
@@ -178,10 +251,16 @@ def test_create_promotion_usage_count(session, create_users):
 
 def test_update_promotion_usage_count(session, create_users):
     promotion_id = 1
-    dto = UseTicketDto(user_id=create_users[0].id, house_id=1)
+    dto = UseHouseTicketDto(
+        user_id=create_users[0].id, house_id=1, auth_header="auth_header"
+    )
 
-    PaymentRepository().create_promotion_usage_count(dto=dto, promotion_id=promotion_id)
-    PaymentRepository().update_promotion_usage_count(dto=dto, promotion_id=promotion_id)
+    PaymentRepository().create_promotion_usage_count(
+        user_id=dto.user_id, promotion_id=promotion_id
+    )
+    PaymentRepository().update_promotion_usage_count(
+        user_id=dto.user_id, promotion_id=promotion_id
+    )
 
     promotion_usage_count_model = (
         session.query(PromotionUsageCountModel)
@@ -197,7 +276,9 @@ def test_update_promotion_usage_count(session, create_users):
 
 def test_create_ticket_target(session, create_users):
     ticket_id = 1
-    dto = UseTicketDto(user_id=create_users[0].id, house_id=1)
+    dto = UseHouseTicketDto(
+        user_id=create_users[0].id, house_id=1, auth_header="auth_header"
+    )
 
     PaymentRepository().create_ticket_target(dto=dto, ticket_id=ticket_id)
 
@@ -254,28 +335,3 @@ def test_get_recommend_code_when_by_code_then_return_recommend_code_entity(
         code=recommend_code.code, code_group=recommend_code.code_group
     )
     assert isinstance(result, RecommendCodeEntity)
-
-
-def test_update_recommend_code_then_code_count_plus_one(
-    session, recommend_code_factory
-):
-    recommend_code = recommend_code_factory.build()
-    session.add(recommend_code)
-    session.commit()
-
-    recommend_code = RecommendCodeEntity(
-        id=recommend_code.id,
-        user_id=recommend_code.user_id,
-        code_group=recommend_code.code_group,
-        code=recommend_code.code,
-        code_count=recommend_code.code_count,
-        is_used=True,
-    )
-    PaymentRepository().update_recommend_code_count(recommend_code=recommend_code)
-    result = (
-        session.query(RecommendCodeModel)
-        .filter_by(user_id=recommend_code.user_id)
-        .first()
-    )
-
-    assert result.code_count == recommend_code.code_count + 1

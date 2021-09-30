@@ -8,7 +8,9 @@ from app.persistence.model import (
     AppAgreeTermsModel,
     UserProfileModel,
     UserInfoModel,
+    TicketModel,
 )
+from core.domains.payment.enum.payment_enum import TicketTypeDivisionEnum
 from core.domains.user.dto.user_dto import (
     CreateUserDto,
     CreateAppAgreeTermsDto,
@@ -35,7 +37,7 @@ from core.domains.user.use_case.v1.user_use_case import (
     GetUserUseCase,
     UserOutUseCase,
     GetUserMainUseCase,
-    GetSurveyResultUseCase,
+    GetSurveysUseCase,
     GetUserProfileUseCase,
     UpdateUserProfileUseCase,
 )
@@ -239,11 +241,20 @@ def test_upsert_user_info_when_create_user_data_then_success(
         .filter_by(user_profile_id=user_profile.id, code=upsert_user_info_dto.codes[0])
         .first()
     )
+    ticket = (
+        session.query(TicketModel)
+        .filter_by(
+            user_id=upsert_user_info_dto.user_id,
+            type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,
+        )
+        .first()
+    )
 
     assert user_profile.last_update_code == upsert_user_info_dto.codes[0]
     assert user_info.user_profile_id == user_profile.id
     assert user_info.code == upsert_user_info_dto.codes[0]
     assert user_info.value == upsert_user_info_dto.values[0]
+    assert ticket is None
 
 
 @patch(
@@ -446,34 +457,6 @@ def test_get_user_main_use_case_when_enter_my_page_main_then_ticket_is_0_and_sur
     assert result.value["is_badge"] is True
 
 
-def test_get_survey_result_use_case_then_return_user_nickname_and_birth_and_survey_results(
-    session, create_users
-):
-    get_user_dto = GetUserDto(user_id=create_users[0].id)
-    result = GetSurveyResultUseCase().execute(dto=get_user_dto)
-
-    assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, dict)
-    assert result.value["age"] == 36
-    assert result.value["user_profile_entity"].nickname == "noah"
-    assert result.value["user_profile_entity"].user_infos[0].user_value == "19850509"
-    assert result.value["user_profile_entity"].survey_result.total_point == 32
-
-
-def test_get_survey_result_use_case_then_return_survey_result_is_none(
-    session, create_users
-):
-    get_user_dto = GetUserDto(user_id=create_users[1].id)
-    result = GetSurveyResultUseCase().execute(dto=get_user_dto)
-
-    assert isinstance(result, UseCaseSuccessOutput)
-    assert isinstance(result.value, dict)
-    assert result.value["age"] == 36
-    assert result.value["user_profile_entity"].nickname == "noah"
-    assert result.value["user_profile_entity"].user_infos[0].user_value == "19850509"
-    assert result.value["user_profile_entity"].survey_result is None
-
-
 def test_get_user_profile_use_case_when_enter_setting_page_return_success(
     session, create_users
 ):
@@ -608,7 +591,17 @@ def test_upsert_user_info_when_update_is_sub_account_then_chain_update_user_data
         .all()
     )
 
+    ticket = (
+        session.query(TicketModel)
+        .filter_by(
+            user_id=upsert_user_info_dto.user_id,
+            type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,
+        )
+        .first()
+    )
+
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_TWO.value
+    assert ticket is None
     for user_info in user_infos:
         if user_info.code == 1016:
             assert user_info.value == "2"
@@ -700,7 +693,17 @@ def test_upsert_user_info_when_update_speical_cond_then_survey_step_is_comepte(
         .first()
     )
 
+    ticket = (
+        session.query(TicketModel)
+        .filter_by(
+            user_id=upsert_user_info_dto.user_id,
+            type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,
+        )
+        .first()
+    )
+
     assert user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
+    assert ticket.type == TicketTypeDivisionEnum.SURVEY_PROMOTION.value
 
 
 def test_upsert_user_info_when_update_duplicate_nickname_then_failure(

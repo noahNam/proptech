@@ -1,8 +1,5 @@
-from http import HTTPStatus
-
-import requests
 from flasgger import swag_from
-from flask import request, jsonify
+from flask import request
 
 from app.http.requests.v1.user_request import (
     CreateUserRequestSchema,
@@ -11,8 +8,9 @@ from app.http.requests.v1.user_request import (
     GetUserInfoRequestSchema,
     GetUserRequestSchema,
     GetUserMainRequestSchema,
-    GetSurveyResultRequestSchema,
+    GetSurveysRequestSchema,
     UpdateUserProfileRequestSchema,
+    GetUserProviderRequestSchema,
 )
 from app.http.responses.presenters.v1.user_presenter import (
     CreateUserPresenter,
@@ -22,12 +20,12 @@ from app.http.responses.presenters.v1.user_presenter import (
     GetUserPresenter,
     PatchUserOutPresenter,
     GetUserMainPresenter,
-    GetSurveyResultPresenter,
+    GetSurveysPresenter,
     GetUserProfilePresenter,
     UpdateUserProfilePresenter,
+    GetUserProviderPresenter,
 )
 from app.http.view import auth_required, api, current_user, jwt_required
-from core.domains.user.enum.user_enum import UserProviderCallEnum
 from core.domains.user.use_case.v1.user_use_case import (
     CreateUserUseCase,
     CreateAppAgreeTermsUseCase,
@@ -36,9 +34,10 @@ from core.domains.user.use_case.v1.user_use_case import (
     GetUserUseCase,
     UserOutUseCase,
     GetUserMainUseCase,
-    GetSurveyResultUseCase,
+    GetSurveysUseCase,
     GetUserProfileUseCase,
     UpdateUserProfileUseCase,
+    GetUserProviderUseCase,
 )
 
 
@@ -109,21 +108,13 @@ def get_user_info_view():
 def get_user_provider_view():
     auth_header = request.headers.get("Authorization")
 
-    try:
-        response = requests.get(
-            url=UserProviderCallEnum.CAPTAIN_BASE_URL.value
-            + UserProviderCallEnum.CALL_END_POINT.value,
-            headers={
-                "Content-Type": "application/json",
-                "Cache-Control": "no-cache",
-                "Authorization": auth_header,
-            },
-        )
-    except Exception:
-        raise Exception
+    dto = GetUserProviderRequestSchema(
+        user_id=current_user.id, auth_header=auth_header
+    ).validate_request_and_make_dto()
 
-    data = response.json()
-    return jsonify(data), HTTPStatus.OK
+    return GetUserProviderPresenter().transform(
+        GetUserProviderUseCase().execute(dto=dto)
+    )
 
 
 @api.route("/v1/users/out", methods=["PATCH"])
@@ -148,18 +139,16 @@ def get_user_main_view():
     return GetUserMainPresenter().transform(GetUserMainUseCase().execute(dto=dto))
 
 
-@api.route("/v1/users/survey/result", methods=["GET"])
+@api.route("/v1/users/surveys", methods=["GET"])
 @jwt_required
 @auth_required
-@swag_from("get_survey_result.yml", methods=["GET"])
-def get_survey_result_view():
-    dto = GetSurveyResultRequestSchema(
+@swag_from("get_surveys.yml", methods=["GET"])
+def get_surveys_view():
+    dto = GetSurveysRequestSchema(
         user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return GetSurveyResultPresenter().transform(
-        GetSurveyResultUseCase().execute(dto=dto)
-    )
+    return GetSurveysPresenter().transform(GetSurveysUseCase().execute(dto=dto))
 
 
 @api.route("/v1/users/profile", methods=["GET"])

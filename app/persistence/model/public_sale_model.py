@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -18,12 +20,15 @@ from app.persistence.model.real_estate_model import RealEstateModel
 from core.domains.house.entity.house_entity import (
     PublicSaleEntity,
     PublicSalePushEntity,
-    PublicSaleCalendarEntity,
+    PublicSaleDetailCalendarEntity,
+    PublicSaleReportEntity,
+    PublicSaleBoundingEntity,
 )
 from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,
     RentTypeEnum,
     PreSaleTypeEnum,
+    PublicSaleStatusEnum,
 )
 
 
@@ -50,7 +55,7 @@ class PublicSaleModel(db.Model):
         Enum(PreSaleTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
     )
-    construct_company = Column(String(30), nullable=True)
+    construct_company = Column(String(50), nullable=True)
     supply_household = Column(Integer, nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
     offer_date = Column(String(8), nullable=True)
@@ -58,10 +63,13 @@ class PublicSaleModel(db.Model):
     subscription_end_date = Column(String(8), nullable=True)
     special_supply_date = Column(String(8), nullable=True)
     special_supply_etc_date = Column(String(8), nullable=True)
+    special_etc_gyeonggi_date = Column(String(8), nullable=True)
     first_supply_date = Column(String(8), nullable=True)
     first_supply_etc_date = Column(String(8), nullable=True)
+    first_etc_gyeonggi_date = Column(String(8), nullable=True)
     second_supply_date = Column(String(8), nullable=True)
     second_supply_etc_date = Column(String(8), nullable=True)
+    second_etc_gyeonggi_date = Column(String(8), nullable=True)
     notice_winner_date = Column(String(8), nullable=True)
     contract_start_date = Column(String(8), nullable=True)
     contract_end_date = Column(String(8), nullable=True)
@@ -74,7 +82,6 @@ class PublicSaleModel(db.Model):
     offer_notice_url = Column(String(100), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
-
     name_ts = Column(TSVECTOR().with_variant(String(150), "sqlite"), nullable=True)
 
     # 1:1 relationship
@@ -83,6 +90,14 @@ class PublicSaleModel(db.Model):
     )
     public_sale_details = relationship(
         "PublicSaleDetailModel", backref=backref("public_sales", cascade="all, delete")
+    )
+
+    public_sale_avg_prices = relationship(
+        "PublicSaleAvgPriceModel",
+        backref=backref("public_sale_avg_prices"),
+        uselist=True,
+        primaryjoin="foreign(PublicSaleModel.id)== PublicSaleAvgPriceModel.public_sales_id",
+        viewonly=True,
     )
 
     def to_entity(self) -> PublicSaleEntity:
@@ -100,12 +115,16 @@ class PublicSaleModel(db.Model):
             offer_date=self.offer_date,
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,
+            status=self.status,
             special_supply_date=self.special_supply_date,
             special_supply_etc_date=self.special_supply_etc_date,
+            special_etc_gyeonggi_date=self.special_etc_gyeonggi_date,
             first_supply_date=self.first_supply_date,
             first_supply_etc_date=self.first_supply_etc_date,
+            first_etc_gyeonggi_date=self.first_etc_gyeonggi_date,
             second_supply_date=self.second_supply_date,
             second_supply_etc_date=self.second_supply_etc_date,
+            second_etc_gyeonggi_date=self.second_etc_gyeonggi_date,
             notice_winner_date=self.notice_winner_date,
             contract_start_date=self.contract_start_date,
             contract_end_date=self.contract_end_date,
@@ -129,13 +148,70 @@ class PublicSaleModel(db.Model):
             else None,
         )
 
+    def to_bounding_entity(self) -> PublicSaleBoundingEntity:
+        return PublicSaleBoundingEntity(
+            id=self.id,
+            name=self.name,
+            default_pyoung=self.default_pyoung,
+            housing_category=self.housing_category,
+            rent_type=self.rent_type,
+            trade_type=self.trade_type,
+            is_available=self.is_available,
+            subscription_start_date=self.subscription_start_date,
+            subscription_end_date=self.subscription_end_date,
+            status=self.status,
+            public_sale_photos=self.public_sale_photos.to_entity()
+            if self.public_sale_photos
+            else None,
+            public_sale_avg_prices=[
+                public_sale_avg_price.to_entity()
+                for public_sale_avg_price in self.public_sale_avg_prices
+            ]
+            if self.public_sale_avg_prices
+            else None,
+        )
+
+    @property
+    def default_pyoung(self) -> Optional[int]:
+        return (
+            self.public_sale_avg_prices[0].default_pyoung
+            if self.public_sale_avg_prices
+            else None
+        )
+
+    @property
+    def status(self) -> int:
+        """
+            todo: 리펙토링 필요, HouseRepository()._get_status() 로직과 겹침
+        """
+        if (
+            not self.subscription_start_date
+            or self.subscription_start_date == "0"
+            or self.subscription_start_date == "00000000"
+            or not self.subscription_end_date
+            or self.subscription_end_date == "0"
+            or self.subscription_end_date == "00000000"
+        ):
+            return PublicSaleStatusEnum.UNKNOWN.value
+
+        today = get_server_timestamp().strftime("%Y%m%d")
+
+        if today < self.subscription_start_date:
+            return PublicSaleStatusEnum.BEFORE_OPEN.value
+        elif self.subscription_start_date <= today <= self.subscription_end_date:
+            return PublicSaleStatusEnum.IS_RECEIVING.value
+        elif self.subscription_end_date < today:
+            return PublicSaleStatusEnum.IS_CLOSED.value
+        else:
+            return PublicSaleStatusEnum.UNKNOWN.value
+
     def to_push_entity(self, message_type: str) -> PublicSalePushEntity:
         return PublicSalePushEntity(
             id=self.id, name=self.name, region=self.region, message_type=message_type,
         )
 
-    def to_calendar_entity(self) -> PublicSaleCalendarEntity:
-        return PublicSaleCalendarEntity(
+    def to_calendar_entity(self) -> PublicSaleDetailCalendarEntity:
+        return PublicSaleDetailCalendarEntity(
             id=self.id,
             real_estate_id=self.real_estate_id,
             name=self.name,
@@ -145,13 +221,45 @@ class PublicSaleModel(db.Model):
             subscription_end_date=self.subscription_end_date,
             special_supply_date=self.special_supply_date,
             special_supply_etc_date=self.special_supply_etc_date,
+            special_etc_gyeonggi_date=self.special_etc_gyeonggi_date,
             first_supply_date=self.first_supply_date,
             first_supply_etc_date=self.first_supply_etc_date,
+            first_etc_gyeonggi_date=self.first_etc_gyeonggi_date,
             second_supply_date=self.second_supply_date,
             second_supply_etc_date=self.second_supply_etc_date,
+            second_etc_gyeonggi_date=self.second_etc_gyeonggi_date,
             notice_winner_date=self.notice_winner_date,
             contract_start_date=self.contract_start_date,
             contract_end_date=self.contract_end_date,
             move_in_year=self.move_in_year,
             move_in_month=self.move_in_month,
+        )
+
+    def to_report_entity(self) -> PublicSaleReportEntity:
+        return PublicSaleReportEntity(
+            id=self.id,
+            name=self.name,
+            real_estate_id=self.real_estate_id,
+            supply_household=self.supply_household,
+            offer_date=self.offer_date,
+            special_supply_date=self.special_supply_date,
+            special_supply_etc_date=self.special_supply_etc_date,
+            special_etc_gyeonggi_date=self.special_etc_gyeonggi_date,
+            first_supply_date=self.first_supply_date,
+            first_supply_etc_date=self.first_supply_etc_date,
+            first_etc_gyeonggi_date=self.first_etc_gyeonggi_date,
+            second_supply_date=self.second_supply_date,
+            second_supply_etc_date=self.second_supply_etc_date,
+            second_etc_gyeonggi_date=self.second_etc_gyeonggi_date,
+            notice_winner_date=self.notice_winner_date,
+            public_sale_photo=self.public_sale_photos.to_entity()
+            if self.public_sale_photos
+            else None,
+            public_sale_details=[
+                public_sale_detail.to_report_entity()
+                for public_sale_detail in self.public_sale_details
+            ]
+            if self.public_sale_details
+            else None,
+            real_estates=self.real_estates.to_report_entity(),
         )

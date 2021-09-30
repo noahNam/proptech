@@ -17,7 +17,8 @@ from core.domains.house.dto.house_dto import (
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
     SectionTypeDto,
-    GetHomeBannerDto,
+    GetHouseMainDto,
+    GetHousePublicNearPrivateSalesDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.enum.house_enum import (
@@ -187,11 +188,11 @@ class GetCoordinatesSchema(BaseModel):
 
 class GetCoordinatesRequestSchema:
     def __init__(self, start_x, start_y, end_x, end_y, level):
-        self._start_x = start_x
-        self._start_y = start_y
-        self._end_x = end_x
-        self._end_y = end_y
-        self._level = level
+        self._start_x = float(start_x) if start_x else None
+        self._start_y = float(start_y) if start_y else None
+        self._end_x = float(end_x) if end_x else None
+        self._end_y = float(end_y) if end_y else None
+        self._level = int(level) if level else None
 
     def validate_request_and_make_dto(self):
         try:
@@ -286,16 +287,20 @@ class GetCalendarInfoRequestSchema:
 
 
 class GetSearchHouseListSchema(BaseModel):
-    keywords: StrictStr = None
+    keywords: StrictStr
+    user_id: StrictInt
 
 
 class GetSearchHouseListRequestSchema:
-    def __init__(self, keywords):
+    def __init__(self, keywords, user_id):
         self.keywords = keywords
+        self.user_id = int(user_id) if user_id else None
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetSearchHouseListSchema(keywords=self.keywords).dict()
+            schema = GetSearchHouseListSchema(
+                keywords=self.keywords, user_id=self.user_id
+            ).dict()
             return GetSearchHouseListDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -357,7 +362,7 @@ class GetHouseMainRequestSchema:
             schema = GetHouseMainSchema(
                 section_type=int(self.section_type), user_id=self.user_id
             ).dict()
-            return GetHomeBannerDto(**schema)
+            return GetHouseMainDto(**schema)
         except ValidationError as e:
             logger.error(
                 f"[GetHouseMainRequestSchema][validate_request_and_make_dto] error : {e}"
@@ -388,5 +393,26 @@ class GetMainPreSubscriptionRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetMainPreSubscriptionRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetHousePublicNearPrivateSalesSchema(BaseModel):
+    house_id: StrictInt
+
+
+class GetHousePublicNearPrivateSalesRequestSchema:
+    def __init__(self, house_id):
+        self.house_id = house_id
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetHousePublicNearPrivateSalesSchema(
+                house_id=self.house_id,
+            ).dict()
+            return GetHousePublicNearPrivateSalesDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetHousePublicNearPrivateSalesSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

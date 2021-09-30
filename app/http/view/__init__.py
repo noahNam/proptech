@@ -1,10 +1,12 @@
+from http import HTTPStatus
+
 import sentry_sdk
 
 from flask import Blueprint
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from jwt import ExpiredSignatureError
 
-from core.exceptions import InvalidRequestException, TokenValidationErrorException
+from core.exceptions import TokenValidationErrorException
 
 api: Blueprint = Blueprint(name="api/tanos", import_name=__name__)
 
@@ -16,6 +18,7 @@ from .post.v1.post_view import *  # noqa isort:skip
 from .main import *  # noqa isort:skip
 from .house.v1.house_view import *  # noqa isort:skip
 from .payment.v1.payment_view import *  # noqa isort:skip
+from .report.v1.report_view import *  # noqa isort:skip
 
 
 @api.errorhandler(Exception)

@@ -16,25 +16,31 @@ from core.domains.house.dto.house_dto import (
     GetCalendarInfoDto,
     GetSearchHouseListDto,
     BoundingWithinRadiusDto,
-    GetHomeBannerDto,
     SectionTypeDto,
+    GetHouseMainDto,
+    GetHousePublicNearPrivateSalesDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
-    InterestHouseListEntity,
     GetSearchHouseListEntity,
     GetRecentViewListEntity,
-    CalendarInfoEntity,
     GetMainPreSubscriptionEntity,
     GetHouseMainEntity,
+    SimpleCalendarInfoEntity,
+    InterestHouseListEntity,
+    HousePublicDetailEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
     HouseTypeEnum,
     SearchTypeEnum,
     SectionType,
+    BoundingDegreeEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
+from core.domains.report.entity.report_entity import TicketUsageResultEntity
+from core.domains.report.enum import ReportTopicEnum
+from core.domains.report.enum.report_enum import TicketUsageTypeEnum
 from core.domains.user.dto.user_dto import RecentlyViewDto, GetUserDto
 from core.domains.user.enum import UserTopicEnum
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
@@ -51,6 +57,12 @@ class HouseBaseUseCase:
         )
         return get_event_object(topic_name=BannerTopicEnum.GET_BANNER_LIST)
 
+    def _get_button_link_list(self, section_type: int) -> List[ButtonLinkEntity]:
+        send_message(
+            topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST, section_type=section_type
+        )
+        return get_event_object(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST)
+
 
 class UpsertInterestHouseUseCase(HouseBaseUseCase):
     def execute(
@@ -63,11 +75,23 @@ class UpsertInterestHouseUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        interest_house: int = self._house_repo.update_interest_house(dto=dto)
-        if not interest_house:
+        # FE 요청으로 단순 upsert -> 찜한 내역 response 보내주는 것으로 변경
+        interest_house_id: int = self._house_repo.update_interest_house(dto=dto)
+        if not interest_house_id:
             self._house_repo.create_interest_house(dto=dto)
 
-        return UseCaseSuccessOutput()
+        result: Optional[InterestHouseListEntity] = self._house_repo.get_interest_house(
+            user_id=dto.user_id, house_id=dto.house_id
+        )
+
+        if not result:
+            return UseCaseFailureOutput(
+                type="interest_house",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        return UseCaseSuccessOutput(value=result)
 
 
 class BoundingUseCase(HouseBaseUseCase):
@@ -76,8 +100,8 @@ class BoundingUseCase(HouseBaseUseCase):
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
             <dto.level condition>
-                level 15 이상 : 매물 쿼리
-                level 14 이하 : 행정구역별 평균 가격 쿼리
+                level 16 이상 : 매물 쿼리
+                level 15 이하 : 행정구역별 평균 가격 쿼리
                 level 값 조절시 bounding_view()의 presenter 선택 조건 고려해야 합니다.
         """
         if not (dto.start_x and dto.start_y and dto.end_x and dto.end_y and dto.level):
@@ -114,7 +138,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
     def execute(
         self, dto: GetHousePublicDetailDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        if not self._house_repo.is_enable_public_sale_house(dto=dto):
+        if not self._house_repo.is_enable_public_sale_house(house_id=dto.house_id):
             return UseCaseFailureOutput(
                 type="house_id",
                 message=FailureType.NOT_FOUND_ERROR,
@@ -125,9 +149,28 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             self._house_repo.get_public_interest_house(dto=dto)
         )
 
-        # get HousePublicDetailEntity (degree 조절 필요)
-        entities = self._house_repo.get_house_public_detail(
-            dto=dto, degree=1, is_like=is_like
+        # 분양 매물 상세 query -> house_with_public_sales
+        house_with_public_sales = self._house_repo.get_house_with_public_sales(
+            house_id=dto.house_id
+        )
+
+        # get button link list
+        button_link_list = self._get_button_link_list(
+            section_type=SectionType.PUBLIC_SALE_DETAIL.value
+        )
+
+        # get house ticket usage results
+        ticket_usage_results = None
+        if self.__is_ticket_usage_for_house(user_id=dto.user_id, house_id=dto.house_id):
+            ticket_usage_results = self.__get_ticket_usage_results(
+                user_id=dto.user_id, type_=TicketUsageTypeEnum.HOUSE.value
+            )
+
+        entities: HousePublicDetailEntity = self._house_repo.make_house_public_detail_entity(
+            house_with_public_sales=house_with_public_sales,
+            is_like=is_like,
+            button_link_list=button_link_list,
+            ticket_usage_results=ticket_usage_results,
         )
 
         recently_view_dto = RecentlyViewDto(
@@ -145,6 +188,48 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         send_message(topic_name=UserTopicEnum.CREATE_RECENTLY_VIEW, dto=dto)
         return get_event_object(topic_name=UserTopicEnum.CREATE_RECENTLY_VIEW)
 
+    def __is_ticket_usage_for_house(self, user_id: int, house_id: int) -> bool:
+        send_message(
+            topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_HOUSE,
+            user_id=user_id,
+            house_id=house_id,
+        )
+        return get_event_object(topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_HOUSE)
+
+    def __get_ticket_usage_results(
+        self, user_id: int, type_: str
+    ) -> List[TicketUsageResultEntity]:
+        send_message(
+            topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS,
+            user_id=user_id,
+            type_=type_,
+        )
+        return get_event_object(topic_name=ReportTopicEnum.GET_TICKET_USAGE_RESULTS)
+
+
+class GetHousePublicNearPrivateSalesUseCase(HouseBaseUseCase):
+    def execute(
+        self, dto: GetHousePublicNearPrivateSalesDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not self._house_repo.is_enable_public_sale_house(house_id=dto.house_id):
+            return UseCaseFailureOutput(
+                type="house_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+            # 분양 매물 상세 query -> house_with_public_sales
+        house_with_public_sales = self._house_repo.get_house_with_public_sales(
+            house_id=dto.house_id
+        )
+
+        entities = self._house_repo.get_public_with_private_sales_in_radius(
+            house_with_public_sales=house_with_public_sales,
+            degree=BoundingDegreeEnum.DEGREE.value,
+        )
+
+        return UseCaseSuccessOutput(value=entities)
+
 
 class GetCalendarInfoUseCase(HouseBaseUseCase):
     def execute(
@@ -154,7 +239,7 @@ class GetCalendarInfoUseCase(HouseBaseUseCase):
         search_filters = self._house_repo.get_calendar_info_filters(
             year_month=year_month
         )
-        calendar_entities = self._house_repo.get_calendar_info(
+        calendar_entities = self._house_repo.get_simple_calendar_info(
             user_id=dto.user_id, search_filters=search_filters
         )
 
@@ -202,12 +287,11 @@ class GetSearchHouseListUseCase(HouseBaseUseCase):
         self, dto: GetSearchHouseListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.keywords or dto.keywords == "" or len(dto.keywords) < 2:
-            result = None
-            return UseCaseSuccessOutput(value=result)
+            return UseCaseSuccessOutput()
 
-        result: Optional[
-            GetSearchHouseListEntity
-        ] = self._house_repo.get_search_house_list(dto=dto)
+        result: List[GetSearchHouseListEntity] = self._house_repo.get_search_house_list(
+            dto=dto
+        )
 
         return UseCaseSuccessOutput(value=result)
 
@@ -249,7 +333,7 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
             )
         # degree 테스트 필요: app에 나오는 반경 범위를 보면서 degree 조절 필요합니다.
         bounding_filter = self._house_repo.get_bounding_filter_with_radius(
-            geometry_coordinates=coordinates, degree=1
+            geometry_coordinates=coordinates, degree=BoundingDegreeEnum.DEGREE.value
         )
         bounding_entities = self._house_repo.get_bounding(
             bounding_filter=bounding_filter
@@ -262,14 +346,14 @@ class GetHouseMainUseCase(HouseBaseUseCase):
     def _make_house_main_entity(
         self,
         banner_list: List[BannerEntity],
-        calendar_entities: List[CalendarInfoEntity],
+        calendar_entities: List[SimpleCalendarInfoEntity],
     ) -> GetHouseMainEntity:
         return GetHouseMainEntity(
             banner_list=banner_list, calendar_infos=calendar_entities
         )
 
     def execute(
-        self, dto: GetHomeBannerDto
+        self, dto: GetHouseMainDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if dto.section_type != SectionType.HOME_SCREEN.value:
             return UseCaseFailureOutput(
@@ -277,7 +361,7 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                 message=FailureType.INVALID_REQUEST_ERROR,
                 code=HTTPStatus.BAD_REQUEST,
             )
-        # get home banner list
+        # get house main banner list
         banner_list = self._get_banner_list(section_type=dto.section_type)
 
         # get present calendar info
@@ -293,7 +377,7 @@ class GetHouseMainUseCase(HouseBaseUseCase):
         search_filters = self._house_repo.get_calendar_info_filters(
             year_month=year_month
         )
-        calendar_entities = self._house_repo.get_calendar_info(
+        calendar_entities = self._house_repo.get_simple_calendar_info(
             user_id=dto.user_id, search_filters=search_filters
         )
 
@@ -304,12 +388,6 @@ class GetHouseMainUseCase(HouseBaseUseCase):
 
 
 class GetMainPreSubscriptionUseCase(HouseBaseUseCase):
-    def _get_button_link_list(self, section_type: int) -> List[ButtonLinkEntity]:
-        send_message(
-            topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST, section_type=section_type
-        )
-        return get_event_object(topic_name=BannerTopicEnum.GET_BUTTON_LINK_LIST)
-
     def _make_house_main_pre_subscription_entity(
         self, banner_list: List[BannerEntity], button_links: List[ButtonLinkEntity]
     ) -> GetMainPreSubscriptionEntity:

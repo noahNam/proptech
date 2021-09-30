@@ -34,6 +34,7 @@ class GetCalendarInfoDto(BaseModel):
 
 class GetSearchHouseListDto(BaseModel):
     keywords: str
+    user_id: int
 
 
 class BoundingWithinRadiusDto(BaseModel):
@@ -45,6 +46,10 @@ class SectionTypeDto(BaseModel):
     section_type: int
 
 
-class GetHomeBannerDto(BaseModel):
+class GetHouseMainDto(BaseModel):
     section_type: int
     user_id: int
+
+
+class GetHousePublicNearPrivateSalesDto(BaseModel):
+    house_id: int

@@ -36,6 +36,7 @@ class UserProfileModel(db.Model):
         backref=backref("user_profiles"),
         uselist=False,
         primaryjoin="foreign(UserProfileModel.user_id)== SurveyResultModel.user_id",
+        viewonly=True,
     )
 
     def to_entity(self) -> UserProfileEntity:
