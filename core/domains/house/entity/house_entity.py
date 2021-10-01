@@ -122,6 +122,14 @@ class PrivateSaleDetailEntity(BaseModel):
         use_enum_values = True
 
 
+class RecentlyContractedEntity(BaseModel):
+    private_sales_id: int
+    private_area: float
+    sale_contract_date: Optional[str]
+    rent_contract_date: Optional[str]
+    private_sale_avg_price_id: Optional[int]
+
+
 class PrivateSaleEntity(BaseModel):
     id: int
     real_estate_id: int

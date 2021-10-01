@@ -28,7 +28,7 @@ class PrivateSaleDetailModel(db.Model):
         autoincrement=True,
     )
     private_sales_id = Column(
-        BigInteger, ForeignKey(PrivateSaleModel.id, ondelete="CASCADE"), nullable=False
+        BigInteger, ForeignKey(PrivateSaleModel.id, ondelete="CASCADE"), nullable=False, index=True
     )
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
