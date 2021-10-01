@@ -369,3 +369,27 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
 
     def execute(self):
         logger.info(f"🚀\tPreCalculateAdministrative Start - {self.client_id}")
+        try:
+            start_time = time()
+            for idx in range(1, 1001):
+                # target_list : [<RealEstateModel>, ...]
+                target_list = self._house_repo.get_pre_calc_administrative_target_of_real_estates(
+                    administrative_id=idx
+                )
+                if target_list:
+                    # private_sales_list, public_sales_list로 분류 후
+                    # private_sales_list -> 위의 Step-1 로직 따라가되, building_type -> 아파트, 오피스텔만
+                    # todo : recent_info -> 아파트, 오피스텔별 분류
+                    # public_sales_list -> 위의 Step-2 로직 따라가기
+                    pass
+
+
+        except Exception as e:
+            logger.error(f"🚀\tPreCalculateAdministrative Error - {e}")
+            self.send_slack_message(
+                message=f"🚀\tPreCalculateAdministrative Error - {e}"
+            )
+            sentry_sdk.capture_exception(e)
+            sys.exit(0)
+
+        exit(os.EX_OK)

@@ -8,6 +8,7 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import (
     get_month_from_today,
     get_server_timestamp,
@@ -1220,3 +1221,24 @@ class HouseRepository:
             session.rollback()
             logger.error(f"[HouseRepository][update_acquisition_taxes] error : {e}")
             raise UpdateFailErrorException
+
+    def get_pre_calc_administrative_target_of_real_estates(self, administrative_id):
+        search_filters = list()
+        search_filters.append(
+            and_(
+                RealEstateModel.is_available == "True",
+                RealEstateModel.jibun_address.contains(AdministrativeDivisionModel.name),
+            )
+        )
+        query = (
+            session.query(RealEstateModel)
+                .join(AdministrativeDivisionModel, AdministrativeDivisionModel.id == administrative_id)
+                .options(joinedload(RealEstateModel.private_sales))
+                .options(joinedload(RealEstateModel.public_sales))
+                .options(joinedload("public_sales.public_sale_details"))
+                .filter(*search_filters)
+        )
+        return query.all()
+
+
+
