@@ -32,7 +32,11 @@ class PrivateSaleModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     real_estate_id = Column(
-        BigInteger, ForeignKey(RealEstateModel.id, ondelete="CASCADE"), nullable=False, unique=True, index=True
+        BigInteger,
+        ForeignKey(RealEstateModel.id, ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
     )
     name = Column(String(50), nullable=True)
     building_type = Column(
@@ -115,4 +119,3 @@ class PrivateSaleModel(db.Model):
             if self.private_sale_avg_prices
             else None
         )
-
