@@ -885,6 +885,7 @@ class HouseRepository:
                 PrivateSaleDetailModel.private_sales_id.in_(private_sales_ids),
             )
         )
+        # todo. 추후 배치 돌릴시에는 한달 검색 조건 추가 필요
         query_cond1 = (
             session.query(PrivateSaleDetailModel)
                 .with_entities(
