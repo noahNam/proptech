@@ -1174,13 +1174,6 @@ class HouseRepository:
             )
         )
 
-        # date_filters.append(
-        #     and_(
-        #         PrivateSaleDetailModel.contract_date
-        #         >= get_month_from_date(contract_date).strftime("%Y%m%d"),
-        #         PrivateSaleDetailModel.contract_date <= contract_date,
-        #     )
-        # )
         query = (
             session.query(
                 PrivateSaleDetailModel.private_area,
