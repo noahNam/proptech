@@ -160,7 +160,8 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
 
             # contract_date 기준 가장 최근에 거래된 row 가져오기
             recent_infos: List[
-                RecentlyContractedEntity] = self._house_repo.get_recently_contracted_private_sale_details(
+                RecentlyContractedEntity
+            ] = self._house_repo.get_recently_contracted_private_sale_details(
                 private_sales_ids=target_ids
             )
 
@@ -175,7 +176,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                     default_pyoung = self._house_repo.get_default_pyoung_number_for_private_sale(
                         recent_info=recent_info
                     )
-                    default_pyoung_dict.update({recent_info.private_sales_id: default_pyoung})
+                    default_pyoung_dict.update(
+                        {recent_info.private_sales_id: default_pyoung}
+                    )
 
                 if avg_prices_info:
                     # avg_prices_info : [(supply_area, avg_trade_prices, avg_deposit_prices), ...]
@@ -186,7 +189,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                         private_sales_id=recent_info.private_sales_id,
                         query_set=avg_prices_info,
                         default_pyoung=default_pyoung,
-                        private_sale_avg_price_id=recent_info.private_sale_avg_price_id
+                        private_sale_avg_price_id=recent_info.private_sale_avg_price_id,
                     )
 
                     final_update_list.extend(avg_price_update_list)
@@ -201,9 +204,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 self._house_repo.create_private_sale_avg_prices(
                     create_list=final_create_list
                 )
-                create_private_sale_avg_prices_count += len(
-                    final_create_list
-                )
+                create_private_sale_avg_prices_count += len(final_create_list)
             else:
                 logger.info(
                     f"🚀\tUpsert_private_sale_avg_prices : Nothing avg_price_create_list"
@@ -213,9 +214,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 self._house_repo.update_private_sale_avg_prices(
                     update_list=final_update_list
                 )
-                update_private_sale_avg_prices_count += len(
-                    final_update_list
-                )
+                update_private_sale_avg_prices_count += len(final_update_list)
 
             # private_sale_avg_prices_failed_list.append(recent_info.private_sales_id)
             logger.info(
@@ -382,7 +381,6 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
                     # todo : recent_info -> 아파트, 오피스텔별 분류
                     # public_sales_list -> 위의 Step-2 로직 따라가기
                     pass
-
 
         except Exception as e:
             logger.error(f"🚀\tPreCalculateAdministrative Error - {e}")
