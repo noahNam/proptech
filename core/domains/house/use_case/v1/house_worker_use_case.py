@@ -71,10 +71,8 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             final_update_list = list()
             private_sale_avg_prices_failed_list = list()
             # 매매, 전세 가격 평균 계산
-            # for idx in range(1, 1001):
-
             target_ids = [idx for idx in range(1, 10001)]
-            # target_ids = [6]
+            # target_ids = [1, 2]
 
             # contract_date 기준 가장 최근에 거래된 row 가져오기
             recent_infos: List[
@@ -82,13 +80,18 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 private_sales_ids=target_ids
             )
 
+            default_pyoung_dict = dict()
             for recent_info in recent_infos:
                 avg_prices_info = self._house_repo.get_pre_calc_avg_prices_target_of_private_sales(
                     recent_info=recent_info
                 )
-                default_pyoung = self._house_repo.get_default_pyoung_number_for_private_sale(
-                    recent_info=recent_info
-                )
+
+                default_pyoung = default_pyoung_dict.get(recent_info.private_sales_id)
+                if not default_pyoung:
+                    default_pyoung = self._house_repo.get_default_pyoung_number_for_private_sale(
+                        recent_info=recent_info
+                    )
+                    default_pyoung_dict.update({recent_info.private_sales_id: default_pyoung})
 
                 if avg_prices_info:
                     # avg_prices_info : [(supply_area, avg_trade_prices, avg_deposit_prices), ...]
