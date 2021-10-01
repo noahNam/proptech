@@ -1,7 +1,7 @@
 import os
 import sys
 from time import time
-from typing import List
+from typing import List, Dict
 
 import inject
 import requests
@@ -155,50 +155,31 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             final_update_list = list()
             private_sale_avg_prices_failed_list = list()
             # 매매, 전세 가격 평균 계산
-            target_ids = [idx for idx in range(1, 1001)]
+            target_ids = [idx for idx in range(1, 100001)]
             # target_ids = [1, 2]
 
             # contract_date 기준 가장 최근에 거래된 row 가져오기
             recent_infos: List[
                 RecentlyContractedEntity
-            ] = self._house_repo.get_recently_contracted_private_sale_details(
+            ] = self._house_repo.get_recently_contracted_private_sale_details2(
                 private_sales_ids=target_ids
             )
 
-            default_pyoung_dict = dict()
-            for recent_info in recent_infos:
-                avg_prices_info = self._house_repo.get_pre_calc_avg_prices_target_of_private_sales(
-                    recent_info=recent_info
+            default_pyoung_dict: Dict = self._house_repo.get_default_pyoung_number_for_private_sale(
+                target_ids=target_ids
+            )
+
+            if recent_infos:
+                # avg_prices_info : [(supply_area, avg_trade_prices, avg_deposit_prices), ...]
+                (
+                    avg_price_update_list,
+                    avg_price_create_list,
+                ) = self._house_repo.make_pre_calc_target_private_sale_avg_prices_list(
+                    recent_infos=recent_infos, default_pyoung_dict=default_pyoung_dict,
                 )
 
-                default_pyoung = default_pyoung_dict.get(recent_info.private_sales_id)
-                if not default_pyoung:
-                    default_pyoung = self._house_repo.get_default_pyoung_number_for_private_sale(
-                        recent_info=recent_info
-                    )
-                    default_pyoung_dict.update(
-                        {recent_info.private_sales_id: default_pyoung}
-                    )
-
-                if avg_prices_info:
-                    # avg_prices_info : [(supply_area, avg_trade_prices, avg_deposit_prices), ...]
-                    (
-                        avg_price_update_list,
-                        avg_price_create_list,
-                    ) = self._house_repo.make_pre_calc_target_private_sale_avg_prices_list(
-                        private_sales_id=recent_info.private_sales_id,
-                        query_set=avg_prices_info,
-                        default_pyoung=default_pyoung,
-                        private_sale_avg_price_id=recent_info.private_sale_avg_price_id,
-                    )
-
-                    final_update_list.extend(avg_price_update_list)
-                    final_create_list.extend(avg_price_create_list)
-                else:
-                    logger.error(
-                        f"Upsert_private_sale_avg_prices - get_pre_calc_avg_trade_price_target_of_private_sales "
-                        f"Error - Not found trade_price_info, id: {recent_info.private_sales_id}"
-                    )
+                final_update_list.extend(avg_price_update_list)
+                final_create_list.extend(avg_price_create_list)
 
             if final_create_list:
                 self._house_repo.create_private_sale_avg_prices(
@@ -233,6 +214,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             self.send_slack_message(
                 message=f"🚀\tUpsert_private_sale_avg_prices Error - {e}"
             )
+            sys.exit(0)
 
         # Batch_step_2 : Upsert_public_sale_avg_prices
         try:
