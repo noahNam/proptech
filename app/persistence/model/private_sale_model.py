@@ -19,6 +19,8 @@ from app.persistence.model.real_estate_model import RealEstateModel
 from core.domains.house.entity.house_entity import (
     PrivateSaleEntity,
     PrivateSaleBoundingEntity,
+    PrivateSaleAvgPriceTradeEntity,
+    PrivateSaleAvgPriceDepositEntity,
 )
 from core.domains.house.enum.house_enum import BuildTypeEnum
 
@@ -30,7 +32,7 @@ class PrivateSaleModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     real_estate_id = Column(
-        BigInteger, ForeignKey(RealEstateModel.id, ondelete="CASCADE"), nullable=False
+        BigInteger, ForeignKey(RealEstateModel.id, ondelete="CASCADE"), nullable=False, unique=True, index=True
     )
     name = Column(String(50), nullable=True)
     building_type = Column(
@@ -86,8 +88,20 @@ class PrivateSaleModel(db.Model):
             id=self.id,
             building_type=self.building_type,
             default_pyoung=self.default_pyoung,
-            private_sale_avg_prices=[
-                private_sale_avg_price.to_entity()
+            trade_info=[
+                PrivateSaleAvgPriceTradeEntity(
+                    pyoung=private_sale_avg_price.pyoung,
+                    trade_price=private_sale_avg_price.trade_price,
+                )
+                for private_sale_avg_price in self.private_sale_avg_prices
+            ]
+            if self.private_sale_avg_prices
+            else None,
+            deposit_info=[
+                PrivateSaleAvgPriceDepositEntity(
+                    pyoung=private_sale_avg_price.pyoung,
+                    trade_price=private_sale_avg_price.deposit_price,
+                )
                 for private_sale_avg_price in self.private_sale_avg_prices
             ]
             if self.private_sale_avg_prices
@@ -101,3 +115,4 @@ class PrivateSaleModel(db.Model):
             if self.private_sale_avg_prices
             else None
         )
+

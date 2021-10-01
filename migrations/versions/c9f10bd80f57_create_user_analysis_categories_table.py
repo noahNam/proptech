@@ -48,11 +48,6 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
 
-    # user_analysis.div 컬럼 추가
-    op.add_column(
-        "user_analysis", sa.Column("div", sa.String(length=1), nullable=False)
-    )
-
     # private_sales, private_sale_details index 추가
     op.create_index(
         op.f("ix_private_sale_details_trade_type"),
@@ -69,7 +64,6 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_column("user_analysis", "div")
     op.drop_index(
         op.f("ix_private_sale_details_trade_type"), table_name="private_sale_details"
     )
