@@ -28,12 +28,15 @@ class PrivateSaleDetailModel(db.Model):
         autoincrement=True,
     )
     private_sales_id = Column(
-        BigInteger, ForeignKey(PrivateSaleModel.id, ondelete="CASCADE"), nullable=False, index=True
+        BigInteger,
+        ForeignKey(PrivateSaleModel.id, ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     private_area = Column(Float, nullable=False)
     supply_area = Column(Float, nullable=False)
     contract_date = Column(String(8), nullable=True)
-    contract_ym = Column(SmallInteger, nullable=True, index=True)
+    contract_ym = Column(Integer, nullable=True, index=True)
     deposit_price = Column(Integer, nullable=False)
     rent_price = Column(Integer, nullable=False)
     trade_price = Column(Integer, nullable=False)
