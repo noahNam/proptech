@@ -155,7 +155,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             final_update_list = list()
             private_sale_avg_prices_failed_list = list()
             # 매매, 전세 가격 평균 계산
-            target_ids = [idx for idx in range(1, 10001)]
+            target_ids = [idx for idx in range(1, 1001)]
             # target_ids = [1, 2]
 
             # contract_date 기준 가장 최근에 거래된 row 가져오기
@@ -225,6 +225,8 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 # f"{len(private_sale_avg_prices_failed_list)} Failed, "
                 # f"Failed_list : {private_sale_avg_prices_failed_list}, "
             )
+            # step 1까지만 실행
+            sys.exit(0)
 
         except Exception as e:
             logger.error(f"🚀\tUpsert_private_sale_avg_prices Error - {e}")
