@@ -932,11 +932,11 @@ class HouseRepository:
             func.max(union_query.columns.sale_contract_date).label("sale_contract_date"),
             func.max(union_query.columns.rent_contract_date).label("rent_contract_date"),
             func.max(union_query.columns.private_sale_avg_price_id).label("private_sale_avg_price_id"),
-        ).group_by(union_query.columns.private_sale_details_private_area)
+        ).group_by(union_query.columns.private_sale_details_private_area, union_query.columns.private_sale_details_private_sales_id)
 
         query_set = query.all()
 
-        # RawQueryHelper.print_raw_query(query)
+        RawQueryHelper.print_raw_query(query)
 
         if not query_set:
             return []
@@ -1022,6 +1022,8 @@ class HouseRepository:
             func.max(union_query.columns.avg_deposit_price).label("avg_deposit_prices"),
         ).group_by(union_query.columns.private_sale_details_private_area)
 
+        # RawQueryHelper.print_raw_query(query)
+
         # row: (private_area, avg_trade_prices, avg_deposit_prices)
         return query.all()
 
@@ -1048,10 +1050,11 @@ class HouseRepository:
                 "id": private_sale_avg_price_id
             }
 
-            if self._is_exists_private_sale_avg_prices(
-                    private_sales_id=avg_price_info["private_sales_id"],
-                    pyoung_number=avg_price_info["pyoung"],
-            ):
+            # if self._is_exists_private_sale_avg_prices(
+            #         private_sales_id=avg_price_info["private_sales_id"],
+            #         pyoung_number=avg_price_info["pyoung"],
+            # ):
+            if private_sale_avg_price_id:
                 avg_price_info.update({"updated_at": get_server_timestamp()})
                 avg_prices_update_list.append(avg_price_info)
             else:
@@ -1140,6 +1143,8 @@ class HouseRepository:
 
         # query_set: [(private_area, max(count))]
         query_set = query.all()
+
+        # RawQueryHelper.print_raw_query(query)
 
         # todo. 공급면적 들어오기 전까지 사용 수식
         return ceil(query_set[0][0] * 1.35 / 3.3058)
