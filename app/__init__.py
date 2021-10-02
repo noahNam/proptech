@@ -12,7 +12,6 @@ from app.extensions import jwt, sms, redis, cors
 from app.extensions.database import db, migrate
 from app.extensions.ioc_container import init_provider
 from app.extensions.swagger import swagger_config
-from app.extensions.utils.enum.ironman_enum import IronManServiceEnum
 from app.http.view import api
 
 # alembic auto-generate detected
@@ -50,7 +49,7 @@ def init_extensions(app: Flask):
     sms.init_app(app)
     redis.init_app(app)
     cors.init_app(
-        app, resources={r"*": {"origins": IronManServiceEnum.IRONMAN_SERVICE_URL.value}}
+        app, resources={r"*": {"origins": app.config.get("IRONMAN_SERVICE_URL")}}
     )
 
 
