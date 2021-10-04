@@ -10,6 +10,7 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import (
     get_month_from_today,
     get_server_timestamp,
@@ -1339,7 +1340,12 @@ class HouseRepository:
             logger.error(f"[HouseRepository][update_acquisition_taxes] error : {e}")
             raise UpdateFailErrorException
 
-    def get_pre_calc_administrative_target_of_real_estates(self, administrative_id):
+    def get_pre_calc_administrative_target_of_real_estates(self, administrative_id: int):
+        # filters = list()
+
+        # filters.append(
+        #     and_(AdministrativeDivisionModel.id.in_(administrative_ids), )
+        # )
         search_filters = list()
         search_filters.append(
             and_(
@@ -1353,11 +1359,38 @@ class HouseRepository:
             session.query(RealEstateModel)
             .join(
                 AdministrativeDivisionModel,
-                AdministrativeDivisionModel.id == administrative_id,
+                AdministrativeDivisionModel.id == administrative_id
+                # AdministrativeDivisionModel.id.in_(administrative_ids)
             )
+            .filter(*search_filters)
             .options(joinedload(RealEstateModel.private_sales))
             .options(joinedload(RealEstateModel.public_sales))
-            .options(joinedload("public_sales.public_sale_details"))
-            .filter(*search_filters)
+            # .options(joinedload("private_sales.private_sale_avg_prices"))
+            # .options(joinedload("public_sales.public_sale_avg_prices"))
         )
+
+        print("---"*30)
+        RawQueryHelper().print_raw_query(query)
+        print("---"*30)
+
         return query.all()
+
+    def get_pre_calc_administrative_idx_count(self) -> int:
+        return session.query(AdministrativeDivisionModel).count()
+
+    def get_pre_calc_administrative_private_apt(
+            self, real_estates_id: int, private_sale_ids: List[int]
+    ):
+        filters = list()
+
+        filters.append(
+            and_(
+                PrivateSaleModel.id.in_(private_sale_ids),
+                PrivateSaleModel.building_type == "아파트",
+                PrivateSaleDetailModel.trade_type == "매매"
+            )
+        )
+
+        query = (
+            session.query(PrivateSaleModel)
+        )
