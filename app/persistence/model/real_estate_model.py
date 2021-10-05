@@ -41,6 +41,8 @@ class RealEstateModel(db.Model):
     road_number = Column(String(10), nullable=True)
     land_number = Column(String(10), nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
+    front_legal_code = Column(String(5), nullable=False, unique=False, index=True)
+    back_legal_code = Column(String(5), nullable=False, unique=False, index=True)
     coordinates = Column(
         Geometry(geometry_type="POINT", srid=4326).with_variant(String, "sqlite"),
         nullable=True,
