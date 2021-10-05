@@ -25,10 +25,13 @@ class AdministrativeDivisionModel(db.Model):
 
     name = Column(String(100), nullable=False)
     short_name = Column(String(30), nullable=False)
-    real_trade_price = Column(Integer, nullable=False)
-    real_rent_price = Column(Integer, nullable=False)
-    real_deposit_price = Column(Integer, nullable=False)
+    apt_trade_price = Column(Integer, nullable=False)
+    apt_deposit_price = Column(Integer, nullable=False)
+    op_trade_price = Column(Integer, nullable=False)
+    op_deposit_price = Column(Integer, nullable=False)
     public_sale_price = Column(Integer, nullable=False)
+    front_legal_code = Column(String(5), nullable=False, unique=False, index=True)
+    back_legal_code = Column(String(5), nullable=False, unique=False, index=True)
     level = Column(
         Enum(DivisionLevelEnum, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
