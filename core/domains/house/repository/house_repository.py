@@ -8,6 +8,7 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import (
     get_month_from_today,
     get_server_timestamp,
@@ -44,7 +45,7 @@ from core.domains.house.entity.house_entity import (
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
     PublicSaleReportEntity,
-    PrivateSaleDetailEntity,
+    PrivateSaleDetailEntity, RealEstateLegalCodeEntity, AdministrativeDivisionLegalCodeEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -1219,4 +1220,41 @@ class HouseRepository:
         except Exception as e:
             session.rollback()
             logger.error(f"[HouseRepository][update_acquisition_taxes] error : {e}")
+            raise UpdateFailErrorException
+
+    def get_administrative_divisions_legal_code_info_all_list(self)-> List[AdministrativeDivisionLegalCodeEntity]:
+        query = session.query(AdministrativeDivisionModel)
+        query_set = query.all()
+
+        return [query.to_legal_code_entity() for query in query_set] if query_set else None
+
+    def get_real_estates_legal_code_info_all_list(self) -> List[RealEstateLegalCodeEntity]:
+        filters = list()
+        filters.append(
+            and_(
+                RealEstateModel.is_available == "True",
+                RealEstateModel.front_legal_code == "00000",
+                RealEstateModel.back_legal_code == "00000",
+            )
+        )
+        query = (
+            session.query(RealEstateModel)
+                .filter(*filters)
+        )
+        query_set = query.all()
+
+        return [query.to_legal_code_entity() for query in query_set] if query_set else None
+
+    def update_legal_code_to_real_estates(self, update_list: List[dict]) -> None:
+        try:
+            session.bulk_update_mappings(
+                RealEstateModel, [update_info for update_info in update_list]
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][update_legal_code_to_real_estates] error : {e}"
+            )
             raise UpdateFailErrorException

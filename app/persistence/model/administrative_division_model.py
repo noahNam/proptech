@@ -12,7 +12,7 @@ from sqlalchemy.orm import column_property
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.house.entity.house_entity import AdministrativeDivisionEntity
+from core.domains.house.entity.house_entity import AdministrativeDivisionEntity, AdministrativeDivisionLegalCodeEntity
 from core.domains.house.enum.house_enum import DivisionLevelEnum
 
 
@@ -65,4 +65,13 @@ class AdministrativeDivisionModel(db.Model):
             back_legal_code=self.back_legal_code,
             created_at=self.created_at,
             updated_at=self.updated_at,
+        )
+
+    def to_legal_code_entity(self) -> AdministrativeDivisionLegalCodeEntity:
+        return AdministrativeDivisionLegalCodeEntity(
+            id=self.id,
+            name=self.name,
+            short_name=self.short_name,
+            front_legal_code=self.front_legal_code,
+            back_legal_code=self.back_legal_code,
         )
