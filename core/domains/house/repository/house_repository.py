@@ -1222,8 +1222,9 @@ class HouseRepository:
             logger.error(f"[HouseRepository][update_acquisition_taxes] error : {e}")
             raise UpdateFailErrorException
 
-    def get_administrative_divisions_legal_code_info_all_list(self)-> List[AdministrativeDivisionLegalCodeEntity]:
+    def get_administrative_divisions_legal_code_info_all_list(self) -> List[AdministrativeDivisionLegalCodeEntity]:
         query = session.query(AdministrativeDivisionModel)
+
         query_set = query.all()
 
         return [query.to_legal_code_entity() for query in query_set] if query_set else None
@@ -1234,7 +1235,7 @@ class HouseRepository:
             and_(
                 RealEstateModel.is_available == "True",
                 RealEstateModel.front_legal_code == "00000",
-                RealEstateModel.back_legal_code == "00000",
+                RealEstateModel.back_legal_code == "00000"
             )
         )
         query = (
