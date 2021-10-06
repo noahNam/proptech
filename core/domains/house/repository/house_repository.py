@@ -1340,40 +1340,105 @@ class HouseRepository:
             logger.error(f"[HouseRepository][update_acquisition_taxes] error : {e}")
             raise UpdateFailErrorException
 
-    def get_pre_calc_administrative_target_of_real_estates(self, administrative_id: int):
-        # filters = list()
+    def get_si_do_avg_price(self):
+        try:
+            filters = list()
 
-        # filters.append(
-        #     and_(AdministrativeDivisionModel.id.in_(administrative_ids), )
-        # )
-        search_filters = list()
-        search_filters.append(
-            and_(
-                RealEstateModel.is_available == "True",
-                RealEstateModel.jibun_address.contains(
-                    AdministrativeDivisionModel.name
-                ),
+            filters.append(PrivateSaleDetailModel.contract_ym >= 202108)
+            filters.append(PrivateSaleDetailModel.trade_type != '월세')
+            filters.append(PrivateSaleDetailModel.is_available == True)
+
+            query_cond1 = (
+                session.query(PrivateSaleModel)
+                .with_entities(
+                    PrivateSaleModel.real_estate_id,
+                    PrivateSaleModel.id,
+                    PrivateSaleModel.building_type,
+                    PrivateSaleDetailModel.trade_type,
+                    func.sum(func.round((PrivateSaleDetailModel.private_area * 1.35) / 3.3058)).label("pyoung"),
+                    func.sum(PrivateSaleDetailModel.trade_price).label(
+                        "apt_sum_trade_price"
+                    ),
+                    func.sum(PrivateSaleDetailModel.deposit_price).label(
+                        "apt_sum_deposit_price"
+                    ),
+                    literal(0, Integer).label("opt_sum_trade_price"),
+                    literal(0, Integer).label("opt_sum_deposit_price"),
+                )
+                .join(
+                    PrivateSaleDetailModel,
+                    PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id
+                )
+                .filter(*filters)
+                .filter(PrivateSaleModel.building_type == '아파트')
+                .group_by(PrivateSaleModel.real_estate_id, PrivateSaleModel.id, PrivateSaleModel.building_type, PrivateSaleDetailModel.trade_type)
             )
-        )
-        query = (
-            session.query(RealEstateModel)
-            .join(
-                AdministrativeDivisionModel,
-                AdministrativeDivisionModel.id == administrative_id
-                # AdministrativeDivisionModel.id.in_(administrative_ids)
+
+            query_cond2 = (
+                session.query(PrivateSaleModel)
+                .with_entities(
+                    PrivateSaleModel.real_estate_id,
+                    PrivateSaleModel.id,
+                    PrivateSaleModel.building_type,
+                    PrivateSaleDetailModel.trade_type,
+                    func.sum(func.round((PrivateSaleDetailModel.private_area * 1.35) / 3.3058)).label("pyoung"),
+                    func.sum(PrivateSaleDetailModel.trade_price).label(
+                        "apt_sum_trade_price"
+                    ),
+                    func.sum(PrivateSaleDetailModel.deposit_price).label(
+                        "apt_sum_deposit_price"
+                    ),
+                    literal(0, Integer).label("opt_sum_trade_price"),
+                    literal(0, Integer).label("opt_sum_deposit_price"),
+                )
+                .join(
+                    PrivateSaleDetailModel,
+                    PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id
+                )
+                .filter(*filters)
+                .filter(PrivateSaleModel.building_type == '오피스텔')
+                .group_by(PrivateSaleModel.real_estate_id, PrivateSaleModel.id, PrivateSaleModel.building_type, PrivateSaleDetailModel.trade_type)
             )
-            .filter(*search_filters)
-            .options(joinedload(RealEstateModel.private_sales))
-            .options(joinedload(RealEstateModel.public_sales))
-            # .options(joinedload("private_sales.private_sale_avg_prices"))
-            # .options(joinedload("public_sales.public_sale_avg_prices"))
-        )
 
-        print("---"*30)
-        RawQueryHelper().print_raw_query(query)
-        print("---"*30)
+            union_query = query_cond1.union_all(query_cond2).subquery()
+            suq_q = aliased(union_query)
 
-        return query.all()
+            query_cond3 = (
+                session.query(RealEstateModel)
+                .with_entities(
+                    RealEstateModel.si_do,
+                    # func.max(RealEstateModel)
+                )
+                .join(
+                    suq_q, RealEstateModel.id == suq_q.c.real_estate_id
+                )
+                .group_by(RealEstateModel.si_do, suq_q.c.trade_type, suq_q.c.building_type)
+            )
+
+            # suq_q = aliased(sub_query)
+            #
+            # query = (
+            #     session.query(suq_q)
+            #         .with_entities(suq_q.c.private_sales_id, suq_q.c.private_area, )
+            #         .group_by(suq_q.c.private_sales_id, suq_q.c.private_area, suq_q.c.rank, )
+            #         .having(suq_q.c.rank == 1)
+            # )
+
+            # func.ceil(
+            #     (union_query.columns.private_sale_details_private_area * 1.35)
+            #     / 3.3058
+            # )
+
+            print("---"*30)
+            RawQueryHelper().print_raw_query(query_cond1)
+            print("---"*30)
+
+            test = query_cond1.all()
+
+        except Exception as e:
+            pass
+
+        return test
 
     def get_pre_calc_administrative_idx_count(self) -> int:
         return session.query(AdministrativeDivisionModel).count()

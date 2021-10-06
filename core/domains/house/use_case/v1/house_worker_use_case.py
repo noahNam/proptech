@@ -296,47 +296,47 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #     sys.exit(0)
 
         # Batch_step_3 : Update_public_sale_acquisition_tax
-        try:
-            start_time = time()
-            logger.info(f"🚀\tUpdate_public_sale_acquisition_tax : Start")
-
-            # PublicSaleDetails.acquisition_tax == 0 건에 대하여 취득세 계산 후 업데이트
-            target_list = self._house_repo.get_acquisition_tax_calc_target_list()
-            update_list = None
-            if target_list:
-                update_list = self._make_acquisition_tax_update_list(
-                    target_list=target_list
-                )
-            else:
-                logger.info(
-                    f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_target_list"
-                )
-            if update_list:
-                try:
-                    self._house_repo.update_acquisition_taxes(update_list=update_list)
-                except Exception as e:
-                    logger.error(
-                        f"Update_public_sale_acquisition_tax - update_acquisition_taxes "
-                        f"error : {e}"
-                    )
-            else:
-                logger.info(
-                    f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_update_list"
-                )
-            logger.info(
-                f"🚀\tUpdate_public_sale_acquisition_tax : Finished !!, "
-                f"records: {time() - start_time} secs, "
-                f"{len(update_list)} Updated, "
-            )
-        except Exception as e:
-            logger.error(f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}")
-            self.send_slack_message(
-                message=f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}"
-            )
-            sentry_sdk.capture_exception(e)
-            sys.exit(0)
-
-        exit(os.EX_OK)
+        # try:
+        #     start_time = time()
+        #     logger.info(f"🚀\tUpdate_public_sale_acquisition_tax : Start")
+        #
+        #     # PublicSaleDetails.acquisition_tax == 0 건에 대하여 취득세 계산 후 업데이트
+        #     target_list = self._house_repo.get_acquisition_tax_calc_target_list()
+        #     update_list = None
+        #     if target_list:
+        #         update_list = self._make_acquisition_tax_update_list(
+        #             target_list=target_list
+        #         )
+        #     else:
+        #         logger.info(
+        #             f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_target_list"
+        #         )
+        #     if update_list:
+        #         try:
+        #             self._house_repo.update_acquisition_taxes(update_list=update_list)
+        #         except Exception as e:
+        #             logger.error(
+        #                 f"Update_public_sale_acquisition_tax - update_acquisition_taxes "
+        #                 f"error : {e}"
+        #             )
+        #     else:
+        #         logger.info(
+        #             f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_update_list"
+        #         )
+        #     logger.info(
+        #         f"🚀\tUpdate_public_sale_acquisition_tax : Finished !!, "
+        #         f"records: {time() - start_time} secs, "
+        #         f"{len(update_list)} Updated, "
+        #     )
+        # except Exception as e:
+        #     logger.error(f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}")
+        #     self.send_slack_message(
+        #         message=f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}"
+        #     )
+        #     sentry_sdk.capture_exception(e)
+        #     sys.exit(0)
+        #
+        # exit(os.EX_OK)
 
 
 class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
@@ -353,19 +353,17 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
     def execute(self):
         logger.info(f"🚀\tPreCalculateAdministrative Start - {self.client_id}")
         try:
-            start_time = time()
-
             """
                 1. real_estates 를 행정구역코드로 묶는다.
                 2. 1번의 결과에서 평균가를 구한다.
                     -> 평균가 구입 시 단순 avg가 아니라 34평 기준 평균을 구한다.
                 3. 평균가를 Administrative_divisions에 밀어 넣는다.
             """
-
-
+            start_time = time()
 
             # todo. 1 + 2 번 쿼리 작성
             # si_do
+            self._house_repo.get_si_do_avg_price()
 
             # si_gun_gu
 
