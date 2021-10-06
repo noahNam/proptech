@@ -556,6 +556,9 @@ class RealEstateFactory(BaseFactory):
     latitude = random.uniform(33.1, 38.45)
     longitude = random.uniform(125.0666666, 131.8722222)
 
+    front_legal_code = "11110"
+    back_legal_code = "10101"
+
     @factory.post_generation
     def private_sales(obj, create, extracted, **kwargs):
         if extracted:
@@ -584,10 +587,13 @@ class AdministrativeDivisionFactory(BaseFactory):
     name = factory.Sequence(lambda n: f"XX시 XX구 읍면동_{n}")
     name_ts = factory.Sequence(lambda n: f"XX시 XX구 읍면동_{n}")
     short_name = factory.Sequence(lambda n: f"읍면동_{n}")
-    real_trade_price = random.randint(10_000_000, 50_000_000)
-    real_rent_price = random.randint(10_000_000, 50_000_000)
-    real_deposit_price = random.randint(10_000_000, 50_000_000)
+    apt_trade_price = random.randint(10_000_000, 50_000_000)
+    apt_deposit_price = random.randint(10_000_000, 50_000_000)
+    op_trade_price = random.randint(10_000_000, 50_000_000)
+    op_deposit_price = random.randint(10_000_000, 50_000_000)
     public_sale_price = random.randint(10_000_000, 50_000_000)
+    front_legal_code = "11110"
+    back_legal_code = "10101"
     level = DivisionLevelEnum.LEVEL_3.value
     coordinates = f"SRID=4326;POINT({random.uniform(125.0666666, 131.8722222)} {random.uniform(33.1, 38.45)})"
 
