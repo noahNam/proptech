@@ -478,4 +478,6 @@ class AdministrativeDivisionLegalCodeEntity(BaseModel):
 class RealEstateLegalCodeEntity(BaseModel):
     id: int
     jibun_address: str
+    si_do: str
+    si_gun_gu: str
     dong_myun: str

@@ -198,5 +198,7 @@ class RealEstateModel(db.Model):
         return RealEstateLegalCodeEntity(
             id=self.id,
             jibun_address=self.jibun_address,
+            si_do=self.si_do,
+            si_gun_gu=self.si_gun_gu,
             dong_myun=self.dong_myun,
         )

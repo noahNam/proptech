@@ -392,7 +392,12 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         failed_list = list()
         for real_estate in target_list:
             for administrative in administrative_info:
-                if administrative.short_name == real_estate.dong_myun:
+                if (
+                        administrative.short_name == real_estate.dong_myun and
+                        real_estate.si_do in administrative.name and
+                        real_estate.si_gun_gu in administrative.name and
+                        administrative.name in real_estate.jibun_address
+                ):
                     front_legal_code = administrative.front_legal_code
                     back_legal_code = administrative.back_legal_code
 
