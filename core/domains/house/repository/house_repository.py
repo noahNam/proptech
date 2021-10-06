@@ -876,7 +876,7 @@ class HouseRepository:
             return 0
         return (min_down_payment + max_down_payment) / 2
 
-    def get_recently_contracted_private_sale_details2(
+    def get_recently_contracted_private_sale_details(
         self, private_sales_ids: List[int]
     ) -> List[RecentlyContractedEntity]:
         filters = list()

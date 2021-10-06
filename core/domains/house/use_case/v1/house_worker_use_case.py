@@ -161,7 +161,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #     # contract_date 기준 가장 최근에 거래된 row 가져오기
         #     recent_infos: List[
         #         RecentlyContractedEntity
-        #     ] = self._house_repo.get_recently_contracted_private_sale_details2(
+        #     ] = self._house_repo.get_recently_contracted_private_sale_details(
         #         private_sales_ids=target_ids
         #     )
         #
@@ -354,21 +354,39 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
         logger.info(f"🚀\tPreCalculateAdministrative Start - {self.client_id}")
         try:
             start_time = time()
-            target_count = self._house_repo.get_pre_calc_administrative_idx_count()
-            # target_ids = [idx for idx in range(target_count)]
-            # target_list : [<RealEstateModel>, ...]
-            for target_id in range(target_count):
-                target_list = self._house_repo.get_pre_calc_administrative_target_of_real_estates(
-                    administrative_id=target_id
-                )
-                if target_list:
-                    private_sale_ids = [target.private_sales.id for target in target_list if target.private_sales]
-                    public_sale_ids = [target.public_sales.id for target in target_list if target.public_sales]
-                    # private_sales_list, public_sales_list로 분류 후
-                    # private_sales_list -> 위의 Step-1 로직 따라가되, building_type -> 아파트, 오피스텔만
-                    # todo : recent_info -> 아파트, 오피스텔별 분류
-                    # public_sales_list -> 위의 Step-2 로직 따라가기
-                    pass
+
+            """
+                1. real_estates 를 행정구역코드로 묶는다.
+                2. 1번의 결과에서 평균가를 구한다.
+                    -> 평균가 구입 시 단순 avg가 아니라 34평 기준 평균을 구한다.
+                3. 평균가를 Administrative_divisions에 밀어 넣는다.
+            """
+
+
+
+            # todo. 1 + 2 번 쿼리 작성
+            # si_do
+
+            # si_gun_gu
+
+            # dong_myun
+
+            # todo. 3번 Insert or Update
+
+            # target_count = self._house_repo.get_pre_calc_administrative_idx_count()
+            # # target_ids = [idx for idx in range(target_count)]
+            # for target_id in range(target_count):
+            #     target_list = self._house_repo.get_pre_calc_administrative_target_of_real_estates(
+            #         administrative_id=target_id
+            #     )
+            #     if target_list:
+            #         private_sale_ids = [target.private_sales.id for target in target_list if target.private_sales]
+            #         public_sale_ids = [target.public_sales.id for target in target_list if target.public_sales]
+            #         # private_sales_list, public_sales_list로 분류 후
+            #         # private_sales_list -> 위의 Step-1 로직 따라가되, building_type -> 아파트, 오피스텔만
+            #         # todo : recent_info -> 아파트, 오피스텔별 분류
+            #         # public_sales_list -> 위의 Step-2 로직 따라가기
+            #         pass
 
         except Exception as e:
             logger.error(f"🚀\tPreCalculateAdministrative Error - {e}")
