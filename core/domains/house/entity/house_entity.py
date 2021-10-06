@@ -146,15 +146,18 @@ class AdministrativeDivisionEntity(BaseModel):
     id: int
     name: str
     short_name: str
-    real_trade_price: int
-    real_rent_price: int
-    real_deposit_price: int
+    apt_trade_price: int
+    apt_deposit_price: int
+    op_trade_price: int
+    op_deposit_price: int
     public_sale_price: int
     level: Enum
     # coordinates: Point
     # to_entity(): coordinates 대신 아래 위경도 값 사용
     latitude: float
     longitude: float
+    front_legal_code: str
+    back_legal_code: str
     created_at: datetime
     updated_at: datetime
 
