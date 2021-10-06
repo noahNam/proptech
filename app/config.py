@@ -35,9 +35,7 @@ class Config:
     SQS_USER_DATA_SYNC_TO_LAKE = os.environ.get("SQS_USER_DATA_SYNC_TO_LAKE") or ""
 
     # Ironman service
-    IRONMAN_SERVICE_URL = (
-        os.environ.get("IRONMAN_SERVICE_URL") or "https://ironman.apartalk.com"
-    )
+    IRONMAN_SERVICE_URL = os.environ.get("IRONMAN_SERVICE_URL")
 
 
 class LocalConfig(Config):
@@ -76,7 +74,6 @@ class ProductionConfig(Config):
     SENTRY_ENVIRONMENT = "production"
     SENTRY_KEY = os.environ.get("SENTRY_KEY")
     SQLALCHEMY_DATABASE_URI = os.environ.get("PROD_DATABASE_URL")
-    IRONMAN_SERVICE_URL = os.environ.get("IRONMAN_SERVICE_URL")
 
 
 config = dict(
