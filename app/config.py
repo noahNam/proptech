@@ -35,7 +35,7 @@ class Config:
     SQS_USER_DATA_SYNC_TO_LAKE = os.environ.get("SQS_USER_DATA_SYNC_TO_LAKE") or ""
 
     # Ironman service
-    IRONMAN_SERVICE_URL = os.environ.get("IRONMAN_SERVICE_URL")
+    IRONMAN_SERVICE_URL = os.environ.get("IRONMAN_SERVICE_URL") or ""
 
 
 class LocalConfig(Config):
