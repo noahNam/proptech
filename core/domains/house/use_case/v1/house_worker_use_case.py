@@ -10,7 +10,8 @@ import sentry_sdk
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import PublicSaleDetailModel
-from core.domains.house.entity.house_entity import PrivateSaleDetailEntity
+from core.domains.house.entity.house_entity import PrivateSaleDetailEntity, AdministrativeDivisionLegalCodeEntity, \
+    RealEstateLegalCodeEntity
 from core.domains.house.repository.house_repository import HouseRepository
 
 logger = logger_.getLogger(__name__)
@@ -21,17 +22,6 @@ class BaseHouseWorkerUseCase:
     def __init__(self, topic: str, house_repo: HouseRepository):
         self._house_repo = house_repo
         self.topic = topic
-
-    def send_slack_message(self, message: str):
-        channel = "#engineering-class"
-
-        text = "[Batch Error] PreCalculateAverageUseCase -> " + message
-        slack_token = os.environ.get("SLACK_TOKEN")
-        requests.post(
-            "https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer " + slack_token},
-            data={"channel": channel, "text": text},
-        )
 
     @property
     def client_id(self) -> str:
@@ -355,6 +345,16 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
 
         exit(os.EX_OK)
 
+    def send_slack_message(self, message: str):
+        channel = "#engineering-class"
+
+        text = "[Batch Error] PreCalculateAverageUseCase -> " + message
+        slack_token = os.environ.get("SLACK_TOKEN")
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": "Bearer " + slack_token},
+            data={"channel": channel, "text": text},
+        )
 
 class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
     """
@@ -369,3 +369,77 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
 
     def execute(self):
         logger.info(f"🚀\tPreCalculateAdministrative Start - {self.client_id}")
+
+
+class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
+    def send_slack_message(self, message: str):
+        channel = "#engineering-class"
+
+        text = "[Batch Error] AddLegalCodeUseCase -> " + message
+        slack_token = os.environ.get("SLACK_TOKEN")
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": "Bearer " + slack_token},
+            data={"channel": channel, "text": text},
+        )
+
+    def _make_real_estates_legal_code_update_list(
+            self,
+            administrative_info: List[AdministrativeDivisionLegalCodeEntity],
+            target_list: List[RealEstateLegalCodeEntity]
+    ) -> List[dict]:
+        update_list = list()
+        failed_list = list()
+        for real_estate in target_list:
+            for administrative in administrative_info:
+                if administrative.short_name == real_estate.dong_myun:
+                    front_legal_code = administrative.front_legal_code
+                    back_legal_code = administrative.back_legal_code
+
+                    update_dict = {
+                        "id": real_estate.id,
+                        "front_legal_code": front_legal_code,
+                        "back_legal_code": back_legal_code,
+                    }
+                    update_list.append(update_dict)
+                    print(f"updated list : id - {real_estate.id}")
+                    break
+            failed_list.append(real_estate.id)
+        return update_list
+
+    def execute(self):
+        start_time = time()
+        logger.info(f"🚀\tAddLegalCodeUseCase Start - {self.client_id}")
+
+        administrative_info = self._house_repo.get_administrative_divisions_legal_code_info_all_list()
+        real_estate_info = self._house_repo.get_real_estates_legal_code_info_all_list()
+
+        if not administrative_info:
+            logger.info(
+                f"🚀\tAddLegalCodeUseCase : administrative_divisions_legal_code_info_list"
+            )
+            exit(os.EX_OK)
+        if not real_estate_info:
+            logger.info(
+                f"🚀\tAddLegalCodeUseCase : real_estates_legal_code_info_list"
+            )
+            exit(os.EX_OK)
+        update_list = self._make_real_estates_legal_code_update_list(
+            administrative_info=administrative_info,
+            target_list=real_estate_info
+        )
+
+        try:
+            self._house_repo.update_legal_code_to_real_estates(update_list=update_list)
+        except Exception as e:
+            logger.error(
+                f"🚀\tAddLegalCodeUseCase - update_legal_code_to_real_estates "
+                f"error : {e}"
+            )
+        logger.info(
+            f"🚀\tAddLegalCodeUseCase : Finished !!, "
+            f"records: {time() - start_time} secs, "
+            f"{len(update_list)} Updated, "
+        )
+
+        exit(os.EX_OK)

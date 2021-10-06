@@ -19,7 +19,7 @@ from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
-    RealEstateReportEntity,
+    RealEstateReportEntity, RealEstateLegalCodeEntity,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 
@@ -192,4 +192,11 @@ class RealEstateModel(db.Model):
             si_gun_gu=self.si_gun_gu,
             latitude=self.latitude,
             longitude=self.longitude,
+        )
+
+    def to_legal_code_entity(self) -> RealEstateLegalCodeEntity:
+        return RealEstateLegalCodeEntity(
+            id=self.id,
+            jibun_address=self.jibun_address,
+            dong_myun=self.dong_myun,
         )
