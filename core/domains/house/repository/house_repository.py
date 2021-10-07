@@ -507,6 +507,7 @@ class HouseRepository:
                 InterestHouseModel.type,
                 PublicSaleModel.name,
                 RealEstateModel.jibun_address,
+                RealEstateModel.road_address,
                 PublicSaleModel.subscription_start_date,
                 PublicSaleModel.subscription_end_date,
                 PublicSalePhotoModel.path.label("image_path"),
@@ -529,6 +530,7 @@ class HouseRepository:
                 InterestHouseModel.type,
                 PrivateSaleModel.name,
                 RealEstateModel.jibun_address,
+                RealEstateModel.road_address,
                 literal("", String).label("subscription_start_date"),
                 literal("", String).label("subscription_end_date"),
                 literal("", String).label("image_path"),
@@ -562,6 +564,7 @@ class HouseRepository:
                         type=query.type,
                         name=query.name,
                         jibun_address=query.jibun_address,
+                        road_address=query.road_address,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
                         image_path=query.image_path,
@@ -619,10 +622,11 @@ class HouseRepository:
         query = (
             session.query(RecentlyViewModel)
             .with_entities(
+                func.max(RecentlyViewModel.id),
                 RecentlyViewModel.house_id,
                 RecentlyViewModel.type,
                 PublicSaleModel.name,
-                PublicSalePhotoModel.path,
+                func.max(PublicSalePhotoModel.path).label("path"),
             )
             .join(
                 PublicSaleModel,
@@ -631,9 +635,14 @@ class HouseRepository:
                 & (RecentlyViewModel.user_id == dto.user_id),
             )
             .join(PublicSaleModel.public_sale_photos, isouter=True)
+            .group_by(
+                RecentlyViewModel.house_id, RecentlyViewModel.type, PublicSaleModel.name
+            )
+            .order_by(func.max(RecentlyViewModel.id).desc())
         )
 
         queryset = query.all()
+
         return self._make_get_recent_view_list_entity(queryset=queryset)
 
     def _make_get_recent_view_list_entity(
