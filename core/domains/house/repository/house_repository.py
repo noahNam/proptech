@@ -1235,7 +1235,7 @@ class HouseRepository:
             and_(
                 RealEstateModel.is_available == "True",
                 RealEstateModel.front_legal_code == "00000",
-                RealEstateModel.back_legal_code == "00000"
+                RealEstateModel.back_legal_code == "00000",
             )
         )
         query = (

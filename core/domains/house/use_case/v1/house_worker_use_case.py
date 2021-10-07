@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from time import time
 from typing import List
@@ -388,15 +389,53 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
             administrative_info: List[AdministrativeDivisionLegalCodeEntity],
             target_list: List[RealEstateLegalCodeEntity]
     ) -> List[dict]:
+        """
+            real_estates.jibun_address 주소가 없을 경우 혹은 건축예정이라 불확실한 경우 직접 매뉴얼 작업 필요
+            todo: '동탄X동' 주소가 올 경우 하위 구성하는 동에 대한 별도 로직 필요
+        """
         update_list = list()
         failed_list = list()
+        cond_1 = re.compile(r"\D*동\d가")
+        cond_2 = re.compile(r"\D*\d동")
+
         for real_estate in target_list:
             for administrative in administrative_info:
+                # 예) 용산동2가 -> 행정구역에 용산동이랑 매칭되는지 확인
+                if cond_1.match(real_estate.dong_myun):
+                    dong_myun_ = re.sub(r"[0-9]+가", "", real_estate.dong_myun)
+                    if administrative.short_name != dong_myun_:
+                        dong_myun_ = real_estate.dong_myun
+                else:
+                    dong_myun_ = real_estate.dong_myun
+
+                # 예) 안양1동 -> 안양동으로 처리하여 행정구역 안양동과 매칭되는지 확인
+                if cond_2.match(real_estate.jibun_address) and not cond_2.match(administrative.short_name):
+                    jibun_address_ = re.sub(r"[0-9]+", "", real_estate.jibun_address)
+                    dong_myun_ = re.sub(r"[0-9]+", "", dong_myun_)
+                else:
+                    jibun_address_ = real_estate.jibun_address
+
+                # 예외) 충주 목행동 + 용탄동 -> 목행.용탄동 통합
+                if real_estate.dong_myun == "목행동" or real_estate.dong_myun == "용탄동":
+                    dong_myun_ = "목행.용탄동"
+                    if real_estate.dong_myun == "목행동":
+                        jibun_address_ = jibun_address_.replace("목행동", dong_myun_)
+                    elif real_estate.dong_myun == "용탄동":
+                        jibun_address_ = jibun_address_.replace("용탄동", dong_myun_)
+
+                administrative_name_ = administrative.name.replace(" ", "").replace(".", "")
+                administrative_short_name_ = administrative.short_name.replace(".", "")
+                jibun_address_ = jibun_address_.replace(" ", "").replace(".", "")
+
+                si_do_ = real_estate.si_do.replace(" ", "")
+                si_gun_gu_ = real_estate.si_gun_gu.replace(" ", "")
+                dong_myun_ = dong_myun_.replace(".", "")
+
                 if (
-                        administrative.short_name == real_estate.dong_myun and
-                        real_estate.si_do in administrative.name and
-                        real_estate.si_gun_gu in administrative.name and
-                        administrative.name in real_estate.jibun_address
+                        administrative_short_name_ == dong_myun_ and
+                        si_do_ in administrative_name_ and
+                        si_gun_gu_ in administrative_name_ and
+                        administrative_name_ in jibun_address_
                 ):
                     front_legal_code = administrative.front_legal_code
                     back_legal_code = administrative.back_legal_code
