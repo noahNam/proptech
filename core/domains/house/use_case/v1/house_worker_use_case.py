@@ -1,14 +1,15 @@
 import os
 import sys
+from datetime import datetime, timedelta
 from time import time
 from typing import List, Dict
 
 import inject
 import requests
 import sentry_sdk
+from sqlalchemy.orm import Query
 
 from app.extensions.utils.log_helper import logger_
-from core.domains.house.entity.house_entity import RecentlyContractedEntity
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import PublicSaleDetailModel
 from core.domains.house.repository.house_repository import HouseRepository
@@ -361,30 +362,42 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
             """
             start_time = time()
 
-            # todo. 1 + 2 번 쿼리 작성
             # si_do
-            self._house_repo.get_si_do_avg_price()
+            two_month_from_today = int(
+                (datetime.now() - timedelta(days=60)).strftime("%Y%m")
+            )
+            common_query_object: Query = self._house_repo.get_common_query_object(
+                yyyymm=two_month_from_today
+            )
+            lv1_list: List[dict] = self._house_repo.get_si_do_avg_price(
+                sub_q=common_query_object
+            )
+            lv2_list: List[dict] = self._house_repo.get_si_gun_gu_avg_price(
+                sub_q=common_query_object
+            )
+            lv3_list: List[dict] = self._house_repo.get_dong_myun_avg_price(
+                sub_q=common_query_object
+            )
 
-            # si_gun_gu
+            result_list = lv1_list + lv2_list + lv3_list
 
-            # dong_myun
+            # 2191 / 2190
+            # administrative_division_id를 bind하고 맵핑 되지 않는 리스트를 반환한다.
+            update_list, failure_list = self._house_repo.set_administrative_division_id(
+                result_list=result_list
+            )
 
-            # todo. 3번 Insert or Update
+            self._house_repo.update_avg_price_to_administrative_division(
+                update_list=update_list
+            )
 
-            # target_count = self._house_repo.get_pre_calc_administrative_idx_count()
-            # # target_ids = [idx for idx in range(target_count)]
-            # for target_id in range(target_count):
-            #     target_list = self._house_repo.get_pre_calc_administrative_target_of_real_estates(
-            #         administrative_id=target_id
-            #     )
-            #     if target_list:
-            #         private_sale_ids = [target.private_sales.id for target in target_list if target.private_sales]
-            #         public_sale_ids = [target.public_sales.id for target in target_list if target.public_sales]
-            #         # private_sales_list, public_sales_list로 분류 후
-            #         # private_sales_list -> 위의 Step-1 로직 따라가되, building_type -> 아파트, 오피스텔만
-            #         # todo : recent_info -> 아파트, 오피스텔별 분류
-            #         # public_sales_list -> 위의 Step-2 로직 따라가기
-            #         pass
+            logger.info(
+                f"🚀\tPreCalculateAdministrativeDivisionUseCase : Finished !!, "
+                f"records: {time() - start_time} secs, "
+                f"{len(result_list)} Updated, "
+                f"{len(failure_list)} Failed, "
+                f"Failed_list : {failure_list}, "
+            )
 
         except Exception as e:
             logger.error(f"🚀\tPreCalculateAdministrative Error - {e}")

@@ -3,7 +3,8 @@ from flask import current_app
 
 from app.commands.enum import TopicEnum
 from core.domains.house.use_case.v1.house_worker_use_case import (
-    PreCalculateAverageUseCase, PreCalculateAdministrativeDivisionUseCase,
+    PreCalculateAverageUseCase,
+    PreCalculateAdministrativeDivisionUseCase,
 )
 from core.domains.notification.use_case.v1.notification_worker_use_case import (
     PrePrcsNotificationUseCase,
