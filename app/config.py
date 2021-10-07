@@ -36,6 +36,7 @@ class Config:
 
     # Ironman service
     IRONMAN_SERVICE_URL = os.environ.get("IRONMAN_SERVICE_URL") or ""
+    JARVIS_SERVICE_URL = os.environ.get("JARVIS_SERVICE_URL") or ""
 
 
 class LocalConfig(Config):
