@@ -1,3 +1,4 @@
+import json
 import re
 from http import HTTPStatus
 from typing import Union, List, Optional
@@ -5,6 +6,7 @@ from typing import Union, List, Optional
 import inject
 import requests
 
+from app.config import config
 from app.extensions.utils.event_observer import send_message, get_event_object
 from core.domains.house.entity.house_entity import GetPublicSaleOfTicketUsageEntity
 from core.domains.house.enum import HouseTopicEnum
@@ -297,18 +299,18 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
         return dict(type="failure", message=message)
 
     def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> int:
-        # todo. 자비스 API 만들어지면 변경 필요
-        response = requests.get(
-            url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id={}&user_id={}".format(
-                dto.house_id, dto.user_id
-            ),
+        data = dict(user_id=dto.user_id, house_id=dto.house_id,)
+
+        url = config.get("JARVIS_SERVICE_URL")
+        response = requests.post(
+            url=url + "/api/jarvis/v1/predicts/house",
             headers={
                 "Content-Type": "application/json",
                 "Cache-Control": "no-cache",
                 "Authorization": dto.auth_header,
             },
+            data=json.dumps(data),
         )
-
         return response.status_code
 
     def _use_ticket_to_house_by_charged(
