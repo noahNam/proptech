@@ -462,17 +462,18 @@ class UseUserTicketUseCase(PaymentBaseUseCase):
         return get_event_object(topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_USER)
 
     def _call_jarvis_user_analytics_api(self, dto: UseUserTicketDto) -> int:
-        # todo. 자비스 API 만들어지면 변경 필요
-        response = requests.get(
-            url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id=1",
-            headers={
-                "Content-Type": "application/json",
-                "Cache-Control": "no-cache",
-                "Authorization": dto.auth_header,
-            },
-        )
+        # todo. 유저 분석 자비스 API 만들어지면 변경 필요
+        # response = requests.get(
+        #     url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id=1",
+        #     headers={
+        #         "Content-Type": "application/json",
+        #         "Cache-Control": "no-cache",
+        #         "Authorization": dto.auth_header,
+        #     },
+        # )
 
-        return response.status_code
+        # return response.status_code
+        return 500
 
     def _use_ticket_to_user_by_charged(
         self, dto: UseUserTicketDto
