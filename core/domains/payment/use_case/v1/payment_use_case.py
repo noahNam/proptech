@@ -133,6 +133,8 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
     def execute(
         self, dto: UseHouseTicketDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        print("-----> ", config.get("JARVIS_SERVICE_URL"))
+
         if not dto.user_id:
             return UseCaseFailureOutput(
                 type="user_id",
