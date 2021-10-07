@@ -1,11 +1,12 @@
 from datetime import timedelta
+from enum import Enum
 from math import ceil
 from typing import Optional, List, Any, Tuple
 
 from geoalchemy2 import Geometry, func as geo_func
 from sqlalchemy import and_, func, or_, literal, String, exists, Integer
 from sqlalchemy import exc
-from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased
+from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased, Query
 from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
@@ -1340,122 +1341,422 @@ class HouseRepository:
             logger.error(f"[HouseRepository][update_acquisition_taxes] error : {e}")
             raise UpdateFailErrorException
 
-    def get_si_do_avg_price(self):
-        try:
-            filters = list()
-
-            filters.append(PrivateSaleDetailModel.contract_ym >= 202108)
-            filters.append(PrivateSaleDetailModel.trade_type != '월세')
-            filters.append(PrivateSaleDetailModel.is_available == True)
-
-            query_cond1 = (
-                session.query(PrivateSaleModel)
-                .with_entities(
-                    PrivateSaleModel.real_estate_id,
-                    PrivateSaleModel.id,
-                    PrivateSaleModel.building_type,
-                    PrivateSaleDetailModel.trade_type,
-                    func.sum(func.round((PrivateSaleDetailModel.private_area * 1.35) / 3.3058)).label("pyoung"),
-                    func.sum(PrivateSaleDetailModel.trade_price).label(
-                        "apt_sum_trade_price"
-                    ),
-                    func.sum(PrivateSaleDetailModel.deposit_price).label(
-                        "apt_sum_deposit_price"
-                    ),
-                    literal(0, Integer).label("opt_sum_trade_price"),
-                    literal(0, Integer).label("opt_sum_deposit_price"),
-                )
-                .join(
-                    PrivateSaleDetailModel,
-                    PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id
-                )
-                .filter(*filters)
-                .filter(PrivateSaleModel.building_type == '아파트')
-                .group_by(PrivateSaleModel.real_estate_id, PrivateSaleModel.id, PrivateSaleModel.building_type, PrivateSaleDetailModel.trade_type)
-            )
-
-            query_cond2 = (
-                session.query(PrivateSaleModel)
-                .with_entities(
-                    PrivateSaleModel.real_estate_id,
-                    PrivateSaleModel.id,
-                    PrivateSaleModel.building_type,
-                    PrivateSaleDetailModel.trade_type,
-                    func.sum(func.round((PrivateSaleDetailModel.private_area * 1.35) / 3.3058)).label("pyoung"),
-                    func.sum(PrivateSaleDetailModel.trade_price).label(
-                        "apt_sum_trade_price"
-                    ),
-                    func.sum(PrivateSaleDetailModel.deposit_price).label(
-                        "apt_sum_deposit_price"
-                    ),
-                    literal(0, Integer).label("opt_sum_trade_price"),
-                    literal(0, Integer).label("opt_sum_deposit_price"),
-                )
-                .join(
-                    PrivateSaleDetailModel,
-                    PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id
-                )
-                .filter(*filters)
-                .filter(PrivateSaleModel.building_type == '오피스텔')
-                .group_by(PrivateSaleModel.real_estate_id, PrivateSaleModel.id, PrivateSaleModel.building_type, PrivateSaleDetailModel.trade_type)
-            )
-
-            union_query = query_cond1.union_all(query_cond2).subquery()
-            suq_q = aliased(union_query)
-
-            query_cond3 = (
-                session.query(RealEstateModel)
-                .with_entities(
-                    RealEstateModel.si_do,
-                    # func.max(RealEstateModel)
-                )
-                .join(
-                    suq_q, RealEstateModel.id == suq_q.c.real_estate_id
-                )
-                .group_by(RealEstateModel.si_do, suq_q.c.trade_type, suq_q.c.building_type)
-            )
-
-            # suq_q = aliased(sub_query)
-            #
-            # query = (
-            #     session.query(suq_q)
-            #         .with_entities(suq_q.c.private_sales_id, suq_q.c.private_area, )
-            #         .group_by(suq_q.c.private_sales_id, suq_q.c.private_area, suq_q.c.rank, )
-            #         .having(suq_q.c.rank == 1)
-            # )
-
-            # func.ceil(
-            #     (union_query.columns.private_sale_details_private_area * 1.35)
-            #     / 3.3058
-            # )
-
-            print("---"*30)
-            RawQueryHelper().print_raw_query(query_cond1)
-            print("---"*30)
-
-            test = query_cond1.all()
-
-        except Exception as e:
-            pass
-
-        return test
-
-    def get_pre_calc_administrative_idx_count(self) -> int:
-        return session.query(AdministrativeDivisionModel).count()
-
-    def get_pre_calc_administrative_private_apt(
-            self, real_estates_id: int, private_sale_ids: List[int]
-    ):
+    def get_common_query_object(self, yyyymm: int) -> Query:
         filters = list()
 
-        filters.append(
-            and_(
-                PrivateSaleModel.id.in_(private_sale_ids),
-                PrivateSaleModel.building_type == "아파트",
-                PrivateSaleDetailModel.trade_type == "매매"
+        filters.append(PrivateSaleDetailModel.contract_ym >= yyyymm)
+        filters.append(PrivateSaleDetailModel.trade_type != "월세")
+        filters.append(PrivateSaleDetailModel.is_available == True)
+
+        # todo. 평수 계산 변경
+        query_cond1 = (
+            session.query(PrivateSaleModel)
+            .with_entities(
+                PrivateSaleModel.real_estate_id,
+                PrivateSaleModel.id,
+                PrivateSaleModel.building_type,
+                PrivateSaleDetailModel.trade_type,
+                func.sum(
+                    func.round((PrivateSaleDetailModel.private_area * 1.35) / 3.3058)
+                ).label("pyoung"),
+                func.sum(PrivateSaleDetailModel.trade_price).label(
+                    "apt_sum_trade_price"
+                ),
+                func.sum(PrivateSaleDetailModel.deposit_price).label(
+                    "apt_sum_deposit_price"
+                ),
+                literal(0, Integer).label("op_sum_trade_price"),
+                literal(0, Integer).label("op_sum_deposit_price"),
+            )
+            .join(
+                PrivateSaleDetailModel,
+                PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id,
+            )
+            .filter(*filters)
+            .filter(PrivateSaleModel.building_type == "아파트")
+            .group_by(
+                PrivateSaleModel.real_estate_id,
+                PrivateSaleModel.id,
+                PrivateSaleModel.building_type,
+                PrivateSaleDetailModel.trade_type,
             )
         )
 
-        query = (
+        query_cond2 = (
             session.query(PrivateSaleModel)
+            .with_entities(
+                PrivateSaleModel.real_estate_id,
+                PrivateSaleModel.id,
+                PrivateSaleModel.building_type,
+                PrivateSaleDetailModel.trade_type,
+                func.sum(
+                    func.round((PrivateSaleDetailModel.private_area * 1.35) / 3.3058)
+                ).label("pyoung"),
+                literal(0, Integer).label("apt_sum_trade_price"),
+                literal(0, Integer).label("apt_sum_deposit_price"),
+                func.sum(PrivateSaleDetailModel.trade_price).label(
+                    "op_sum_trade_price"
+                ),
+                func.sum(PrivateSaleDetailModel.deposit_price).label(
+                    "op_sum_deposit_price"
+                ),
+            )
+            .join(
+                PrivateSaleDetailModel,
+                PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id,
+            )
+            .filter(*filters)
+            .filter(PrivateSaleModel.building_type == "오피스텔")
+            .group_by(
+                PrivateSaleModel.real_estate_id,
+                PrivateSaleModel.id,
+                PrivateSaleModel.building_type,
+                PrivateSaleDetailModel.trade_type,
+            )
         )
+
+        union_query = query_cond1.union_all(query_cond2).subquery()
+        sub_q = aliased(union_query)
+
+        return sub_q
+
+    def get_si_do_avg_price(self, sub_q: Query):
+        query_cond3 = (
+            session.query(RealEstateModel)
+            .with_entities(
+                RealEstateModel.si_do,
+                func.max(RealEstateModel.front_legal_code).label("front_legal_code"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_deposit_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_deposit_price"),
+            )
+            .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
+            .group_by(
+                RealEstateModel.si_do,
+                sub_q.c.private_sale_details_trade_type,
+                sub_q.c.private_sales_building_type,
+            )
+        ).subquery()
+
+        final_sub_q = aliased(query_cond3)
+
+        final_query = (
+            session.query(final_sub_q)
+            .with_entities(
+                final_sub_q.c.si_do,
+                func.substring(func.max(final_sub_q.c.front_legal_code), 1, 2).label(
+                    "legal_code"
+                ),
+                func.sum(final_sub_q.c.apt_per_trade_price).label(
+                    "apt_avg_trade_price"
+                ),
+                func.sum(final_sub_q.c.apt_per_deposit_price).label(
+                    "apt_avg_deposit_price"
+                ),
+                func.sum(final_sub_q.c.op_per_trade_price).label("op_avg_trade_price"),
+                func.sum(final_sub_q.c.op_per_deposit_price).label(
+                    "op_avg_deposit_price"
+                ),
+            )
+            .group_by(final_sub_q.c.si_do)
+        )
+
+        print("---" * 30)
+        RawQueryHelper().print_raw_query(final_query)
+        print("---" * 30)
+
+        query_set = final_query.all()
+
+        if not query_set:
+            return []
+
+        return self._make_administrative_calc_avg_entity(
+            query_set=query_set, level=DivisionLevelEnum.LEVEL_1
+        )
+
+    def get_si_gun_gu_avg_price(self, sub_q: Query):
+        query_cond3 = (
+            session.query(RealEstateModel)
+            .with_entities(
+                RealEstateModel.si_do,
+                RealEstateModel.si_gun_gu,
+                RealEstateModel.front_legal_code,
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_deposit_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_deposit_price"),
+            )
+            .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
+            .group_by(
+                RealEstateModel.si_do,
+                RealEstateModel.si_gun_gu,
+                RealEstateModel.front_legal_code,
+                sub_q.c.private_sale_details_trade_type,
+                sub_q.c.private_sales_building_type,
+            )
+        ).subquery()
+
+        final_sub_q = aliased(query_cond3)
+
+        final_query = (
+            session.query(final_sub_q)
+            .with_entities(
+                final_sub_q.c.si_do,
+                final_sub_q.c.si_gun_gu,
+                final_sub_q.c.front_legal_code.label("legal_code"),
+                func.sum(final_sub_q.c.apt_per_trade_price).label(
+                    "apt_avg_trade_price"
+                ),
+                func.sum(final_sub_q.c.apt_per_deposit_price).label(
+                    "apt_avg_deposit_price"
+                ),
+                func.sum(final_sub_q.c.op_per_trade_price).label("op_avg_trade_price"),
+                func.sum(final_sub_q.c.op_per_deposit_price).label(
+                    "op_avg_deposit_price"
+                ),
+            )
+            .filter(final_sub_q.c.front_legal_code != "00000")
+            .group_by(
+                final_sub_q.c.si_do,
+                final_sub_q.c.si_gun_gu,
+                final_sub_q.c.front_legal_code,
+            )
+        )
+
+        print("---" * 30)
+        RawQueryHelper().print_raw_query(final_query)
+        print("---" * 30)
+
+        query_set = final_query.all()
+
+        if not query_set:
+            return []
+
+        return self._make_administrative_calc_avg_entity(
+            query_set=query_set, level=DivisionLevelEnum.LEVEL_2
+        )
+
+    def get_dong_myun_avg_price(self, sub_q: Query):
+        query_cond3 = (
+            session.query(RealEstateModel)
+            .with_entities(
+                RealEstateModel.si_do,
+                RealEstateModel.si_gun_gu,
+                RealEstateModel.dong_myun,
+                RealEstateModel.front_legal_code,
+                RealEstateModel.back_legal_code,
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_deposit_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_deposit_price"),
+            )
+            .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
+            .group_by(
+                RealEstateModel.si_do,
+                RealEstateModel.si_gun_gu,
+                RealEstateModel.dong_myun,
+                RealEstateModel.front_legal_code,
+                RealEstateModel.back_legal_code,
+                sub_q.c.private_sale_details_trade_type,
+                sub_q.c.private_sales_building_type,
+            )
+        ).subquery()
+
+        final_sub_q = aliased(query_cond3)
+
+        final_query = (
+            session.query(final_sub_q)
+            .with_entities(
+                final_sub_q.c.si_do,
+                final_sub_q.c.si_gun_gu,
+                final_sub_q.c.dong_myun,
+                final_sub_q.c.front_legal_code.label("front_legal_code"),
+                final_sub_q.c.back_legal_code.label("back_legal_code"),
+                func.sum(final_sub_q.c.apt_per_trade_price).label(
+                    "apt_avg_trade_price"
+                ),
+                func.sum(final_sub_q.c.apt_per_deposit_price).label(
+                    "apt_avg_deposit_price"
+                ),
+                func.sum(final_sub_q.c.op_per_trade_price).label("op_avg_trade_price"),
+                func.sum(final_sub_q.c.op_per_deposit_price).label(
+                    "op_avg_deposit_price"
+                ),
+            )
+            .filter(final_sub_q.c.front_legal_code != "00000")
+            .group_by(
+                final_sub_q.c.si_do,
+                final_sub_q.c.si_gun_gu,
+                final_sub_q.c.dong_myun,
+                final_sub_q.c.front_legal_code,
+                final_sub_q.c.back_legal_code,
+            )
+        )
+
+        print("---" * 30)
+        RawQueryHelper().print_raw_query(final_query)
+        print("---" * 30)
+
+        query_set = final_query.all()
+
+        if not query_set:
+            return []
+
+        return self._make_administrative_calc_avg_entity(
+            query_set=query_set, level=DivisionLevelEnum.LEVEL_3
+        )
+
+    def _make_administrative_calc_avg_entity(
+        self, query_set: Query, level: Enum
+    ) -> List[dict]:
+        result = list()
+        if level == DivisionLevelEnum.LEVEL_1:
+            for query in query_set:
+                result.append(
+                    dict(
+                        front_legal_code=query[1] + "000",
+                        back_legal_code="00000",
+                        apt_trade_price=query[2],
+                        apt_deposit_price=query[3],
+                        op_trade_price=query[4],
+                        op_deposit_price=query[5],
+                        public_sale_price=0,
+                        level=level,
+                    )
+                )
+        elif level == DivisionLevelEnum.LEVEL_2:
+            for query in query_set:
+                result.append(
+                    dict(
+                        front_legal_code=query[2],
+                        back_legal_code="00000",
+                        apt_trade_price=query[3],
+                        apt_deposit_price=query[4],
+                        op_trade_price=query[5],
+                        op_deposit_price=query[6],
+                        public_sale_price=0,
+                        level=level,
+                    )
+                )
+        else:
+            for query in query_set:
+                result.append(
+                    dict(
+                        front_legal_code=query[3],
+                        back_legal_code=query[4],
+                        apt_trade_price=query[5],
+                        apt_deposit_price=query[6],
+                        op_trade_price=query[7],
+                        op_deposit_price=query[8],
+                        public_sale_price=0,
+                        level=level,
+                    )
+                )
+
+        return result
+
+    def set_administrative_division_id(
+        self, result_list: List[dict]
+    ) -> Tuple[List[dict], List[dict]]:
+        failure_list = list()
+        update_list = list()
+        for result in result_list:
+            query = (
+                session.query(AdministrativeDivisionModel).filter_by(
+                    front_legal_code=result["front_legal_code"],
+                    back_legal_code=result["back_legal_code"],
+                    level=result["level"],
+                )
+            ).first()
+
+            if not query:
+                failure_list.append(result)
+                continue
+
+            result["id"] = query.id
+            update_list.append(result)
+        return update_list, failure_list
+
+    def update_avg_price_to_administrative_division(
+        self, update_list: List[dict]
+    ) -> None:
+        try:
+            session.bulk_update_mappings(
+                AdministrativeDivisionModel,
+                [update_info for update_info in update_list],
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][update_avg_price_to_administrative_division] error : {e}"
+            )
+            raise UpdateFailErrorException
