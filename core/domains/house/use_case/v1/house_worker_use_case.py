@@ -2,7 +2,7 @@ import os
 import sys
 from datetime import datetime, timedelta
 from time import time
-from typing import List, Dict
+from typing import List
 
 import inject
 import requests
