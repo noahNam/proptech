@@ -29,7 +29,7 @@ class GetRecentViewListBaseSchema(BaseModel):
     house_id: int
     type: int
     name: str
-    image_path: str
+    image_path: Optional[str]
 
 
 class BoundingResponseSchema(BaseModel):
