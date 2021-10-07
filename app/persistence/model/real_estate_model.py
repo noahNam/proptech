@@ -19,7 +19,8 @@ from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
-    RealEstateReportEntity, RealEstateLegalCodeEntity,
+    RealEstateReportEntity,
+    RealEstateLegalCodeEntity,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 

@@ -12,7 +12,10 @@ from sqlalchemy.orm import column_property
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.house.entity.house_entity import AdministrativeDivisionEntity, AdministrativeDivisionLegalCodeEntity
+from core.domains.house.entity.house_entity import (
+    AdministrativeDivisionEntity,
+    AdministrativeDivisionLegalCodeEntity,
+)
 from core.domains.house.enum.house_enum import DivisionLevelEnum
 
 
