@@ -75,7 +75,10 @@ def test_get_bounding_by_coordinates_range_dto(
         "core.domains.house.repository.house_repository.HouseRepository.get_bounding"
     ) as mock_get_bounding:
         mock_get_bounding.return_value = create_real_estate_with_bounding
-        result = HouseRepository().get_bounding(dto=coordinates_dto)
+        bounding_filters = HouseRepository().get_bounding_filter_with_two_points(
+            dto=coordinates_dto
+        )
+        result = HouseRepository().get_bounding(bounding_filters)
 
     assert result == mock_get_bounding.return_value
     assert mock_get_bounding.called is True

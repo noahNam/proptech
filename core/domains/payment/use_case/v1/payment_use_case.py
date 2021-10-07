@@ -1,3 +1,4 @@
+import json
 import re
 from http import HTTPStatus
 from typing import Union, List, Optional
@@ -25,6 +26,7 @@ from core.domains.payment.enum.payment_enum import (
     PromotionTypeEnum,
     RecommendCodeMaxCountEnum,
     PromotionDivEnum,
+    CallJarvisEnum,
 )
 from core.domains.payment.repository.payment_repository import PaymentRepository
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
@@ -297,18 +299,18 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
         return dict(type="failure", message=message)
 
     def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> int:
-        # todo. 자비스 API 만들어지면 변경 필요
-        response = requests.get(
-            url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id={}&user_id={}".format(
-                dto.house_id, dto.user_id
-            ),
+        data = dict(user_id=dto.user_id, house_id=dto.house_id,)
+
+        response = requests.post(
+            url=CallJarvisEnum.JARVIS_BASE_URL.value
+            + CallJarvisEnum.CALL_PREDICT_HOUSE.value,
             headers={
                 "Content-Type": "application/json",
                 "Cache-Control": "no-cache",
                 "Authorization": dto.auth_header,
             },
+            data=json.dumps(data),
         )
-
         return response.status_code
 
     def _use_ticket_to_house_by_charged(
@@ -462,17 +464,18 @@ class UseUserTicketUseCase(PaymentBaseUseCase):
         return get_event_object(topic_name=ReportTopicEnum.IS_TICKET_USAGE_FOR_USER)
 
     def _call_jarvis_user_analytics_api(self, dto: UseUserTicketDto) -> int:
-        # todo. 자비스 API 만들어지면 변경 필요
-        response = requests.get(
-            url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id=1",
-            headers={
-                "Content-Type": "application/json",
-                "Cache-Control": "no-cache",
-                "Authorization": dto.auth_header,
-            },
-        )
+        # todo. 유저 분석 자비스 API 만들어지면 변경 필요
+        # response = requests.get(
+        #     url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id=1",
+        #     headers={
+        #         "Content-Type": "application/json",
+        #         "Cache-Control": "no-cache",
+        #         "Authorization": dto.auth_header,
+        #     },
+        # )
 
-        return response.status_code
+        # return response.status_code
+        return 500
 
     def _use_ticket_to_user_by_charged(
         self, dto: UseUserTicketDto

@@ -35,7 +35,17 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("public_sale_details_id"),
     )
+    op.create_index(
+        op.f("ix_public_sale_detail_photos_public_sale_details_id"),
+        "public_sale_detail_photos",
+        ["public_sale_details_id"],
+        unique=True,
+    )
 
 
 def downgrade():
     op.drop_table("public_sale_detail_photos")
+    op.drop_index(
+        op.f("ix_public_sale_detail_photos_public_sale_details_id"),
+        table_name="public_sale_detail_photos",
+    )

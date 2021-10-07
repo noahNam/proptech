@@ -39,7 +39,11 @@ class PublicSaleModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     real_estate_id = Column(
-        BigInteger, ForeignKey(RealEstateModel.id, ondelete="CASCADE"), nullable=False,
+        BigInteger,
+        ForeignKey(RealEstateModel.id, ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+        index=True,
     )
     name = Column(String(150), nullable=False)
     region = Column(String(20), nullable=False)
