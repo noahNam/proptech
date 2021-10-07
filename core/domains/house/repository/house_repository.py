@@ -47,6 +47,9 @@ from core.domains.house.entity.house_entity import (
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
     PublicSaleReportEntity,
+    PrivateSaleDetailEntity,
+    RealEstateLegalCodeEntity,
+    AdministrativeDivisionLegalCodeEntity,
     RecentlyContractedEntity,
 )
 from core.domains.house.enum.house_enum import (
@@ -1758,5 +1761,48 @@ class HouseRepository:
             session.rollback()
             logger.error(
                 f"[HouseRepository][update_avg_price_to_administrative_division] error : {e}"
+            )
+            raise UpdateFailErrorException
+
+    def get_administrative_divisions_legal_code_info_all_list(
+        self,
+    ) -> List[AdministrativeDivisionLegalCodeEntity]:
+        query = session.query(AdministrativeDivisionModel)
+
+        query_set = query.all()
+
+        return (
+            [query.to_legal_code_entity() for query in query_set] if query_set else None
+        )
+
+    def get_real_estates_legal_code_info_all_list(
+        self,
+    ) -> List[RealEstateLegalCodeEntity]:
+        filters = list()
+        filters.append(
+            and_(
+                RealEstateModel.is_available == "True",
+                RealEstateModel.front_legal_code == "00000",
+                RealEstateModel.back_legal_code == "00000",
+            )
+        )
+        query = session.query(RealEstateModel).filter(*filters)
+        query_set = query.all()
+
+        return (
+            [query.to_legal_code_entity() for query in query_set] if query_set else None
+        )
+
+    def update_legal_code_to_real_estates(self, update_list: List[dict]) -> None:
+        try:
+            session.bulk_update_mappings(
+                RealEstateModel, [update_info for update_info in update_list]
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][update_legal_code_to_real_estates] error : {e}"
             )
             raise UpdateFailErrorException

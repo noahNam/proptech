@@ -473,3 +473,19 @@ class BoundingRealEstateEntity(BaseModel):
     longitude: float
     private_sales: Optional[PrivateSaleBoundingEntity]
     public_sales: Optional[PublicSaleBoundingEntity]
+
+
+class AdministrativeDivisionLegalCodeEntity(BaseModel):
+    id: int
+    name: str
+    short_name: str
+    front_legal_code: str
+    back_legal_code: str
+
+
+class RealEstateLegalCodeEntity(BaseModel):
+    id: int
+    jibun_address: str
+    si_do: str
+    si_gun_gu: str
+    dong_myun: str

@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 from datetime import datetime, timedelta
 from time import time
@@ -12,6 +13,10 @@ from sqlalchemy.orm import Query
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import PublicSaleDetailModel
+from core.domains.house.entity.house_entity import (
+    AdministrativeDivisionLegalCodeEntity,
+    RealEstateLegalCodeEntity,
+)
 from core.domains.house.repository.house_repository import HouseRepository
 
 logger = logger_.getLogger(__name__)
@@ -22,17 +27,6 @@ class BaseHouseWorkerUseCase:
     def __init__(self, topic: str, house_repo: HouseRepository):
         self._house_repo = house_repo
         self.topic = topic
-
-    def send_slack_message(self, message: str):
-        channel = "#engineering-class"
-
-        text = "[Batch Error] PreCalculateAverageUseCase -> " + message
-        slack_token = os.environ.get("SLACK_TOKEN")
-        requests.post(
-            "https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer " + slack_token},
-            data={"channel": channel, "text": text},
-        )
 
     @property
     def client_id(self) -> str:
@@ -339,6 +333,17 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #
         # exit(os.EX_OK)
 
+    def send_slack_message(self, message: str):
+        channel = "#engineering-class"
+
+        text = "[Batch Error] PreCalculateAverageUseCase -> " + message
+        slack_token = os.environ.get("SLACK_TOKEN")
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": "Bearer " + slack_token},
+            data={"channel": channel, "text": text},
+        )
+
 
 class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
     """
@@ -406,5 +411,136 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
             )
             sentry_sdk.capture_exception(e)
             sys.exit(0)
+
+        exit(os.EX_OK)
+
+    def send_slack_message(self, message: str):
+        channel = "#engineering-class"
+
+        text = "[Batch Error] PreCalculateAdministrativeDivisionUseCase -> " + message
+        slack_token = os.environ.get("SLACK_TOKEN")
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": "Bearer " + slack_token},
+            data={"channel": channel, "text": text},
+        )
+
+
+class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
+    def send_slack_message(self, message: str):
+        channel = "#engineering-class"
+
+        text = "[Batch Error] AddLegalCodeUseCase -> " + message
+        slack_token = os.environ.get("SLACK_TOKEN")
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": "Bearer " + slack_token},
+            data={"channel": channel, "text": text},
+        )
+
+    def _make_real_estates_legal_code_update_list(
+        self,
+        administrative_info: List[AdministrativeDivisionLegalCodeEntity],
+        target_list: List[RealEstateLegalCodeEntity],
+    ) -> List[dict]:
+        """
+            real_estates.jibun_address 주소가 없을 경우 혹은 건축예정이라 불확실한 경우 직접 매뉴얼 작업 필요
+            todo: '동탄X동' 주소가 올 경우 하위 구성하는 동에 대한 별도 로직 필요
+        """
+        update_list = list()
+        failed_list = list()
+        cond_1 = re.compile(r"\D*동\d가")
+        cond_2 = re.compile(r"\D*\d동")
+
+        for real_estate in target_list:
+            for administrative in administrative_info:
+                # 예) 용산동2가 -> 행정구역에 용산동이랑 매칭되는지 확인
+                if cond_1.match(real_estate.dong_myun):
+                    dong_myun_ = re.sub(r"[0-9]+가", "", real_estate.dong_myun)
+                    if administrative.short_name != dong_myun_:
+                        dong_myun_ = real_estate.dong_myun
+                else:
+                    dong_myun_ = real_estate.dong_myun
+
+                # 예) 안양1동 -> 안양동으로 처리하여 행정구역 안양동과 매칭되는지 확인
+                if cond_2.match(real_estate.jibun_address) and not cond_2.match(
+                    administrative.short_name
+                ):
+                    jibun_address_ = re.sub(r"[0-9]+", "", real_estate.jibun_address)
+                    dong_myun_ = re.sub(r"[0-9]+", "", dong_myun_)
+                else:
+                    jibun_address_ = real_estate.jibun_address
+
+                # 예외) 충주 목행동 + 용탄동 -> 목행.용탄동 통합
+                if real_estate.dong_myun == "목행동" or real_estate.dong_myun == "용탄동":
+                    dong_myun_ = "목행.용탄동"
+                    if real_estate.dong_myun == "목행동":
+                        jibun_address_ = jibun_address_.replace("목행동", dong_myun_)
+                    elif real_estate.dong_myun == "용탄동":
+                        jibun_address_ = jibun_address_.replace("용탄동", dong_myun_)
+
+                administrative_name_ = administrative.name.replace(" ", "").replace(
+                    ".", ""
+                )
+                administrative_short_name_ = administrative.short_name.replace(".", "")
+                jibun_address_ = jibun_address_.replace(" ", "").replace(".", "")
+
+                si_do_ = real_estate.si_do.replace(" ", "")
+                si_gun_gu_ = real_estate.si_gun_gu.replace(" ", "")
+                dong_myun_ = dong_myun_.replace(".", "")
+
+                if (
+                    administrative_short_name_ == dong_myun_
+                    and si_do_ in administrative_name_
+                    and si_gun_gu_ in administrative_name_
+                    and administrative_name_ in jibun_address_
+                ):
+                    front_legal_code = administrative.front_legal_code
+                    back_legal_code = administrative.back_legal_code
+
+                    update_dict = {
+                        "id": real_estate.id,
+                        "front_legal_code": front_legal_code,
+                        "back_legal_code": back_legal_code,
+                    }
+                    update_list.append(update_dict)
+                    print(f"updated list : id - {real_estate.id}")
+                    break
+            failed_list.append(real_estate.id)
+        return update_list
+
+    def execute(self):
+        start_time = time()
+        logger.info(f"🚀\tAddLegalCodeUseCase Start - {self.client_id}")
+
+        administrative_info = (
+            self._house_repo.get_administrative_divisions_legal_code_info_all_list()
+        )
+        real_estate_info = self._house_repo.get_real_estates_legal_code_info_all_list()
+
+        if not administrative_info:
+            logger.info(
+                f"🚀\tAddLegalCodeUseCase : administrative_divisions_legal_code_info_list"
+            )
+            exit(os.EX_OK)
+        if not real_estate_info:
+            logger.info(f"🚀\tAddLegalCodeUseCase : real_estates_legal_code_info_list")
+            exit(os.EX_OK)
+        update_list = self._make_real_estates_legal_code_update_list(
+            administrative_info=administrative_info, target_list=real_estate_info
+        )
+
+        try:
+            self._house_repo.update_legal_code_to_real_estates(update_list=update_list)
+        except Exception as e:
+            logger.error(
+                f"🚀\tAddLegalCodeUseCase - update_legal_code_to_real_estates "
+                f"error : {e}"
+            )
+        logger.info(
+            f"🚀\tAddLegalCodeUseCase : Finished !!, "
+            f"records: {time() - start_time} secs, "
+            f"{len(update_list)} Updated, "
+        )
 
         exit(os.EX_OK)
