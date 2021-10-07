@@ -45,7 +45,9 @@ from core.domains.house.entity.house_entity import (
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
     PublicSaleReportEntity,
-    PrivateSaleDetailEntity, RealEstateLegalCodeEntity, AdministrativeDivisionLegalCodeEntity,
+    PrivateSaleDetailEntity,
+    RealEstateLegalCodeEntity,
+    AdministrativeDivisionLegalCodeEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -1222,14 +1224,20 @@ class HouseRepository:
             logger.error(f"[HouseRepository][update_acquisition_taxes] error : {e}")
             raise UpdateFailErrorException
 
-    def get_administrative_divisions_legal_code_info_all_list(self) -> List[AdministrativeDivisionLegalCodeEntity]:
+    def get_administrative_divisions_legal_code_info_all_list(
+        self,
+    ) -> List[AdministrativeDivisionLegalCodeEntity]:
         query = session.query(AdministrativeDivisionModel)
 
         query_set = query.all()
 
-        return [query.to_legal_code_entity() for query in query_set] if query_set else None
+        return (
+            [query.to_legal_code_entity() for query in query_set] if query_set else None
+        )
 
-    def get_real_estates_legal_code_info_all_list(self) -> List[RealEstateLegalCodeEntity]:
+    def get_real_estates_legal_code_info_all_list(
+        self,
+    ) -> List[RealEstateLegalCodeEntity]:
         filters = list()
         filters.append(
             and_(
@@ -1238,13 +1246,12 @@ class HouseRepository:
                 RealEstateModel.back_legal_code == "00000",
             )
         )
-        query = (
-            session.query(RealEstateModel)
-                .filter(*filters)
-        )
+        query = session.query(RealEstateModel).filter(*filters)
         query_set = query.all()
 
-        return [query.to_legal_code_entity() for query in query_set] if query_set else None
+        return (
+            [query.to_legal_code_entity() for query in query_set] if query_set else None
+        )
 
     def update_legal_code_to_real_estates(self, update_list: List[dict]) -> None:
         try:

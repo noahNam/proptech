@@ -11,8 +11,11 @@ import sentry_sdk
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import PublicSaleDetailModel
-from core.domains.house.entity.house_entity import PrivateSaleDetailEntity, AdministrativeDivisionLegalCodeEntity, \
-    RealEstateLegalCodeEntity
+from core.domains.house.entity.house_entity import (
+    PrivateSaleDetailEntity,
+    AdministrativeDivisionLegalCodeEntity,
+    RealEstateLegalCodeEntity,
+)
 from core.domains.house.repository.house_repository import HouseRepository
 
 logger = logger_.getLogger(__name__)
@@ -357,6 +360,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             data={"channel": channel, "text": text},
         )
 
+
 class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
     """
         Administrative_divisions 평균 계산
@@ -385,9 +389,9 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         )
 
     def _make_real_estates_legal_code_update_list(
-            self,
-            administrative_info: List[AdministrativeDivisionLegalCodeEntity],
-            target_list: List[RealEstateLegalCodeEntity]
+        self,
+        administrative_info: List[AdministrativeDivisionLegalCodeEntity],
+        target_list: List[RealEstateLegalCodeEntity],
     ) -> List[dict]:
         """
             real_estates.jibun_address 주소가 없을 경우 혹은 건축예정이라 불확실한 경우 직접 매뉴얼 작업 필요
@@ -409,7 +413,9 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
                     dong_myun_ = real_estate.dong_myun
 
                 # 예) 안양1동 -> 안양동으로 처리하여 행정구역 안양동과 매칭되는지 확인
-                if cond_2.match(real_estate.jibun_address) and not cond_2.match(administrative.short_name):
+                if cond_2.match(real_estate.jibun_address) and not cond_2.match(
+                    administrative.short_name
+                ):
                     jibun_address_ = re.sub(r"[0-9]+", "", real_estate.jibun_address)
                     dong_myun_ = re.sub(r"[0-9]+", "", dong_myun_)
                 else:
@@ -423,7 +429,9 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
                     elif real_estate.dong_myun == "용탄동":
                         jibun_address_ = jibun_address_.replace("용탄동", dong_myun_)
 
-                administrative_name_ = administrative.name.replace(" ", "").replace(".", "")
+                administrative_name_ = administrative.name.replace(" ", "").replace(
+                    ".", ""
+                )
                 administrative_short_name_ = administrative.short_name.replace(".", "")
                 jibun_address_ = jibun_address_.replace(" ", "").replace(".", "")
 
@@ -432,10 +440,10 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
                 dong_myun_ = dong_myun_.replace(".", "")
 
                 if (
-                        administrative_short_name_ == dong_myun_ and
-                        si_do_ in administrative_name_ and
-                        si_gun_gu_ in administrative_name_ and
-                        administrative_name_ in jibun_address_
+                    administrative_short_name_ == dong_myun_
+                    and si_do_ in administrative_name_
+                    and si_gun_gu_ in administrative_name_
+                    and administrative_name_ in jibun_address_
                 ):
                     front_legal_code = administrative.front_legal_code
                     back_legal_code = administrative.back_legal_code
@@ -455,7 +463,9 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         start_time = time()
         logger.info(f"🚀\tAddLegalCodeUseCase Start - {self.client_id}")
 
-        administrative_info = self._house_repo.get_administrative_divisions_legal_code_info_all_list()
+        administrative_info = (
+            self._house_repo.get_administrative_divisions_legal_code_info_all_list()
+        )
         real_estate_info = self._house_repo.get_real_estates_legal_code_info_all_list()
 
         if not administrative_info:
@@ -464,13 +474,10 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
             )
             exit(os.EX_OK)
         if not real_estate_info:
-            logger.info(
-                f"🚀\tAddLegalCodeUseCase : real_estates_legal_code_info_list"
-            )
+            logger.info(f"🚀\tAddLegalCodeUseCase : real_estates_legal_code_info_list")
             exit(os.EX_OK)
         update_list = self._make_real_estates_legal_code_update_list(
-            administrative_info=administrative_info,
-            target_list=real_estate_info
+            administrative_info=administrative_info, target_list=real_estate_info
         )
 
         try:
