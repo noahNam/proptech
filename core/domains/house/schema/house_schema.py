@@ -18,7 +18,8 @@ class GetInterestHouseListBaseSchema(BaseModel):
     house_id: int
     type: int
     name: str
-    jibun_address: str
+    jibun_address: Optional[str]
+    road_address: Optional[str]
     subscription_start_date: str
     subscription_end_date: str
     image_path: Optional[str]
@@ -28,7 +29,7 @@ class GetRecentViewListBaseSchema(BaseModel):
     house_id: int
     type: int
     name: str
-    image_path: str
+    image_path: Optional[str]
 
 
 class BoundingResponseSchema(BaseModel):
