@@ -6,7 +6,6 @@ from typing import Union, List, Optional
 import inject
 import requests
 
-from app.config import config
 from app.extensions.utils.event_observer import send_message, get_event_object
 from core.domains.house.entity.house_entity import GetPublicSaleOfTicketUsageEntity
 from core.domains.house.enum import HouseTopicEnum
@@ -27,6 +26,7 @@ from core.domains.payment.enum.payment_enum import (
     PromotionTypeEnum,
     RecommendCodeMaxCountEnum,
     PromotionDivEnum,
+    CallJarvisEnum,
 )
 from core.domains.payment.repository.payment_repository import PaymentRepository
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
@@ -133,8 +133,6 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
     def execute(
         self, dto: UseHouseTicketDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        print("-----> ", config.get("JARVIS_SERVICE_URL"))
-
         if not dto.user_id:
             return UseCaseFailureOutput(
                 type="user_id",
@@ -303,9 +301,9 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
     def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> int:
         data = dict(user_id=dto.user_id, house_id=dto.house_id,)
 
-        url = config.get("JARVIS_SERVICE_URL")
         response = requests.post(
-            url=url + "/api/jarvis/v1/predicts/house",
+            url=CallJarvisEnum.JARVIS_BASE_URL.value
+            + CallJarvisEnum.CALL_PREDICT_HOUSE.value,
             headers={
                 "Content-Type": "application/json",
                 "Cache-Control": "no-cache",
