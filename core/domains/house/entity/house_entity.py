@@ -122,6 +122,14 @@ class PrivateSaleDetailEntity(BaseModel):
         use_enum_values = True
 
 
+class RecentlyContractedEntity(BaseModel):
+    private_sales_id: int
+    private_area: float
+    avg_trade_price: Optional[int]
+    avg_deposit_price: Optional[int]
+    private_sale_avg_price_id: Optional[int]
+
+
 class PrivateSaleEntity(BaseModel):
     id: int
     real_estate_id: int
@@ -465,3 +473,19 @@ class BoundingRealEstateEntity(BaseModel):
     longitude: float
     private_sales: Optional[PrivateSaleBoundingEntity]
     public_sales: Optional[PublicSaleBoundingEntity]
+
+
+class AdministrativeDivisionLegalCodeEntity(BaseModel):
+    id: int
+    name: str
+    short_name: str
+    front_legal_code: str
+    back_legal_code: str
+
+
+class RealEstateLegalCodeEntity(BaseModel):
+    id: int
+    jibun_address: str
+    si_do: str
+    si_gun_gu: str
+    dong_myun: str
