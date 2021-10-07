@@ -1,17 +1,20 @@
+from datetime import timedelta
+from enum import Enum
+from math import ceil
 from typing import Optional, List, Any, Tuple
 
 from geoalchemy2 import Geometry, func as geo_func
 from sqlalchemy import and_, func, or_, literal, String, exists, Integer
 from sqlalchemy import exc
-from sqlalchemy.orm import joinedload, selectinload, contains_eager
+from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased, Query
 from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import (
     get_month_from_today,
     get_server_timestamp,
-    get_month_from_date,
 )
 from app.persistence.model import (
     RealEstateModel,
@@ -44,7 +47,7 @@ from core.domains.house.entity.house_entity import (
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
     PublicSaleReportEntity,
-    PrivateSaleDetailEntity,
+    RecentlyContractedEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -875,119 +878,234 @@ class HouseRepository:
         return (min_down_payment + max_down_payment) / 2
 
     def get_recently_contracted_private_sale_details(
-        self, private_sales_id: int
-    ) -> Optional[PrivateSaleDetailEntity]:
+        self, private_sales_ids: List[int]
+    ) -> List[RecentlyContractedEntity]:
         filters = list()
         filters.append(
-            and_(
-                PrivateSaleDetailModel.private_sales_id == private_sales_id,
-                PrivateSaleDetailModel.contract_date
-                < get_server_timestamp().strftime("%y%m%d"),
-            )
+            and_(PrivateSaleDetailModel.private_sales_id.in_(private_sales_ids),)
         )
-        query = (
+
+        # todo. 추후 배치 돌릴시에는 한달 검색 조건 추가 필요
+        sub_query_cond_1 = (
             session.query(PrivateSaleDetailModel)
+            .with_entities(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_area,
+                func.to_char(
+                    func.to_date(
+                        func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
+                    ),
+                    "YYYYMMDD",
+                ).label("max_contract_date"),
+                func.to_char(
+                    (
+                        func.to_date(
+                            func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
+                        )
+                        - timedelta(days=31)
+                    ),
+                    "YYYYMMDD",
+                ).label("min_contract_date"),
+            )
             .filter(*filters)
-            .order_by(PrivateSaleDetailModel.contract_date.desc())
-            .limit(1)
-        )
-        result = query.first()
-
-        if not result:
-            return None
-        return result.to_entity()
-
-    def get_pre_calc_avg_prices_target_of_private_sales(
-        self, private_sales_id: int, date_from: str
-    ) -> List[Tuple]:
-        """
-            date_from example: 20210915
-            date_filters : date_from 로부터 1달 전 범위
-        """
-        default_filters = list()
-        date_filters = list()
-
-        default_filters.append(
-            and_(
-                PrivateSaleDetailModel.private_sales_id == private_sales_id,
-                PrivateSaleDetailModel.is_available == True,
+            .filter(PrivateSaleDetailModel.trade_type == "매매")
+            .group_by(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.trade_type,
             )
-        )
+        ).subquery()
 
-        date_filters.append(
-            and_(
-                PrivateSaleDetailModel.contract_date
-                >= get_month_from_date(date_from).strftime("%Y%m%d"),
-                PrivateSaleDetailModel.contract_date <= date_from,
+        sub_query_cond_2 = (
+            session.query(PrivateSaleDetailModel)
+            .with_entities(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_area,
+                func.to_char(
+                    func.to_date(
+                        func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
+                    ),
+                    "YYYYMMDD",
+                ).label("max_contract_date"),
+                func.to_char(
+                    (
+                        func.to_date(
+                            func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
+                        )
+                        - timedelta(days=31)
+                    ),
+                    "YYYYMMDD",
+                ).label("min_contract_date"),
             )
-        )
+            .filter(*filters)
+            .filter(PrivateSaleDetailModel.trade_type == "전세")
+            .group_by(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.trade_type,
+            )
+        ).subquery()
 
         query_cond1 = (
             session.query(PrivateSaleDetailModel)
             .with_entities(
+                PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
                 func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
                 literal(0, Integer).label("avg_deposit_price"),
             )
-            .filter(
-                *date_filters,
-                *default_filters,
-                PrivateSaleDetailModel.trade_type == "매매",
+            .join(
+                sub_query_cond_1,
+                and_(
+                    PrivateSaleDetailModel.private_sales_id
+                    == sub_query_cond_1.c.private_sales_id,
+                    PrivateSaleDetailModel.private_area
+                    == sub_query_cond_1.c.private_area,
+                ),
+                isouter=True,
             )
-            .group_by(PrivateSaleDetailModel.private_area)
+            .filter(*filters)
+            .filter(PrivateSaleDetailModel.trade_type == "매매")
+            .filter(
+                PrivateSaleDetailModel.contract_date
+                >= sub_query_cond_1.c.min_contract_date
+            )
+            .filter(
+                PrivateSaleDetailModel.contract_date
+                <= sub_query_cond_1.c.max_contract_date
+            )
+            .group_by(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_area,
+                sub_query_cond_1.c.min_contract_date,
+                sub_query_cond_1.c.max_contract_date,
+            )
         )
 
         query_cond2 = (
             session.query(PrivateSaleDetailModel)
             .with_entities(
+                PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
                 literal(0, Integer).label("avg_trade_price"),
                 func.avg(PrivateSaleDetailModel.deposit_price).label(
                     "avg_deposit_price"
                 ),
             )
-            .filter(
-                *date_filters,
-                *default_filters,
-                PrivateSaleDetailModel.trade_type == "전세",
+            .join(
+                sub_query_cond_2,
+                and_(
+                    PrivateSaleDetailModel.private_sales_id
+                    == sub_query_cond_2.c.private_sales_id,
+                    PrivateSaleDetailModel.private_area
+                    == sub_query_cond_2.c.private_area,
+                ),
+                isouter=True,
             )
-            .group_by(PrivateSaleDetailModel.private_area)
+            .filter(*filters)
+            .filter(PrivateSaleDetailModel.trade_type == "전세")
+            .filter(
+                PrivateSaleDetailModel.contract_date
+                >= sub_query_cond_2.c.min_contract_date
+            )
+            .filter(
+                PrivateSaleDetailModel.contract_date
+                <= sub_query_cond_2.c.max_contract_date
+            )
+            .group_by(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_area,
+                sub_query_cond_2.c.min_contract_date,
+                sub_query_cond_2.c.max_contract_date,
+            )
         )
 
         union_query = query_cond1.union_all(query_cond2).subquery()
 
-        query = session.query(
-            union_query.columns.private_sale_details_private_area.label("private_area"),
-            func.max(union_query.columns.avg_trade_price).label("avg_trade_prices"),
-            func.max(union_query.columns.avg_deposit_price).label("avg_deposit_prices"),
-        ).group_by(union_query.columns.private_sale_details_private_area)
+        query = (
+            session.query(
+                union_query.columns.private_sale_details_private_sales_id.label(
+                    "private_sales_id"
+                ),
+                union_query.columns.private_sale_details_private_area.label(
+                    "private_area"
+                ),
+                func.ceil(
+                    func.max(union_query.columns.avg_trade_price).label(
+                        "avg_trade_price"
+                    )
+                ),
+                func.ceil(
+                    func.max(union_query.columns.avg_deposit_price).label(
+                        "avg_deposit_price"
+                    )
+                ),
+                func.max(PrivateSaleAvgPriceModel.id).label(
+                    "private_sale_avg_price_id"
+                ),
+            )
+            .join(
+                PrivateSaleAvgPriceModel,
+                (
+                    union_query.columns.private_sale_details_private_sales_id
+                    == PrivateSaleAvgPriceModel.private_sales_id
+                )
+                & (
+                    func.ceil(
+                        (union_query.columns.private_sale_details_private_area * 1.35)
+                        / 3.3058
+                    )
+                    == PrivateSaleAvgPriceModel.pyoung
+                ),
+                isouter=True,
+            )
+            .group_by(
+                union_query.columns.private_sale_details_private_sales_id,
+                union_query.columns.private_sale_details_private_area,
+            )
+        )
 
-        # row: (private_area, avg_trade_prices, avg_deposit_prices)
-        return query.all()
+        query_set = query.all()
+
+        if not query_set:
+            return []
+
+        return [
+            RecentlyContractedEntity(
+                private_sales_id=query[0],
+                private_area=query[1],
+                avg_trade_price=query[2],
+                avg_deposit_price=query[3],
+                private_sale_avg_price_id=query[4],
+            )
+            for query in query_set
+        ]
 
     def make_pre_calc_target_private_sale_avg_prices_list(
-        self, private_sales_id: int, query_set: List[Tuple], default_pyoung: int
+        self, recent_infos: List[RecentlyContractedEntity], default_pyoung_dict: dict,
     ) -> Optional[Tuple[List[dict], List[dict]]]:
-        if not query_set:
+        if not recent_infos:
             return None
         avg_prices_update_list = list()
         avg_prices_create_list = list()
 
         # query_set : [(private_area, avg_trade_prices, avg_deposit_prices), ...]
-        for query in query_set:
+        for recent_info in recent_infos:
             avg_price_info = {
-                "private_sales_id": private_sales_id,
-                "pyoung": self._convert_supply_area_to_pyoung_number(
-                    supply_area=query[0]
-                ),
-                "default_pyoung": default_pyoung,
-                "trade_price": query[1],
-                "deposit_price": query[2],
+                "private_sales_id": recent_info.private_sales_id,
+                "pyoung": ceil(
+                    recent_info.private_area * 1.35 / 3.3058
+                ),  # todo. 공급면적 들어오기 전까지 사용 수식
+                # "pyoung": self._convert_supply_area_to_pyoung_number(
+                #     supply_area=query[0]
+                # ),
+                "default_pyoung": default_pyoung_dict.get(recent_info.private_sales_id),
+                "trade_price": recent_info.avg_trade_price,
+                "deposit_price": recent_info.avg_deposit_price,
+                "id": recent_info.private_sale_avg_price_id,
             }
-            if self._is_exists_private_sale_avg_prices(
-                private_sales_id=avg_price_info["private_sales_id"],
-                pyoung_number=avg_price_info["pyoung"],
-            ):
+
+            if recent_info.private_sale_avg_price_id:
                 avg_price_info.update({"updated_at": get_server_timestamp()})
                 avg_prices_update_list.append(avg_price_info)
             else:
@@ -1038,49 +1156,51 @@ class HouseRepository:
             return True
         return False
 
-    def get_default_pyoung_number_for_private_sale(
-        self, private_sales_id: int, date_from: str
-    ) -> int:
-        date_filters = list()
+    def get_default_pyoung_number_for_private_sale(self, target_ids: List[int]) -> dict:
         default_filters = list()
 
         default_filters.append(
             and_(
-                PrivateSaleDetailModel.private_sales_id == private_sales_id,
+                PrivateSaleDetailModel.private_sales_id.in_(target_ids),
                 PrivateSaleDetailModel.is_available == True,
             )
         )
 
-        date_filters.append(
-            and_(
-                PrivateSaleDetailModel.contract_date
-                >= get_month_from_date(date_from).strftime("%Y%m%d"),
-                PrivateSaleDetailModel.contract_date <= date_from,
-            )
-        )
-        query = (
+        sub_query = (
             session.query(
+                PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
-                func.count(PrivateSaleDetailModel.private_area).label("count"),
+                func.row_number()
+                .over(
+                    partition_by=PrivateSaleDetailModel.private_sales_id,
+                    order_by=func.count(PrivateSaleDetailModel.private_area).desc(),
+                )
+                .label("rank"),
             )
-            .filter(*default_filters, *date_filters)
+            .filter(*default_filters)
             .group_by(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
             )
-            .order_by(
-                func.count(PrivateSaleDetailModel.private_area).desc(),
-                PrivateSaleDetailModel.private_area.asc(),
-            )
-            .limit(1)
+        ).subquery()
+
+        suq_q = aliased(sub_query)
+
+        query = (
+            session.query(suq_q)
+            .with_entities(suq_q.c.private_sales_id, suq_q.c.private_area,)
+            .group_by(suq_q.c.private_sales_id, suq_q.c.private_area, suq_q.c.rank,)
+            .having(suq_q.c.rank == 1)
         )
 
-        # query_set: [(private_area, max(count))]
         query_set = query.all()
 
-        return self._convert_supply_area_to_pyoung_number(
-            supply_area=query_set[0][0] if query_set else 0
-        )
+        # todo. 공급면적 들어오기 전까지 사용 수식
+        default_pyoung_dict = dict()
+        for query in query_set:
+            default_pyoung_dict.update({query[0]: ceil(query[1] * 1.35 / 3.3058)})
+
+        return default_pyoung_dict
 
     def get_pre_calc_avg_prices_target_of_public_sales(
         self, public_sales_id: int
@@ -1219,4 +1339,424 @@ class HouseRepository:
         except Exception as e:
             session.rollback()
             logger.error(f"[HouseRepository][update_acquisition_taxes] error : {e}")
+            raise UpdateFailErrorException
+
+    def get_common_query_object(self, yyyymm: int) -> Query:
+        filters = list()
+
+        filters.append(PrivateSaleDetailModel.contract_ym >= yyyymm)
+        filters.append(PrivateSaleDetailModel.trade_type != "월세")
+        filters.append(PrivateSaleDetailModel.is_available == True)
+
+        # todo. 평수 계산 변경
+        query_cond1 = (
+            session.query(PrivateSaleModel)
+            .with_entities(
+                PrivateSaleModel.real_estate_id,
+                PrivateSaleModel.id,
+                PrivateSaleModel.building_type,
+                PrivateSaleDetailModel.trade_type,
+                func.sum(
+                    func.round((PrivateSaleDetailModel.private_area * 1.35) / 3.3058)
+                ).label("pyoung"),
+                func.sum(PrivateSaleDetailModel.trade_price).label(
+                    "apt_sum_trade_price"
+                ),
+                func.sum(PrivateSaleDetailModel.deposit_price).label(
+                    "apt_sum_deposit_price"
+                ),
+                literal(0, Integer).label("op_sum_trade_price"),
+                literal(0, Integer).label("op_sum_deposit_price"),
+            )
+            .join(
+                PrivateSaleDetailModel,
+                PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id,
+            )
+            .filter(*filters)
+            .filter(PrivateSaleModel.building_type == "아파트")
+            .group_by(
+                PrivateSaleModel.real_estate_id,
+                PrivateSaleModel.id,
+                PrivateSaleModel.building_type,
+                PrivateSaleDetailModel.trade_type,
+            )
+        )
+
+        query_cond2 = (
+            session.query(PrivateSaleModel)
+            .with_entities(
+                PrivateSaleModel.real_estate_id,
+                PrivateSaleModel.id,
+                PrivateSaleModel.building_type,
+                PrivateSaleDetailModel.trade_type,
+                func.sum(
+                    func.round((PrivateSaleDetailModel.private_area * 1.35) / 3.3058)
+                ).label("pyoung"),
+                literal(0, Integer).label("apt_sum_trade_price"),
+                literal(0, Integer).label("apt_sum_deposit_price"),
+                func.sum(PrivateSaleDetailModel.trade_price).label(
+                    "op_sum_trade_price"
+                ),
+                func.sum(PrivateSaleDetailModel.deposit_price).label(
+                    "op_sum_deposit_price"
+                ),
+            )
+            .join(
+                PrivateSaleDetailModel,
+                PrivateSaleModel.id == PrivateSaleDetailModel.private_sales_id,
+            )
+            .filter(*filters)
+            .filter(PrivateSaleModel.building_type == "오피스텔")
+            .group_by(
+                PrivateSaleModel.real_estate_id,
+                PrivateSaleModel.id,
+                PrivateSaleModel.building_type,
+                PrivateSaleDetailModel.trade_type,
+            )
+        )
+
+        union_query = query_cond1.union_all(query_cond2).subquery()
+        sub_q = aliased(union_query)
+
+        return sub_q
+
+    def get_si_do_avg_price(self, sub_q: Query):
+        query_cond3 = (
+            session.query(RealEstateModel)
+            .with_entities(
+                RealEstateModel.si_do,
+                func.max(RealEstateModel.front_legal_code).label("front_legal_code"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_deposit_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_deposit_price"),
+            )
+            .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
+            .group_by(
+                RealEstateModel.si_do,
+                sub_q.c.private_sale_details_trade_type,
+                sub_q.c.private_sales_building_type,
+            )
+        ).subquery()
+
+        final_sub_q = aliased(query_cond3)
+
+        final_query = (
+            session.query(final_sub_q)
+            .with_entities(
+                final_sub_q.c.si_do,
+                func.substring(func.max(final_sub_q.c.front_legal_code), 1, 2).label(
+                    "legal_code"
+                ),
+                func.sum(final_sub_q.c.apt_per_trade_price).label(
+                    "apt_avg_trade_price"
+                ),
+                func.sum(final_sub_q.c.apt_per_deposit_price).label(
+                    "apt_avg_deposit_price"
+                ),
+                func.sum(final_sub_q.c.op_per_trade_price).label("op_avg_trade_price"),
+                func.sum(final_sub_q.c.op_per_deposit_price).label(
+                    "op_avg_deposit_price"
+                ),
+            )
+            .group_by(final_sub_q.c.si_do)
+        )
+
+        print("---" * 30)
+        RawQueryHelper().print_raw_query(final_query)
+        print("---" * 30)
+
+        query_set = final_query.all()
+
+        if not query_set:
+            return []
+
+        return self._make_administrative_calc_avg_entity(
+            query_set=query_set, level=DivisionLevelEnum.LEVEL_1
+        )
+
+    def get_si_gun_gu_avg_price(self, sub_q: Query):
+        query_cond3 = (
+            session.query(RealEstateModel)
+            .with_entities(
+                RealEstateModel.si_do,
+                RealEstateModel.si_gun_gu,
+                RealEstateModel.front_legal_code,
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_deposit_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_deposit_price"),
+            )
+            .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
+            .group_by(
+                RealEstateModel.si_do,
+                RealEstateModel.si_gun_gu,
+                RealEstateModel.front_legal_code,
+                sub_q.c.private_sale_details_trade_type,
+                sub_q.c.private_sales_building_type,
+            )
+        ).subquery()
+
+        final_sub_q = aliased(query_cond3)
+
+        final_query = (
+            session.query(final_sub_q)
+            .with_entities(
+                final_sub_q.c.si_do,
+                final_sub_q.c.si_gun_gu,
+                final_sub_q.c.front_legal_code.label("legal_code"),
+                func.sum(final_sub_q.c.apt_per_trade_price).label(
+                    "apt_avg_trade_price"
+                ),
+                func.sum(final_sub_q.c.apt_per_deposit_price).label(
+                    "apt_avg_deposit_price"
+                ),
+                func.sum(final_sub_q.c.op_per_trade_price).label("op_avg_trade_price"),
+                func.sum(final_sub_q.c.op_per_deposit_price).label(
+                    "op_avg_deposit_price"
+                ),
+            )
+            .filter(final_sub_q.c.front_legal_code != "00000")
+            .group_by(
+                final_sub_q.c.si_do,
+                final_sub_q.c.si_gun_gu,
+                final_sub_q.c.front_legal_code,
+            )
+        )
+
+        print("---" * 30)
+        RawQueryHelper().print_raw_query(final_query)
+        print("---" * 30)
+
+        query_set = final_query.all()
+
+        if not query_set:
+            return []
+
+        return self._make_administrative_calc_avg_entity(
+            query_set=query_set, level=DivisionLevelEnum.LEVEL_2
+        )
+
+    def get_dong_myun_avg_price(self, sub_q: Query):
+        query_cond3 = (
+            session.query(RealEstateModel)
+            .with_entities(
+                RealEstateModel.si_do,
+                RealEstateModel.si_gun_gu,
+                RealEstateModel.dong_myun,
+                RealEstateModel.front_legal_code,
+                RealEstateModel.back_legal_code,
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.apt_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("apt_per_deposit_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_trade_price"),
+                (
+                    func.round(
+                        func.sum(sub_q.c.op_sum_deposit_price)
+                        / func.sum(sub_q.c.pyoung)
+                    )
+                    * 34
+                ).label("op_per_deposit_price"),
+            )
+            .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
+            .group_by(
+                RealEstateModel.si_do,
+                RealEstateModel.si_gun_gu,
+                RealEstateModel.dong_myun,
+                RealEstateModel.front_legal_code,
+                RealEstateModel.back_legal_code,
+                sub_q.c.private_sale_details_trade_type,
+                sub_q.c.private_sales_building_type,
+            )
+        ).subquery()
+
+        final_sub_q = aliased(query_cond3)
+
+        final_query = (
+            session.query(final_sub_q)
+            .with_entities(
+                final_sub_q.c.si_do,
+                final_sub_q.c.si_gun_gu,
+                final_sub_q.c.dong_myun,
+                final_sub_q.c.front_legal_code.label("front_legal_code"),
+                final_sub_q.c.back_legal_code.label("back_legal_code"),
+                func.sum(final_sub_q.c.apt_per_trade_price).label(
+                    "apt_avg_trade_price"
+                ),
+                func.sum(final_sub_q.c.apt_per_deposit_price).label(
+                    "apt_avg_deposit_price"
+                ),
+                func.sum(final_sub_q.c.op_per_trade_price).label("op_avg_trade_price"),
+                func.sum(final_sub_q.c.op_per_deposit_price).label(
+                    "op_avg_deposit_price"
+                ),
+            )
+            .filter(final_sub_q.c.front_legal_code != "00000")
+            .group_by(
+                final_sub_q.c.si_do,
+                final_sub_q.c.si_gun_gu,
+                final_sub_q.c.dong_myun,
+                final_sub_q.c.front_legal_code,
+                final_sub_q.c.back_legal_code,
+            )
+        )
+
+        print("---" * 30)
+        RawQueryHelper().print_raw_query(final_query)
+        print("---" * 30)
+
+        query_set = final_query.all()
+
+        if not query_set:
+            return []
+
+        return self._make_administrative_calc_avg_entity(
+            query_set=query_set, level=DivisionLevelEnum.LEVEL_3
+        )
+
+    def _make_administrative_calc_avg_entity(
+        self, query_set: Query, level: Enum
+    ) -> List[dict]:
+        result = list()
+        if level == DivisionLevelEnum.LEVEL_1:
+            for query in query_set:
+                result.append(
+                    dict(
+                        front_legal_code=query[1] + "000",
+                        back_legal_code="00000",
+                        apt_trade_price=query[2],
+                        apt_deposit_price=query[3],
+                        op_trade_price=query[4],
+                        op_deposit_price=query[5],
+                        public_sale_price=0,
+                        level=level,
+                    )
+                )
+        elif level == DivisionLevelEnum.LEVEL_2:
+            for query in query_set:
+                result.append(
+                    dict(
+                        front_legal_code=query[2],
+                        back_legal_code="00000",
+                        apt_trade_price=query[3],
+                        apt_deposit_price=query[4],
+                        op_trade_price=query[5],
+                        op_deposit_price=query[6],
+                        public_sale_price=0,
+                        level=level,
+                    )
+                )
+        else:
+            for query in query_set:
+                result.append(
+                    dict(
+                        front_legal_code=query[3],
+                        back_legal_code=query[4],
+                        apt_trade_price=query[5],
+                        apt_deposit_price=query[6],
+                        op_trade_price=query[7],
+                        op_deposit_price=query[8],
+                        public_sale_price=0,
+                        level=level,
+                    )
+                )
+
+        return result
+
+    def set_administrative_division_id(
+        self, result_list: List[dict]
+    ) -> Tuple[List[dict], List[dict]]:
+        failure_list = list()
+        update_list = list()
+        for result in result_list:
+            query = (
+                session.query(AdministrativeDivisionModel).filter_by(
+                    front_legal_code=result["front_legal_code"],
+                    back_legal_code=result["back_legal_code"],
+                    level=result["level"],
+                )
+            ).first()
+
+            if not query:
+                failure_list.append(result)
+                continue
+
+            result["id"] = query.id
+            update_list.append(result)
+        return update_list, failure_list
+
+    def update_avg_price_to_administrative_division(
+        self, update_list: List[dict]
+    ) -> None:
+        try:
+            session.bulk_update_mappings(
+                AdministrativeDivisionModel,
+                [update_info for update_info in update_list],
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][update_avg_price_to_administrative_division] error : {e}"
+            )
             raise UpdateFailErrorException

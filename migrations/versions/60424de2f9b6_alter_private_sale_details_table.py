@@ -18,8 +18,7 @@ depends_on = None
 
 def upgrade():
     op.add_column(
-        "private_sale_details",
-        sa.Column("contract_ym", sa.SmallInteger(), nullable=True),
+        "private_sale_details", sa.Column("contract_ym", sa.Integer(), nullable=True),
     )
     op.create_index(
         op.f("ix_private_sale_details_contract_ym"),
