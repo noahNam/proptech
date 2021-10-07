@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 
@@ -64,3 +65,9 @@ class RecommendCodeMaxCountEnum(Enum):
     """
 
     MAX_COUNT = 2
+
+
+class CallJarvisEnum(Enum):
+    JARVIS_BASE_URL = os.environ.get("JARVIS_BASE_URL")
+    CALL_PREDICT_HOUSE = "/api/jarvis/v1/predicts/house"
+    CALL_PREDICT_USER = "/api/jarvis/v1/predicts/user"

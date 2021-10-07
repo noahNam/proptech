@@ -161,6 +161,12 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(
+        op.f("ix_private_sales_real_estate_id"),
+        "private_sales",
+        ["real_estate_id"],
+        unique=True,
+    )
     op.create_table(
         "public_sales",
         sa.Column(
@@ -231,6 +237,12 @@ def upgrade():
         unique=False,
         postgresql_using="gin",
     )
+    op.create_index(
+        op.f("ix_public_sales_real_estate_id"),
+        "public_sales",
+        ["real_estate_id"],
+        unique=True,
+    )
 
     op.create_table(
         "public_sale_details",
@@ -251,6 +263,13 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(
+        op.f("ix_public_sale_details_public_sales_id"),
+        "public_sale_details",
+        ["public_sales_id"],
+        unique=False,
+    )
+
     op.create_table(
         "public_sale_photos",
         sa.Column(
@@ -271,6 +290,12 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("public_sales_id"),
     )
+    op.create_index(
+        op.f("ix_public_sale_photos_public_sales_id"),
+        "public_sale_photos",
+        ["public_sales_id"],
+        unique=True,
+    )
     # with open("./migrations/seeds/default_houses.sql") as fp:
     #     op.execute(fp.read())
 
@@ -290,6 +315,14 @@ def downgrade():
     op.drop_table("public_sale_details")
     op.drop_table("public_sales")
     op.drop_table("private_sales")
+    op.drop_index(op.f("ix_private_sales_real_estate_id"), table_name="private_sales")
+    op.drop_index(op.f("ix_public_sales_real_estate_id"), table_name="public_sales")
+    op.drop_index(
+        op.f("ix_public_sale_details_public_sales_id"), table_name="public_sale_details"
+    )
+    op.drop_index(
+        op.f("ix_public_sale_photos_public_sales_id"), table_name="public_sale_photos"
+    )
     op.drop_index(op.f("jubun_address_gin_varchar_idx"), table_name="real_estates")
     op.drop_index(op.f("jubun_address_gin_ts_idx"), table_name="real_estates")
     op.drop_index(op.f("road_address_gin_varchar_idx"), table_name="real_estates")

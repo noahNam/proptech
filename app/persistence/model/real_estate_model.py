@@ -20,6 +20,7 @@ from core.domains.house.entity.house_entity import (
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
     RealEstateReportEntity,
+    RealEstateLegalCodeEntity,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 
@@ -41,6 +42,8 @@ class RealEstateModel(db.Model):
     road_number = Column(String(10), nullable=True)
     land_number = Column(String(10), nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
+    front_legal_code = Column(String(5), nullable=False, unique=False, index=True)
+    back_legal_code = Column(String(5), nullable=False, unique=False, index=True)
     coordinates = Column(
         Geometry(geometry_type="POINT", srid=4326).with_variant(String, "sqlite"),
         nullable=True,
@@ -190,4 +193,13 @@ class RealEstateModel(db.Model):
             si_gun_gu=self.si_gun_gu,
             latitude=self.latitude,
             longitude=self.longitude,
+        )
+
+    def to_legal_code_entity(self) -> RealEstateLegalCodeEntity:
+        return RealEstateLegalCodeEntity(
+            id=self.id,
+            jibun_address=self.jibun_address,
+            si_do=self.si_do,
+            si_gun_gu=self.si_gun_gu,
+            dong_myun=self.dong_myun,
         )
