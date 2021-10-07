@@ -6,3 +6,6 @@ class TopicEnum(Enum):
     CONVERT_NOTICE_PUSH_MESSAGE = "tanos.convert_notice_push_message.v1"
     PRE_CALCULATE_AVERAGE_HOUSE = "tanos.pre_calculate_average_house_data.v1"
     ADD_LEGAL_CODE_HOUSE = "tanos.add_legal_code_house_data.v1"
+    PRE_CALCULATE_AVERAGE_ADMINISTRATIVE = (
+        "tanos.pre_calculate_average_administrative_data.v1"
+    )

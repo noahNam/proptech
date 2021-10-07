@@ -28,6 +28,7 @@ class PublicSalePhotoModel(db.Model):
         ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
         nullable=False,
         unique=True,
+        index=True,
     )
 
     file_name = Column(String(20), nullable=False)
