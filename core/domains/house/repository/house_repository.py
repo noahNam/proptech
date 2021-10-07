@@ -622,10 +622,11 @@ class HouseRepository:
         query = (
             session.query(RecentlyViewModel)
             .with_entities(
+                func.max(RecentlyViewModel.id),
                 RecentlyViewModel.house_id,
                 RecentlyViewModel.type,
                 PublicSaleModel.name,
-                PublicSalePhotoModel.path,
+                func.max(PublicSalePhotoModel.path).label("path"),
             )
             .join(
                 PublicSaleModel,
@@ -634,9 +635,14 @@ class HouseRepository:
                 & (RecentlyViewModel.user_id == dto.user_id),
             )
             .join(PublicSaleModel.public_sale_photos, isouter=True)
+            .group_by(
+                RecentlyViewModel.house_id, RecentlyViewModel.type, PublicSaleModel.name
+            )
+            .order_by(func.max(RecentlyViewModel.id).desc())
         )
 
         queryset = query.all()
+
         return self._make_get_recent_view_list_entity(queryset=queryset)
 
     def _make_get_recent_view_list_entity(
