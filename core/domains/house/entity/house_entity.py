@@ -209,6 +209,8 @@ class HousePublicDetailEntity(BaseModel):
     min_supply_area: Optional[float]
     max_supply_area: Optional[float]
     avg_supply_price: Optional[float]
+    min_supply_price: Optional[int]
+    max_supply_price: Optional[int]
     supply_price_per_pyoung: Optional[float]
     min_acquisition_tax: int
     max_acquisition_tax: int

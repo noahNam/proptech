@@ -269,6 +269,8 @@ class HouseRepository:
                 func.max(PublicSaleDetailModel.acquisition_tax).label(
                     "max_acquisition_tax"
                 ),
+                func.min(PublicSaleDetailModel.supply_price).label("min_supply_price"),
+                func.max(PublicSaleDetailModel.supply_price).label("max_supply_price"),
             )
             .join(RealEstateModel.public_sales)
             .join(PublicSaleModel.public_sale_details)
@@ -331,6 +333,8 @@ class HouseRepository:
             max_acquisition_tax=house_with_public_sales[6],
             button_links=button_link_list,
             ticket_usage_results=ticket_usage_results,
+            min_supply_price=house_with_public_sales[7],
+            max_supply_price=house_with_public_sales[8],
         )
 
     def get_public_with_private_sales_in_radius(
