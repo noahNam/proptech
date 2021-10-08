@@ -47,8 +47,18 @@ def upgrade():
     )
     # with open("./migrations/seeds/default_houses.sql") as fp:
     #     op.execute(fp.read())
+    op.create_index(
+        op.f("ix_private_sale_details_private_sales_id"),
+        "private_sale_details",
+        ["private_sales_id"],
+        unique=False,
+    )
 
 
 def downgrade():
     op.drop_table("private_sale_details")
+    op.drop_index(
+        op.f("ix_private_sale_details_private_sales_id"),
+        table_name="private_sale_details",
+    )
     op.execute("drop type realtradetypeenum;")

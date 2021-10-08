@@ -10,6 +10,14 @@ def get_month_from_today():
     return datetime.now() - timedelta(days=30)
 
 
+def get_month_from_date(date_from: str):
+    """
+        date_from example: 20210915
+    """
+    date = datetime.strptime(date_from, "%Y%m%d")
+    return date - timedelta(days=30)
+
+
 def get_random_date_about_one_month_from_today():
     """
         현재 날짜로부터 1달 이내 랜덤 날짜 구하기

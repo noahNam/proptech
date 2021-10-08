@@ -60,3 +60,8 @@ class RedisErrorException(ErrorFormat):
 class TokenValidationErrorException(ErrorFormat):
     code = HTTPStatus.UNAUTHORIZED
     msg = "jwt_validation_error"
+
+
+class UpdateFailErrorException(ErrorFormat):
+    code = HTTPStatus.BAD_REQUEST
+    msg = "update_fail_error"
