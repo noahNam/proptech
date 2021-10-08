@@ -130,6 +130,8 @@ class RealEstateModel(db.Model):
         supply_price_per_pyoung: Optional[float],
         min_acquisition_tax: int,
         max_acquisition_tax: int,
+        min_supply_price: Optional[int],
+        max_supply_price: Optional[int],
         button_links: List[ButtonLinkEntity],
         ticket_usage_results: List[TicketUsageResultEntity],
     ) -> HousePublicDetailEntity:
@@ -157,6 +159,8 @@ class RealEstateModel(db.Model):
             supply_price_per_pyoung=supply_price_per_pyoung,
             min_acquisition_tax=min_acquisition_tax,
             max_acquisition_tax=max_acquisition_tax,
+            min_supply_price=min_supply_price,
+            max_supply_price=max_supply_price,
             public_sales=self.public_sales.to_entity() if self.public_sales else None,
             button_links=button_links if button_links else None,
             ticket_usage_results=ticket_usage_results if ticket_usage_results else None,

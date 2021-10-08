@@ -32,13 +32,16 @@ class PublicSaleDetailEntity(BaseModel):
     id: int
     public_sales_id: int
     private_area: float
+    private_pyoung_number: Optional[int]
     supply_area: float
+    supply_pyoung_number: Optional[int]
     supply_price: int
     acquisition_tax: int
     area_type: str
     area_type: Optional[str]
     special_household: Optional[int]
     general_household: Optional[int]
+    total_household: Optional[int]
     public_sale_detail_photos: PublicSaleDetailPhotoEntity = None
 
 
@@ -209,6 +212,8 @@ class HousePublicDetailEntity(BaseModel):
     min_supply_area: Optional[float]
     max_supply_area: Optional[float]
     avg_supply_price: Optional[float]
+    min_supply_price: Optional[int]
+    max_supply_price: Optional[int]
     supply_price_per_pyoung: Optional[float]
     min_acquisition_tax: int
     max_acquisition_tax: int
