@@ -15,7 +15,9 @@ from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import PublicSaleDetailModel
 from core.domains.house.entity.house_entity import (
     AdministrativeDivisionLegalCodeEntity,
-    RealEstateLegalCodeEntity, PublicSaleEntity, PublicSalePhotoEntity,
+    RealEstateLegalCodeEntity,
+    PublicSaleEntity,
+    PublicSalePhotoEntity,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 
@@ -52,7 +54,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     """
 
     def _calculate_house_acquisition_xax(
-            self, private_area: float, supply_price: int
+        self, private_area: float, supply_price: int
     ) -> int:
         """
             todo: 부동산 정책이 매년 변경되므로 정기적으로 세율 변경 시 업데이트 필요합니다.
@@ -81,10 +83,10 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 - acquisition_tax(취득세 본세) + local_education_tax(지방교육세) + rural_special_tax(농어촌특별세)
         """
         if (
-                not private_area
-                or private_area == 0
-                or not supply_price
-                or supply_price == 0
+            not private_area
+            or private_area == 0
+            or not supply_price
+            or supply_price == 0
         ):
             return 0
 
@@ -120,7 +122,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return total_acquisition_tax
 
     def _make_acquisition_tax_update_list(
-            self, target_list: List[PublicSaleDetailModel]
+        self, target_list: List[PublicSaleDetailModel]
     ) -> List[dict]:
         result_dict_list = list()
         for target in target_list:
@@ -439,9 +441,9 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         )
 
     def _make_real_estates_legal_code_update_list(
-            self,
-            administrative_info: List[AdministrativeDivisionLegalCodeEntity],
-            target_list: List[RealEstateLegalCodeEntity],
+        self,
+        administrative_info: List[AdministrativeDivisionLegalCodeEntity],
+        target_list: List[RealEstateLegalCodeEntity],
     ) -> List[dict]:
         """
             real_estates.jibun_address 주소가 없을 경우 혹은 건축예정이라 불확실한 경우 직접 매뉴얼 작업 필요
@@ -464,7 +466,7 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
 
                 # 예) 안양1동 -> 안양동으로 처리하여 행정구역 안양동과 매칭되는지 확인
                 if cond_2.match(real_estate.jibun_address) and not cond_2.match(
-                        administrative.short_name
+                    administrative.short_name
                 ):
                     jibun_address_ = re.sub(r"[0-9]+", "", real_estate.jibun_address)
                     dong_myun_ = re.sub(r"[0-9]+", "", dong_myun_)
@@ -490,10 +492,10 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
                 dong_myun_ = dong_myun_.replace(".", "")
 
                 if (
-                        administrative_short_name_ == dong_myun_
-                        and si_do_ in administrative_name_
-                        and si_gun_gu_ in administrative_name_
-                        and administrative_name_ in jibun_address_
+                    administrative_short_name_ == dong_myun_
+                    and si_do_ in administrative_name_
+                    and si_gun_gu_ in administrative_name_
+                    and administrative_name_ in jibun_address_
                 ):
                     front_legal_code = administrative.front_legal_code
                     back_legal_code = administrative.back_legal_code
@@ -559,9 +561,7 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
         )
 
     def _make_default_image_create_list(
-            self,
-            target_list: List[PublicSaleEntity],
-            start_idx: int,
+        self, target_list: List[PublicSaleEntity], start_idx: int,
     ) -> List[dict]:
         """
             사용 전 필수 확인사항: default_image path
@@ -574,7 +574,7 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
                 "public_sales_id": public_sale.id,
                 "file_name": "default_apt_image",
                 "path": "public_sale_photos/2021/ad1f07f8-323a-4405-b946-8cdbe2040a81.png",
-                "extension": "png"
+                "extension": "png",
             }
             create_list.append(dict_for_insert)
             pk = pk + 1
@@ -584,7 +584,9 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
         start_time = time()
         logger.info(f"🚀\tInsertDefaultPhotoUseCase Start - {self.client_id}")
 
-        target_list: List[PublicSaleEntity] = self._house_repo.get_target_list_of_public_sales()
+        target_list: List[
+            PublicSaleEntity
+        ] = self._house_repo.get_target_list_of_public_sales()
         if not target_list:
             logger.info(
                 f"🚀\tget_target_list_of_public_sales : Nothing target_list_of_public_sales"
@@ -599,16 +601,15 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
             exit(os.EX_OK)
 
         create_list = self._make_default_image_create_list(
-            target_list=target_list,
-            start_idx=recent_photo_info.id,
+            target_list=target_list, start_idx=recent_photo_info.id,
         )
 
         try:
-            self._house_repo.insert_default_apt_images_to_public_sale_photos(create_list=create_list)
-        except Exception as e:
-            logger.error(
-                f"insert_default_apt_images_to_public_sale_photos error : {e}"
+            self._house_repo.insert_default_apt_images_to_public_sale_photos(
+                create_list=create_list
             )
+        except Exception as e:
+            logger.error(f"insert_default_apt_images_to_public_sale_photos error : {e}")
             exit(os.EX_OK)
 
         logger.info(
