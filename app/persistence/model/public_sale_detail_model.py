@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -65,8 +67,11 @@ class PublicSaleDetailModel(db.Model):
             id=self.id,
             public_sales_id=self.public_sales_id,
             private_area=self.private_area,
+            private_pyoung_number=self.convert_area_to_pyoung(self.private_area),
             supply_area=self.supply_area,
+            supply_pyoung_number=self.convert_area_to_pyoung(self.supply_area),
             supply_price=self.supply_price,
+            total_household=self.total_household,
             acquisition_tax=self.acquisition_tax,
             area_type=self.area_type,
             special_household=self.special_household,
@@ -116,3 +121,16 @@ class PublicSaleDetailModel(db.Model):
             if self.general_supply_results
             else None,
         )
+
+    def convert_area_to_pyoung(self, area: Optional[float]) -> Optional[int]:
+        """
+            1평 = 3.3058 (제곱미터)
+        """
+        if area:
+            return round(area / 3.3058)
+        else:
+            return None
+
+    @property
+    def total_household(self) -> Optional[int]:
+        return self.general_household + self.special_household
