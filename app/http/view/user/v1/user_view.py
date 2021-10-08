@@ -108,9 +108,6 @@ def get_user_info_view():
 def get_user_provider_view():
     auth_header = request.headers.get("Authorization")
 
-    print("----> ", auth_header)
-    print("----> ", current_user.id)
-
     dto = GetUserProviderRequestSchema(
         user_id=current_user.id, auth_header=auth_header
     ).validate_request_and_make_dto()
