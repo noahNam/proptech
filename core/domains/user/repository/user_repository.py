@@ -179,6 +179,13 @@ class UserRepository:
             .where(UserInfoModel.code == dto.code)
         ).scalar()
 
+    def is_surveys_complete(self, dto: UpsertUserInfoDetailDto) -> bool:
+        return session.query(
+            exists()
+            .where(UserInfoModel.user_profile_id == dto.user_profile_id)
+            .where(UserInfoModel.code == CodeEnum.SPECIAL_COND.value)
+        ).scalar()
+
     def create_user_nickname(self, dto: UpsertUserInfoDetailDto) -> int:
         try:
             user_profile = UserProfileModel(
