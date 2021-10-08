@@ -32,13 +32,16 @@ class PublicSaleDetailEntity(BaseModel):
     id: int
     public_sales_id: int
     private_area: float
+    private_pyoung_number: Optional[int]
     supply_area: float
+    supply_pyoung_number: Optional[int]
     supply_price: int
     acquisition_tax: int
     area_type: str
     area_type: Optional[str]
     special_household: Optional[int]
     general_household: Optional[int]
+    total_household: Optional[int]
     public_sale_detail_photos: PublicSaleDetailPhotoEntity = None
 
 
