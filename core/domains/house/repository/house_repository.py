@@ -626,7 +626,7 @@ class HouseRepository:
         query = (
             session.query(RecentlyViewModel)
             .with_entities(
-                func.max(RecentlyViewModel.id),
+                func.max(RecentlyViewModel.id).label("id"),
                 RecentlyViewModel.house_id,
                 RecentlyViewModel.type,
                 PublicSaleModel.name,
@@ -642,8 +642,12 @@ class HouseRepository:
             .group_by(
                 RecentlyViewModel.house_id, RecentlyViewModel.type, PublicSaleModel.name
             )
-            .order_by(func.max(RecentlyViewModel.id).desc())
         )
+
+        sub_query = query.subquery()
+        sub_q = aliased(sub_query)
+
+        query = session.query(sub_q).order_by(sub_q.c.id.desc())
 
         queryset = query.all()
 
@@ -1200,13 +1204,13 @@ class HouseRepository:
             )
         ).subquery()
 
-        suq_q = aliased(sub_query)
+        sub_q = aliased(sub_query)
 
         query = (
-            session.query(suq_q)
-            .with_entities(suq_q.c.private_sales_id, suq_q.c.private_area,)
-            .group_by(suq_q.c.private_sales_id, suq_q.c.private_area, suq_q.c.rank,)
-            .having(suq_q.c.rank == 1)
+            session.query(sub_q)
+            .with_entities(sub_q.c.private_sales_id, sub_q.c.private_area,)
+            .group_by(sub_q.c.private_sales_id, sub_q.c.private_area, sub_q.c.rank,)
+            .having(sub_q.c.rank == 1)
         )
 
         query_set = query.all()

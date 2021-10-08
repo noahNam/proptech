@@ -132,7 +132,7 @@ class GetSurveysUserReportSchema(BaseModel):
 
 class GetSurveysResultBaseSchema(BaseModel):
     code: StrictInt
-    value: Union[StrictStr, List]
+    value: Optional[Union[StrictStr, List]]
 
 
 class GetUserSurveysResponseSchema(BaseModel):
