@@ -324,7 +324,7 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
         elif survey_step == UserSurveyStepEnum.STEP_TWO.value:
             # survey_step가 2이고 dto.code가 1026이면 설문 완료
-            if dto.code == CodeEnum.SPECIAL_COND.value:
+            if self._user_repo.is_surveys_complete(dto=dto):
                 return UserSurveyStepEnum.STEP_COMPLETE.value
 
         return survey_step

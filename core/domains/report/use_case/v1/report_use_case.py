@@ -369,7 +369,10 @@ class GetUserReportUseCase(ReportBaseUseCase):
         ) = (None, None, list(), None, None, defaultdict(list))
 
         # 유저 설문 분석 결과 조회
-        if user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value:
+        if (
+            user_profile.survey_step == UserSurveyStepEnum.STEP_COMPLETE.value
+            or user_profile.survey_step == UserSurveyStepEnum.STEP_TWO.value
+        ):
             survey_result: Optional[
                 SurveyResultEntity
             ] = self._report_repo.get_user_survey_results(user_id=dto.user_id)
