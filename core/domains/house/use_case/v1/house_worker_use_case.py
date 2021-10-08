@@ -16,6 +16,8 @@ from app.persistence.model import PublicSaleDetailModel
 from core.domains.house.entity.house_entity import (
     AdministrativeDivisionLegalCodeEntity,
     RealEstateLegalCodeEntity,
+    PublicSaleEntity,
+    PublicSalePhotoEntity,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 
@@ -541,6 +543,79 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
             f"🚀\tAddLegalCodeUseCase : Finished !!, "
             f"records: {time() - start_time} secs, "
             f"{len(update_list)} Updated, "
+        )
+
+        exit(os.EX_OK)
+
+
+class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
+    def send_slack_message(self, message: str):
+        channel = "#engineering-class"
+
+        text = "[Batch Error] InsertDefaultPhotoUseCase -> " + message
+        slack_token = os.environ.get("SLACK_TOKEN")
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": "Bearer " + slack_token},
+            data={"channel": channel, "text": text},
+        )
+
+    def _make_default_image_create_list(
+        self, target_list: List[PublicSaleEntity], start_idx: int,
+    ) -> List[dict]:
+        """
+            사용 전 필수 확인사항: default_image path
+        """
+        create_list = list()
+        pk = start_idx + 1
+        for public_sale in target_list:
+            dict_for_insert = {
+                "id": pk,
+                "public_sales_id": public_sale.id,
+                "file_name": "default_apt_image",
+                "path": "public_sale_photos/2021/ad1f07f8-323a-4405-b946-8cdbe2040a81.png",
+                "extension": "png",
+            }
+            create_list.append(dict_for_insert)
+            pk = pk + 1
+        return create_list
+
+    def execute(self):
+        start_time = time()
+        logger.info(f"🚀\tInsertDefaultPhotoUseCase Start - {self.client_id}")
+
+        target_list: List[
+            PublicSaleEntity
+        ] = self._house_repo.get_target_list_of_public_sales()
+        if not target_list:
+            logger.info(
+                f"🚀\tget_target_list_of_public_sales : Nothing target_list_of_public_sales"
+            )
+            exit(os.EX_OK)
+
+        recent_photo_info = self._house_repo.get_recent_public_sale_photos()
+        if not recent_photo_info:
+            logger.info(
+                f"🚀\tget_recent_public_sale_photos : No recent public_sale_photos"
+            )
+            exit(os.EX_OK)
+
+        create_list = self._make_default_image_create_list(
+            target_list=target_list, start_idx=recent_photo_info.id,
+        )
+
+        try:
+            self._house_repo.insert_default_apt_images_to_public_sale_photos(
+                create_list=create_list
+            )
+        except Exception as e:
+            logger.error(f"insert_default_apt_images_to_public_sale_photos error : {e}")
+            exit(os.EX_OK)
+
+        logger.info(
+            f"🚀\tInsertDefaultPhotoUseCase : Finished !!, "
+            f"records: {time() - start_time} secs, "
+            f"{len(create_list)} Created, "
         )
 
         exit(os.EX_OK)

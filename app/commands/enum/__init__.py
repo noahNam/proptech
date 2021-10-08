@@ -9,3 +9,4 @@ class TopicEnum(Enum):
     PRE_CALCULATE_AVERAGE_ADMINISTRATIVE = (
         "tanos.pre_calculate_average_administrative_data.v1"
     )
+    INSERT_DEFAULT_IMAGE_TO_PUBLIC_SALE = "tanos.insert_default_image_to_public_sale.v1"
