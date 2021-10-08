@@ -392,60 +392,55 @@ class GetUserReportUseCase(ReportBaseUseCase):
             )
 
             # 유저별 category 분석 메세지 formatting
-            try:
-                user_info_dict = dict()
-                for user_info in user_profile.user_infos:
-                    if user_info.code == CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value:
-                        user_info_dict.setdefault(
-                            "sub_account_total_price",
-                            format(int(user_info.user_value), ",d"),
-                        )
-                    elif user_info.code == CodeEnum.IS_CHILD.value:
-                        user_info_dict.setdefault("child_num", 0)
-                        if int(user_info.user_value) < 4:
-                            user_info_dict.update({"child_num": user_info.user_value})
+            user_info_dict = dict()
+            for user_info in user_profile.user_infos:
+                if user_info.code == CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value:
+                    user_info_dict.setdefault(
+                        "sub_account_total_price",
+                        format(int(user_info.user_value), ",d"),
+                    )
+                elif user_info.code == CodeEnum.IS_CHILD.value:
+                    user_info_dict.setdefault("child_num", 0)
+                    if int(user_info.user_value) < 4:
+                        user_info_dict.update({"child_num": user_info.user_value})
 
-                user_variable_change_dict = {
-                    UserAnalysisFormatText.NICKNAME.value: user_profile.nickname,
-                    UserAnalysisFormatText.SUB_POINT.value: survey_result.total_point,
-                    UserAnalysisFormatText.SUB_ACCOUNT_TOTAL_AMT.value: user_info_dict.get(
-                        "sub_account_total_price"
-                    ),
-                    UserAnalysisFormatText.CHILD_NUM.value: user_info_dict.get(
-                        "child_num"
-                    ),
-                }
+            user_variable_change_dict = {
+                UserAnalysisFormatText.NICKNAME.value: user_profile.nickname,
+                UserAnalysisFormatText.SUB_POINT.value: survey_result.total_point,
+                UserAnalysisFormatText.SUB_ACCOUNT_TOTAL_AMT.value: user_info_dict.get(
+                    "sub_account_total_price"
+                ),
+                UserAnalysisFormatText.CHILD_NUM.value: user_info_dict.get("child_num"),
+            }
 
-                # response formatting
-                for user_analysis_category in user_analysis_categories:
-                    analysis_text_list = [
-                        user_analysis_category.seq,
-                        user_analysis_category.type,
-                    ]
+            # response formatting
+            for user_analysis_category in user_analysis_categories:
+                analysis_text_list = [
+                    user_analysis_category.seq,
+                    user_analysis_category.type,
+                ]
 
-                    if user_analysis_category.user_analysis_category_detail:
-                        format_text = user_analysis_category.user_analysis_category_detail.format_text.split(
-                            ","
-                        )
-                        for idx, text in enumerate(format_text):
-                            format_text[idx] = user_variable_change_dict.get(text)
+                if user_analysis_category.user_analysis_category_detail:
+                    format_text = user_analysis_category.user_analysis_category_detail.format_text.split(
+                        ","
+                    )
+                    for idx, text in enumerate(format_text):
+                        format_text[idx] = user_variable_change_dict.get(text)
 
-                        analysis_text = user_analysis_category.output_text.format(
-                            *format_text
-                        )
-                        analysis_text_list.append(analysis_text)
+                    analysis_text = user_analysis_category.output_text.format(
+                        *format_text
+                    )
+                    analysis_text_list.append(analysis_text)
 
-                        analysis_text_dict[user_analysis_category.title].append(
-                            analysis_text_list
-                        )
-                        continue
-
-                    analysis_text_list.append(user_analysis_category.output_text)
                     analysis_text_dict[user_analysis_category.title].append(
                         analysis_text_list
                     )
-            except Exception as e:
-                pass
+                    continue
+
+                analysis_text_list.append(user_analysis_category.output_text)
+                analysis_text_dict[user_analysis_category.title].append(
+                    analysis_text_list
+                )
 
         # 생일 계산
         for user_info in user_profile.user_infos:
