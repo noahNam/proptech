@@ -25,6 +25,7 @@ from core.domains.house.enum.house_enum import (
     CalendarYearThreshHold,
     SearchTypeEnum,
     SectionType,
+    BoundingLevelEnum,
 )
 from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import InvalidRequestException
@@ -181,7 +182,10 @@ class GetCoordinatesSchema(BaseModel):
 
     @validator("level")
     def check_level(cls, level) -> int:
-        if level < 6 or 21 < level:
+        if (
+            level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
+            or BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value < level
+        ):
             raise ValidationError("Out of range: level value")
         return level
 

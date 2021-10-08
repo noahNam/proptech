@@ -34,6 +34,9 @@ class Config:
     SQS_BASE = os.environ.get("SQS_BASE") or ""
     SQS_USER_DATA_SYNC_TO_LAKE = os.environ.get("SQS_USER_DATA_SYNC_TO_LAKE") or ""
 
+    # Ironman service
+    IRONMAN_SERVICE_URL = os.environ.get("IRONMAN_SERVICE_URL") or ""
+
 
 class LocalConfig(Config):
     os.environ["FLASK_ENV"] = "local"
