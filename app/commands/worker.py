@@ -6,6 +6,7 @@ from core.domains.house.use_case.v1.house_worker_use_case import (
     PreCalculateAverageUseCase,
     AddLegalCodeUseCase,
     PreCalculateAdministrativeDivisionUseCase,
+    InsertDefaultPhotoUseCase,
 )
 from core.domains.notification.use_case.v1.notification_worker_use_case import (
     PrePrcsNotificationUseCase,
@@ -24,6 +25,8 @@ def get_worker(topic: str):
         return AddLegalCodeUseCase(topic=topic)
     elif topic == TopicEnum.PRE_CALCULATE_AVERAGE_ADMINISTRATIVE.value:
         return PreCalculateAdministrativeDivisionUseCase(topic=topic)
+    elif topic == TopicEnum.INSERT_DEFAULT_IMAGE_TO_PUBLIC_SALE.value:
+        return InsertDefaultPhotoUseCase(topic=topic)
 
 
 @current_app.cli.command("start-worker")
