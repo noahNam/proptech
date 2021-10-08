@@ -50,7 +50,9 @@ from core.domains.house.entity.house_entity import (
     PrivateSaleDetailEntity,
     RealEstateLegalCodeEntity,
     AdministrativeDivisionLegalCodeEntity,
-    RecentlyContractedEntity, PublicSaleEntity, PublicSalePhotoEntity,
+    RecentlyContractedEntity,
+    PublicSaleEntity,
+    PublicSalePhotoEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -1829,19 +1831,21 @@ class HouseRepository:
         filters.append(
             and_(
                 PublicSaleModel.is_available == "True",
-                PublicSaleModel.public_sale_photos == None
+                PublicSaleModel.public_sale_photos == None,
             )
         )
         query = (
             session.query(PublicSaleModel)
-                .options(joinedload(PublicSaleModel.public_sale_photos))
-                .options(joinedload(PublicSaleModel.public_sale_details))
-                .filter(*filters)
+            .options(joinedload(PublicSaleModel.public_sale_photos))
+            .options(joinedload(PublicSaleModel.public_sale_details))
+            .filter(*filters)
         )
         query_set = query.all()
         return [query.to_entity() for query in query_set] if query_set else None
 
-    def insert_default_apt_images_to_public_sale_photos(self, create_list: List[dict]) -> None:
+    def insert_default_apt_images_to_public_sale_photos(
+        self, create_list: List[dict]
+    ) -> None:
         try:
             session.bulk_insert_mappings(
                 PublicSalePhotoModel, [create_info for create_info in create_list]
@@ -1858,8 +1862,8 @@ class HouseRepository:
     def get_recent_public_sale_photos(self):
         query = (
             session.query(PublicSalePhotoModel)
-                .order_by(PublicSalePhotoModel.id.desc())
-                .limit(1)
+            .order_by(PublicSalePhotoModel.id.desc())
+            .limit(1)
         )
         query_set = query.first()
         return query_set.to_entity()
