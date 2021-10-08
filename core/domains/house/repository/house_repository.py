@@ -10,6 +10,7 @@ from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased, Qu
 from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
+from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import (
@@ -720,7 +721,7 @@ class HouseRepository:
                         name=query.name,
                         jibun_address=query.jibun_address,
                         is_like=is_like,
-                        image_path=query.path,
+                        image_path=S3Helper.get_cloudfront_url() + "/" + query.path,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
                         status=self._get_status(
