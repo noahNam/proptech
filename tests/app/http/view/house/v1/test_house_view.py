@@ -482,7 +482,7 @@ def test_get_recent_view_list_use_case_when_watch_recently_view_then_result_one(
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert len(data["houses"]) == 1
-    assert data["houses"][0]["image_path"] == public_sale_photo.path
+    assert public_sale_photo.path in data["houses"][0]["image_path"]
 
 
 def test_get_search_house_list_view_when_get_no_keywords_then_fail(
