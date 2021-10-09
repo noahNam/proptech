@@ -386,7 +386,7 @@ class PublicSaleDetailReportEntity(BaseModel):
     old_parent_house_hold: Optional[int]
     first_life_house_hold: Optional[int]
     general_household: Optional[int]
-    pyoung: Optional[int] = 0
+    pyoung_number: Optional[int] = 0
     price_per_meter: Optional[int] = 0
     public_sale_detail_photos: Optional[PublicSaleDetailPhotoEntity]
     special_supply_results: List[SpecialSupplyResultReportEntity] = None
