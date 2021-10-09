@@ -82,6 +82,21 @@ class PublicSaleDetailModel(db.Model):
         )
 
     def to_report_entity(self) -> PublicSaleDetailReportEntity:
+        # Sinbad 요청으로 특정 순서로 sort ######################################################################
+        general_supply_list = [None for i in range(3)]
+        special_supply_list = [None for i in range(3)]
+
+        sort_dict = {"해당지역": 0, "기타경기": 1, "기타지역": 2}
+
+        if self.general_supply_results:
+            for general_supply_result in self.general_supply_results:
+                general_supply_list[sort_dict.get(general_supply_result.region)] = general_supply_result.to_report_entity()
+
+        if self.special_supply_results:
+            for special_supply_result in self.special_supply_results:
+                special_supply_list[sort_dict.get(special_supply_result.region)] = special_supply_result.to_report_entity()
+        ##################################################################################################
+
         return PublicSaleDetailReportEntity(
             id=self.id,
             public_sales_id=self.public_sales_id,
@@ -99,7 +114,7 @@ class PublicSaleDetailModel(db.Model):
             old_parent_house_hold=self.old_parent_house_hold,
             first_life_house_hold=self.first_life_house_hold,
             general_household=self.general_household,
-            pyoung_number=round(self.supply_area / PricePerMeterEnum.CALC_VAR.value)
+            pyoung=round(self.supply_area / PricePerMeterEnum.CALC_VAR.value)
             if self.supply_area
             else None,
             price_per_meter=int(
@@ -108,16 +123,10 @@ class PublicSaleDetailModel(db.Model):
             )
             if self.supply_price
             else None,
-            special_supply_results=[
-                special_supply_result.to_report_entity()
-                for special_supply_result in self.special_supply_results
-            ]
+            special_supply_results=special_supply_list
             if self.special_supply_results
             else None,
-            general_supply_results=[
-                general_supply_result.to_report_entity()
-                for general_supply_result in self.general_supply_results
-            ]
+            general_supply_results=general_supply_list
             if self.general_supply_results
             else None,
         )
