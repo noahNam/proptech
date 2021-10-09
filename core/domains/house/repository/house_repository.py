@@ -952,8 +952,6 @@ class HouseRepository:
         )
         query_set = query.first()
 
-        RawQueryHelper.print_raw_query(query)
-
         return query_set.to_report_entity()
 
     def get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
