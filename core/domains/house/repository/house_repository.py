@@ -574,7 +574,11 @@ class HouseRepository:
                         road_address=query.road_address,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
-                        image_path=S3Helper.get_cloudfront_url() + "/" + query.image_path if query.image_path else None,
+                        image_path=S3Helper.get_cloudfront_url()
+                        + "/"
+                        + query.image_path
+                        if query.image_path
+                        else None,
                     )
                 )
 
@@ -668,7 +672,9 @@ class HouseRepository:
                         house_id=query.house_id,
                         type=query.type,
                         name=query.name,
-                        image_path=S3Helper.get_cloudfront_url() + "/" + query.path if query.path else None,
+                        image_path=S3Helper.get_cloudfront_url() + "/" + query.path
+                        if query.path
+                        else None,
                     )
                 )
 
@@ -721,7 +727,9 @@ class HouseRepository:
                         name=query.name,
                         jibun_address=query.jibun_address,
                         is_like=is_like,
-                        image_path=S3Helper.get_cloudfront_url() + "/" + query.path if query.path else None,
+                        image_path=S3Helper.get_cloudfront_url() + "/" + query.path
+                        if query.path
+                        else None,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
                         status=self._get_status(
@@ -843,7 +851,9 @@ class HouseRepository:
                     GetPublicSaleOfTicketUsageEntity(
                         house_id=query.id,
                         name=query.name,
-                        image_path=S3Helper.get_cloudfront_url() + "/" + query.public_sale_photos.path
+                        image_path=S3Helper.get_cloudfront_url()
+                        + "/"
+                        + query.public_sale_photos.path
                         if query.public_sale_photos
                         else None,
                     )
@@ -870,7 +880,7 @@ class HouseRepository:
         filters.append(RealEstateModel.si_gun_gu == si_gun_gu)
         filters.append(
             PublicSaleModel.subscription_end_date
-            < get_server_timestamp().strftime("%y%m%d")
+            < get_server_timestamp().strftime("%Y%m%d")
         )
         query = (
             session.query(PublicSaleModel)
@@ -891,6 +901,7 @@ class HouseRepository:
         )
 
         query_set = query.first()
+
         return query_set.to_report_entity()
 
     def _get_avg_down_payment(
