@@ -863,8 +863,6 @@ class HouseRepository:
         query = query_cond1.union_all(query_cond2)
         queryset = query.all()
 
-        RawQueryHelper.print_raw_query(query)
-
         return self._make_get_search_house_list_entity(
             queryset=queryset, user_id=dto.user_id,
         )
