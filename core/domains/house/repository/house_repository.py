@@ -195,7 +195,7 @@ class HouseRepository:
             filters.append(
                 AdministrativeDivisionModel.level == DivisionLevelEnum.LEVEL_1.value
             )
-
+        filters.append(AdministrativeDivisionModel.is_available == "True")
         query = session.query(AdministrativeDivisionModel).filter(*filters)
         queryset = query.all()
 
