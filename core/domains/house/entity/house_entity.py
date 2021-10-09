@@ -161,6 +161,7 @@ class AdministrativeDivisionEntity(BaseModel):
     longitude: float
     front_legal_code: str
     back_legal_code: str
+    is_available: bool
     created_at: datetime
     updated_at: datetime
 

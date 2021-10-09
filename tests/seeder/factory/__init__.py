@@ -601,6 +601,7 @@ class AdministrativeDivisionFactory(BaseFactory):
     longitude = random.uniform(125.0666666, 131.8722222)
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
+    is_available = True
 
 
 class PromotionHouseFactory(BaseFactory):
