@@ -58,7 +58,7 @@ from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
     HouseTypeEnum,
     DivisionLevelEnum,
-    PublicSaleStatusEnum,
+    PublicSaleStatusEnum, RentTypeEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -128,12 +128,12 @@ class HouseRepository:
             .join(
                 PrivateSaleModel,
                 (PrivateSaleModel.real_estate_id == RealEstateModel.id)
-                & (PrivateSaleModel.building_type == "아파트"),
+                & (PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value),
             )
             .join(
                 PublicSaleModel,
                 (PublicSaleModel.real_estate_id == RealEstateModel.id)
-                & (PublicSaleModel.rent_type == "분양"),
+                & (PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value),
             )
             .options(contains_eager(RealEstateModel.private_sales))
             .options(contains_eager(RealEstateModel.public_sales))
@@ -460,6 +460,7 @@ class HouseRepository:
             and_(
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value
             )
         )
 
