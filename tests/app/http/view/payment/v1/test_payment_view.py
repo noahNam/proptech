@@ -46,7 +46,7 @@ def test_get_ticket_usage_result_view_then_return_usage_ticket_list(
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert len(data["houses"]) == 1
-    assert data["houses"][0]["image_path"] == public_sale_photo.path
+    assert public_sale_photo.path in data["houses"][0]["image_path"]
     assert "아파트" in data["houses"][0]["name"]
 
 
