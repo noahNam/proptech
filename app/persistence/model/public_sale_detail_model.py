@@ -115,7 +115,7 @@ class PublicSaleDetailModel(db.Model):
             old_parent_house_hold=self.old_parent_house_hold,
             first_life_house_hold=self.first_life_house_hold,
             general_household=self.general_household,
-            pyoung=round(self.supply_area / PricePerMeterEnum.CALC_VAR.value)
+            pyoung_number=round(self.supply_area / PricePerMeterEnum.CALC_VAR.value)
             if self.supply_area
             else None,
             price_per_meter=int(
