@@ -12,7 +12,6 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 from app.extensions.database import session
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
-from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import (
     get_month_from_today,
     get_server_timestamp,
@@ -48,12 +47,10 @@ from core.domains.house.entity.house_entity import (
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
     PublicSaleReportEntity,
-    PrivateSaleDetailEntity,
     RealEstateLegalCodeEntity,
     AdministrativeDivisionLegalCodeEntity,
     RecentlyContractedEntity,
     PublicSaleEntity,
-    PublicSalePhotoEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -61,7 +58,7 @@ from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
     HouseTypeEnum,
     DivisionLevelEnum,
-    PublicSaleStatusEnum,
+    PublicSaleStatusEnum, RentTypeEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -124,20 +121,22 @@ class HouseRepository:
     def get_bounding(self, bounding_filter: Any) -> Optional[list]:
         filters = list()
         filters.append(bounding_filter)
-        filters.append(RealEstateModel.is_available == "True",)
-        filters.append(
-            and_(
-                RealEstateModel.is_available == "True",
-                # PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value
-            )
-        )
+        filters.append(and_(RealEstateModel.is_available == "True",))
 
-        # .join(RealEstateModel.private_sales, isouter=True)
-        # .options(contains_eager(RealEstateModel.private_sales))
         query = (
             session.query(RealEstateModel,)
-            .options(joinedload(RealEstateModel.private_sales))
-            .options(joinedload(RealEstateModel.public_sales))
+            .join(
+                PrivateSaleModel,
+                (PrivateSaleModel.real_estate_id == RealEstateModel.id)
+                & (PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value),
+            )
+            .join(
+                PublicSaleModel,
+                (PublicSaleModel.real_estate_id == RealEstateModel.id)
+                & (PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value),
+            )
+            .options(contains_eager(RealEstateModel.private_sales))
+            .options(contains_eager(RealEstateModel.public_sales))
             .options(joinedload("private_sales.private_sale_avg_prices"))
             .options(joinedload("public_sales.public_sale_avg_prices"))
             .options(joinedload("public_sales.public_sale_photos"))
@@ -196,7 +195,7 @@ class HouseRepository:
             filters.append(
                 AdministrativeDivisionModel.level == DivisionLevelEnum.LEVEL_1.value
             )
-
+        filters.append(AdministrativeDivisionModel.is_available == "True")
         query = session.query(AdministrativeDivisionModel).filter(*filters)
         queryset = query.all()
 
@@ -461,6 +460,7 @@ class HouseRepository:
             and_(
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value
             )
         )
 
@@ -1518,10 +1518,6 @@ class HouseRepository:
             .group_by(final_sub_q.c.si_do)
         )
 
-        print("---" * 30)
-        RawQueryHelper().print_raw_query(final_query)
-        print("---" * 30)
-
         query_set = final_query.all()
 
         if not query_set:
@@ -1601,10 +1597,6 @@ class HouseRepository:
                 final_sub_q.c.front_legal_code,
             )
         )
-
-        print("---" * 30)
-        RawQueryHelper().print_raw_query(final_query)
-        print("---" * 30)
 
         query_set = final_query.all()
 
@@ -1693,10 +1685,6 @@ class HouseRepository:
                 final_sub_q.c.back_legal_code,
             )
         )
-
-        print("---" * 30)
-        RawQueryHelper().print_raw_query(final_query)
-        print("---" * 30)
 
         query_set = final_query.all()
 

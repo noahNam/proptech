@@ -42,7 +42,7 @@ class PublicSaleDetailPhotoModel(db.Model):
             id=self.id,
             public_sale_details_id=self.public_sale_details_id,
             file_name=self.file_name,
-            path=S3Helper.get_cloudfront_url() + "/" + self.path,
+            path=S3Helper.get_cloudfront_url() + "/" + self.path if self.path else None,
             extension=self.extension,
             created_at=self.created_at,
             updated_at=self.updated_at,

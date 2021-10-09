@@ -4,7 +4,8 @@ from sqlalchemy import (
     Integer,
     DateTime,
     SmallInteger,
-    String, Boolean,
+    String,
+    Boolean,
 )
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
