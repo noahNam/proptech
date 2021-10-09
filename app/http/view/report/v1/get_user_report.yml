@@ -50,8 +50,8 @@ responses:
                       type: integer
                       example: 21
                     public_first_life:
-                      type: integer
-                      example: 21
+                      type: boolean
+                      example: True
                     public_multiple_children:
                       type: integer
                       example: 21
@@ -68,8 +68,8 @@ responses:
                       type: integer
                       example: 21
                     private_first_life:
-                      type: integer
-                      example: 21
+                      type: boolean
+                      example: True
                     private_multiple_children:
                       type: integer
                       example: 21

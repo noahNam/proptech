@@ -4,7 +4,7 @@ from sqlalchemy import (
     Integer,
     DateTime,
     SmallInteger,
-    String,
+    String, Boolean,
 )
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -29,7 +29,7 @@ class SurveyResultModel(db.Model):
     private_married_child_num = Column(SmallInteger, nullable=True)
     private_married_rank = Column(SmallInteger, nullable=True)
     public_newly_married_div = Column(String(2), nullable=True)
-    public_first_life = Column(SmallInteger, nullable=True)
+    public_first_life = Column(Boolean, nullable=True)
     public_first_life_div = Column(String(2), nullable=True)
     public_multiple_children = Column(SmallInteger, nullable=True)
     public_old_parent = Column(SmallInteger, nullable=True)
@@ -37,7 +37,7 @@ class SurveyResultModel(db.Model):
     public_normal = Column(SmallInteger, nullable=True)
     private_newly_married = Column(SmallInteger, nullable=True)
     private_newly_married_div = Column(String(2), nullable=True)
-    private_first_life = Column(SmallInteger, nullable=True)
+    private_first_life = Column(Boolean, nullable=True)
     private_first_life_div = Column(String(2), nullable=True)
     private_multiple_children = Column(SmallInteger, nullable=True)
     private_old_parent = Column(SmallInteger, nullable=True)
