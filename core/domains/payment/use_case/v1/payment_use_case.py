@@ -178,12 +178,9 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
             result: Optional[
                 UseCaseFailureOutput
             ] = self._use_ticket_to_house_by_charged(dto=dto)
-            print("----> result ", result)
             if isinstance(result, UseCaseFailureOutput):
-                print("----> end 0 ")
                 return result
         else:
-            print("----> 11111 ")
             # 적용 프로모션이 있는 경우
             if promotion.type == PromotionTypeEnum.ALL.value:
                 """
@@ -288,7 +285,6 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
                         return self._use_ticket_to_house_by_promotion(
                             dto=dto, promotion=promotion
                         )
-        print("----> 22222 ")
         return UseCaseSuccessOutput(value=dict(type="success", message="ticket used"))
 
     def _is_ticket_usage_for_house(self, user_id: int, house_id: int) -> bool:
@@ -304,7 +300,6 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
 
     def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> int:
         data = dict(user_id=dto.user_id, house_id=dto.house_id,)
-        print("----------- jarvis call start")
         response = requests.post(
             url=CallJarvisEnum.JARVIS_BASE_URL.value
             + CallJarvisEnum.CALL_PREDICT_HOUSE.value,
@@ -315,14 +310,12 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
             },
             data=json.dumps(data),
         )
-        print("----------- jarvis call end")
         return response.status_code
 
     def _use_ticket_to_house_by_charged(
         self, dto: UseHouseTicketDto
     ) -> Optional[UseCaseFailureOutput]:
         response: int = self._call_jarvis_house_analytics_api(dto=dto)
-        print("------> jarvis response : ", response)
         if response == HTTPStatus.OK:
             print("@@@@ no enter")
             # 티켓 사용 히스토리 생성 (tickets 스키마)

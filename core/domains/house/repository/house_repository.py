@@ -13,6 +13,7 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 from app.extensions.database import session
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import (
     get_month_from_today,
     get_server_timestamp,
@@ -59,7 +60,8 @@ from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
     HouseTypeEnum,
     DivisionLevelEnum,
-    PublicSaleStatusEnum, RentTypeEnum,
+    PublicSaleStatusEnum,
+    RentTypeEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -461,7 +463,7 @@ class HouseRepository:
             and_(
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
-                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
             )
         )
 
@@ -949,6 +951,9 @@ class HouseRepository:
             .filter(PublicSaleModel.id == house_id)
         )
         query_set = query.first()
+
+        RawQueryHelper.print_raw_query(query)
+
         return query_set.to_report_entity()
 
     def get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
