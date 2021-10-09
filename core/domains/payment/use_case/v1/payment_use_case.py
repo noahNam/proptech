@@ -178,9 +178,12 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
             result: Optional[
                 UseCaseFailureOutput
             ] = self._use_ticket_to_house_by_charged(dto=dto)
+            print("----> result ", result)
             if isinstance(result, UseCaseFailureOutput):
+                print("----> end 0 ")
                 return result
         else:
+            print("----> 11111 ")
             # 적용 프로모션이 있는 경우
             if promotion.type == PromotionTypeEnum.ALL.value:
                 """
@@ -285,6 +288,7 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
                         return self._use_ticket_to_house_by_promotion(
                             dto=dto, promotion=promotion
                         )
+        print("----> 22222 ")
         return UseCaseSuccessOutput(value=dict(type="success", message="ticket used"))
 
     def _is_ticket_usage_for_house(self, user_id: int, house_id: int) -> bool:
