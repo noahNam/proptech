@@ -902,8 +902,6 @@ class HouseRepository:
 
         query_set = query.first()
 
-        RawQueryHelper.print_raw_query(query)
-
         return query_set.to_report_entity()
 
     def _get_avg_down_payment(
