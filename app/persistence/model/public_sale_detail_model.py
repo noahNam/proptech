@@ -83,16 +83,17 @@ class PublicSaleDetailModel(db.Model):
 
     def to_report_entity(self) -> PublicSaleDetailReportEntity:
         # Sinbad 요청으로 특정 순서로 sort ######################################################################
-        general_supply_list = [None for i in range(3)]
-        special_supply_list = [None for i in range(3)]
-
         sort_dict = {"해당지역": 0, "기타경기": 1, "기타지역": 2}
 
         if self.general_supply_results:
+            general_supply_list = [None for i in range(len(self.general_supply_results))]
+
             for general_supply_result in self.general_supply_results:
                 general_supply_list[sort_dict.get(general_supply_result.region)] = general_supply_result.to_report_entity()
 
         if self.special_supply_results:
+            special_supply_list = [None for i in range(len(self.special_supply_results))]
+
             for special_supply_result in self.special_supply_results:
                 special_supply_list[sort_dict.get(special_supply_result.region)] = special_supply_result.to_report_entity()
         ##################################################################################################
