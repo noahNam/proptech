@@ -880,7 +880,7 @@ class HouseRepository:
         filters.append(RealEstateModel.si_gun_gu == si_gun_gu)
         filters.append(
             PublicSaleModel.subscription_end_date
-            < get_server_timestamp().strftime("%y%m%d")
+            < get_server_timestamp().strftime("%Y%m%d")
         )
         query = (
             session.query(PublicSaleModel)
@@ -901,6 +901,7 @@ class HouseRepository:
         )
 
         query_set = query.first()
+
         return query_set.to_report_entity()
 
     def _get_avg_down_payment(
