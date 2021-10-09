@@ -512,10 +512,13 @@ class GetUserReportUseCase(ReportBaseUseCase):
         for user_info in user_profile.user_infos:
             if value := code_dict.get(user_info.code):
                 if value != "subjective":
-                    value = None if not user_info.user_value else value.get(int(user_info.user_value))
+                    value = (
+                        None
+                        if not user_info.user_value
+                        else value.get(int(user_info.user_value))
+                    )
                 else:
                     value = user_info.user_value
-
 
                 if (
                     user_info.code == CodeEnum.ADDRESS.value
