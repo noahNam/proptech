@@ -181,7 +181,7 @@ def test_get_recent_view_list_then_entity_result(
 
     assert isinstance(result, list)
     assert len(result) == 1
-    assert result[0].image_path == public_sale_photo_factory.path
+    assert public_sale_photo_factory.path in result[0].image_path
 
 
 def test_get_search_house_list_when_get_keywords(
