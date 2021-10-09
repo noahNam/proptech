@@ -22,7 +22,7 @@ class PublicSaleDetailPhotoEntity(BaseModel):
     id: int
     public_sale_details_id: int
     file_name: str
-    path: str
+    path: Optional[str]
     extension: str
     created_at: datetime
     updated_at: datetime
@@ -49,7 +49,7 @@ class PublicSalePhotoEntity(BaseModel):
     id: int
     public_sales_id: int
     file_name: str
-    path: str
+    path: Optional[str]
     extension: str
     created_at: datetime
     updated_at: datetime
