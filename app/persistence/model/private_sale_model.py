@@ -104,7 +104,7 @@ class PrivateSaleModel(db.Model):
             deposit_info=[
                 PrivateSaleAvgPriceDepositEntity(
                     pyoung=private_sale_avg_price.pyoung,
-                    trade_price=private_sale_avg_price.deposit_price,
+                    deposit_price=private_sale_avg_price.deposit_price,
                 )
                 for private_sale_avg_price in self.private_sale_avg_prices
             ]
