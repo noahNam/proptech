@@ -6,6 +6,7 @@ from sqlalchemy import (
     String,
     DateTime,
     Enum,
+    Boolean,
 )
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import column_property
@@ -51,6 +52,8 @@ class AdministrativeDivisionModel(db.Model):
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())
 
+    is_available = Column(Boolean, nullable=False, default=True)
+
     def to_entity(self) -> AdministrativeDivisionEntity:
         return AdministrativeDivisionEntity(
             id=self.id,
@@ -64,6 +67,7 @@ class AdministrativeDivisionModel(db.Model):
             level=self.level,
             latitude=self.latitude,
             longitude=self.longitude,
+            is_available=self.is_available,
             front_legal_code=self.front_legal_code,
             back_legal_code=self.back_legal_code,
             created_at=self.created_at,
