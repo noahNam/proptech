@@ -27,7 +27,6 @@ class PublicSalePhotoModel(db.Model):
         BigInteger,
         ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
         nullable=False,
-        unique=True,
         index=True,
     )
 

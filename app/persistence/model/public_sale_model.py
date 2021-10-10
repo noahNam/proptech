@@ -88,9 +88,9 @@ class PublicSaleModel(db.Model):
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     name_ts = Column(TSVECTOR().with_variant(String(150), "sqlite"), nullable=True)
 
-    # 1:1 relationship
+    # 1:M relationship
     public_sale_photos = relationship(
-        "PublicSalePhotoModel", backref=backref("public_sales"), uselist=False
+        "PublicSalePhotoModel", backref=backref("public_sales"), uselist=True
     )
     public_sale_details = relationship(
         "PublicSaleDetailModel", backref=backref("public_sales", cascade="all, delete")
