@@ -496,3 +496,13 @@ class RealEstateLegalCodeEntity(BaseModel):
     si_do: str
     si_gun_gu: str
     dong_myun: str
+
+
+class PrivateSalePhotoEntity(BaseModel):
+    id: int
+    private_sales_id: int
+    file_name: str
+    path: Optional[str]
+    extension: str
+    created_at: datetime
+    updated_at: datetime
