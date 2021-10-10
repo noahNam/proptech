@@ -13,6 +13,7 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 from app.extensions.database import session
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import (
     get_month_from_today,
     get_server_timestamp,
@@ -59,7 +60,8 @@ from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
     HouseTypeEnum,
     DivisionLevelEnum,
-    PublicSaleStatusEnum, RentTypeEnum,
+    PublicSaleStatusEnum,
+    RentTypeEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -461,7 +463,7 @@ class HouseRepository:
             and_(
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
-                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
             )
         )
 
@@ -827,7 +829,7 @@ class HouseRepository:
                 func.avg(PublicSaleAvgPriceModel.supply_price).label(
                     "avg_supply_price"
                 ),
-                literal(0, Integer).label("avg_trade_price"),
+                # literal(0, Integer).label("avg_trade_price"),
             )
             .join(PublicSaleModel.real_estates)
             .join(PublicSaleModel.public_sale_photos, isouter=True)
@@ -835,33 +837,33 @@ class HouseRepository:
             .filter(*public_filters)
             .filter(and_(or_(*text_keyword_filters), or_(*number_keyword_filters)))
             .group_by(PublicSaleModel.id, RealEstateModel.id, PublicSalePhotoModel.id)
-            .limit(15)
+            .limit(30)
         )
 
-        query_cond2 = (
-            session.query(PrivateSaleModel)
-            .with_entities(
-                PrivateSaleModel.id,
-                PrivateSaleModel.name,
-                RealEstateModel.jibun_address,
-                literal("", String).label("subscription_start_date"),
-                literal("", String).label("subscription_end_date"),
-                literal(0, Integer).label("min_down_payment"),
-                literal(0, Integer).label("max_down_payment"),
-                literal("", String).label("path"),
-                literal(0, Integer).label("avg_supply_price"),
-                func.avg(PrivateSaleAvgPriceModel.trade_price).label("avg_trade_price"),
-            )
-            .join(PrivateSaleModel.real_estates)
-            .join(PrivateSaleModel.private_sale_avg_prices)
-            .filter(*private_filters)
-            .filter(and_(or_(*text_keyword_filters), or_(*number_keyword_filters)))
-            .group_by(PrivateSaleModel.id, RealEstateModel.id)
-            .limit(15)
-        )
+        # query_cond2 = (
+        #     session.query(PrivateSaleModel)
+        #     .with_entities(
+        #         PrivateSaleModel.id,
+        #         PrivateSaleModel.name,
+        #         RealEstateModel.jibun_address,
+        #         literal("", String).label("subscription_start_date"),
+        #         literal("", String).label("subscription_end_date"),
+        #         literal(0, Integer).label("min_down_payment"),
+        #         literal(0, Integer).label("max_down_payment"),
+        #         literal("", String).label("path"),
+        #         literal(0, Integer).label("avg_supply_price"),
+        #         func.avg(PrivateSaleAvgPriceModel.trade_price).label("avg_trade_price"),
+        #     )
+        #     .join(PrivateSaleModel.real_estates)
+        #     .join(PrivateSaleModel.private_sale_avg_prices)
+        #     .filter(*private_filters)
+        #     .filter(and_(or_(*text_keyword_filters), or_(*number_keyword_filters)))
+        #     .group_by(PrivateSaleModel.id, RealEstateModel.id)
+        #     .limit(15)
+        # )
 
-        query = query_cond1.union_all(query_cond2)
-        queryset = query.all()
+        # query = query_cond1.union_all(query_cond2)
+        queryset = query_cond1.all()
 
         return self._make_get_search_house_list_entity(
             queryset=queryset, user_id=dto.user_id,
@@ -949,6 +951,7 @@ class HouseRepository:
             .filter(PublicSaleModel.id == house_id)
         )
         query_set = query.first()
+
         return query_set.to_report_entity()
 
     def get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
