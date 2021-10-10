@@ -300,7 +300,6 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
 
     def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> int:
         data = dict(user_id=dto.user_id, house_id=dto.house_id,)
-
         response = requests.post(
             url=CallJarvisEnum.JARVIS_BASE_URL.value
             + CallJarvisEnum.CALL_PREDICT_HOUSE.value,
@@ -318,6 +317,7 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
     ) -> Optional[UseCaseFailureOutput]:
         response: int = self._call_jarvis_house_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
+            print("@@@@ no enter")
             # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
                 user_id=dto.user_id,
