@@ -91,7 +91,7 @@ class PublicSaleEntity(BaseModel):
     reference_url: Optional[str]
     created_at: datetime
     updated_at: datetime
-    public_sale_photos: PublicSalePhotoEntity = None
+    public_sale_photos: List[PublicSalePhotoEntity] = None
     public_sale_details: List[PublicSaleDetailEntity] = None
 
     class Config:
@@ -321,7 +321,7 @@ class GetSearchHouseListEntity(BaseModel):
 class GetPublicSaleOfTicketUsageEntity(BaseModel):
     house_id: int
     name: str
-    image_path: Optional[str]
+    image_path: List[str]
 
 
 class GetMainPreSubscriptionEntity(BaseModel):
@@ -456,7 +456,7 @@ class PublicSaleBoundingEntity(BaseModel):
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
     status: int
-    public_sale_photos: Optional[PublicSalePhotoEntity]
+    public_sale_photos: List[PublicSalePhotoEntity]
     public_sale_avg_prices: Optional[List[PublicSaleAvgPriceEntity]]
 
     class Config:
