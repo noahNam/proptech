@@ -524,12 +524,12 @@ class PublicSaleFactory(BaseFactory):
     updated_at = get_server_timestamp()
 
     @factory.post_generation
-    def private_sale_photos(obj, create, extracted, **kwargs):
+    def public_sale_photos(obj, create, extracted, **kwargs):
         if extracted:
             PublicSalePhotoFactory(public_sales=obj, **kwargs)
 
     @factory.post_generation
-    def private_sale_details(obj, create, extracted, **kwargs):
+    def public_sale_details(obj, create, extracted, **kwargs):
         if extracted:
             PublicSaleDetailFactory(public_sales=obj, **kwargs)
 

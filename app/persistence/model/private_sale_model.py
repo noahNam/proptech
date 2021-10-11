@@ -72,6 +72,11 @@ class PrivateSaleModel(db.Model):
         viewonly=True,
     )
 
+    # 1:M relationship
+    private_sale_photos = relationship(
+        "PrivateSalePhotoModel", backref=backref("private_sales"), uselist=True
+    )
+
     def to_entity(self) -> PrivateSaleEntity:
         return PrivateSaleEntity(
             id=self.id,
