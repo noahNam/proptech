@@ -2,6 +2,7 @@ from http import HTTPStatus
 from typing import Union, List
 
 import inject
+from pytz import timezone
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from app.extensions.utils.message_converter import MessageConverter
@@ -51,9 +52,12 @@ class GetNotificationUseCase(NotificationBaseUseCase):
             NotificationEntity
         ] = self._notification_repo.get_notifications(dto=dto)
 
-        result: List[NotificationHistoryEntity] = self._make_history_entitiy(
-            notifications=notifications, dto=dto
-        )
+        try:
+            result: List[NotificationHistoryEntity] = self._make_history_entitiy(
+                notifications=notifications, dto=dto
+            )
+        except Exception as e:
+            pass
 
         return UseCaseSuccessOutput(value=result)
 
@@ -79,7 +83,7 @@ class GetNotificationUseCase(NotificationBaseUseCase):
         for notification in notifications:
             created_date = notification.created_at.date().strftime("%Y%m%d")
             diff_min = str(
-                round((get_server_timestamp() - notification.created_at).seconds / 60)
+                round((get_server_timestamp() - notification.created_at.replace(tzinfo=timezone('Asia/Seoul'))).seconds / 60)
             )
 
             message = MessageConverter.get_notification_content(notification.message)
