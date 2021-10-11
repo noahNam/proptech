@@ -514,9 +514,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
                 if number_dependents_result:
                     # 가족 수 (부양가족 수 + 본인)
                     number_of_families = int(number_dependents_result.value) + 1
-                    my_basic_income = income_result_dict.get(
-                        str(number_of_families)
-                    )
+                    my_basic_income = income_result_dict.get(str(number_of_families))
                     monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if is_married_result.value != "2" else MonthlyIncomeEnum.COND_CD_2.value
                 else:
                     # 설문 1단계를 완료 안하고 들어오지 못하지만 가드 코드 추가
