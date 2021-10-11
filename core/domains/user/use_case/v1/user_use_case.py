@@ -489,14 +489,14 @@ class GetUserInfoUseCase(UserBaseUseCase):
                     code=CodeEnum.IS_MARRIED.value,
                 )
 
-                # 부양가족 수
+                # 부양가족 수(본인 포함)
                 # 3인 이하->1,2,3,9(0명) / 4인->4 / 5인->5 / 6인->6 / 7인->7 / 8명 이상->8
                 number_dependents_result: UserInfoEntity = UserRepository().get_user_info_by_code(
                     user_profile_id=user_info.user_profile_id,
                     code=CodeEnum.NUMBER_DEPENDENTS.value,
                 )
 
-                # 부양가족별 basic 소득
+                # 부양가족별함(본인 포함) basic 소득
                 income_result: AvgMonthlyIncomeWokrerDto = UserRepository().get_avg_monthly_income_workers()
                 income_result_dict = {
                     "1": income_result.three,
@@ -507,15 +507,14 @@ class GetUserInfoUseCase(UserBaseUseCase):
                     "6": income_result.six,
                     "7": income_result.seven,
                     "8": income_result.eight,
-                    "9": income_result.three,  # 0명
                 }
 
                 calc_result_list = []
 
                 if number_dependents_result:
-                    my_basic_income = income_result_dict.get(
-                        number_dependents_result.value
-                    )
+                    # 가족 수 (부양가족 수 + 본인)
+                    number_of_families = int(number_dependents_result.value) + 1
+                    my_basic_income = income_result_dict.get(str(number_of_families))
                     monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if is_married_result.value != "2" else MonthlyIncomeEnum.COND_CD_2.value
                 else:
                     # 설문 1단계를 완료 안하고 들어오지 못하지만 가드 코드 추가
