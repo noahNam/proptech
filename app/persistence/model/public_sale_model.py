@@ -141,7 +141,10 @@ class PublicSaleModel(db.Model):
             offer_notice_url=self.offer_notice_url,
             created_at=self.created_at,
             updated_at=self.updated_at,
-            public_sale_photos=self.public_sale_photos.to_entity()
+            public_sale_photos=[
+                public_sale_photo.to_entity()
+                for public_sale_photo in self.public_sale_photos
+            ]
             if self.public_sale_photos
             else None,
             public_sale_details=[

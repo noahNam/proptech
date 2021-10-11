@@ -319,6 +319,15 @@ class HouseRepository:
         button_link_list: List[ButtonLinkEntity],
         ticket_usage_results: List[TicketUsageResultEntity],
     ) -> HousePublicDetailEntity:
+        # (<RealEstateModel>, [0]
+        # min_supply_area, [1]
+        # max_supply_area, [2]
+        # avg_supply_price, [3]
+        # avg_supply_area,  [4]
+        # min_acquisition_tax [5]
+        # max_acquisition_tax, [6]
+        # min_supply_price, [7]
+        # max_supply_price) [8]
         return house_with_public_sales[0].to_house_with_public_detail_entity(
             is_like=is_like,
             min_pyoung_number=self._convert_supply_area_to_pyoung_number(
@@ -332,7 +341,7 @@ class HouseRepository:
             avg_supply_price=house_with_public_sales[3],
             supply_price_per_pyoung=self._get_supply_price_per_pyoung(
                 supply_price=float(house_with_public_sales[3]),
-                avg_pyoung_number=house_with_public_sales[4],
+                avg_pyoung_number=self._convert_supply_area_to_pyoung_number(house_with_public_sales[4]),
             ),
             min_acquisition_tax=house_with_public_sales[5],
             max_acquisition_tax=house_with_public_sales[6],
@@ -929,9 +938,9 @@ class HouseRepository:
                     GetPublicSaleOfTicketUsageEntity(
                         house_id=query.id,
                         name=query.name,
-                        image_path=S3Helper.get_cloudfront_url()
+                        image_path=[S3Helper.get_cloudfront_url()
                         + "/"
-                        + query.public_sale_photos.path
+                        + public_sale_photo.path for public_sale_photo in query.public_sale_photos]
                         if query.public_sale_photos
                         else None,
                     )
