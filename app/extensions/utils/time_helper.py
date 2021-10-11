@@ -1,13 +1,14 @@
 import random
 from datetime import datetime, timedelta
+from pytz import timezone
 
 
 def get_server_timestamp():
-    return datetime.now()
+    return datetime.now(timezone("Asia/Seoul"))
 
 
 def get_month_from_today():
-    return datetime.now() - timedelta(days=30)
+    return datetime.now(timezone("Asia/Seoul")) - timedelta(days=30)
 
 
 def get_month_from_date(date_from: str):

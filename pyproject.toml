@@ -28,6 +28,7 @@ geojson-pydantic = "^0.3.0"
 supervisor = "^4.1.0"
 StringGenerator = "^0.4.4"
 Flask-Cors = "^3.0.10"
+pytz = "^2021.3"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
