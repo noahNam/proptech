@@ -341,7 +341,9 @@ class HouseRepository:
             avg_supply_price=house_with_public_sales[3],
             supply_price_per_pyoung=self._get_supply_price_per_pyoung(
                 supply_price=float(house_with_public_sales[3]),
-                avg_pyoung_number=self._convert_supply_area_to_pyoung_number(house_with_public_sales[4]),
+                avg_pyoung_number=self._convert_supply_area_to_pyoung_number(
+                    house_with_public_sales[4]
+                ),
             ),
             min_acquisition_tax=house_with_public_sales[5],
             max_acquisition_tax=house_with_public_sales[6],
@@ -938,9 +940,10 @@ class HouseRepository:
                     GetPublicSaleOfTicketUsageEntity(
                         house_id=query.id,
                         name=query.name,
-                        image_path=[S3Helper.get_cloudfront_url()
-                        + "/"
-                        + public_sale_photo.path for public_sale_photo in query.public_sale_photos]
+                        image_path=[
+                            S3Helper.get_cloudfront_url() + "/" + public_sale_photo.path
+                            for public_sale_photo in query.public_sale_photos
+                        ]
                         if query.public_sale_photos
                         else None,
                     )
