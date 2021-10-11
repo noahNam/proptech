@@ -10,12 +10,12 @@ from sqlalchemy import (
 from app import db
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.time_helper import get_server_timestamp
-from app.persistence.model.public_sale_model import PublicSaleModel
-from core.domains.house.entity.house_entity import PublicSalePhotoEntity
+from app.persistence.model import PrivateSaleModel
+from core.domains.house.entity.house_entity import PrivateSalePhotoEntity
 
 
-class PublicSalePhotoModel(db.Model):
-    __tablename__ = "public_sale_photos"
+class PrivateSalePhotoModel(db.Model):
+    __tablename__ = "private_sale_photos"
 
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"),
@@ -23,9 +23,9 @@ class PublicSalePhotoModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    public_sales_id = Column(
+    private_sales_id = Column(
         BigInteger,
-        ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
+        ForeignKey(PrivateSaleModel.id, ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -36,10 +36,10 @@ class PublicSalePhotoModel(db.Model):
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
-    def to_entity(self) -> PublicSalePhotoEntity:
-        return PublicSalePhotoEntity(
+    def to_entity(self) -> PrivateSalePhotoEntity:
+        return PrivateSalePhotoEntity(
             id=self.id,
-            public_sales_id=self.public_sales_id,
+            private_sales_id=self.private_sales_id,
             file_name=self.file_name,
             path=S3Helper.get_cloudfront_url() + "/" + self.path if self.path else None,
             extension=self.extension,
