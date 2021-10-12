@@ -550,7 +550,10 @@ class HouseRepository:
                 & (InterestHouseModel.is_like == True),
             )
             .join(PublicSaleModel.real_estates)
-            .join(PublicSaleModel.public_sale_photos, isouter=True)
+            .join(PublicSalePhotoModel,
+                  (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                  & (PublicSalePhotoModel.is_thumbnail == "True"),
+                  isouter=True)
         )
 
         private_sales_query = (
