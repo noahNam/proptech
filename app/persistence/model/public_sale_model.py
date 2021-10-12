@@ -167,7 +167,10 @@ class PublicSaleModel(db.Model):
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,
             status=self.status,
-            public_sale_photos=self.public_sale_photos.to_entity()
+            public_sale_photos=[
+                public_sale_photo.to_entity()
+                for public_sale_photo in self.public_sale_photos
+            ]
             if self.public_sale_photos
             else None,
             public_sale_avg_prices=[
