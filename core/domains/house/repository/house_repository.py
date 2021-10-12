@@ -795,6 +795,7 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
                 PublicSaleModel.rent_type != RentTypeEnum.RENTAL.value,
+                PublicSalePhotoModel.is_thumbnail == True
             ),
         )
 
