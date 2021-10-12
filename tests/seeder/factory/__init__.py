@@ -461,6 +461,8 @@ class PublicSalePhotoFactory(BaseFactory):
     file_name = "photo_file"
     path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
+    is_thumbnail = True
+    seq = factory.Sequence(lambda n: n + 1)
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
 
