@@ -5,6 +5,8 @@ from sqlalchemy import (
     ForeignKey,
     String,
     DateTime,
+    Boolean,
+    SmallInteger,
 )
 
 from app import db
@@ -33,6 +35,8 @@ class PrivateSalePhotoModel(db.Model):
     file_name = Column(String(20), nullable=False)
     path = Column(String(150), nullable=False)
     extension = Column(String(4), nullable=False)
+    is_thumbnail = Column(Boolean, nullable=False, default=False)
+    seq = Column(SmallInteger, nullable=False, autoincrement=True, default=0)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
@@ -43,6 +47,8 @@ class PrivateSalePhotoModel(db.Model):
             file_name=self.file_name,
             path=S3Helper.get_cloudfront_url() + "/" + self.path if self.path else None,
             extension=self.extension,
+            is_thumbnail=self.is_thumbnail,
+            seq=self.seq,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )
