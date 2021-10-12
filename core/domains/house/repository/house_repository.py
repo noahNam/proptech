@@ -126,31 +126,40 @@ class HouseRepository:
         filters.append(bounding_filter)
         filters.append(and_(RealEstateModel.is_available == "True",))
 
-        query = (
-            session.query(RealEstateModel,)
+        query_cond1 = (
+            session.query(RealEstateModel)
             .join(
                 PrivateSaleModel,
                 (PrivateSaleModel.real_estate_id == RealEstateModel.id)
                 & (PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value),
             )
-            .join(
+                .options(selectinload(RealEstateModel.private_sales))
+                .options(selectinload(RealEstateModel.public_sales))
+                .options(joinedload("private_sales.private_sale_avg_prices"))
+                .filter(*filters)
+        )
+
+        query_cond2 = (
+            session.query(RealEstateModel)
+             .join(
                 PublicSaleModel,
                 (PublicSaleModel.real_estate_id == RealEstateModel.id)
                 & (PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value),
             )
-            .options(contains_eager(RealEstateModel.private_sales))
-            .options(contains_eager(RealEstateModel.public_sales))
-            .options(joinedload("private_sales.private_sale_avg_prices"))
-            .options(joinedload("public_sales.public_sale_avg_prices"))
-            .options(joinedload("public_sales.public_sale_photos"))
-            .filter(*filters)
+                .options(selectinload(RealEstateModel.public_sales))
+                .options(selectinload(RealEstateModel.private_sales))
+                .options(joinedload("public_sales.public_sale_avg_prices"))
+                .options(joinedload("public_sales.public_sale_photos"))
+                .filter(*filters)
         )
-        queryset = query.all()
 
-        if not queryset:
+        query = query_cond1.union_all(query_cond2)
+        query_set = query.all()
+
+        if not query_set:
             return None
 
-        return [query.to_bounding_entity() for query in queryset]
+        return [query.to_bounding_entity() for query in query_set]
 
     def _make_bounding_administrative_entity(
         self, queryset: Optional[list]
