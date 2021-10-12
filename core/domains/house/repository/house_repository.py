@@ -943,7 +943,11 @@ class HouseRepository:
     ) -> List[GetPublicSaleOfTicketUsageEntity]:
         query = (
             session.query(PublicSaleModel)
-            .options(joinedload(PublicSaleModel.public_sale_photos))
+            .join(PublicSalePhotoModel,
+                  (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                  & (PublicSalePhotoModel.is_thumbnail == True)
+                  )
+            .options(contains_eager(PublicSaleModel.public_sale_photos))
             .filter(PublicSaleModel.id.in_(public_house_ids))
         )
 
@@ -961,10 +965,7 @@ class HouseRepository:
                     GetPublicSaleOfTicketUsageEntity(
                         house_id=query.id,
                         name=query.name,
-                        image_path=[
-                            S3Helper.get_cloudfront_url() + "/" + public_sale_photo.path
-                            for public_sale_photo in query.public_sale_photos
-                        ]
+                        image_path=S3Helper.get_cloudfront_url() + "/" + query.public_sale_photos[0].path
                         if query.public_sale_photos
                         else None,
                     )
