@@ -51,6 +51,8 @@ class PublicSalePhotoEntity(BaseModel):
     file_name: str
     path: Optional[str]
     extension: str
+    is_thumbnail: bool
+    seq: int
     created_at: datetime
     updated_at: datetime
 
@@ -321,7 +323,7 @@ class GetSearchHouseListEntity(BaseModel):
 class GetPublicSaleOfTicketUsageEntity(BaseModel):
     house_id: int
     name: str
-    image_path: List[str]
+    image_path: Optional[str]
 
 
 class GetMainPreSubscriptionEntity(BaseModel):
@@ -504,5 +506,7 @@ class PrivateSalePhotoEntity(BaseModel):
     file_name: str
     path: Optional[str]
     extension: str
+    is_thumbnail: bool
+    seq: int
     created_at: datetime
     updated_at: datetime
