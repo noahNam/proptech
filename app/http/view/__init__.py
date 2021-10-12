@@ -31,10 +31,7 @@ def handle_custom_type_exception(error):
         return {"detail": error.code, "message": error.msg}, error.code
     else:
         return (
-            {
-                "detail": HTTPStatus.INTERNAL_SERVER_ERROR,
-                "message": "internal_server_error",
-            },
+            {"detail": HTTPStatus.INTERNAL_SERVER_ERROR, "message": str(error),},
             HTTPStatus.INTERNAL_SERVER_ERROR,
         )
 
