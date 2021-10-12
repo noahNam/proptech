@@ -86,8 +86,8 @@ class IsMarriedCodeEnum(Enum):
 
 
 class NumberDependentsEnum(Enum):
-    COND_CD = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    COND_NM = ["1명", "2명", "3명", "4명", "5명", "6명", "7명", "8명", "없어요"]
+    COND_CD = [0, 1, 2, 3, 4, 5, 6, 7]
+    COND_NM = ["없어요", "1명", "2명", "3명", "4명", "5명", "6명", "7명 이상"]
 
 
 class IsChildEnum(Enum):
