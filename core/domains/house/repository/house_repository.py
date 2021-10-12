@@ -663,7 +663,7 @@ class HouseRepository:
                 RecentlyViewModel.house_id,
                 RecentlyViewModel.type,
                 PublicSaleModel.name,
-                func.max(PublicSalePhotoModel.path).label("path"),
+                PublicSalePhotoModel.path.label("path"),
             )
             .join(
                 PublicSaleModel,
@@ -671,9 +671,12 @@ class HouseRepository:
                 & (RecentlyViewModel.type == HouseTypeEnum.PUBLIC_SALES.value)
                 & (RecentlyViewModel.user_id == dto.user_id),
             )
-            .join(PublicSaleModel.public_sale_photos, isouter=True)
+            .join(PublicSalePhotoModel,
+                  (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                  & (PublicSalePhotoModel.is_thumbnail == True),
+                  isouter=True)
             .group_by(
-                RecentlyViewModel.house_id, RecentlyViewModel.type, PublicSaleModel.name
+                RecentlyViewModel.house_id, RecentlyViewModel.type, PublicSaleModel.name, PublicSalePhotoModel.path
             )
         )
 
