@@ -69,7 +69,7 @@ class PublicSaleReportSchema(BaseModel):
     second_supply_etc_date: Optional[StrictStr]
     second_etc_gyeonggi_date: Optional[StrictStr]
     notice_winner_date: Optional[StrictStr]
-    public_sale_photo: Optional[ReportPublicSalePhotoSchema]
+    public_sale_photo: List[ReportPublicSalePhotoSchema]
     public_sale_details: List[PublicSaleDetailReportSchema] = None
     real_estates: RealEstateReportSchema
 
