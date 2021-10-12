@@ -6,7 +6,7 @@ from pydantic import BaseModel, StrictStr, StrictInt
 class GetTicketUsageResultBaseSchema(BaseModel):
     house_id: StrictInt
     name: StrictStr
-    image_path: List[StrictStr]
+    image_path: Optional[StrictStr]
 
 
 class UseBasicTicketBaseSchema(BaseModel):
