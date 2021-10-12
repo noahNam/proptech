@@ -409,7 +409,7 @@ class PublicSaleReportEntity(BaseModel):
     second_supply_etc_date: Optional[str]
     second_etc_gyeonggi_date: Optional[str]
     notice_winner_date: Optional[str]
-    public_sale_photo: Optional[PublicSalePhotoEntity]
+    public_sale_photo: List[PublicSalePhotoEntity]
     public_sale_details: List[PublicSaleDetailReportEntity] = None
     real_estates: RealEstateReportEntity
 
