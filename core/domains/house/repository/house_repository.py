@@ -768,7 +768,7 @@ class HouseRepository:
             and_(
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
-                PublicSaleModel.rent_type != RentTypeEnum.RENTAL.value
+                PublicSaleModel.rent_type != RentTypeEnum.RENTAL.value,
             ),
         )
 
@@ -817,7 +817,7 @@ class HouseRepository:
                 text_keyword_filters.append(
                     or_(
                         (RealEstateModel.name.contains(split_keyword)),
-                        (PublicSaleModel.name.contains(split_keyword))
+                        (PublicSaleModel.name.contains(split_keyword)),
                     )
                 )
 
@@ -869,8 +869,6 @@ class HouseRepository:
 
         # query = query_cond1.union_all(query_cond2)
         queryset = query_cond1.all()
-
-        RawQueryHelper.print_raw_query(query_cond1)
 
         return self._make_get_search_house_list_entity(
             queryset=queryset, user_id=dto.user_id,

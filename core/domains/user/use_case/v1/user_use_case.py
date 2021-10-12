@@ -502,9 +502,9 @@ class GetUserInfoUseCase(UserBaseUseCase):
                     "0": income_result.three,  # 없어요 -> 1명(본인포함)
                     "1": income_result.three,  # 1명 -> 2명(본인포함)
                     "2": income_result.three,  # 2명 -> 3명(본인포함)
-                    "3": income_result.four,   # 3명 -> 4명(본인포함)
-                    "4": income_result.five,   # 4명 -> 5명(본인포함)
-                    "5": income_result.six,    # 5명 -> 6명(본인포함)
+                    "3": income_result.four,  # 3명 -> 4명(본인포함)
+                    "4": income_result.five,  # 4명 -> 5명(본인포함)
+                    "5": income_result.six,  # 5명 -> 6명(본인포함)
                     "6": income_result.seven,  # 6명 -> 7명(본인포함)
                     "7": income_result.eight,  # 7명 이상 -> 8명 이상(본인포함)
                 }
@@ -513,7 +513,9 @@ class GetUserInfoUseCase(UserBaseUseCase):
 
                 if number_dependents_result:
                     # 가족 수 (부양가족 수 + 본인)
-                    my_basic_income = income_result_dict.get(str(number_dependents_result.value))
+                    my_basic_income = income_result_dict.get(
+                        str(number_dependents_result.value)
+                    )
 
                     if not my_basic_income:
                         # todo. 가드 코드 추가(Sinbad 작업 후 제거 가능) #####################
