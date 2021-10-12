@@ -323,7 +323,7 @@ class GetSearchHouseListEntity(BaseModel):
 class GetPublicSaleOfTicketUsageEntity(BaseModel):
     house_id: int
     name: str
-    image_path: List[str]
+    image_path: Optional[str]
 
 
 class GetMainPreSubscriptionEntity(BaseModel):
