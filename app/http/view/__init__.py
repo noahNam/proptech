@@ -33,7 +33,7 @@ def handle_custom_type_exception(error):
         return (
             {
                 "detail": HTTPStatus.INTERNAL_SERVER_ERROR,
-                "message": "internal_server_error",
+                "message": str(error),
             },
             HTTPStatus.INTERNAL_SERVER_ERROR,
         )
