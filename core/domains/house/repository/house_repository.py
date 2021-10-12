@@ -768,6 +768,7 @@ class HouseRepository:
             and_(
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
+                PublicSaleModel.rent_type != RentTypeEnum.RENTAL.value,
             ),
         )
 
@@ -797,10 +798,12 @@ class HouseRepository:
         # 문자열 키워드
         for split_text in split_set:
             text_keyword_filters.append((RealEstateModel.name.contains(split_text)))
+            number_keyword_filters.append((PublicSaleModel.name.contains(split_text)))
 
         # 숫자 키워드
         for split_number in split_numbers:
-            number_keyword_filters.append((RealEstateModel.name.contains(split_number)))
+            text_keyword_filters.append((RealEstateModel.name.contains(split_number)))
+            number_keyword_filters.append((PublicSaleModel.name.contains(split_number)))
 
         if not text_keyword_filters:
             split_keywords = dto.keywords.split()
@@ -812,7 +815,10 @@ class HouseRepository:
 
             for split_keyword in split_keywords:
                 text_keyword_filters.append(
-                    (RealEstateModel.name.contains(split_keyword))
+                    or_(
+                        (RealEstateModel.name.contains(split_keyword)),
+                        (PublicSaleModel.name.contains(split_keyword)),
+                    )
                 )
 
         query_cond1 = (
@@ -829,13 +835,12 @@ class HouseRepository:
                 func.avg(PublicSaleAvgPriceModel.supply_price).label(
                     "avg_supply_price"
                 ),
-                # literal(0, Integer).label("avg_trade_price"),
             )
             .join(PublicSaleModel.real_estates)
             .join(PublicSaleModel.public_sale_photos, isouter=True)
             .join(PublicSaleModel.public_sale_avg_prices)
             .filter(*public_filters)
-            .filter(and_(or_(*text_keyword_filters), or_(*number_keyword_filters)))
+            .filter(or_(and_(*text_keyword_filters), and_(*number_keyword_filters)))
             .group_by(PublicSaleModel.id, RealEstateModel.id, PublicSalePhotoModel.id)
             .limit(30)
         )
