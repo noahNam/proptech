@@ -791,18 +791,17 @@ class GetSurveysUseCase(UserBaseUseCase):
 
         if monthly_income_flag:
             # 월소득 맵핑
-            # 부양가족별 basic 소득
+            # 부양가족별 포함(본인 포함) basic 소득
             income_result: AvgMonthlyIncomeWokrerDto = self._user_repo.get_avg_monthly_income_workers()
             income_result_dict = {
+                0: income_result.three,
                 1: income_result.three,
                 2: income_result.three,
-                3: income_result.three,
-                4: income_result.four,
-                5: income_result.five,
-                6: income_result.six,
-                7: income_result.seven,
-                8: income_result.eight,
-                9: income_result.three,  # 0명
+                3: income_result.four,
+                4: income_result.five,
+                5: income_result.six,
+                6: income_result.seven,
+                7: income_result.eight,
             }
 
             my_basic_income = income_result_dict.get(number_dependents)
