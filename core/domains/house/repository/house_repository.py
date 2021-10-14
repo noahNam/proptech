@@ -268,6 +268,7 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
                 PublicSaleModel.id == house_id,
+                PublicSaleModel.real_estate_id == RealEstateModel.id
             )
         )
         query = (
