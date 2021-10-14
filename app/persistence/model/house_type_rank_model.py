@@ -19,7 +19,7 @@ class HouseTypeRankModel(db.Model):
     ticket_usage_result_id = Column(BigInteger, nullable=False, index=True)
     house_structure_type = Column(String(5), nullable=False)
     subscription_type = Column(String(10), nullable=False)
-    competition = Column(Integer, nullable=False)
+    competition = Column(Integer, nullable=True)
     rank = Column(SmallInteger, nullable=False)
 
     def to_entity(self) -> HouseTypeRankEntity:
