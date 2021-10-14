@@ -153,6 +153,12 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         house_with_public_sales = self._house_repo.get_house_with_public_sales(
             house_id=dto.house_id
         )
+        if not house_with_public_sales:
+            return UseCaseFailureOutput(
+                type="house_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
 
         # get button link list
         button_link_list = self._get_button_link_list(
