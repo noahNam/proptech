@@ -106,7 +106,7 @@ def upgrade():
         ),
         sa.Column("user_profile_id", sa.BigInteger(), nullable=False),
         sa.Column("code", sa.SmallInteger(), nullable=True),
-        sa.Column("value", sa.String(length=8), nullable=True),
+        sa.Column("value", sa.String(length=12), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(["user_profile_id"], ["user_profiles.id"],),

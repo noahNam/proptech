@@ -103,6 +103,9 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             user_id=dto.user_id, house_id=dto.house_id
         )
 
+        # 타입 순서 변경
+        expected_competitions.reverse()
+
         # 타입별 경쟁률
         sort_competitions: List[dict] = self._sort_competition_desc(
             expected_competitions=expected_competitions
@@ -184,6 +187,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             "신혼부부",
             "노부모부양",
             "생애최초",
+            "일반"
         ]
         for c in expected_competitions:
             sort_house_structure_types: List[str] = sort_house_structure_types + [
@@ -197,6 +201,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                 c.newly_marry_competition,
                 c.old_parent_competition,
                 c.first_life_competition,
+                c.normal_competition
             ]
 
         # 경쟁률 버블정렬
