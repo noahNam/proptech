@@ -103,6 +103,9 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             user_id=dto.user_id, house_id=dto.house_id
         )
 
+        # 타입 순서 변경
+        expected_competitions.reverse()
+
         # 타입별 경쟁률
         sort_competitions: List[dict] = self._sort_competition_desc(
             expected_competitions=expected_competitions
