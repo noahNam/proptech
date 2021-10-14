@@ -29,7 +29,7 @@ class UserInfoModel(db.Model):
         BigInteger, ForeignKey(UserProfileModel.id), nullable=False
     )
     code = Column(SmallInteger, nullable=True)
-    value = Column(String(8), nullable=True)
+    value = Column(String(12), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
