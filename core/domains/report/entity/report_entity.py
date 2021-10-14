@@ -9,6 +9,7 @@ class HouseTypeRankEntity(BaseModel):
     ticket_usage_result_id: int
     house_structure_type: str
     subscription_type: str
+    competition: int
     rank: int
 
 
