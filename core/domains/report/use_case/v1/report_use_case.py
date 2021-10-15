@@ -20,8 +20,10 @@ from core.domains.report.entity.report_entity import (
     SurveyResultEntity,
     UserAnalysisEntity,
     UserAnalysisCategoryEntity,
+    TicketUsageResultEntity,
+    HouseTypeRankEntity,
 )
-from core.domains.report.enum.report_enum import UserAnalysisFormatText
+from core.domains.report.enum.report_enum import UserAnalysisFormatText, RegionEnum
 from core.domains.report.repository.report_repository import ReportRepository
 from core.domains.report.schema.report_schema import (
     GetExpectedCompetitionBaseSchema,
@@ -97,23 +99,29 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             )
 
         # 타입별 예측 경쟁률 조회
-        expected_competitions: List[
-            PredictedCompetitionEntity
-        ] = self._report_repo.get_expected_competition(
+        ticket_usage_results: Optional[
+            TicketUsageResultEntity
+        ] = self._report_repo.get_ticket_usage_result_of_house(
             user_id=dto.user_id, house_id=dto.house_id
         )
 
-        # 타입 순서 변경
-        expected_competitions.reverse()
+        # 순서 정렬 (1.낮은 전용면적 + 알파벳순, 2. 해당지역,기타경기,기타지역 순)
+        self._sort_expected_competitions_by_type_and_region(
+            expected_competitions=ticket_usage_results.predicted_competitions
+        )
 
         # 타입별 경쟁률
-        sort_competitions: List[dict] = self._sort_competition_desc(
-            expected_competitions=expected_competitions
+        # 직접 계산하는 방식에서 Jarvis 계산 방식으로 바뀜
+        # sort_competitions: List[dict] = self._sort_competition_desc(
+        #     expected_competitions=expected_competitions
+        # )
+        self._sort_predicted_competition(
+            house_type_ranks=ticket_usage_results.house_type_ranks
         )
 
         # 타입별 총 세대수
         self._calc_total_supply_by_house_type(
-            expected_competitions=expected_competitions
+            expected_competitions=ticket_usage_results.predicted_competitions
         )
 
         # 유저 닉네임 조회
@@ -122,11 +130,24 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         )
 
         result: GetExpectedCompetitionBaseSchema = self._make_response_schema(
-            expected_competitions=expected_competitions,
+            predicted_competitions=ticket_usage_results.predicted_competitions,
             nickname=user_profile.nickname if user_profile else None,
-            sort_competitions=sort_competitions,
+            house_type_ranks=ticket_usage_results.house_type_ranks,
         )
         return UseCaseSuccessOutput(value=result)
+
+    def _make_response_schema(
+        self,
+        predicted_competitions: List[PredictedCompetitionEntity],
+        nickname: Optional[str],
+        house_type_ranks: List[HouseTypeRankEntity],
+    ) -> GetExpectedCompetitionBaseSchema:
+
+        return GetExpectedCompetitionBaseSchema(
+            nickname=nickname,
+            predicted_competitions=predicted_competitions,
+            house_type_ranks=house_type_ranks,
+        )
 
     def _calc_total_supply_by_house_type(
         self, expected_competitions: List[PredictedCompetitionEntity]
@@ -162,17 +183,63 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             )
             c.total_normal_supply = calc_normal_total_supply.get(c.house_structure_type)
 
-    def _make_response_schema(
-        self,
-        expected_competitions: List[PredictedCompetitionEntity],
-        nickname: Optional[str],
-        sort_competitions: List[dict],
-    ) -> GetExpectedCompetitionBaseSchema:
-        return GetExpectedCompetitionBaseSchema(
-            nickname=nickname,
-            expected_competitions=expected_competitions,
-            sort_competitions=sort_competitions,
-        )
+    def _sort_predicted_competition(
+        self, house_type_ranks: List[HouseTypeRankEntity]
+    ) -> None:
+        end = len(house_type_ranks) - 1
+        while end > 0:
+            last_swap = 0
+            for i in range(end):
+                if house_type_ranks[i].rank > house_type_ranks[i + 1].rank:
+                    house_type_ranks[i], house_type_ranks[i + 1] = (
+                        house_type_ranks[i + 1],
+                        house_type_ranks[i],
+                    )
+                    last_swap = i
+            end = last_swap
+
+    def _sort_expected_competitions_by_type_and_region(
+        self, expected_competitions: List[PredictedCompetitionEntity]
+    ) -> None:
+        sort_dict = {
+            RegionEnum.THE_AREA.value: 0,
+            RegionEnum.OTHER_GYEONGGI.value: 1,
+            RegionEnum.OTHER_REGION.value: 2,
+        }
+        end = len(expected_competitions) - 1
+        while end > 0:
+            last_swap = 0
+            for i in range(end):
+                if (
+                    expected_competitions[i].house_structure_type
+                    > expected_competitions[i + 1].house_structure_type
+                ):
+                    expected_competitions[i], expected_competitions[i + 1] = (
+                        expected_competitions[i + 1],
+                        expected_competitions[i],
+                    )
+                    last_swap = i
+            end = last_swap
+
+        end = len(expected_competitions) - 1
+        while end > 0:
+            last_swap = 0
+            for i in range(end):
+                if expected_competitions[
+                    i
+                ].house_structure_type == expected_competitions[
+                    i + 1
+                ].house_structure_type and sort_dict.get(
+                    expected_competitions[i].region
+                ) > sort_dict.get(
+                    expected_competitions[i + 1].region
+                ):
+                    expected_competitions[i], expected_competitions[i + 1] = (
+                        expected_competitions[i + 1],
+                        expected_competitions[i],
+                    )
+                    last_swap = i
+            end = last_swap
 
     def _sort_competition_desc(
         self, expected_competitions: List[PredictedCompetitionEntity]
@@ -182,13 +249,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         sort_house_structure_types = list()
 
         # 각 경쟁률을 포함한 list 생성
-        sort_competition_list = [
-            "다자녀",
-            "신혼부부",
-            "노부모부양",
-            "생애최초",
-            "일반"
-        ]
+        sort_competition_list = ["다자녀", "신혼부부", "노부모부양", "생애최초", "일반"]
         for c in expected_competitions:
             sort_house_structure_types: List[str] = sort_house_structure_types + [
                 c.house_structure_type for _ in range(len(sort_competition_list))
@@ -201,7 +262,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                 c.newly_marry_competition,
                 c.old_parent_competition,
                 c.first_life_competition,
-                c.normal_competition
+                c.normal_competition,
             ]
 
         # 경쟁률 버블정렬
