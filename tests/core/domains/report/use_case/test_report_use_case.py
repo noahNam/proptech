@@ -17,6 +17,6 @@ def test_get_expected_competition_use_case_then_return_response_schema(
     result = GetExpectedCompetitionUseCase().execute(dto=get_expected_competition_dto)
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, GetExpectedCompetitionBaseSchema)
-    assert isinstance(result.value.sort_competitions, List)
-    assert len(result.value.sort_competitions) == SortCompetitionEnum.LIMIT_NUM.value
-    assert isinstance(result.value.sort_competitions[0].competition_types, str)
+    assert isinstance(result.value.house_type_ranks, List)
+    assert len(result.value.house_type_ranks) == 2
+    assert isinstance(result.value.house_type_ranks[0].subscription_type, str)

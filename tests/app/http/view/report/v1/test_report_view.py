@@ -27,7 +27,7 @@ def test_get_expected_competition_view_then_return_response_schema(
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert data["nickname"] == "noah"
-    assert len(data["expected_competitions"]) == len(
+    assert len(data["predicted_competitions"]) == len(
         create_ticket_usage_results.predicted_competitions
     )
-    assert len(data["sort_competitions"]) == SortCompetitionEnum.LIMIT_NUM.value
+    assert len(data["house_type_ranks"]) == 2
