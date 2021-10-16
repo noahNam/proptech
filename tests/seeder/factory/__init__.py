@@ -154,7 +154,7 @@ class UserProfileFactory(BaseFactory):
     survey_step = 1
 
     user_infos = factory.List([factory.SubFactory(UserInfoFactory)])
-    survey_result = factory.SubFactory(SurveyResultFactory)
+    survey_results = factory.List([factory.SubFactory(SurveyResultFactory)])
 
 
 class ReceivePushTypeFactory(BaseFactory):
