@@ -166,6 +166,10 @@ class AdministrativeDivisionEntity(BaseModel):
     front_legal_code: str
     back_legal_code: str
     is_available: bool
+    apt_trade_visible: bool
+    apt_deposit_visible: bool
+    op_trade_visible: bool
+    op_deposit_visible: bool
     created_at: datetime
     updated_at: datetime
 
