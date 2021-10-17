@@ -2055,3 +2055,34 @@ class HouseRepository:
         )
         query_set = query.first()
         return query_set.to_entity()
+
+    def get_main_recent_public_info_list(self) -> list:
+        filters = list()
+        filters.append(
+            and_(
+                PublicSaleModel.is_available == "True",
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+            )
+        )
+
+        query = (
+            session.query(PublicSaleModel)
+            .join(
+                PublicSalePhotoModel,
+                (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                & (PublicSalePhotoModel.is_thumbnail == "True"),
+            )
+            .options(joinedload(PublicSaleModel.real_estates))
+            .filter(*filters)
+            .order_by(PublicSaleModel.subscription_end_date.desc())
+            .limit(12)
+        )
+
+        print("---"*30)
+        RawQueryHelper().print_raw_query(query)
+        print("---" * 30)
+        query_set = query.all()
+
+        return query_set
+
+
