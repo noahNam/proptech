@@ -425,11 +425,13 @@ class PublicSaleReportEntity(BaseModel):
 class PrivateSaleAvgPriceTradeEntity(BaseModel):
     pyoung: int
     trade_price: Optional[int]
+    trade_visible: bool
 
 
 class PrivateSaleAvgPriceDepositEntity(BaseModel):
     pyoung: int
     deposit_price: Optional[int]
+    deposit_visible: bool
 
 
 class PrivateSaleAvgPriceEntity(BaseModel):

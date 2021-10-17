@@ -107,6 +107,7 @@ class PrivateSaleModel(db.Model):
                 PrivateSaleAvgPriceTradeEntity(
                     pyoung=private_sale_avg_price.pyoung,
                     trade_price=private_sale_avg_price.trade_price,
+                    trade_visible=private_sale_avg_price.trade_visible,
                 )
                 for private_sale_avg_price in self.private_sale_avg_prices
             ]
@@ -116,6 +117,7 @@ class PrivateSaleModel(db.Model):
                 PrivateSaleAvgPriceDepositEntity(
                     pyoung=private_sale_avg_price.pyoung,
                     deposit_price=private_sale_avg_price.deposit_price,
+                    deposit_visible=private_sale_avg_price.deposit_visible,
                 )
                 for private_sale_avg_price in self.private_sale_avg_prices
             ]
