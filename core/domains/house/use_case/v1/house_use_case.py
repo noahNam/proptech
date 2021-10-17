@@ -399,6 +399,9 @@ class GetHouseMainUseCase(HouseBaseUseCase):
         # get house main banner list
         banner_list = self._get_banner_list(section_type=dto.section_type)
 
+        recent_public_info = self._house_repo.get_main_recent_public_info_list()
+
+
         # get present calendar info
         now = get_server_timestamp()
         year = str(now.year)
