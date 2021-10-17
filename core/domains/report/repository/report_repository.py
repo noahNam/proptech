@@ -12,7 +12,6 @@ from app.persistence.model import (
     UserAnalysisCategoryModel,
 )
 from core.domains.report.entity.report_entity import (
-    PredictedCompetitionEntity,
     SurveyResultEntity,
     TicketUsageResultEntity,
     UserAnalysisEntity,
@@ -81,9 +80,9 @@ class ReportRepository:
             )
             raise NotUniqueErrorException(type_="T200")
 
-    def get_expected_competition(
+    def get_ticket_usage_result_of_house(
         self, user_id: int, house_id: int
-    ) -> List[PredictedCompetitionEntity]:
+    ) -> Optional[TicketUsageResultEntity]:
         filters = list()
         filters.append(TicketUsageResultModel.user_id == user_id)
         filters.append(TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value)
@@ -94,15 +93,16 @@ class ReportRepository:
             session.query(TicketUsageResultModel)
             .join(TicketUsageResultModel.predicted_competitions)
             .options(selectinload(TicketUsageResultModel.predicted_competitions))
+            .options(joinedload(TicketUsageResultModel.house_type_ranks))
             .filter(*filters)
         )
 
         query_set = query.first()
 
         if not query_set:
-            return []
+            return None
 
-        return query_set.to_entity().predicted_competitions
+        return query_set.to_entity()
 
     def get_user_survey_results(self, user_id: int,) -> Optional[SurveyResultEntity]:
         query = session.query(SurveyResultModel).filter_by(user_id=user_id)

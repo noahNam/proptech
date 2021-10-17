@@ -10,15 +10,18 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '8241c39d8164'
-down_revision = 'ddf29843d9db'
+revision = "8241c39d8164"
+down_revision = "ddf29843d9db"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.add_column('house_type_ranks', sa.Column('competition', sa.Integer(), nullable=True, server_default="0"))
+    op.add_column(
+        "house_type_ranks",
+        sa.Column("competition", sa.Integer(), nullable=True, server_default="0"),
+    )
 
 
 def downgrade():
-    op.drop_column('house_type_ranks', 'competition')
+    op.drop_column("house_type_ranks", "competition")

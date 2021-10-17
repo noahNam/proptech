@@ -145,7 +145,7 @@ def create_ticket_usage_results(
         normal_passing_score=random.randint(60, 80),
     )
     predicted_competitions_3 = predicted_competition_factory.build(
-        region="기타수도권",
+        region="기타지역",
         region_percentage=50,
         multiple_children_competition=random.randint(1, 1000),
         newly_marry_competition=random.randint(1, 1000),
@@ -193,7 +193,7 @@ def create_ticket_usage_results(
     )
     predicted_competitions_6 = predicted_competition_factory.build(
         house_structure_type="084B",
-        region="기타수도권",
+        region="기타지역",
         region_percentage=50,
         multiple_children_competition=random.randint(1, 1000),
         newly_marry_competition=random.randint(1, 1000),
@@ -241,7 +241,7 @@ def create_ticket_usage_results(
     )
     predicted_competitions_9 = predicted_competition_factory.build(
         house_structure_type="102A",
-        region="기타수도권",
+        region="기타지역",
         region_percentage=50,
         multiple_children_competition=random.randint(1, 1000),
         newly_marry_competition=random.randint(1, 1000),
@@ -289,7 +289,7 @@ def create_ticket_usage_results(
     )
     predicted_competitions_12 = predicted_competition_factory.build(
         house_structure_type="102B",
-        region="기타수도권",
+        region="기타지역",
         region_percentage=50,
         multiple_children_competition=random.randint(1, 1000),
         newly_marry_competition=random.randint(1, 1000),
