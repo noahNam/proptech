@@ -125,32 +125,40 @@ class HouseRepository:
         filters = list()
         filters.append(bounding_filter)
         filters.append(and_(RealEstateModel.is_available == "True",))
+        private_filters = list()
+        public_filters = list()
+
+        private_filters.append(
+            and_(
+                PrivateSaleModel.real_estate_id == RealEstateModel.id,
+                PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value,
+            )
+        )
 
         query_cond1 = (
             session.query(RealEstateModel)
-            .join(
-                PrivateSaleModel,
-                (PrivateSaleModel.real_estate_id == RealEstateModel.id)
-                & (PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value),
-            )
+            .join(PrivateSaleModel)
             .options(selectinload(RealEstateModel.private_sales))
             .options(selectinload(RealEstateModel.public_sales))
             .options(joinedload("private_sales.private_sale_avg_prices"))
-            .filter(*filters)
+            .filter(*filters, *private_filters)
+        )
+
+        private_filters.append(
+            and_(
+                PublicSaleModel.real_estate_id == RealEstateModel.id,
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+            )
         )
 
         query_cond2 = (
             session.query(RealEstateModel)
-            .join(
-                PublicSaleModel,
-                (PublicSaleModel.real_estate_id == RealEstateModel.id)
-                & (PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value),
-            )
+            .join(PublicSaleModel)
             .options(selectinload(RealEstateModel.public_sales))
             .options(selectinload(RealEstateModel.private_sales))
             .options(joinedload("public_sales.public_sale_avg_prices"))
             .options(joinedload("public_sales.public_sale_photos"))
-            .filter(*filters)
+            .filter(*filters, *public_filters)
         )
 
         query = query_cond1.union_all(query_cond2)

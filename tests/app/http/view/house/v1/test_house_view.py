@@ -25,6 +25,8 @@ from core.domains.house.enum.house_enum import (
     BannerSubTopic,
     PreSaleTypeEnum,
     PublicSaleStatusEnum,
+    BoundingPrivateTypeEnum,
+    BoundingPublicTypeEnum,
 )
 from core.use_case_output import UseCaseSuccessOutput
 
@@ -165,6 +167,8 @@ def test_bounding_view_when_level_is_grater_than_queryset_flag_then_success_with
     end_x = (127.9,)
     end_y = (37.42,)
     level = BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value
+    private_type = BoundingPrivateTypeEnum.APT_ONLY.value
+    public_type = BoundingPublicTypeEnum.PRE_SALE_ONLY.value
 
     with patch(
         "app.http.responses.presenters.v1.house_presenter.BoundingPresenter.transform"
@@ -183,6 +187,8 @@ def test_bounding_view_when_level_is_grater_than_queryset_flag_then_success_with
                         end_x=end_x,
                         end_y=end_y,
                         level=level,
+                        private_type=private_type,
+                        public_type=public_type
                     ),
                     headers=headers,
                 )
@@ -222,6 +228,8 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
     end_x = (127.9,)
     end_y = (37.42,)
     level = BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value - 1
+    private_type = BoundingPrivateTypeEnum.APT_ONLY.value
+    public_type = BoundingPublicTypeEnum.PRE_SALE_ONLY.value
 
     bounding_entitiy = AdministrativeDivisionEntity(
         id=1,
@@ -259,6 +267,8 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
                         end_x=end_x,
                         end_y=end_y,
                         level=level,
+                        private_type=private_type,
+                        public_type=public_type
                     ),
                     headers=headers,
                 )

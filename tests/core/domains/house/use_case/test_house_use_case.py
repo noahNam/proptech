@@ -26,7 +26,7 @@ from core.domains.house.enum.house_enum import (
     SectionType,
     BannerSubTopic,
     PreSaleTypeEnum,
-    PublicSaleStatusEnum,
+    PublicSaleStatusEnum, BoundingPrivateTypeEnum, BoundingPublicTypeEnum,
 )
 from core.domains.house.use_case.v1.house_use_case import (
     UpsertInterestHouseUseCase,
@@ -53,7 +53,10 @@ coordinates_dto = CoordinatesRangeDto(
     end_x=127.9,
     end_y=37.42,
     level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value,
+    private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
+    public_type=BoundingPublicTypeEnum.PRE_SALE_ONLY.value
 )
+
 
 get_calendar_info_dto = GetCalendarInfoDto(year=2021, month=7, user_id=1)
 
@@ -105,7 +108,9 @@ def test_bounding_use_case_when_get_wrong_level_then_400_error(
         level 값이 범위 밖이면 400 에러
     """
     wrong_dto = CoordinatesRangeDto(
-        start_x=126.5, start_y=37.7, end_x=127.9, end_y=37.42, level=23
+        start_x=126.5, start_y=37.7, end_x=127.9, end_y=37.42, level=23,
+        private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
+        public_type=BoundingPublicTypeEnum.PRE_SALE_ONLY.value
     )
     result = BoundingUseCase().execute(dto=wrong_dto)
 
@@ -122,7 +127,9 @@ def test_bounding_use_case_when_get_no_coordinates_then_404_error(
         좌표 값이 없으면(0이면) 404 에러
     """
     wrong_dto = CoordinatesRangeDto(
-        start_x=0, start_y=37.7, end_x=127.9, end_y=37.42, level=15
+        start_x=0, start_y=37.7, end_x=127.9, end_y=37.42, level=15,
+        private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
+        public_type=BoundingPublicTypeEnum.PRE_SALE_ONLY.value
     )
     result = BoundingUseCase().execute(dto=wrong_dto)
 
@@ -163,6 +170,8 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
         end_x=127.9,
         end_y=37.42,
         level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value - 1,
+        private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
+        public_type=BoundingPublicTypeEnum.PRE_SALE_ONLY.value
     )
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
