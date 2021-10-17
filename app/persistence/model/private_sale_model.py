@@ -52,6 +52,8 @@ class PrivateSaleModel(db.Model):
     heating_type = Column(String(10), nullable=True)
     floor_area_ratio = Column(SmallInteger, nullable=True)
     building_cover_ratio = Column(SmallInteger, nullable=True)
+    trade_status = Column(SmallInteger, nullable=True)
+    deposit_status = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
@@ -88,6 +90,8 @@ class PrivateSaleModel(db.Model):
             ]
             if self.private_sale_details
             else None,
+            trade_status=self.trade_status,
+            deposit_status=self.deposit_status,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )
@@ -115,6 +119,8 @@ class PrivateSaleModel(db.Model):
             ]
             if self.private_sale_avg_prices
             else None,
+            trade_status=self.trade_status,
+            deposit_status=self.deposit_status,
         )
 
     @property

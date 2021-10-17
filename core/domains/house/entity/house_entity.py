@@ -141,6 +141,8 @@ class PrivateSaleEntity(BaseModel):
     building_type: Enum
     created_at: datetime
     updated_at: datetime
+    trade_status: Optional[int]
+    deposit_status: Optional[int]
     private_sale_details: List[PrivateSaleDetailEntity] = None
 
     class Config:
@@ -442,6 +444,8 @@ class PrivateSaleBoundingEntity(BaseModel):
     default_pyoung: Optional[int]
     trade_info: Optional[List[PrivateSaleAvgPriceTradeEntity]]
     deposit_info: Optional[List[PrivateSaleAvgPriceDepositEntity]]
+    trade_status: Optional[int]
+    deposit_status: Optional[int]
 
     class Config:
         use_enum_values = True
