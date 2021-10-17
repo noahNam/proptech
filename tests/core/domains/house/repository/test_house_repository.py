@@ -9,7 +9,13 @@ from core.domains.house.dto.house_dto import (
     GetSearchHouseListDto,
 )
 from core.domains.house.entity.house_entity import GetSearchHouseListEntity
-from core.domains.house.enum.house_enum import HouseTypeEnum, PublicSaleStatusEnum
+from core.domains.house.enum.house_enum import (
+    HouseTypeEnum,
+    PublicSaleStatusEnum,
+    BoundingPrivateTypeEnum,
+    BoundingPublicTypeEnum,
+    BoundingLevelEnum,
+)
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import GetUserDto
 
@@ -18,7 +24,13 @@ upsert_interest_house_dto = UpsertInterestHouseDto(
 )
 
 coordinates_dto = CoordinatesRangeDto(
-    start_x=126.5, start_y=37.7, end_x=127.9, end_y=37.42, level=15
+    start_x=126.5,
+    start_y=37.7,
+    end_x=127.9,
+    end_y=37.42,
+    level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value,
+    private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
+    public_type=BoundingPublicTypeEnum.PRE_SALE_ONLY.value
 )
 
 get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)
