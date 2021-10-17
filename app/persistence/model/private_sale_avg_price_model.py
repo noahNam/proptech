@@ -26,17 +26,15 @@ class PrivateSaleAvgPriceModel(db.Model):
     default_pyoung = Column(SmallInteger, nullable=False)
     trade_price = Column(Integer, nullable=True)
     deposit_price = Column(Integer, nullable=True)
-    trade_status = Column(SmallInteger, nullable=False)
-    deposit_status = Column(SmallInteger, nullable=False)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
     def to_entity(self) -> PrivateSaleAvgPriceEntity:
         return PrivateSaleAvgPriceEntity(
             trade_info=PrivateSaleAvgPriceTradeEntity(
-                pyoung=self.pyoung, trade_price=self.trade_price, trade_status=self.trade_status
+                pyoung=self.pyoung, trade_price=self.trade_price
             ),
             deposit_info=PrivateSaleAvgPriceDepositEntity(
-                pyoung=self.pyoung, deposit_price=self.deposit_price, deposit_status=self.deposit_status
+                pyoung=self.pyoung, deposit_price=self.deposit_price
             ),
         )
