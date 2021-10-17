@@ -61,7 +61,7 @@ from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
     DivisionLevelEnum,
     PublicSaleStatusEnum,
-    RentTypeEnum,
+    RentTypeEnum, BoundingPrivateTypeEnum, BoundingPublicTypeEnum, HousingCategoryEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -121,47 +121,101 @@ class HouseRepository:
             geometry_coordinates, RealEstateModel.coordinates, degree,
         )
 
-    def get_bounding(self, bounding_filter: Any) -> Optional[list]:
+    def get_bounding_private_type_filter(self, dto: CoordinatesRangeDto) -> list:
+        private_filter = list()
+
+        if dto.private_type == BoundingPrivateTypeEnum.APT_ONLY.value:
+            private_filter.append(
+                and_(
+                    PrivateSaleModel.real_estate_id == RealEstateModel.id,
+                    PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value
+                )
+            )
+        elif dto.private_type == BoundingPrivateTypeEnum.OP_ONLY.value:
+            private_filter.append(
+                and_(
+                    PrivateSaleModel.real_estate_id == RealEstateModel.id,
+                    PrivateSaleModel.building_type == BuildTypeEnum.STUDIO.value
+                )
+            )
+        return private_filter
+
+    def get_bounding_public_type_filter(self, dto: CoordinatesRangeDto) -> list:
+        public_filter = list()
+
+        if dto.public_type == BoundingPublicTypeEnum.PUBLIC_ONLY.value:
+            public_filter.append(
+                and_(
+                    PublicSaleModel.real_estate_id == RealEstateModel.id,
+                    PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+                    PublicSaleModel.housing_category == HousingCategoryEnum.PUBLIC.value,
+                    PublicSaleModel.is_available == "True"
+                )
+            )
+        elif dto.public_type == BoundingPublicTypeEnum.PRIVATE_ONLY.value:
+            public_filter.append(
+                and_(
+                    PublicSaleModel.real_estate_id == RealEstateModel.id,
+                    PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+                    PublicSaleModel.housing_category == HousingCategoryEnum.PRIVATE.value,
+                    PublicSaleModel.is_available == "True"
+                )
+            )
+        elif dto.public_type == BoundingPublicTypeEnum.ALL_PRE_SALE.value:
+            public_filter.append(
+                and_(
+                    PublicSaleModel.real_estate_id == RealEstateModel.id,
+                    PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+                    PublicSaleModel.is_available == "True"
+                )
+            )
+
+        return public_filter
+
+
+    def get_bounding(
+            self,
+            bounding_filter: Any,
+            private_filters: list,
+            public_filters: list,
+    ) -> Optional[list]:
         filters = list()
         filters.append(bounding_filter)
         filters.append(and_(RealEstateModel.is_available == "True",))
-        private_filters = list()
-        public_filters = list()
 
-        private_filters.append(
-            and_(
-                PrivateSaleModel.real_estate_id == RealEstateModel.id,
-                PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value,
+        if not private_filters:
+            query_cond1 = None
+        else:
+            query_cond1 = (
+                session.query(RealEstateModel)
+                .join(PrivateSaleModel)
+                .options(selectinload(RealEstateModel.private_sales))
+                .options(selectinload(RealEstateModel.public_sales))
+                .options(joinedload("private_sales.private_sale_avg_prices"))
+                .filter(*filters, *private_filters)
             )
-        )
-
-        query_cond1 = (
-            session.query(RealEstateModel)
-            .join(PrivateSaleModel)
-            .options(selectinload(RealEstateModel.private_sales))
-            .options(selectinload(RealEstateModel.public_sales))
-            .options(joinedload("private_sales.private_sale_avg_prices"))
-            .filter(*filters, *private_filters)
-        )
-
-        private_filters.append(
-            and_(
-                PublicSaleModel.real_estate_id == RealEstateModel.id,
-                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+        if not public_filters:
+            query_cond2 = None
+        else:
+            query_cond2 = (
+                session.query(RealEstateModel)
+                .join(PublicSaleModel)
+                .options(selectinload(RealEstateModel.public_sales))
+                .options(selectinload(RealEstateModel.private_sales))
+                .options(joinedload("public_sales.public_sale_avg_prices"))
+                .options(joinedload("public_sales.public_sale_photos"))
+                .filter(*filters, *public_filters)
             )
-        )
 
-        query_cond2 = (
-            session.query(RealEstateModel)
-            .join(PublicSaleModel)
-            .options(selectinload(RealEstateModel.public_sales))
-            .options(selectinload(RealEstateModel.private_sales))
-            .options(joinedload("public_sales.public_sale_avg_prices"))
-            .options(joinedload("public_sales.public_sale_photos"))
-            .filter(*filters, *public_filters)
-        )
+        if not query_cond1 and not query_cond2:
+            return None
 
-        query = query_cond1.union_all(query_cond2)
+        if not query_cond1:
+            query = query_cond2
+        elif not query_cond2:
+            query = query_cond1
+        else:
+            query = query_cond1.union_all(query_cond2)
         query_set = query.all()
 
         if not query_set:

@@ -23,7 +23,7 @@ end_x = 127.09
 end_y = 37.42
 level = BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value
 private_type = BoundingPrivateTypeEnum.APT_ONLY.value
-public_type = BoundingPublicTypeEnum.PRE_SALE_ONLY.value
+public_type = BoundingPublicTypeEnum.PUBLIC_ONLY.value
 
 
 def test_get_coordinates_request_when_valid_request_then_success():

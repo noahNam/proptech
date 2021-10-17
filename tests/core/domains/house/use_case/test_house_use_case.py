@@ -54,7 +54,7 @@ coordinates_dto = CoordinatesRangeDto(
     end_y=37.42,
     level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value,
     private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
-    public_type=BoundingPublicTypeEnum.PRE_SALE_ONLY.value
+    public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value
 )
 
 
@@ -110,7 +110,7 @@ def test_bounding_use_case_when_get_wrong_level_then_400_error(
     wrong_dto = CoordinatesRangeDto(
         start_x=126.5, start_y=37.7, end_x=127.9, end_y=37.42, level=23,
         private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
-        public_type=BoundingPublicTypeEnum.PRE_SALE_ONLY.value
+        public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value
     )
     result = BoundingUseCase().execute(dto=wrong_dto)
 
@@ -129,7 +129,7 @@ def test_bounding_use_case_when_get_no_coordinates_then_404_error(
     wrong_dto = CoordinatesRangeDto(
         start_x=0, start_y=37.7, end_x=127.9, end_y=37.42, level=15,
         private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
-        public_type=BoundingPublicTypeEnum.PRE_SALE_ONLY.value
+        public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value
     )
     result = BoundingUseCase().execute(dto=wrong_dto)
 
@@ -171,7 +171,7 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
         end_y=37.42,
         level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value - 1,
         private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
-        public_type=BoundingPublicTypeEnum.PRE_SALE_ONLY.value
+        public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value
     )
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"

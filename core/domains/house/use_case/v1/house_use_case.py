@@ -36,6 +36,8 @@ from core.domains.house.enum.house_enum import (
     SearchTypeEnum,
     SectionType,
     BoundingDegreeEnum,
+    BoundingPrivateTypeEnum,
+    BoundingPublicTypeEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
@@ -120,13 +122,40 @@ class BoundingUseCase(HouseBaseUseCase):
                 message=FailureType.INVALID_REQUEST_ERROR,
                 code=HTTPStatus.BAD_REQUEST,
             )
+
+        # dto.private_type check
+        if (
+                dto.private_type < BoundingPrivateTypeEnum.NOTHING.value
+                or BoundingPrivateTypeEnum.OP_ONLY.value < dto.private_type
+        ):
+            return UseCaseFailureOutput(
+                type="private_type",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
+            )
+
+        # dto.public_type check
+        if (
+                dto.public_type < BoundingPublicTypeEnum.NOTHING.value
+                or BoundingPublicTypeEnum.ALL_PRE_SALE.value < dto.public_type
+        ):
+            return UseCaseFailureOutput(
+                type="public_type",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
+            )
+        private_filters = self._house_repo.get_bounding_private_type_filter(dto=dto)
+        public_filters = self._house_repo.get_bounding_public_type_filter(dto=dto)
+
         # dto.level condition
         if dto.level >= BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
             bounding_filter = self._house_repo.get_bounding_filter_with_two_points(
                 dto=dto
             )
             bounding_entities = self._house_repo.get_bounding(
-                bounding_filter=bounding_filter
+                bounding_filter=bounding_filter,
+                private_filters=private_filters,
+                public_filters=public_filters,
             )
         else:
             bounding_entities = self._house_repo.get_administrative_divisions(dto=dto)

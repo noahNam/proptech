@@ -168,7 +168,7 @@ def test_bounding_view_when_level_is_grater_than_queryset_flag_then_success_with
     end_y = (37.42,)
     level = BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value
     private_type = BoundingPrivateTypeEnum.APT_ONLY.value
-    public_type = BoundingPublicTypeEnum.PRE_SALE_ONLY.value
+    public_type = BoundingPublicTypeEnum.PUBLIC_ONLY.value
 
     with patch(
         "app.http.responses.presenters.v1.house_presenter.BoundingPresenter.transform"
@@ -229,7 +229,7 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
     end_y = (37.42,)
     level = BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value - 1
     private_type = BoundingPrivateTypeEnum.APT_ONLY.value
-    public_type = BoundingPublicTypeEnum.PRE_SALE_ONLY.value
+    public_type = BoundingPublicTypeEnum.PUBLIC_ONLY.value
 
     bounding_entitiy = AdministrativeDivisionEntity(
         id=1,
