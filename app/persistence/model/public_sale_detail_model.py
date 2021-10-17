@@ -18,6 +18,7 @@ from core.domains.house.entity.house_entity import (
     PublicSaleDetailReportEntity,
 )
 from core.domains.house.enum.house_enum import PricePerMeterEnum
+from core.domains.report.enum.report_enum import RegionEnum
 
 
 class PublicSaleDetailModel(db.Model):
@@ -83,27 +84,34 @@ class PublicSaleDetailModel(db.Model):
 
     def to_report_entity(self) -> PublicSaleDetailReportEntity:
         # Sinbad 요청으로 특정 순서로 sort ######################################################################
-        sort_dict = {"해당지역": 0, "기타경기": 1, "기타지역": 2}
+        sort_dict = {
+            RegionEnum.THE_AREA.value: 0,
+            RegionEnum.OTHER_GYEONGGI.value: 1,
+            RegionEnum.OTHER_REGION.value: 2,
+        }
+        general_supply_list, special_supply_list = None, None
 
         if self.general_supply_results:
-            general_supply_list = [
-                None for i in range(len(self.general_supply_results))
-            ]
+            general_supply_list = [None for _ in range(len(sort_dict))]
 
             for general_supply_result in self.general_supply_results:
-                general_supply_list[
-                    sort_dict.get(general_supply_result.region)
-                ] = general_supply_result.to_report_entity()
+                index = sort_dict.get(general_supply_result.region)
+                general_supply_list[index] = general_supply_result.to_report_entity()
+
+            none_count = general_supply_list.count(None)
+            for _ in range(none_count):
+                general_supply_list.remove(None)
 
         if self.special_supply_results:
-            special_supply_list = [
-                None for i in range(len(self.special_supply_results))
-            ]
+            special_supply_list = [None for _ in range(len(sort_dict))]
 
             for special_supply_result in self.special_supply_results:
-                special_supply_list[
-                    sort_dict.get(special_supply_result.region)
-                ] = special_supply_result.to_report_entity()
+                index = sort_dict.get(special_supply_result.region)
+                special_supply_list[index] = special_supply_result.to_report_entity()
+
+            none_count = special_supply_list.count(None)
+            for _ in range(none_count):
+                special_supply_list.remove(None)
         ##################################################################################################
 
         return PublicSaleDetailReportEntity(

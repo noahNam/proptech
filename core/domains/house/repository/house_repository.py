@@ -133,24 +133,24 @@ class HouseRepository:
                 (PrivateSaleModel.real_estate_id == RealEstateModel.id)
                 & (PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value),
             )
-                .options(selectinload(RealEstateModel.private_sales))
-                .options(selectinload(RealEstateModel.public_sales))
-                .options(joinedload("private_sales.private_sale_avg_prices"))
-                .filter(*filters)
+            .options(selectinload(RealEstateModel.private_sales))
+            .options(selectinload(RealEstateModel.public_sales))
+            .options(joinedload("private_sales.private_sale_avg_prices"))
+            .filter(*filters)
         )
 
         query_cond2 = (
             session.query(RealEstateModel)
-             .join(
+            .join(
                 PublicSaleModel,
                 (PublicSaleModel.real_estate_id == RealEstateModel.id)
                 & (PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value),
             )
-                .options(selectinload(RealEstateModel.public_sales))
-                .options(selectinload(RealEstateModel.private_sales))
-                .options(joinedload("public_sales.public_sale_avg_prices"))
-                .options(joinedload("public_sales.public_sale_photos"))
-                .filter(*filters)
+            .options(selectinload(RealEstateModel.public_sales))
+            .options(selectinload(RealEstateModel.private_sales))
+            .options(joinedload("public_sales.public_sale_avg_prices"))
+            .options(joinedload("public_sales.public_sale_photos"))
+            .filter(*filters)
         )
 
         query = query_cond1.union_all(query_cond2)
@@ -268,7 +268,7 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
                 PublicSaleModel.id == house_id,
-                PublicSaleModel.real_estate_id == RealEstateModel.id
+                PublicSaleModel.real_estate_id == RealEstateModel.id,
             )
         )
         query = (
@@ -551,10 +551,12 @@ class HouseRepository:
                 & (InterestHouseModel.is_like == True),
             )
             .join(PublicSaleModel.real_estates)
-            .join(PublicSalePhotoModel,
-                  (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
-                  & (PublicSalePhotoModel.is_thumbnail == "True"),
-                  isouter=True)
+            .join(
+                PublicSalePhotoModel,
+                (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                & (PublicSalePhotoModel.is_thumbnail == "True"),
+                isouter=True,
+            )
         )
 
         private_sales_query = (
@@ -672,12 +674,17 @@ class HouseRepository:
                 & (RecentlyViewModel.type == HouseTypeEnum.PUBLIC_SALES.value)
                 & (RecentlyViewModel.user_id == dto.user_id),
             )
-            .join(PublicSalePhotoModel,
-                  (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
-                  & (PublicSalePhotoModel.is_thumbnail == True),
-                  isouter=True)
+            .join(
+                PublicSalePhotoModel,
+                (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                & (PublicSalePhotoModel.is_thumbnail == True),
+                isouter=True,
+            )
             .group_by(
-                RecentlyViewModel.house_id, RecentlyViewModel.type, PublicSaleModel.name, PublicSalePhotoModel.path
+                RecentlyViewModel.house_id,
+                RecentlyViewModel.type,
+                PublicSaleModel.name,
+                PublicSalePhotoModel.path,
             )
         )
 
@@ -796,7 +803,7 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
                 PublicSaleModel.rent_type != RentTypeEnum.RENTAL.value,
-                PublicSalePhotoModel.is_thumbnail == True
+                PublicSalePhotoModel.is_thumbnail == True,
             ),
         )
 
@@ -944,10 +951,11 @@ class HouseRepository:
     ) -> List[GetPublicSaleOfTicketUsageEntity]:
         query = (
             session.query(PublicSaleModel)
-            .join(PublicSalePhotoModel,
-                  (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
-                  & (PublicSalePhotoModel.is_thumbnail == True)
-                  )
+            .join(
+                PublicSalePhotoModel,
+                (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                & (PublicSalePhotoModel.is_thumbnail == True),
+            )
             .options(contains_eager(PublicSaleModel.public_sale_photos))
             .filter(PublicSaleModel.id.in_(public_house_ids))
         )
@@ -966,7 +974,9 @@ class HouseRepository:
                     GetPublicSaleOfTicketUsageEntity(
                         house_id=query.id,
                         name=query.name,
-                        image_path=S3Helper.get_cloudfront_url() + "/" + query.public_sale_photos[0].path
+                        image_path=S3Helper.get_cloudfront_url()
+                        + "/"
+                        + query.public_sale_photos[0].path
                         if query.public_sale_photos
                         else None,
                     )
