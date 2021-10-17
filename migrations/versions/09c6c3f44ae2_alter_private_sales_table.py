@@ -18,8 +18,10 @@ depends_on = None
 def upgrade():
     op.add_column('private_sales', sa.Column('trade_status', sa.SmallInteger(), nullable=True))
     op.add_column('private_sales', sa.Column('deposit_status', sa.SmallInteger(), nullable=True))
+    op.add_column('private_sales', sa.Column("is_available", sa.Boolean(), nullable=False, server_default="true"))
 
 
 def downgrade():
     op.drop_column('private_sales', 'deposit_status')
     op.drop_column('private_sales', 'trade_status')
+    op.drop_column('private_sales', 'is_available')
