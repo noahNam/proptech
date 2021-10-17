@@ -210,9 +210,11 @@ class BoundingPublicTypeEnum(Enum):
     사용 모델 : PublicSaleModel
     사용 목적 : 지도 바운딩시 받는 파라미터 표시
             NOTHING: 아무것도 표시 안함
-            PRE_SALE_ONLY: 분양만 필터
-            RENTAL_ONLY: 임대만 필터
+            PUBLIC_ONLY: 국민분양만 필터
+            PRIVATE_ONLY: 민영분양만 필터
+            ALL_PRE_SALE: 국민 민영 분양 모두 필터
     """
     NOTHING = 0
-    PRE_SALE_ONLY = 1
-    RENTAL_ONLY = 2
+    PUBLIC_ONLY = 1
+    PRIVATE_ONLY = 2
+    ALL_PRE_SALE = 3

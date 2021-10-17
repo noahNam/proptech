@@ -206,7 +206,7 @@ class GetCoordinatesSchema(BaseModel):
     def check_public_type(cls, public_type) -> int:
         if (
                 public_type < BoundingPublicTypeEnum.NOTHING.value
-                or BoundingPublicTypeEnum.RENTAL_ONLY.value < public_type
+                or BoundingPublicTypeEnum.ALL_PRE_SALE.value < public_type
         ):
             raise ValidationError("Out of range: public_type")
         return public_type

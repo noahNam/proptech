@@ -84,7 +84,7 @@ def bounding_view():
         return failure_response(
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
-                message=f"Invalid Parameter input, Only South_Korea boundary coordinates Available",
+                message=f"Invalid Parameter input, check coordinates, level, private_type, public_type",
             )
         )
     if dto.level < BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
