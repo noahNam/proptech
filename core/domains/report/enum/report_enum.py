@@ -37,3 +37,13 @@ class UserAnalysisFormatText(ExtendedEnum):
     SUB_POINT = "청약가점"
     SUB_ACCOUNT_TOTAL_AMT = "청약저축총금액"
     CHILD_NUM = "자녀수"
+
+
+class RegionEnum(Enum):
+    """
+        사용모델 : TicketUsageResultModel
+    """
+
+    THE_AREA = "해당지역"
+    OTHER_GYEONGGI = "기타경기"
+    OTHER_REGION = "기타지역"
