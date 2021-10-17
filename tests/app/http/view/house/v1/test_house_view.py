@@ -248,6 +248,10 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
         back_legal_code="10101",
         created_at=get_server_timestamp(),
         updated_at=get_server_timestamp(),
+        apt_trade_visible=True,
+        apt_deposit_visible=True,
+        op_trade_visible=True,
+        op_deposit_visible=True,
     )
 
     with patch(
