@@ -31,10 +31,10 @@ class UserProfileModel(db.Model):
     user_infos = relationship(
         "UserInfoModel", backref=backref("user_profiles"), uselist=True
     )
-    survey_result = relationship(
+    survey_results = relationship(
         "SurveyResultModel",
         backref=backref("user_profiles"),
-        uselist=False,
+        uselist=True,
         primaryjoin="foreign(UserProfileModel.user_id)== SurveyResultModel.user_id",
         viewonly=True,
     )
@@ -51,9 +51,13 @@ class UserProfileModel(db.Model):
             user_infos=[
                 user_info.to_result_entity()
                 for user_info in self.user_infos
-                if self.user_infos
-            ],
-            survey_result=self.survey_result.to_entity()
-            if self.survey_result
+            ]
+            if self.user_infos
+            else None,
+            survey_results=[
+                survey_result.to_entity()
+                for survey_result in self.survey_results
+            ]
+            if self.survey_results
             else None,
         )

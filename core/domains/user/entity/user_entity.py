@@ -55,8 +55,8 @@ class UserProfileEntity(BaseModel):
     survey_step: Optional[int]
     created_at: datetime
     updated_at: datetime
-    user_infos: List[UserInfoResultEntity] = []
-    survey_result: Optional[SurveyResultEntity]
+    user_infos: Optional[List[UserInfoResultEntity]]
+    survey_results: Optional[List[SurveyResultEntity]]
 
 
 class UserEntity(BaseModel):
