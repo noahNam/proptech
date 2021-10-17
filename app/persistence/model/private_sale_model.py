@@ -10,6 +10,7 @@ from sqlalchemy import (
     String,
     SmallInteger,
     Float,
+    Boolean,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -56,6 +57,7 @@ class PrivateSaleModel(db.Model):
     deposit_status = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    is_available = Column(Boolean, nullable=False, default=False)
 
     private_sale_details = relationship(
         "PrivateSaleDetailModel",
