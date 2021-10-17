@@ -128,14 +128,16 @@ class HouseRepository:
             private_filter.append(
                 and_(
                     PrivateSaleModel.real_estate_id == RealEstateModel.id,
-                    PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value
+                    PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value,
+                    PrivateSaleModel.is_available == "True"
                 )
             )
         elif dto.private_type == BoundingPrivateTypeEnum.OP_ONLY.value:
             private_filter.append(
                 and_(
                     PrivateSaleModel.real_estate_id == RealEstateModel.id,
-                    PrivateSaleModel.building_type == BuildTypeEnum.STUDIO.value
+                    PrivateSaleModel.building_type == BuildTypeEnum.STUDIO.value,
+                    PrivateSaleModel.is_available == "True"
                 )
             )
         return private_filter
