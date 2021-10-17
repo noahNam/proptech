@@ -154,7 +154,7 @@ class UserProfileFactory(BaseFactory):
     survey_step = 1
 
     user_infos = factory.List([factory.SubFactory(UserInfoFactory)])
-    survey_result = factory.SubFactory(SurveyResultFactory)
+    survey_results = factory.List([factory.SubFactory(SurveyResultFactory)])
 
 
 class ReceivePushTypeFactory(BaseFactory):
@@ -218,7 +218,7 @@ class PredictedCompetitionFactory(BaseFactory):
 
     ticket_usage_result_id = 1
     house_structure_type = "084A"
-    region = "당해"
+    region = "해당지역"
     region_percentage = "30"
     multiple_children_competition = random.randint(1, 1000)
     newly_marry_competition = random.randint(1, 1000)

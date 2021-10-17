@@ -9,19 +9,14 @@ from core.domains.house.entity.house_entity import (
 from core.domains.report.entity.report_entity import (
     PredictedCompetitionEntity,
     SurveyResultEntity,
+    HouseTypeRankEntity,
 )
-
-
-class SortCompetitionBaseSchema(BaseModel):
-    competitions: StrictInt
-    house_structure_types: StrictStr
-    competition_types: StrictStr
 
 
 class GetExpectedCompetitionBaseSchema(BaseModel):
     nickname: Optional[StrictStr]
-    expected_competitions: List[PredictedCompetitionEntity]
-    sort_competitions: List[SortCompetitionBaseSchema]
+    predicted_competitions: List[PredictedCompetitionEntity]
+    house_type_ranks: Optional[List[HouseTypeRankEntity]]
 
 
 class GetExpectedCompetitionResponseSchema(BaseModel):
