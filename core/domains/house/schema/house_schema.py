@@ -10,7 +10,7 @@ from core.domains.house.entity.house_entity import (
     GetHouseMainEntity,
     GetMainPreSubscriptionEntity,
     SimpleCalendarInfoEntity,
-    RealEstateWithPrivateSaleEntity,
+    RealEstateWithPrivateSaleEntity, MapSearchEntity,
 )
 
 
@@ -61,7 +61,7 @@ class GetRecentViewListResponseSchema(BaseModel):
 
 
 class GetSearchHouseListResponseSchema(BaseModel):
-    houses: Optional[List[GetSearchHouseListEntity]]
+    houses: List[MapSearchEntity]
 
 
 class GetHouseMainResponseSchema(BaseModel):
