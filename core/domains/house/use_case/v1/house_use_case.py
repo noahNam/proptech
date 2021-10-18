@@ -28,7 +28,7 @@ from core.domains.house.entity.house_entity import (
     GetHouseMainEntity,
     SimpleCalendarInfoEntity,
     InterestHouseListEntity,
-    HousePublicDetailEntity,
+    HousePublicDetailEntity, MapSearchEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -295,8 +295,8 @@ class GetSearchHouseListUseCase(HouseBaseUseCase):
         if not dto.keywords or dto.keywords == "" or len(dto.keywords) < 2:
             return UseCaseSuccessOutput()
 
-        result: List[GetSearchHouseListEntity] = self._house_repo.get_search_house_list(
-            dto=dto
+        result: List[MapSearchEntity] = self._house_repo.get_search_house_list(
+            keywords=dto.keywords
         )
 
         return UseCaseSuccessOutput(value=result)
