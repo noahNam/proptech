@@ -293,7 +293,7 @@ class GetSearchHouseListUseCase(HouseBaseUseCase):
         self, dto: GetSearchHouseListDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         if not dto.keywords or dto.keywords == "" or len(dto.keywords) < 2:
-            return UseCaseSuccessOutput()
+            return UseCaseSuccessOutput(value=[])
 
         result: List[MapSearchEntity] = self._house_repo.get_search_house_list(
             keywords=dto.keywords
