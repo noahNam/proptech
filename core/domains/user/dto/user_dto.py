@@ -64,6 +64,12 @@ class GetUserInfoDto(BaseModel):
     survey_step: int
 
 
+class GetMonthlyIncomesDto(BaseModel):
+    user_id: int
+    is_married: str
+    number_dependents: str
+
+
 class SendUserInfoToLakeDto(BaseModel):
     user_id: Optional[int]
     user_profile_id: int
