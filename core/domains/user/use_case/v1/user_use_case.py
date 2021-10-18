@@ -516,14 +516,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
                     my_basic_income = income_result_dict.get(
                         str(number_dependents_result.value)
                     )
-
-                    if not my_basic_income:
-                        # todo. 가드 코드 추가(Sinbad 작업 후 제거 가능) #####################
-                        my_basic_income = income_result_dict.get("1")
-                        monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value
-                        ##############################################################
-                    else:
-                        monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if is_married_result.value != "2" else MonthlyIncomeEnum.COND_CD_2.value
+                    monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if is_married_result.value != "2" else MonthlyIncomeEnum.COND_CD_2.value
                 else:
                     # 설문 1단계를 완료 안하고 들어오지 못하지만 가드 코드 추가
                     # my_basic_income = 부양가족 3인 기본 값
