@@ -1,0 +1,73 @@
+openapi: "3.0.2"
+tags:
+  - User
+security:
+  - userAuth: []
+parameters:
+  - name: is_married
+    in: query
+    required: true
+    description: 1,2 ...
+    schema:
+      type: integer
+      example: 1
+  - name: number_dependents
+    in: query
+    required: true
+    description: 1,2 ...
+    schema:
+      type: integer
+      example: 1
+responses:
+  '200':
+    description: 유저 설문 수정 시 월소득 계산
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                monthly_incomes:
+                  type: object
+                  properties:
+                    detail_code:
+                      type: array
+                      items:
+                        type: integer
+                        example: 50
+                    name:
+                      type: array
+                      items:
+                        type: string
+                        example: "3,547,102원 이하"
+  '400':
+    description: invalid_request_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/invalid_request_error'
+  '401':
+    description: unauthorized_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/unauthorized_error'
+  '404':
+    description: not_found_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/user_not_found_error'
+  '500 #1':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/internal_server_error'
+  '500 #2':
+    description: internal_server_error
+    content:
+      application/json:
+        schema:
+          $ref: '#/components/schemas/response_schema_validation_error'
