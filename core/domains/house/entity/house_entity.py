@@ -517,3 +517,4 @@ class MapSearchEntity(BaseModel):
     name: str
     latitude: float
     longitude: float
+    house_type: str
