@@ -7,7 +7,7 @@ from typing import Optional, List, Any, Tuple
 from geoalchemy2 import Geometry, func as geo_func
 from sqlalchemy import and_, func, or_, literal, String, exists, Integer
 from sqlalchemy import exc
-from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased, Query, column_property
+from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased, Query
 from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
@@ -878,12 +878,16 @@ class HouseRepository:
                     PublicSaleModel.name.label("name"),
                     RealEstateModel.coordinates.ST_Y().label("latitude"),
                     RealEstateModel.coordinates.ST_X().label("longitude"),
+                    literal("분양", String).label("house_type"),
                 )
                 .join(RealEstateModel, RealEstateModel.id == PublicSaleModel.real_estate_id)
                 .filter(*public_filters)
                 .filter(or_(and_(*real_estate_text_keyword_filters, *real_estate_number_keyword_filters), and_(*public_text_keyword_filters, *public_number_keyword_filters)))
+                .order_by((RealEstateModel.si_do == "서울특별시").desc())
+                .order_by((RealEstateModel.si_do == "경기도").desc())
                 .limit(10)
         )
+
 
         query_cond2 = (
             session.query(PrivateSaleModel)
@@ -892,10 +896,13 @@ class HouseRepository:
                     PrivateSaleModel.name.label("name"),
                     RealEstateModel.coordinates.ST_Y().label("latitude"),
                     RealEstateModel.coordinates.ST_X().label("longitude"),
+                    literal("매매", String).label("house_type"),
                 )
                 .join(RealEstateModel, RealEstateModel.id == PrivateSaleModel.real_estate_id)
                 .filter(*private_filters)
                 .filter(or_(and_(*real_estate_text_keyword_filters, *real_estate_number_keyword_filters), and_(*private_text_keyword_filters, *private_number_keyword_filters)))
+                .order_by((RealEstateModel.si_do == "서울특별시").desc())
+                .order_by((RealEstateModel.si_do == "경기도").desc())
                 .limit(15)
         )
 
@@ -909,7 +916,8 @@ class HouseRepository:
                 id=query[0],
                 name=query[1],
                 latitude=query[2],
-                longitude=query[3]
+                longitude=query[3],
+                house_type=query[4]
 
             ))
 
