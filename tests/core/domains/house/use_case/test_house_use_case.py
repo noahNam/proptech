@@ -383,7 +383,7 @@ def test_get_search_house_list_use_case_when_no_keywords_then_return_none(
     result = GetSearchHouseListUseCase().execute(dto=dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert result.value is None
+    assert result.value == []
 
 
 def test_get_search_house_list_use_case_when_less_then_1_keywords_then_return_none(
@@ -393,7 +393,7 @@ def test_get_search_house_list_use_case_when_less_then_1_keywords_then_return_no
     result = GetSearchHouseListUseCase().execute(dto=dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
-    assert result.value is None
+    assert result.value == []
 
 
 def test_get_search_house_list_use_case_when_right_keywords_then_return_search_result(
