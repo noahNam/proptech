@@ -22,13 +22,14 @@ from core.domains.house.dto.house_dto import (
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
-    GetSearchHouseListEntity,
     GetRecentViewListEntity,
     GetMainPreSubscriptionEntity,
     GetHouseMainEntity,
     SimpleCalendarInfoEntity,
     InterestHouseListEntity,
-    HousePublicDetailEntity, MapSearchEntity,
+    MainRecentPublicInfoEntity,
+    HousePublicDetailEntity,
+    MapSearchEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -36,6 +37,8 @@ from core.domains.house.enum.house_enum import (
     SearchTypeEnum,
     SectionType,
     BoundingDegreeEnum,
+    BoundingPrivateTypeEnum,
+    BoundingPublicTypeEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
@@ -120,13 +123,40 @@ class BoundingUseCase(HouseBaseUseCase):
                 message=FailureType.INVALID_REQUEST_ERROR,
                 code=HTTPStatus.BAD_REQUEST,
             )
+
+        # dto.private_type check
+        if (
+            dto.private_type < BoundingPrivateTypeEnum.NOTHING.value
+            or BoundingPrivateTypeEnum.OP_ONLY.value < dto.private_type
+        ):
+            return UseCaseFailureOutput(
+                type="private_type",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
+            )
+
+        # dto.public_type check
+        if (
+            dto.public_type < BoundingPublicTypeEnum.NOTHING.value
+            or BoundingPublicTypeEnum.ALL_PRE_SALE.value < dto.public_type
+        ):
+            return UseCaseFailureOutput(
+                type="public_type",
+                message=FailureType.INVALID_REQUEST_ERROR,
+                code=HTTPStatus.BAD_REQUEST,
+            )
+        private_filters = self._house_repo.get_bounding_private_type_filter(dto=dto)
+        public_filters = self._house_repo.get_bounding_public_type_filter(dto=dto)
+
         # dto.level condition
         if dto.level >= BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
             bounding_filter = self._house_repo.get_bounding_filter_with_two_points(
                 dto=dto
             )
             bounding_entities = self._house_repo.get_bounding(
-                bounding_filter=bounding_filter
+                bounding_filter=bounding_filter,
+                private_filters=private_filters,
+                public_filters=public_filters,
             )
         else:
             bounding_entities = self._house_repo.get_administrative_divisions(dto=dto)
@@ -353,10 +383,35 @@ class GetHouseMainUseCase(HouseBaseUseCase):
         self,
         banner_list: List[BannerEntity],
         calendar_entities: List[SimpleCalendarInfoEntity],
+        recent_public_info_entities: List[MainRecentPublicInfoEntity],
     ) -> GetHouseMainEntity:
         return GetHouseMainEntity(
-            banner_list=banner_list, calendar_infos=calendar_entities
+            banner_list=banner_list,
+            calendar_infos=calendar_entities,
+            recent_public_infos=recent_public_info_entities,
         )
+
+    def _make_recent_public_info_entity(
+        self, recent_public_infos: list
+    ) -> List[MainRecentPublicInfoEntity]:
+        entity_list = list()
+        for query in recent_public_infos:
+            entity_list.append(
+                MainRecentPublicInfoEntity(
+                    id=query.id,
+                    name=query.name,
+                    si_do=query.real_estates.si_do,
+                    status=query.status,
+                    public_sale_photos=[
+                        public_sale_photo.to_entity()
+                        for public_sale_photo in query.public_sale_photos
+                    ]
+                    if query.public_sale_photos
+                    else None,
+                )
+            )
+
+        return entity_list
 
     def execute(
         self, dto: GetHouseMainDto
@@ -369,6 +424,11 @@ class GetHouseMainUseCase(HouseBaseUseCase):
             )
         # get house main banner list
         banner_list = self._get_banner_list(section_type=dto.section_type)
+
+        recent_public_infos = self._house_repo.get_main_recent_public_info_list()
+        recent_public_info_entities = self._make_recent_public_info_entity(
+            recent_public_infos=recent_public_infos
+        )
 
         # get present calendar info
         now = get_server_timestamp()
@@ -388,7 +448,9 @@ class GetHouseMainUseCase(HouseBaseUseCase):
         )
 
         result = self._make_house_main_entity(
-            banner_list=banner_list, calendar_entities=calendar_entities
+            banner_list=banner_list,
+            calendar_entities=calendar_entities,
+            recent_public_info_entities=recent_public_info_entities,
         )
         return UseCaseSuccessOutput(value=result)
 

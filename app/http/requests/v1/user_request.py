@@ -10,7 +10,8 @@ from core.domains.user.dto.user_dto import (
     GetUserInfoDto,
     GetUserDto,
     UpdateUserProfileDto,
-    GetUserProviderDto, GetMonthlyIncomesDto,
+    GetUserProviderDto,
+    GetMonthlyIncomesDto,
 )
 from core.exceptions import InvalidRequestException
 
@@ -206,9 +207,7 @@ class GetUserInfoRequestSchema:
 
 
 class GetMonthlyIncomesRequestSchema:
-    def __init__(
-            self, user_id, is_married, number_dependents
-    ):
+    def __init__(self, user_id, is_married, number_dependents):
         self.user_id = int(user_id) if user_id else None
         self.is_married = is_married
         self.number_dependents = number_dependents
@@ -216,7 +215,9 @@ class GetMonthlyIncomesRequestSchema:
     def validate_request_and_make_dto(self):
         try:
             schema = GetMonthlyIncomesSchema(
-                user_id=self.user_id, is_married=self.is_married, number_dependents=self.number_dependents
+                user_id=self.user_id,
+                is_married=self.is_married,
+                number_dependents=self.number_dependents,
             ).dict()
             return GetMonthlyIncomesDto(**schema)
         except ValidationError as e:

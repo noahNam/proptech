@@ -51,7 +51,8 @@ from core.domains.house.entity.house_entity import (
     RealEstateLegalCodeEntity,
     AdministrativeDivisionLegalCodeEntity,
     RecentlyContractedEntity,
-    PublicSaleEntity, MapSearchEntity,
+    PublicSaleEntity,
+    MapSearchEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -61,6 +62,9 @@ from core.domains.house.enum.house_enum import (
     DivisionLevelEnum,
     PublicSaleStatusEnum,
     RentTypeEnum,
+    BoundingPrivateTypeEnum,
+    BoundingPublicTypeEnum,
+    HousingCategoryEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -120,39 +124,101 @@ class HouseRepository:
             geometry_coordinates, RealEstateModel.coordinates, degree,
         )
 
-    def get_bounding(self, bounding_filter: Any) -> Optional[list]:
+    def get_bounding_private_type_filter(self, dto: CoordinatesRangeDto) -> list:
+        private_filter = list()
+
+        if dto.private_type == BoundingPrivateTypeEnum.APT_ONLY.value:
+            private_filter.append(
+                and_(
+                    PrivateSaleModel.real_estate_id == RealEstateModel.id,
+                    PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value,
+                    PrivateSaleModel.is_available == "True",
+                )
+            )
+        elif dto.private_type == BoundingPrivateTypeEnum.OP_ONLY.value:
+            private_filter.append(
+                and_(
+                    PrivateSaleModel.real_estate_id == RealEstateModel.id,
+                    PrivateSaleModel.building_type == BuildTypeEnum.STUDIO.value,
+                    PrivateSaleModel.is_available == "True",
+                )
+            )
+        return private_filter
+
+    def get_bounding_public_type_filter(self, dto: CoordinatesRangeDto) -> list:
+        public_filter = list()
+
+        if dto.public_type == BoundingPublicTypeEnum.PUBLIC_ONLY.value:
+            public_filter.append(
+                and_(
+                    PublicSaleModel.real_estate_id == RealEstateModel.id,
+                    PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+                    PublicSaleModel.housing_category
+                    == HousingCategoryEnum.PUBLIC.value,
+                    PublicSaleModel.is_available == "True",
+                )
+            )
+        elif dto.public_type == BoundingPublicTypeEnum.PRIVATE_ONLY.value:
+            public_filter.append(
+                and_(
+                    PublicSaleModel.real_estate_id == RealEstateModel.id,
+                    PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+                    PublicSaleModel.housing_category
+                    == HousingCategoryEnum.PRIVATE.value,
+                    PublicSaleModel.is_available == "True",
+                )
+            )
+        elif dto.public_type == BoundingPublicTypeEnum.ALL_PRE_SALE.value:
+            public_filter.append(
+                and_(
+                    PublicSaleModel.real_estate_id == RealEstateModel.id,
+                    PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+                    PublicSaleModel.is_available == "True",
+                )
+            )
+
+        return public_filter
+
+    def get_bounding(
+        self, bounding_filter: Any, private_filters: list, public_filters: list,
+    ) -> Optional[list]:
         filters = list()
         filters.append(bounding_filter)
         filters.append(and_(RealEstateModel.is_available == "True",))
 
-        query_cond1 = (
-            session.query(RealEstateModel)
-            .join(
-                PrivateSaleModel,
-                (PrivateSaleModel.real_estate_id == RealEstateModel.id)
-                & (PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value),
+        if not private_filters:
+            query_cond1 = None
+        else:
+            query_cond1 = (
+                session.query(RealEstateModel)
+                .join(PrivateSaleModel)
+                .options(selectinload(RealEstateModel.private_sales))
+                .options(selectinload(RealEstateModel.public_sales))
+                .options(joinedload("private_sales.private_sale_avg_prices"))
+                .filter(*filters, *private_filters)
             )
-            .options(selectinload(RealEstateModel.private_sales))
-            .options(selectinload(RealEstateModel.public_sales))
-            .options(joinedload("private_sales.private_sale_avg_prices"))
-            .filter(*filters)
-        )
-
-        query_cond2 = (
-            session.query(RealEstateModel)
-            .join(
-                PublicSaleModel,
-                (PublicSaleModel.real_estate_id == RealEstateModel.id)
-                & (PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value),
+        if not public_filters:
+            query_cond2 = None
+        else:
+            query_cond2 = (
+                session.query(RealEstateModel)
+                .join(PublicSaleModel)
+                .options(selectinload(RealEstateModel.public_sales))
+                .options(selectinload(RealEstateModel.private_sales))
+                .options(joinedload("public_sales.public_sale_avg_prices"))
+                .options(joinedload("public_sales.public_sale_photos"))
+                .filter(*filters, *public_filters)
             )
-            .options(selectinload(RealEstateModel.public_sales))
-            .options(selectinload(RealEstateModel.private_sales))
-            .options(joinedload("public_sales.public_sale_avg_prices"))
-            .options(joinedload("public_sales.public_sale_photos"))
-            .filter(*filters)
-        )
 
-        query = query_cond1.union_all(query_cond2)
+        if not query_cond1 and not query_cond2:
+            return None
+
+        if not query_cond1:
+            query = query_cond2
+        elif not query_cond2:
+            query = query_cond1
+        else:
+            query = query_cond1.union_all(query_cond2)
         query_set = query.all()
 
         if not query_set:
@@ -782,9 +848,7 @@ class HouseRepository:
 
         return search_entities
 
-    def get_search_house_list(
-            self, keywords: str
-    ) -> List[MapSearchEntity]:
+    def get_search_house_list(self, keywords: str) -> List[MapSearchEntity]:
         """
             todo: 검색 성능 고도화 필요
             todo: private_sales 붙이므로 front 화면 변경 필요 (핑퐁 작업 필요)
@@ -813,7 +877,12 @@ class HouseRepository:
             ),
         )
 
-        private_filters.append(and_(RealEstateModel.is_available == "True", PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,), )
+        private_filters.append(
+            and_(
+                RealEstateModel.is_available == "True",
+                PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+            ),
+        )
 
         hangul = re.compile("[^ ㄱ-ㅣ가-힣]+")
         split_numbers = hangul.findall(keywords)
@@ -838,15 +907,27 @@ class HouseRepository:
 
         # text 검색 키워드
         for split_text in split_set:
-            real_estate_text_keyword_filters.append((RealEstateModel.name.contains(split_text)))
-            public_text_keyword_filters.append((PublicSaleModel.name.contains(split_text)))
-            private_text_keyword_filters.append((PrivateSaleModel.name.contains(split_text)))
+            real_estate_text_keyword_filters.append(
+                (RealEstateModel.name.contains(split_text))
+            )
+            public_text_keyword_filters.append(
+                (PublicSaleModel.name.contains(split_text))
+            )
+            private_text_keyword_filters.append(
+                (PrivateSaleModel.name.contains(split_text))
+            )
 
         # 숫자 검색 키워드
         for split_number in split_numbers:
-            real_estate_number_keyword_filters.append((RealEstateModel.name.contains(split_number)))
-            public_number_keyword_filters.append((PublicSaleModel.name.contains(split_number)))
-            private_number_keyword_filters.append((PrivateSaleModel.name.contains(split_number)))
+            real_estate_number_keyword_filters.append(
+                (RealEstateModel.name.contains(split_number))
+            )
+            public_number_keyword_filters.append(
+                (PublicSaleModel.name.contains(split_number))
+            )
+            private_number_keyword_filters.append(
+                (PrivateSaleModel.name.contains(split_number))
+            )
 
         if not split_set:
             split_keywords = keywords.split()
@@ -873,37 +954,56 @@ class HouseRepository:
 
         query_cond1 = (
             session.query(PublicSaleModel)
-                .with_entities(
-                    RealEstateModel.id,
-                    PublicSaleModel.name.label("name"),
-                    RealEstateModel.coordinates.ST_Y().label("latitude"),
-                    RealEstateModel.coordinates.ST_X().label("longitude"),
-                    literal("분양", String).label("house_type"),
+            .with_entities(
+                RealEstateModel.id,
+                PublicSaleModel.name.label("name"),
+                RealEstateModel.coordinates.ST_Y().label("latitude"),
+                RealEstateModel.coordinates.ST_X().label("longitude"),
+                literal("분양", String).label("house_type"),
+            )
+            .join(RealEstateModel, RealEstateModel.id == PublicSaleModel.real_estate_id)
+            .filter(*public_filters)
+            .filter(
+                or_(
+                    and_(
+                        *real_estate_text_keyword_filters,
+                        *real_estate_number_keyword_filters,
+                    ),
+                    and_(*public_text_keyword_filters, *public_number_keyword_filters),
                 )
-                .join(RealEstateModel, RealEstateModel.id == PublicSaleModel.real_estate_id)
-                .filter(*public_filters)
-                .filter(or_(and_(*real_estate_text_keyword_filters, *real_estate_number_keyword_filters), and_(*public_text_keyword_filters, *public_number_keyword_filters)))
-                .order_by((RealEstateModel.si_do == "서울특별시").desc())
-                .order_by((RealEstateModel.si_do == "경기도").desc())
-                .limit(10)
+            )
+            .order_by((RealEstateModel.si_do == "서울특별시").desc())
+            .order_by((RealEstateModel.si_do == "경기도").desc())
+            .limit(10)
         )
-
 
         query_cond2 = (
             session.query(PrivateSaleModel)
-                .with_entities(
-                    RealEstateModel.id,
-                    PrivateSaleModel.name.label("name"),
-                    RealEstateModel.coordinates.ST_Y().label("latitude"),
-                    RealEstateModel.coordinates.ST_X().label("longitude"),
-                    literal("매매", String).label("house_type"),
+            .with_entities(
+                RealEstateModel.id,
+                PrivateSaleModel.name.label("name"),
+                RealEstateModel.coordinates.ST_Y().label("latitude"),
+                RealEstateModel.coordinates.ST_X().label("longitude"),
+                literal("매매", String).label("house_type"),
+            )
+            .join(
+                RealEstateModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
+            )
+            .filter(*private_filters)
+            .filter(
+                or_(
+                    and_(
+                        *real_estate_text_keyword_filters,
+                        *real_estate_number_keyword_filters,
+                    ),
+                    and_(
+                        *private_text_keyword_filters, *private_number_keyword_filters
+                    ),
                 )
-                .join(RealEstateModel, RealEstateModel.id == PrivateSaleModel.real_estate_id)
-                .filter(*private_filters)
-                .filter(or_(and_(*real_estate_text_keyword_filters, *real_estate_number_keyword_filters), and_(*private_text_keyword_filters, *private_number_keyword_filters)))
-                .order_by((RealEstateModel.si_do == "서울특별시").desc())
-                .order_by((RealEstateModel.si_do == "경기도").desc())
-                .limit(15)
+            )
+            .order_by((RealEstateModel.si_do == "서울특별시").desc())
+            .order_by((RealEstateModel.si_do == "경기도").desc())
+            .limit(15)
         )
 
         query = query_cond1.union_all(query_cond2)
@@ -912,14 +1012,15 @@ class HouseRepository:
 
         result = list()
         for query in query_set:
-            result.append(MapSearchEntity(
-                id=query[0],
-                name=query[1],
-                latitude=query[2],
-                longitude=query[3],
-                house_type=query[4]
-
-            ))
+            result.append(
+                MapSearchEntity(
+                    id=query[0],
+                    name=query[1],
+                    latitude=query[2],
+                    longitude=query[3],
+                    house_type=query[4],
+                )
+            )
 
         return result
 
@@ -2131,3 +2232,32 @@ class HouseRepository:
         )
         query_set = query.first()
         return query_set.to_entity()
+
+    def get_main_recent_public_info_list(self) -> Optional[list]:
+        filters = list()
+        filters.append(
+            and_(
+                PublicSaleModel.is_available == "True",
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+            )
+        )
+
+        query = (
+            session.query(PublicSaleModel)
+            .join(
+                PublicSalePhotoModel,
+                (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                & (PublicSalePhotoModel.is_thumbnail == "True"),
+            )
+            .options(joinedload(PublicSaleModel.real_estates))
+            .filter(*filters)
+            .order_by(PublicSaleModel.subscription_end_date.desc())
+            .limit(12)
+        )
+
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        return query_set

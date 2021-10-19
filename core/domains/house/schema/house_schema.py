@@ -10,7 +10,8 @@ from core.domains.house.entity.house_entity import (
     GetHouseMainEntity,
     GetMainPreSubscriptionEntity,
     SimpleCalendarInfoEntity,
-    RealEstateWithPrivateSaleEntity, MapSearchEntity,
+    RealEstateWithPrivateSaleEntity,
+    MapSearchEntity,
 )
 
 
