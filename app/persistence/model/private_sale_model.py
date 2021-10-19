@@ -22,6 +22,7 @@ from core.domains.house.entity.house_entity import (
     PrivateSaleBoundingEntity,
     PrivateSaleAvgPriceTradeEntity,
     PrivateSaleAvgPriceDepositEntity,
+    NearHousePrivateSaleEntity,
 )
 from core.domains.house.enum.house_enum import BuildTypeEnum
 
@@ -133,4 +134,22 @@ class PrivateSaleModel(db.Model):
             self.private_sale_avg_prices[0].default_pyoung
             if self.private_sale_avg_prices
             else None
+        )
+
+    def to_near_house_entity(self) -> NearHousePrivateSaleEntity:
+        return NearHousePrivateSaleEntity(
+            id=self.id,
+            building_type=self.building_type,
+            default_pyoung=self.default_pyoung,
+            trade_info=[
+                PrivateSaleAvgPriceTradeEntity(
+                    pyoung=private_sale_avg_price.pyoung,
+                    trade_price=private_sale_avg_price.trade_price,
+                    trade_visible=private_sale_avg_price.trade_visible,
+                )
+                for private_sale_avg_price in self.private_sale_avg_prices
+            ]
+            if self.private_sale_avg_prices
+            else None,
+            trade_status=self.trade_status,
         )
