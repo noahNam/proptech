@@ -6,11 +6,11 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
     HousePublicDetailEntity,
-    GetSearchHouseListEntity,
     GetHouseMainEntity,
     GetMainPreSubscriptionEntity,
     SimpleCalendarInfoEntity,
-    RealEstateWithPrivateSaleEntity, MapSearchEntity,
+    MapSearchEntity,
+    NearHouseEntity,
 )
 
 
@@ -73,4 +73,4 @@ class GetMainPreSubscriptionResponseSchema(BaseModel):
 
 
 class GetHousePublicPrivateSalesResponseSchema(BaseModel):
-    near_houses: Optional[List[RealEstateWithPrivateSaleEntity]]
+    near_houses: Optional[List[NearHouseEntity]]

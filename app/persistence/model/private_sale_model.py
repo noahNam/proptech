@@ -10,6 +10,7 @@ from sqlalchemy import (
     String,
     SmallInteger,
     Float,
+    Boolean,
 )
 from sqlalchemy.orm import relationship, backref
 
@@ -21,6 +22,7 @@ from core.domains.house.entity.house_entity import (
     PrivateSaleBoundingEntity,
     PrivateSaleAvgPriceTradeEntity,
     PrivateSaleAvgPriceDepositEntity,
+    NearHousePrivateSaleEntity,
 )
 from core.domains.house.enum.house_enum import BuildTypeEnum
 
@@ -52,8 +54,11 @@ class PrivateSaleModel(db.Model):
     heating_type = Column(String(10), nullable=True)
     floor_area_ratio = Column(SmallInteger, nullable=True)
     building_cover_ratio = Column(SmallInteger, nullable=True)
+    trade_status = Column(SmallInteger, nullable=True)
+    deposit_status = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    is_available = Column(Boolean, nullable=False, default=False)
 
     private_sale_details = relationship(
         "PrivateSaleDetailModel",
@@ -88,6 +93,8 @@ class PrivateSaleModel(db.Model):
             ]
             if self.private_sale_details
             else None,
+            trade_status=self.trade_status,
+            deposit_status=self.deposit_status,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )
@@ -101,6 +108,7 @@ class PrivateSaleModel(db.Model):
                 PrivateSaleAvgPriceTradeEntity(
                     pyoung=private_sale_avg_price.pyoung,
                     trade_price=private_sale_avg_price.trade_price,
+                    trade_visible=private_sale_avg_price.trade_visible,
                 )
                 for private_sale_avg_price in self.private_sale_avg_prices
             ]
@@ -110,11 +118,14 @@ class PrivateSaleModel(db.Model):
                 PrivateSaleAvgPriceDepositEntity(
                     pyoung=private_sale_avg_price.pyoung,
                     deposit_price=private_sale_avg_price.deposit_price,
+                    deposit_visible=private_sale_avg_price.deposit_visible,
                 )
                 for private_sale_avg_price in self.private_sale_avg_prices
             ]
             if self.private_sale_avg_prices
             else None,
+            trade_status=self.trade_status,
+            deposit_status=self.deposit_status,
         )
 
     @property
@@ -123,4 +134,22 @@ class PrivateSaleModel(db.Model):
             self.private_sale_avg_prices[0].default_pyoung
             if self.private_sale_avg_prices
             else None
+        )
+
+    def to_near_house_entity(self) -> NearHousePrivateSaleEntity:
+        return NearHousePrivateSaleEntity(
+            id=self.id,
+            building_type=self.building_type,
+            default_pyoung=self.default_pyoung,
+            trade_info=[
+                PrivateSaleAvgPriceTradeEntity(
+                    pyoung=private_sale_avg_price.pyoung,
+                    trade_price=private_sale_avg_price.trade_price,
+                    trade_visible=private_sale_avg_price.trade_visible,
+                )
+                for private_sale_avg_price in self.private_sale_avg_prices
+            ]
+            if self.private_sale_avg_prices
+            else None,
+            trade_status=self.trade_status,
         )

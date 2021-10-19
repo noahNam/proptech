@@ -173,7 +173,7 @@ class BoundingDegreeEnum(Enum):
         0.001도 : 111m
     """
 
-    DEGREE = 0.01
+    DEGREE = 0.06
 
 
 class PublicSaleStatusEnum(Enum):
@@ -190,3 +190,33 @@ class PublicSaleStatusEnum(Enum):
     BEFORE_OPEN = 1
     IS_RECEIVING = 2
     IS_CLOSED = 3
+
+
+class BoundingPrivateTypeEnum(Enum):
+    """
+    사용 모델 : PrivateSaleModel
+    사용 목적 : 지도 바운딩시 받는 파라미터 표시
+            NOTHING: 아무것도 표시 안함
+            APT_ONLY: 아파트만 필터
+            OP_ONLY : 오피스텔만 필터
+    """
+
+    NOTHING = 0
+    APT_ONLY = 1
+    OP_ONLY = 2
+
+
+class BoundingPublicTypeEnum(Enum):
+    """
+    사용 모델 : PublicSaleModel
+    사용 목적 : 지도 바운딩시 받는 파라미터 표시
+            NOTHING: 아무것도 표시 안함
+            PUBLIC_ONLY: 국민분양만 필터
+            PRIVATE_ONLY: 민영분양만 필터
+            ALL_PRE_SALE: 국민 민영 분양 모두 필터
+    """
+
+    NOTHING = 0
+    PUBLIC_ONLY = 1
+    PRIVATE_ONLY = 2
+    ALL_PRE_SALE = 3

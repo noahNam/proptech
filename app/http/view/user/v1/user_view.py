@@ -11,7 +11,8 @@ from app.http.requests.v1.user_request import (
     GetUserMainRequestSchema,
     GetSurveysRequestSchema,
     UpdateUserProfileRequestSchema,
-    GetUserProviderRequestSchema, GetMonthlyIncomesRequestSchema,
+    GetUserProviderRequestSchema,
+    GetMonthlyIncomesRequestSchema,
 )
 from app.http.responses.presenters.v1.user_presenter import (
     CreateUserPresenter,
@@ -24,7 +25,8 @@ from app.http.responses.presenters.v1.user_presenter import (
     GetSurveysPresenter,
     GetUserProfilePresenter,
     UpdateUserProfilePresenter,
-    GetUserProviderPresenter, GetMonthlyIncomesPresenter,
+    GetUserProviderPresenter,
+    GetMonthlyIncomesPresenter,
 )
 from app.http.view import auth_required, api, current_user
 from core.domains.user.use_case.v1.user_use_case import (
@@ -38,7 +40,8 @@ from core.domains.user.use_case.v1.user_use_case import (
     GetSurveysUseCase,
     GetUserProfileUseCase,
     UpdateUserProfileUseCase,
-    GetUserProviderUseCase, GetMonthlyIncomesUseCase,
+    GetUserProviderUseCase,
+    GetMonthlyIncomesUseCase,
 )
 
 
@@ -108,10 +111,14 @@ def get_user_info_view():
 @swag_from("get_user_monthly_incomes.yml", methods=["GET"])
 def get_user_monthly_incomes_view():
     dto = GetMonthlyIncomesRequestSchema(
-        is_married=request.args.get("is_married"), number_dependents=request.args.get("number_dependents"), user_id=current_user.id,
+        is_married=request.args.get("is_married"),
+        number_dependents=request.args.get("number_dependents"),
+        user_id=current_user.id,
     ).validate_request_and_make_dto()
 
-    return GetMonthlyIncomesPresenter().transform(GetMonthlyIncomesUseCase().execute(dto=dto))
+    return GetMonthlyIncomesPresenter().transform(
+        GetMonthlyIncomesUseCase().execute(dto=dto)
+    )
 
 
 @api.route("/v1/users/provider", methods=["GET"])

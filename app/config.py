@@ -46,7 +46,7 @@ class LocalConfig(Config):
 
     # Local environment configuration using Docker API service
     SQLALCHEMY_DATABASE_URI = (
-        "postgresql+psycopg2://tanos:!Dkvkxhr117@localhost:5432/tanos"
+        "postgresql+psycopg2://toadhome_tanos:!Dkvkxhr117@localhost:5432/tanos"
     )
     # Prod migrate
     # SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://postgres:%s@localhost:5432/tanos" % urlquote("password")

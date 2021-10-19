@@ -26,6 +26,8 @@ from core.domains.house.enum.house_enum import (
     SearchTypeEnum,
     SectionType,
     BoundingLevelEnum,
+    BoundingPrivateTypeEnum,
+    BoundingPublicTypeEnum,
 )
 from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import InvalidRequestException
@@ -133,6 +135,8 @@ class GetCoordinatesSchema(BaseModel):
     x_points: Tuple[StrictFloat, StrictFloat] = ()
     y_points: Tuple[StrictFloat, StrictFloat] = ()
     level: StrictInt = None
+    private_type: StrictInt = None
+    public_type: StrictInt = None
 
     @validator("x_points")
     def check_longitudes_range(cls, x_points) -> Tuple:
@@ -189,14 +193,36 @@ class GetCoordinatesSchema(BaseModel):
             raise ValidationError("Out of range: level value")
         return level
 
+    @validator("private_type")
+    def check_private_type(cls, private_type) -> int:
+        if (
+            private_type < BoundingPrivateTypeEnum.NOTHING.value
+            or BoundingPrivateTypeEnum.OP_ONLY.value < private_type
+        ):
+            raise ValidationError("Out of range: private_type")
+        return private_type
+
+    @validator("public_type")
+    def check_public_type(cls, public_type) -> int:
+        if (
+            public_type < BoundingPublicTypeEnum.NOTHING.value
+            or BoundingPublicTypeEnum.ALL_PRE_SALE.value < public_type
+        ):
+            raise ValidationError("Out of range: public_type")
+        return public_type
+
 
 class GetCoordinatesRequestSchema:
-    def __init__(self, start_x, start_y, end_x, end_y, level):
+    def __init__(
+        self, start_x, start_y, end_x, end_y, level, private_type, public_type
+    ):
         self._start_x = float(start_x) if start_x else None
         self._start_y = float(start_y) if start_y else None
         self._end_x = float(end_x) if end_x else None
         self._end_y = float(end_y) if end_y else None
         self._level = int(level) if level else None
+        self._private_type = int(private_type) if private_type else None
+        self._public_type = int(public_type) if public_type else None
 
     def validate_request_and_make_dto(self):
         try:
@@ -204,14 +230,17 @@ class GetCoordinatesRequestSchema:
                 x_points=(self._start_x, self._end_x),
                 y_points=(self._start_y, self._end_y),
                 level=self._level,
+                private_type=self._private_type,
+                public_type=self._public_type,
             )
-
             return CoordinatesRangeDto(
                 start_x=schema.x_points[0],
                 start_y=schema.y_points[0],
                 end_x=schema.x_points[1],
                 end_y=schema.y_points[1],
                 level=schema.level,
+                private_type=schema.private_type,
+                public_type=schema.public_type,
             )
         except ValidationError as e:
             logger.error(

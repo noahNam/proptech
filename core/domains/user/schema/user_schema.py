@@ -2,7 +2,10 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, StrictStr, StrictInt, StrictBool
 
-from core.domains.user.entity.user_entity import UserInfoResultEntity, UserInfoCodeValueEntity
+from core.domains.user.entity.user_entity import (
+    UserInfoResultEntity,
+    UserInfoCodeValueEntity,
+)
 
 
 class GetUserBaseSchema(BaseModel):
