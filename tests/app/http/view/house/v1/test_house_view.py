@@ -11,11 +11,12 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
     HousePublicDetailEntity,
-    GetSearchHouseListEntity,
     SimpleCalendarInfoEntity,
     PublicSaleSimpleCalendarEntity,
     PublicSaleDetailCalendarEntity,
-    DetailCalendarInfoEntity, MainRecentPublicInfoEntity,
+    MainRecentPublicInfoEntity,
+    DetailCalendarInfoEntity,
+    MapSearchEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -24,7 +25,6 @@ from core.domains.house.enum.house_enum import (
     SectionType,
     BannerSubTopic,
     PreSaleTypeEnum,
-    PublicSaleStatusEnum,
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
 )
@@ -553,7 +553,7 @@ def test_get_search_house_list_view_when_get_less_then_1_word_keywords_then_retu
 
     data = response.get_json()["data"]
     assert response.status_code == 200
-    assert data["houses"] is None
+    assert data["houses"] == []
 
 
 def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
@@ -578,17 +578,12 @@ def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
     session.commit()
 
     mock_result = [
-        GetSearchHouseListEntity(
-            house_id=1,
-            jibun_address="서울시 서초구 어딘가",
+        MapSearchEntity(
+            id=1,
             name="반포자이",
-            is_like=False,
-            image_path=public_sale_photo.path,
-            subscription_start_date="20210901",
-            subscription_end_date="202109018",
-            status=PublicSaleStatusEnum.IS_CLOSED.value,
-            avg_down_payment=100000.75,
-            avg_supply_price=200000.23,
+            latitude=37.4380785,
+            longitude=126.7958879,
+            house_type="분양",
         )
     ]
 

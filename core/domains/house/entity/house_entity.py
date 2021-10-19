@@ -529,3 +529,11 @@ class PrivateSalePhotoEntity(BaseModel):
     seq: int
     created_at: datetime
     updated_at: datetime
+
+
+class MapSearchEntity(BaseModel):
+    id: int
+    name: str
+    latitude: float
+    longitude: float
+    house_type: str

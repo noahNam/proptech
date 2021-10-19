@@ -1,6 +1,8 @@
 from flasgger import swag_from
 from flask import request, jsonify
-from app.http.view.authentication import current_user, jwt_required
+from flask_jwt_extended import jwt_required
+
+from app.http.view.authentication import current_user
 
 from app.extensions.utils.auth_helper import set_renew_token
 from app.http.requests.v1.auth_request import (
