@@ -1,5 +1,6 @@
 from flasgger import swag_from
 from flask import request
+from flask_jwt_extended import jwt_required
 
 from app.http.requests.v1.post_request import (
     GetPostListRequestSchema,
@@ -9,7 +10,7 @@ from app.http.responses.presenters.v1.post_presenter import (
     GetPostListPresenter,
     UpdatePostReadCountPresenter,
 )
-from app.http.view import auth_required, api, jwt_required
+from app.http.view import auth_required, api
 from core.domains.post.use_case.v1.post_use_case import (
     GetPostListUseCase,
     UpdatePostReadCountUseCase,
