@@ -2056,7 +2056,7 @@ class HouseRepository:
         query_set = query.first()
         return query_set.to_entity()
 
-    def get_main_recent_public_info_list(self) -> list:
+    def get_main_recent_public_info_list(self) -> Optional[list]:
         filters = list()
         filters.append(
             and_(
@@ -2078,11 +2078,12 @@ class HouseRepository:
             .limit(12)
         )
 
-        print("---"*30)
-        RawQueryHelper().print_raw_query(query)
-        print("---" * 30)
         query_set = query.all()
 
+        if not query_set:
+            return None
+
         return query_set
+
 
 
