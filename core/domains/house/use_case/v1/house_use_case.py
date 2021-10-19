@@ -145,8 +145,12 @@ class BoundingUseCase(HouseBaseUseCase):
                 message=FailureType.INVALID_REQUEST_ERROR,
                 code=HTTPStatus.BAD_REQUEST,
             )
-        private_filters = self._house_repo.get_bounding_private_type_filter(dto=dto)
-        public_filters = self._house_repo.get_bounding_public_type_filter(dto=dto)
+        private_filters = self._house_repo.get_bounding_private_type_filter(
+            private_type=dto.private_type
+        )
+        public_filters = self._house_repo.get_bounding_public_type_filter(
+            public_type=dto.public_type
+        )
 
         # dto.level condition
         if dto.level >= BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
@@ -254,17 +258,28 @@ class GetHousePublicNearPrivateSalesUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-            # 분양 매물 상세 query -> house_with_public_sales
-        house_with_public_sales = self._house_repo.get_house_with_public_sales(
-            house_id=dto.house_id
+        # 분양 매물 상세 query -> house_with_public_sales
+        coordinates = self._house_repo.get_geometry_coordinates_from_public_sale(
+            dto.house_id
         )
 
-        entities = self._house_repo.get_public_with_private_sales_in_radius(
-            house_with_public_sales=house_with_public_sales,
-            degree=BoundingDegreeEnum.DEGREE.value,
+        if not coordinates:
+            return UseCaseFailureOutput(
+                type="coordinates",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        # degree 테스트 필요: app에 나오는 반경 범위를 보면서 degree 조절 필요합니다.
+        bounding_filter = self._house_repo.get_bounding_filter_with_radius(
+            geometry_coordinates=coordinates, degree=BoundingDegreeEnum.DEGREE.value
         )
 
-        return UseCaseSuccessOutput(value=entities)
+        bounding_entities = self._house_repo.get_near_houses_bounding(
+            bounding_filter=bounding_filter
+        )
+
+        return UseCaseSuccessOutput(value=bounding_entities)
 
 
 class GetCalendarInfoUseCase(HouseBaseUseCase):
@@ -348,17 +363,29 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
         coordinates = None
+        private_filter = list()
+        public_filter = list()
+
         if dto.search_type == SearchTypeEnum.FROM_REAL_ESTATE.value:
             coordinates = self._house_repo.get_geometry_coordinates_from_real_estate(
                 dto.house_id
+            )
+            private_filter = self._house_repo.get_bounding_private_type_filter(
+                private_type=BoundingPrivateTypeEnum.APT_ONLY.value
             )
         elif dto.search_type == SearchTypeEnum.FROM_PUBLIC_SALE.value:
             coordinates = self._house_repo.get_geometry_coordinates_from_public_sale(
                 dto.house_id
             )
+            public_filter = self._house_repo.get_bounding_public_type_filter(
+                public_type=BoundingPublicTypeEnum.ALL_PRE_SALE.value
+            )
         elif dto.search_type == SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value:
             coordinates = self._house_repo.get_geometry_coordinates_from_administrative_division(
                 dto.house_id
+            )
+            private_filter = self._house_repo.get_bounding_private_type_filter(
+                private_type=BoundingPrivateTypeEnum.APT_ONLY.value
             )
 
         if not coordinates:
@@ -367,12 +394,15 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
                 message=FailureType.NOT_FOUND_ERROR,
                 code=HTTPStatus.NOT_FOUND,
             )
+
         # degree 테스트 필요: app에 나오는 반경 범위를 보면서 degree 조절 필요합니다.
         bounding_filter = self._house_repo.get_bounding_filter_with_radius(
             geometry_coordinates=coordinates, degree=BoundingDegreeEnum.DEGREE.value
         )
         bounding_entities = self._house_repo.get_bounding(
-            bounding_filter=bounding_filter
+            bounding_filter=bounding_filter,
+            private_filters=private_filter,
+            public_filters=public_filter,
         )
 
         return UseCaseSuccessOutput(value=bounding_entities)

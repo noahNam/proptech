@@ -177,29 +177,6 @@ class AdministrativeDivisionEntity(BaseModel):
         use_enum_values = True
 
 
-class RealEstateWithPrivateSaleEntity(BaseModel):
-    id: int
-    name: Optional[str]
-    road_address: Optional[str]
-    jibun_address: str
-    si_do: str
-    si_gun_gu: str
-    dong_myun: str
-    ri: Optional[str]
-    road_name: Optional[str]
-    road_number: Optional[str]
-    land_number: str
-    is_available: bool
-    latitude: float
-    longitude: float
-    avg_trade_price: Optional[float]
-    avg_private_pyoung_number: Optional[float]
-    private_sales: PrivateSaleEntity = None
-
-    class Config:
-        use_enum_values = True
-
-
 class HousePublicDetailEntity(BaseModel):
     id: int
     name: Optional[str]
@@ -537,3 +514,25 @@ class MapSearchEntity(BaseModel):
     latitude: float
     longitude: float
     house_type: str
+
+
+class NearHousePrivateSaleEntity(BaseModel):
+    id: int
+    building_type: Enum
+    default_pyoung: Optional[int]
+    trade_info: Optional[List[PrivateSaleAvgPriceTradeEntity]]
+    trade_status: Optional[int]
+
+    class Config:
+        use_enum_values = True
+
+
+class NearHouseEntity(BaseModel):
+    id: int
+    name: Optional[str]
+    latitude: float
+    longitude: float
+    private_sales: Optional[NearHousePrivateSaleEntity]
+
+    class Config:
+        use_enum_values = True
