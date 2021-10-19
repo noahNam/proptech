@@ -15,7 +15,7 @@ from core.domains.house.entity.house_entity import (
     SimpleCalendarInfoEntity,
     PublicSaleSimpleCalendarEntity,
     PublicSaleDetailCalendarEntity,
-    DetailCalendarInfoEntity,
+    DetailCalendarInfoEntity, MainRecentPublicInfoEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -710,6 +710,8 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     make_header,
     make_authorization,
     banner_factory,
+    create_real_estate_with_public_sale,
+    public_sale_photo_factory
 ):
     # request header
     user_id = 1
@@ -730,8 +732,9 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         section_type=SectionType.HOME_SCREEN.value,
         sub_topic=BannerSubTopic.HOME_SUBSCRIPTION_BY_REGION.value,
     )
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
 
-    session.add_all([banner1, banner2])
+    session.add_all([banner1, banner2, public_sale_photo])
     session.commit()
 
     public_sale_simple_calendar = PublicSaleSimpleCalendarEntity(
@@ -763,18 +766,34 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         public_sale=public_sale_simple_calendar,
     )
 
+    sample_recent_public_info = MainRecentPublicInfoEntity(
+        id=1,
+        name="힐스테이트",
+        si_do="서울특별시",
+        status=3,
+        public_sale_photos=[public_sale_photo.to_entity()]
+    )
+
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
-        with test_request_context:
-            response = client.get(
-                url_for(
-                    "api/tanos.get_home_main_view",
-                    section_type=SectionType.HOME_SCREEN.value,
-                ),
-                headers=headers,
-            )
+        with patch(
+                "core.domains.house.repository.house_repository.HouseRepository.get_main_recent_public_info_list"
+        ) as recent_public_list:
+            recent_public_list.return_value = create_real_estate_with_public_sale
+            with patch(
+                    "core.domains.house.use_case.v1.house_use_case.GetHouseMainUseCase._make_recent_public_info_entity"
+            ) as recent_public_infos:
+                recent_public_infos.return_value = [sample_recent_public_info]
+                with test_request_context:
+                    response = client.get(
+                        url_for(
+                            "api/tanos.get_home_main_view",
+                            section_type=SectionType.HOME_SCREEN.value,
+                        ),
+                        headers=headers,
+                    )
 
     data = response.get_json()["data"]
 

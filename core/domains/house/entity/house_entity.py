@@ -349,9 +349,18 @@ class SimpleCalendarInfoEntity(BaseModel):
         use_enum_values = True
 
 
+class MainRecentPublicInfoEntity(BaseModel):
+    id: int
+    name: str
+    si_do: str
+    status: int
+    public_sale_photos: List[PublicSalePhotoEntity]
+
+
 class GetHouseMainEntity(BaseModel):
     banner_list: List[BannerEntity] = None
     calendar_infos: List[SimpleCalendarInfoEntity] = None
+    recent_public_infos: List[MainRecentPublicInfoEntity] = None
 
 
 class RealEstateReportEntity(BaseModel):
