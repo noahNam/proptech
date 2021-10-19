@@ -9,19 +9,26 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-revision = '09c6c3f44ae2'
-down_revision = '8241c39d8164'
+revision = "09c6c3f44ae2"
+down_revision = "8241c39d8164"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.add_column('private_sales', sa.Column('trade_status', sa.SmallInteger(), nullable=True))
-    op.add_column('private_sales', sa.Column('deposit_status', sa.SmallInteger(), nullable=True))
-    op.add_column('private_sales', sa.Column("is_available", sa.Boolean(), nullable=False, server_default="true"))
+    op.add_column(
+        "private_sales", sa.Column("trade_status", sa.SmallInteger(), nullable=True)
+    )
+    op.add_column(
+        "private_sales", sa.Column("deposit_status", sa.SmallInteger(), nullable=True)
+    )
+    op.add_column(
+        "private_sales",
+        sa.Column("is_available", sa.Boolean(), nullable=False, server_default="true"),
+    )
 
 
 def downgrade():
-    op.drop_column('private_sales', 'deposit_status')
-    op.drop_column('private_sales', 'trade_status')
-    op.drop_column('private_sales', 'is_available')
+    op.drop_column("private_sales", "deposit_status")
+    op.drop_column("private_sales", "trade_status")
+    op.drop_column("private_sales", "is_available")

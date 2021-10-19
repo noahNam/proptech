@@ -79,7 +79,7 @@ class GetInterestHouseListRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetInterestHouseListSchema(user_id=self.user_id, ).dict()
+            schema = GetInterestHouseListSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -94,7 +94,7 @@ class GetRecentViewListRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = GetRecentViewListSchema(user_id=self.user_id, ).dict()
+            schema = GetRecentViewListSchema(user_id=self.user_id,).dict()
             return GetUserDto(**schema)
         except ValidationError as e:
             logger.error(
@@ -187,8 +187,8 @@ class GetCoordinatesSchema(BaseModel):
     @validator("level")
     def check_level(cls, level) -> int:
         if (
-                level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
-                or BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value < level
+            level < BoundingLevelEnum.MIN_NAVER_MAP_API_ZOOM_LEVEL.value
+            or BoundingLevelEnum.MAX_NAVER_MAP_API_ZOOM_LEVEL.value < level
         ):
             raise ValidationError("Out of range: level value")
         return level
@@ -196,8 +196,8 @@ class GetCoordinatesSchema(BaseModel):
     @validator("private_type")
     def check_private_type(cls, private_type) -> int:
         if (
-                private_type < BoundingPrivateTypeEnum.NOTHING.value
-                or BoundingPrivateTypeEnum.OP_ONLY.value < private_type
+            private_type < BoundingPrivateTypeEnum.NOTHING.value
+            or BoundingPrivateTypeEnum.OP_ONLY.value < private_type
         ):
             raise ValidationError("Out of range: private_type")
         return private_type
@@ -205,15 +205,17 @@ class GetCoordinatesSchema(BaseModel):
     @validator("public_type")
     def check_public_type(cls, public_type) -> int:
         if (
-                public_type < BoundingPublicTypeEnum.NOTHING.value
-                or BoundingPublicTypeEnum.ALL_PRE_SALE.value < public_type
+            public_type < BoundingPublicTypeEnum.NOTHING.value
+            or BoundingPublicTypeEnum.ALL_PRE_SALE.value < public_type
         ):
             raise ValidationError("Out of range: public_type")
         return public_type
 
 
 class GetCoordinatesRequestSchema:
-    def __init__(self, start_x, start_y, end_x, end_y, level, private_type, public_type):
+    def __init__(
+        self, start_x, start_y, end_x, end_y, level, private_type, public_type
+    ):
         self._start_x = float(start_x) if start_x else None
         self._start_y = float(start_y) if start_y else None
         self._end_x = float(end_x) if end_x else None
@@ -279,8 +281,8 @@ class GetCalendarInfoSchema(BaseModel):
     def check_year(cls, year) -> str:
         year_to_int = int(year)
         if (
-                year_to_int < CalendarYearThreshHold.MIN_YEAR.value
-                or year_to_int > CalendarYearThreshHold.MAX_YEAR.value
+            year_to_int < CalendarYearThreshHold.MIN_YEAR.value
+            or year_to_int > CalendarYearThreshHold.MAX_YEAR.value
         ):
             raise ValidationError("Out of range: year is currently support 2017 ~ 2030")
         return year
@@ -347,8 +349,8 @@ class GetBoundingWithinRadiusSchema(BaseModel):
     @validator("search_type")
     def check_search_type(cls, search_type) -> int:
         if (
-                search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
-                or search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
+            search_type < SearchTypeEnum.FROM_REAL_ESTATE.value
+            or search_type > SearchTypeEnum.FROM_ADMINISTRATIVE_DIVISION.value
         ):
             raise ValidationError("Out of range: Available search_type - (1, 2, 3) ")
         return search_type
