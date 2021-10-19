@@ -30,7 +30,7 @@ coordinates_dto = CoordinatesRangeDto(
     end_y=37.42,
     level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value,
     private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
-    public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value
+    public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
 )
 
 get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)

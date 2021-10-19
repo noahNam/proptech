@@ -200,6 +200,7 @@ class BoundingPrivateTypeEnum(Enum):
             APT_ONLY: 아파트만 필터
             OP_ONLY : 오피스텔만 필터
     """
+
     NOTHING = 0
     APT_ONLY = 1
     OP_ONLY = 2
@@ -214,6 +215,7 @@ class BoundingPublicTypeEnum(Enum):
             PRIVATE_ONLY: 민영분양만 필터
             ALL_PRE_SALE: 국민 민영 분양 모두 필터
     """
+
     NOTHING = 0
     PUBLIC_ONLY = 1
     PRIVATE_ONLY = 2

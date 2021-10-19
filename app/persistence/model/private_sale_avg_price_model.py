@@ -44,9 +44,13 @@ class PrivateSaleAvgPriceModel(db.Model):
     def to_entity(self) -> PrivateSaleAvgPriceEntity:
         return PrivateSaleAvgPriceEntity(
             trade_info=PrivateSaleAvgPriceTradeEntity(
-                pyoung=self.pyoung, trade_price=self.trade_price, trade_visible=self.trade_visible
+                pyoung=self.pyoung,
+                trade_price=self.trade_price,
+                trade_visible=self.trade_visible,
             ),
             deposit_info=PrivateSaleAvgPriceDepositEntity(
-                pyoung=self.pyoung, deposit_price=self.deposit_price, deposit_visible=self.deposit_visible
+                pyoung=self.pyoung,
+                deposit_price=self.deposit_price,
+                deposit_visible=self.deposit_visible,
             ),
         )

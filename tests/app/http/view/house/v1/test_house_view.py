@@ -188,7 +188,7 @@ def test_bounding_view_when_level_is_grater_than_queryset_flag_then_success_with
                         end_y=end_y,
                         level=level,
                         private_type=private_type,
-                        public_type=public_type
+                        public_type=public_type,
                     ),
                     headers=headers,
                 )
@@ -272,7 +272,7 @@ def test_bounding_view_when_level_is_lower_than_queryset_flag_then_success_with_
                         end_y=end_y,
                         level=level,
                         private_type=private_type,
-                        public_type=public_type
+                        public_type=public_type,
                     ),
                     headers=headers,
                 )
@@ -706,7 +706,7 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     make_authorization,
     banner_factory,
     create_real_estate_with_public_sale,
-    public_sale_photo_factory
+    public_sale_photo_factory,
 ):
     # request header
     user_id = 1
@@ -766,7 +766,7 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         name="힐스테이트",
         si_do="서울특별시",
         status=3,
-        public_sale_photos=[public_sale_photo.to_entity()]
+        public_sale_photos=[public_sale_photo.to_entity()],
     )
 
     with patch(
@@ -774,11 +774,11 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
         with patch(
-                "core.domains.house.repository.house_repository.HouseRepository.get_main_recent_public_info_list"
+            "core.domains.house.repository.house_repository.HouseRepository.get_main_recent_public_info_list"
         ) as recent_public_list:
             recent_public_list.return_value = create_real_estate_with_public_sale
             with patch(
-                    "core.domains.house.use_case.v1.house_use_case.GetHouseMainUseCase._make_recent_public_info_entity"
+                "core.domains.house.use_case.v1.house_use_case.GetHouseMainUseCase._make_recent_public_info_entity"
             ) as recent_public_infos:
                 recent_public_infos.return_value = [sample_recent_public_info]
                 with test_request_context:
