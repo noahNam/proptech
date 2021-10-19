@@ -141,6 +141,8 @@ class PrivateSaleEntity(BaseModel):
     building_type: Enum
     created_at: datetime
     updated_at: datetime
+    trade_status: Optional[int]
+    deposit_status: Optional[int]
     private_sale_details: List[PrivateSaleDetailEntity] = None
 
     class Config:
@@ -164,31 +166,12 @@ class AdministrativeDivisionEntity(BaseModel):
     front_legal_code: str
     back_legal_code: str
     is_available: bool
+    apt_trade_visible: bool
+    apt_deposit_visible: bool
+    op_trade_visible: bool
+    op_deposit_visible: bool
     created_at: datetime
     updated_at: datetime
-
-    class Config:
-        use_enum_values = True
-
-
-class RealEstateWithPrivateSaleEntity(BaseModel):
-    id: int
-    name: Optional[str]
-    road_address: Optional[str]
-    jibun_address: str
-    si_do: str
-    si_gun_gu: str
-    dong_myun: str
-    ri: Optional[str]
-    road_name: Optional[str]
-    road_number: Optional[str]
-    land_number: str
-    is_available: bool
-    latitude: float
-    longitude: float
-    avg_trade_price: Optional[float]
-    avg_private_pyoung_number: Optional[float]
-    private_sales: PrivateSaleEntity = None
 
     class Config:
         use_enum_values = True
@@ -343,9 +326,18 @@ class SimpleCalendarInfoEntity(BaseModel):
         use_enum_values = True
 
 
+class MainRecentPublicInfoEntity(BaseModel):
+    id: int
+    name: str
+    si_do: str
+    status: int
+    public_sale_photos: List[PublicSalePhotoEntity]
+
+
 class GetHouseMainEntity(BaseModel):
     banner_list: List[BannerEntity] = None
     calendar_infos: List[SimpleCalendarInfoEntity] = None
+    recent_public_infos: List[MainRecentPublicInfoEntity] = None
 
 
 class RealEstateReportEntity(BaseModel):
@@ -419,11 +411,13 @@ class PublicSaleReportEntity(BaseModel):
 class PrivateSaleAvgPriceTradeEntity(BaseModel):
     pyoung: int
     trade_price: Optional[int]
+    trade_visible: bool
 
 
 class PrivateSaleAvgPriceDepositEntity(BaseModel):
     pyoung: int
     deposit_price: Optional[int]
+    deposit_visible: bool
 
 
 class PrivateSaleAvgPriceEntity(BaseModel):
@@ -442,6 +436,8 @@ class PrivateSaleBoundingEntity(BaseModel):
     default_pyoung: Optional[int]
     trade_info: Optional[List[PrivateSaleAvgPriceTradeEntity]]
     deposit_info: Optional[List[PrivateSaleAvgPriceDepositEntity]]
+    trade_status: Optional[int]
+    deposit_status: Optional[int]
 
     class Config:
         use_enum_values = True
@@ -518,3 +514,25 @@ class MapSearchEntity(BaseModel):
     latitude: float
     longitude: float
     house_type: str
+
+
+class NearHousePrivateSaleEntity(BaseModel):
+    id: int
+    building_type: Enum
+    default_pyoung: Optional[int]
+    trade_info: Optional[List[PrivateSaleAvgPriceTradeEntity]]
+    trade_status: Optional[int]
+
+    class Config:
+        use_enum_values = True
+
+
+class NearHouseEntity(BaseModel):
+    id: int
+    name: Optional[str]
+    latitude: float
+    longitude: float
+    private_sales: Optional[NearHousePrivateSaleEntity]
+
+    class Config:
+        use_enum_values = True

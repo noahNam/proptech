@@ -152,11 +152,10 @@ def test_create_user_when_given_wrong_token_then_unauthorized_error(
         )
 
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    assert response.get_json()["detail"] == HTTPStatus.UNAUTHORIZED
-    assert response.get_json()["message"] == "unauthorized_error"
+    assert response.get_json()["type"] == "unauthorized_error"
 
 
-def test_create_user_to_verify_data_when_first_login_tehn_success(
+def test_create_user_to_verify_data_when_first_login_then_success(
     client, session, test_request_context, make_header, make_authorization
 ):
     user_id = 1
@@ -257,9 +256,9 @@ def test_create_app_agree_terms_when_first_login_with_not_user_id_then_authoriza
         )
 
     data = response.get_json()
+
     assert response.status_code == 401
-    assert data["detail"] == 401
-    assert data["message"] == "unauthorized_error"
+    assert data["type"] == "unauthorized_error"
 
 
 def test_create_app_agree_terms_to_verify_data_when_first_login_then_success(

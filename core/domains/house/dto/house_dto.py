@@ -12,6 +12,8 @@ class CoordinatesRangeDto(BaseModel):
     end_x: float
     end_y: float
     level: int
+    private_type: int
+    public_type: int
 
 
 class UpsertInterestHouseDto(BaseModel):

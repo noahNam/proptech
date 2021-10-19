@@ -78,12 +78,14 @@ def bounding_view():
             end_x=request.args.get("end_x"),
             end_y=request.args.get("end_y"),
             level=request.args.get("level"),
+            private_type=request.args.get("private_type"),
+            public_type=request.args.get("public_type"),
         ).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
-                message=f"Invalid Parameter input, Only South_Korea boundary coordinates Available",
+                message=f"Invalid Parameter input, check coordinates, level, private_type, public_type",
             )
         )
     if dto.level < BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
