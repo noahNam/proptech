@@ -141,6 +141,8 @@ class PrivateSaleEntity(BaseModel):
     building_type: Enum
     created_at: datetime
     updated_at: datetime
+    trade_status: Optional[int]
+    deposit_status: Optional[int]
     private_sale_details: List[PrivateSaleDetailEntity] = None
 
     class Config:
@@ -164,6 +166,10 @@ class AdministrativeDivisionEntity(BaseModel):
     front_legal_code: str
     back_legal_code: str
     is_available: bool
+    apt_trade_visible: bool
+    apt_deposit_visible: bool
+    op_trade_visible: bool
+    op_deposit_visible: bool
     created_at: datetime
     updated_at: datetime
 
@@ -343,9 +349,18 @@ class SimpleCalendarInfoEntity(BaseModel):
         use_enum_values = True
 
 
+class MainRecentPublicInfoEntity(BaseModel):
+    id: int
+    name: str
+    si_do: str
+    status: int
+    public_sale_photos: List[PublicSalePhotoEntity]
+
+
 class GetHouseMainEntity(BaseModel):
     banner_list: List[BannerEntity] = None
     calendar_infos: List[SimpleCalendarInfoEntity] = None
+    recent_public_infos: List[MainRecentPublicInfoEntity] = None
 
 
 class RealEstateReportEntity(BaseModel):
@@ -419,11 +434,13 @@ class PublicSaleReportEntity(BaseModel):
 class PrivateSaleAvgPriceTradeEntity(BaseModel):
     pyoung: int
     trade_price: Optional[int]
+    trade_visible: bool
 
 
 class PrivateSaleAvgPriceDepositEntity(BaseModel):
     pyoung: int
     deposit_price: Optional[int]
+    deposit_visible: bool
 
 
 class PrivateSaleAvgPriceEntity(BaseModel):
@@ -442,6 +459,8 @@ class PrivateSaleBoundingEntity(BaseModel):
     default_pyoung: Optional[int]
     trade_info: Optional[List[PrivateSaleAvgPriceTradeEntity]]
     deposit_info: Optional[List[PrivateSaleAvgPriceDepositEntity]]
+    trade_status: Optional[int]
+    deposit_status: Optional[int]
 
     class Config:
         use_enum_values = True

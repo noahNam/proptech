@@ -15,7 +15,8 @@ from core.domains.user.schema.user_schema import (
     GetSurveysResponseSchema,
     GetUserProfileResponseSchema,
     UpdateUserProfileResponseSchema,
-    GetUserProviderResponseSchema, GetMonthlyIncomesResponseSchema,
+    GetUserProviderResponseSchema,
+    GetMonthlyIncomesResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 

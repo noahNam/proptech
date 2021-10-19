@@ -18,6 +18,7 @@ from core.domains.house.entity.house_entity import (
     SimpleCalendarInfoEntity,
     PublicSaleSimpleCalendarEntity,
     HousePublicDetailEntity,
+    MainRecentPublicInfoEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -27,6 +28,8 @@ from core.domains.house.enum.house_enum import (
     BannerSubTopic,
     PreSaleTypeEnum,
     PublicSaleStatusEnum,
+    BoundingPrivateTypeEnum,
+    BoundingPublicTypeEnum,
 )
 from core.domains.house.use_case.v1.house_use_case import (
     UpsertInterestHouseUseCase,
@@ -53,7 +56,10 @@ coordinates_dto = CoordinatesRangeDto(
     end_x=127.9,
     end_y=37.42,
     level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value,
+    private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
+    public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
 )
+
 
 get_calendar_info_dto = GetCalendarInfoDto(year=2021, month=7, user_id=1)
 
@@ -105,7 +111,13 @@ def test_bounding_use_case_when_get_wrong_level_then_400_error(
         level 값이 범위 밖이면 400 에러
     """
     wrong_dto = CoordinatesRangeDto(
-        start_x=126.5, start_y=37.7, end_x=127.9, end_y=37.42, level=23
+        start_x=126.5,
+        start_y=37.7,
+        end_x=127.9,
+        end_y=37.42,
+        level=23,
+        private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
+        public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
     )
     result = BoundingUseCase().execute(dto=wrong_dto)
 
@@ -122,7 +134,13 @@ def test_bounding_use_case_when_get_no_coordinates_then_404_error(
         좌표 값이 없으면(0이면) 404 에러
     """
     wrong_dto = CoordinatesRangeDto(
-        start_x=0, start_y=37.7, end_x=127.9, end_y=37.42, level=15
+        start_x=0,
+        start_y=37.7,
+        end_x=127.9,
+        end_y=37.42,
+        level=15,
+        private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
+        public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
     )
     result = BoundingUseCase().execute(dto=wrong_dto)
 
@@ -163,6 +181,8 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
         end_x=127.9,
         end_y=37.42,
         level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value - 1,
+        private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
+        public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
     )
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
@@ -483,7 +503,11 @@ def test_bounding_within_radius_use_case_when_get_coordinates_then_success(
 
 
 def test_when_get_house_main_use_case_then_include_present_calendar_info(
-    session, create_users, banner_factory
+    session,
+    create_users,
+    banner_factory,
+    create_real_estate_with_public_sale,
+    public_sale_photo_factory,
 ):
     """
         get_calendar_info_by_get_simple_calendar_info_dto -> return mocking
@@ -498,8 +522,9 @@ def test_when_get_house_main_use_case_then_include_present_calendar_info(
         section_type=SectionType.HOME_SCREEN.value,
         sub_topic=BannerSubTopic.HOME_SUBSCRIPTION_BY_REGION.value,
     )
+    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
 
-    session.add_all([banner1, banner2])
+    session.add_all([banner1, banner2, public_sale_photo])
     session.commit()
 
     public_sale_simple_calendar = PublicSaleSimpleCalendarEntity(
@@ -526,6 +551,14 @@ def test_when_get_house_main_use_case_then_include_present_calendar_info(
         public_sale=public_sale_simple_calendar,
     )
 
+    sample_recent_public_info = MainRecentPublicInfoEntity(
+        id=1,
+        name="힐스테이트",
+        si_do="서울특별시",
+        status=3,
+        public_sale_photos=[public_sale_photo.to_entity()],
+    )
+
     dto = GetHouseMainDto(
         section_type=SectionType.HOME_SCREEN.value, user_id=create_users[0].id
     )
@@ -534,11 +567,20 @@ def test_when_get_house_main_use_case_then_include_present_calendar_info(
         "core.domains.house.repository.house_repository.HouseRepository.get_simple_calendar_info"
     ) as mock_calendar_info:
         mock_calendar_info.return_value = [sample_calendar_info]
-        result = GetHouseMainUseCase().execute(dto=dto)
+        with patch(
+            "core.domains.house.repository.house_repository.HouseRepository.get_main_recent_public_info_list"
+        ) as recent_public_list:
+            recent_public_list.return_value = create_real_estate_with_public_sale
+            with patch(
+                "core.domains.house.use_case.v1.house_use_case.GetHouseMainUseCase._make_recent_public_info_entity"
+            ) as recent_public_infos:
+                recent_public_infos.return_value = [sample_recent_public_info]
+                result = GetHouseMainUseCase().execute(dto=dto)
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert isinstance(result.value, GetHouseMainEntity)
     assert mock_calendar_info.called is True
+    assert recent_public_infos.called is True
     assert len(result.value.banner_list) == 2
 
 

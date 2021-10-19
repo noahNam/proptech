@@ -54,6 +54,30 @@ class AdministrativeDivisionModel(db.Model):
 
     is_available = Column(Boolean, nullable=False, default=True)
 
+    @property
+    def apt_trade_visible(self):
+        if self.apt_trade_price == 0:
+            return False
+        return True
+
+    @property
+    def apt_deposit_visible(self):
+        if self.apt_deposit_price == 0:
+            return False
+        return True
+
+    @property
+    def op_trade_visible(self):
+        if self.op_trade_price == 0:
+            return False
+        return True
+
+    @property
+    def op_deposit_visible(self):
+        if self.op_deposit_price == 0:
+            return False
+        return True
+
     def to_entity(self) -> AdministrativeDivisionEntity:
         return AdministrativeDivisionEntity(
             id=self.id,
@@ -72,6 +96,10 @@ class AdministrativeDivisionModel(db.Model):
             back_legal_code=self.back_legal_code,
             created_at=self.created_at,
             updated_at=self.updated_at,
+            apt_trade_visible=self.apt_trade_visible,
+            apt_deposit_visible=self.apt_deposit_visible,
+            op_trade_visible=self.op_trade_visible,
+            op_deposit_visible=self.op_deposit_visible,
         )
 
     def to_legal_code_entity(self) -> AdministrativeDivisionLegalCodeEntity:

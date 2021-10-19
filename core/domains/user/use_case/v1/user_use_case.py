@@ -26,7 +26,8 @@ from core.domains.user.dto.user_dto import (
     AvgMonthlyIncomeWokrerDto,
     UpsertUserInfoDetailDto,
     UpdateUserProfileDto,
-    GetUserProviderDto, GetMonthlyIncomesDto,
+    GetUserProviderDto,
+    GetMonthlyIncomesDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
@@ -567,7 +568,9 @@ class GetMonthlyIncomesUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        monthly_incomes: UserInfoCodeValueEntity = self._get_user_monthly_incomes(is_married=dto.is_married, number_dependents=dto.number_dependents)
+        monthly_incomes: UserInfoCodeValueEntity = self._get_user_monthly_incomes(
+            is_married=dto.is_married, number_dependents=dto.number_dependents
+        )
         return UseCaseSuccessOutput(value=monthly_incomes)
 
     def _get_user_monthly_incomes(
@@ -586,9 +589,9 @@ class GetMonthlyIncomesUseCase(UserBaseUseCase):
             "0": income_result.three,  # 없어요 -> 1명(본인포함)
             "1": income_result.three,  # 1명 -> 2명(본인포함)
             "2": income_result.three,  # 2명 -> 3명(본인포함)
-            "3": income_result.four,   # 3명 -> 4명(본인포함)
-            "4": income_result.five,   # 4명 -> 5명(본인포함)
-            "5": income_result.six,    # 5명 -> 6명(본인포함)
+            "3": income_result.four,  # 3명 -> 4명(본인포함)
+            "4": income_result.five,  # 4명 -> 5명(본인포함)
+            "5": income_result.six,  # 5명 -> 6명(본인포함)
             "6": income_result.seven,  # 6명 -> 7명(본인포함)
             "7": income_result.eight,  # 7명 이상 -> 8명 이상(본인포함)
         }
@@ -596,9 +599,7 @@ class GetMonthlyIncomesUseCase(UserBaseUseCase):
         calc_result_list = []
 
         # 가족 수 (부양가족 수 + 본인)
-        my_basic_income = income_result_dict.get(
-            number_dependents
-        )
+        my_basic_income = income_result_dict.get(number_dependents)
 
         monthly_income_enum: List = MonthlyIncomeEnum.COND_CD_1.value if is_married != "2" else MonthlyIncomeEnum.COND_CD_2.value
 
@@ -608,9 +609,7 @@ class GetMonthlyIncomesUseCase(UserBaseUseCase):
                 income_by_segment = str(income_by_segment) + "원 초과"
                 calc_result_list.append(income_by_segment)
             else:
-                income_by_segment = (
-                    int(my_basic_income) * percentage_num
-                ) / 100
+                income_by_segment = (int(my_basic_income) * percentage_num) / 100
                 income_by_segment = format(round(income_by_segment), ",d")
                 result_income_by_segment = str(income_by_segment) + "원 이하"
                 calc_result_list.append(result_income_by_segment)

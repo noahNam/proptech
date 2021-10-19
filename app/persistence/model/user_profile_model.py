@@ -48,15 +48,11 @@ class UserProfileModel(db.Model):
             survey_step=self.survey_step,
             created_at=self.created_at,
             updated_at=self.updated_at,
-            user_infos=[
-                user_info.to_result_entity()
-                for user_info in self.user_infos
-            ]
+            user_infos=[user_info.to_result_entity() for user_info in self.user_infos]
             if self.user_infos
             else None,
             survey_results=[
-                survey_result.to_entity()
-                for survey_result in self.survey_results
+                survey_result.to_entity() for survey_result in self.survey_results
             ]
             if self.survey_results
             else None,
