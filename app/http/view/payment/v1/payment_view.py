@@ -1,5 +1,6 @@
 from flasgger import swag_from
 from flask import request
+from flask_jwt_extended import jwt_required
 
 from app.http.requests.v1.payment_request import (
     GetTicketUsageResultRequestSchema,
@@ -17,7 +18,7 @@ from app.http.responses.presenters.v1.payment_presenter import (
     UseHouseTicketPresenter,
     UseUserTicketPresenter,
 )
-from app.http.view import auth_required, api, current_user, jwt_required
+from app.http.view import auth_required, api, current_user
 from core.domains.payment.use_case.v1.payment_use_case import (
     GetTicketUsageResultUseCase,
     CreateRecommendCodeUseCase,
