@@ -42,6 +42,7 @@ class ReportRepository:
             .where(TicketUsageResultModel.public_house_id == house_id)
             .where(TicketUsageResultModel.user_id == user_id)
             .where(TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value)
+            .where(TicketUsageResultModel.is_active == True)
         ).scalar()
 
     def is_ticket_usage_for_user(self, user_id: int,) -> bool:
