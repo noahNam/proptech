@@ -36,7 +36,6 @@ from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
     UpsertInterestHouseDto,
-    GetSearchHouseListDto,
 )
 from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
@@ -52,7 +51,7 @@ from core.domains.house.entity.house_entity import (
     RealEstateLegalCodeEntity,
     AdministrativeDivisionLegalCodeEntity,
     RecentlyContractedEntity,
-    PublicSaleEntity,
+    PublicSaleEntity, MapSearchEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -848,8 +847,8 @@ class HouseRepository:
         return search_entities
 
     def get_search_house_list(
-        self, dto: GetSearchHouseListDto
-    ) -> List[GetSearchHouseListEntity]:
+            self, keywords: str
+    ) -> List[MapSearchEntity]:
         """
             todo: 검색 성능 고도화 필요
             todo: private_sales 붙이므로 front 화면 변경 필요 (핑퐁 작업 필요)
@@ -859,26 +858,33 @@ class HouseRepository:
         """
         public_filters = list()
         private_filters = list()
-        text_keyword_filters = list()
-        number_keyword_filters = list()
+
+        real_estate_text_keyword_filters = list()
+        public_text_keyword_filters = list()
+        private_text_keyword_filters = list()
+
+        real_estate_number_keyword_filters = list()
+        public_number_keyword_filters = list()
+        private_number_keyword_filters = list()
+
+        final_filters = list()
 
         public_filters.append(
             and_(
                 RealEstateModel.is_available == "True",
                 PublicSaleModel.is_available == "True",
                 PublicSaleModel.rent_type != RentTypeEnum.RENTAL.value,
-                PublicSalePhotoModel.is_thumbnail == True,
             ),
         )
 
-        private_filters.append(and_(RealEstateModel.is_available == "True",),)
+        private_filters.append(and_(RealEstateModel.is_available == "True", PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,), )
 
         hangul = re.compile("[^ ㄱ-ㅣ가-힣]+")
-        split_numbers = hangul.findall(dto.keywords)
+        split_numbers = hangul.findall(keywords)
 
         split_list = list()
         for split_number in split_numbers:
-            split_list.append(dto.keywords.split(split_number))
+            split_list.append(keywords.split(split_number))
 
         # 리스트안의 리스트 합치기
         split_list = sum(split_list, [])
@@ -887,91 +893,225 @@ class HouseRepository:
         split_list = list(filter(bool, split_list))
 
         # 검색 효율 떨어뜨리는 문자 제거
-        word_list = ["단지", "아파트", "마을", "0"]
-        for word in word_list:
-            if word in split_list:
-                split_list.remove(word)
+        # word_list = ["단지", "아파트", "마을", "0"]
+        # for word in word_list:
+        #     if word in split_list:
+        #         split_list.remove(word)
 
         split_set = set(split_list)
 
-        # 문자열 키워드
+        # text 검색 키워드
         for split_text in split_set:
-            text_keyword_filters.append((RealEstateModel.name.contains(split_text)))
-            number_keyword_filters.append((PublicSaleModel.name.contains(split_text)))
+            real_estate_text_keyword_filters.append((RealEstateModel.name.contains(split_text)))
+            public_text_keyword_filters.append((PublicSaleModel.name.contains(split_text)))
+            private_text_keyword_filters.append((PrivateSaleModel.name.contains(split_text)))
 
-        # 숫자 키워드
+        # 숫자 검색 키워드
         for split_number in split_numbers:
-            text_keyword_filters.append((RealEstateModel.name.contains(split_number)))
-            number_keyword_filters.append((PublicSaleModel.name.contains(split_number)))
+            real_estate_number_keyword_filters.append((RealEstateModel.name.contains(split_number)))
+            public_number_keyword_filters.append((PublicSaleModel.name.contains(split_number)))
+            private_number_keyword_filters.append((PrivateSaleModel.name.contains(split_number)))
 
-        if not text_keyword_filters:
-            split_keywords = dto.keywords.split()
+        if not split_set:
+            split_keywords = keywords.split()
 
             # 검색 효율 떨어뜨리는 문자 제거
-            for word in word_list:
-                if word in split_keywords:
-                    split_keywords.remove(word)
+            # for word in word_list:
+            #     if word in split_keywords:
+            #         split_keywords.remove(word)
 
             for split_keyword in split_keywords:
-                text_keyword_filters.append(
+                real_estate_text_keyword_filters = []
+                public_text_keyword_filters.append(
                     or_(
                         (RealEstateModel.name.contains(split_keyword)),
                         (PublicSaleModel.name.contains(split_keyword)),
                     )
                 )
+                private_text_keyword_filters.append(
+                    or_(
+                        (RealEstateModel.name.contains(split_keyword)),
+                        (PrivateSaleModel.name.contains(split_keyword)),
+                    )
+                )
 
         query_cond1 = (
             session.query(PublicSaleModel)
-            .with_entities(
-                PublicSaleModel.id,
-                PublicSaleModel.name,
-                RealEstateModel.jibun_address,
-                PublicSaleModel.subscription_start_date,
-                PublicSaleModel.subscription_end_date,
-                PublicSaleModel.min_down_payment,
-                PublicSaleModel.max_down_payment,
-                PublicSalePhotoModel.path,
-                func.avg(PublicSaleAvgPriceModel.supply_price).label(
-                    "avg_supply_price"
-                ),
-            )
-            .join(PublicSaleModel.real_estates)
-            .join(PublicSaleModel.public_sale_photos, isouter=True)
-            .join(PublicSaleModel.public_sale_avg_prices)
-            .filter(*public_filters)
-            .filter(or_(and_(*text_keyword_filters), and_(*number_keyword_filters)))
-            .group_by(PublicSaleModel.id, RealEstateModel.id, PublicSalePhotoModel.id)
-            .limit(30)
+                .with_entities(
+                    RealEstateModel.id,
+                    PublicSaleModel.name.label("name"),
+                    RealEstateModel.coordinates.ST_Y().label("latitude"),
+                    RealEstateModel.coordinates.ST_X().label("longitude"),
+                    literal("분양", String).label("house_type"),
+                )
+                .join(RealEstateModel, RealEstateModel.id == PublicSaleModel.real_estate_id)
+                .filter(*public_filters)
+                .filter(or_(and_(*real_estate_text_keyword_filters, *real_estate_number_keyword_filters), and_(*public_text_keyword_filters, *public_number_keyword_filters)))
+                .order_by((RealEstateModel.si_do == "서울특별시").desc())
+                .order_by((RealEstateModel.si_do == "경기도").desc())
+                .limit(10)
         )
 
-        # query_cond2 = (
-        #     session.query(PrivateSaleModel)
-        #     .with_entities(
-        #         PrivateSaleModel.id,
-        #         PrivateSaleModel.name,
-        #         RealEstateModel.jibun_address,
-        #         literal("", String).label("subscription_start_date"),
-        #         literal("", String).label("subscription_end_date"),
-        #         literal(0, Integer).label("min_down_payment"),
-        #         literal(0, Integer).label("max_down_payment"),
-        #         literal("", String).label("path"),
-        #         literal(0, Integer).label("avg_supply_price"),
-        #         func.avg(PrivateSaleAvgPriceModel.trade_price).label("avg_trade_price"),
-        #     )
-        #     .join(PrivateSaleModel.real_estates)
-        #     .join(PrivateSaleModel.private_sale_avg_prices)
-        #     .filter(*private_filters)
-        #     .filter(and_(or_(*text_keyword_filters), or_(*number_keyword_filters)))
-        #     .group_by(PrivateSaleModel.id, RealEstateModel.id)
-        #     .limit(15)
-        # )
 
-        # query = query_cond1.union_all(query_cond2)
-        queryset = query_cond1.all()
-
-        return self._make_get_search_house_list_entity(
-            queryset=queryset, user_id=dto.user_id,
+        query_cond2 = (
+            session.query(PrivateSaleModel)
+                .with_entities(
+                    RealEstateModel.id,
+                    PrivateSaleModel.name.label("name"),
+                    RealEstateModel.coordinates.ST_Y().label("latitude"),
+                    RealEstateModel.coordinates.ST_X().label("longitude"),
+                    literal("매매", String).label("house_type"),
+                )
+                .join(RealEstateModel, RealEstateModel.id == PrivateSaleModel.real_estate_id)
+                .filter(*private_filters)
+                .filter(or_(and_(*real_estate_text_keyword_filters, *real_estate_number_keyword_filters), and_(*private_text_keyword_filters, *private_number_keyword_filters)))
+                .order_by((RealEstateModel.si_do == "서울특별시").desc())
+                .order_by((RealEstateModel.si_do == "경기도").desc())
+                .limit(15)
         )
+
+        query = query_cond1.union_all(query_cond2)
+        RawQueryHelper.print_raw_query(query)
+        query_set = query.all()
+
+        result = list()
+        for query in query_set:
+            result.append(MapSearchEntity(
+                id=query[0],
+                name=query[1],
+                latitude=query[2],
+                longitude=query[3],
+                house_type=query[4]
+
+            ))
+
+        return result
+
+    # def get_search_house_list(
+    #     self, dto: GetSearchHouseListDto
+    # ) -> List[GetSearchHouseListEntity]:
+    #     """
+    #         todo: 검색 성능 고도화 필요
+    #         todo: private_sales 붙이므로 front 화면 변경 필요 (핑퐁 작업 필요)
+    #         - full_scan 방식
+    #         - %LIKE% : 서로 다른 두 단어부터 검색 불가
+    #         - Full Text Search 필요(ts_vector, pg_trgm, elastic_search...)
+    #     """
+    #     public_filters = list()
+    #     private_filters = list()
+    #     text_keyword_filters = list()
+    #     number_keyword_filters = list()
+    #
+    #     public_filters.append(
+    #         and_(
+    #             RealEstateModel.is_available == "True",
+    #             PublicSaleModel.is_available == "True",
+    #             PublicSaleModel.rent_type != RentTypeEnum.RENTAL.value,
+    #             PublicSalePhotoModel.is_thumbnail == True,
+    #         ),
+    #     )
+    #
+    #     private_filters.append(and_(RealEstateModel.is_available == "True",),)
+    #
+    #     hangul = re.compile("[^ ㄱ-ㅣ가-힣]+")
+    #     split_numbers = hangul.findall(dto.keywords)
+    #
+    #     split_list = list()
+    #     for split_number in split_numbers:
+    #         split_list.append(dto.keywords.split(split_number))
+    #
+    #     # 리스트안의 리스트 합치기
+    #     split_list = sum(split_list, [])
+    #
+    #     # 공백 원소 제거
+    #     split_list = list(filter(bool, split_list))
+    #
+    #     # 검색 효율 떨어뜨리는 문자 제거
+    #     word_list = ["단지", "아파트", "마을", "0"]
+    #     for word in word_list:
+    #         if word in split_list:
+    #             split_list.remove(word)
+    #
+    #     split_set = set(split_list)
+    #
+    #     # 문자열 키워드
+    #     for split_text in split_set:
+    #         text_keyword_filters.append((RealEstateModel.name.contains(split_text)))
+    #         number_keyword_filters.append((PublicSaleModel.name.contains(split_text)))
+    #
+    #     # 숫자 키워드
+    #     for split_number in split_numbers:
+    #         text_keyword_filters.append((RealEstateModel.name.contains(split_number)))
+    #         number_keyword_filters.append((PublicSaleModel.name.contains(split_number)))
+    #
+    #     if not text_keyword_filters:
+    #         split_keywords = dto.keywords.split()
+    #
+    #         # 검색 효율 떨어뜨리는 문자 제거
+    #         for word in word_list:
+    #             if word in split_keywords:
+    #                 split_keywords.remove(word)
+    #
+    #         for split_keyword in split_keywords:
+    #             text_keyword_filters.append(
+    #                 or_(
+    #                     (RealEstateModel.name.contains(split_keyword)),
+    #                     (PublicSaleModel.name.contains(split_keyword)),
+    #                 )
+    #             )
+    #
+    #     query_cond1 = (
+    #         session.query(PublicSaleModel)
+    #         .with_entities(
+    #             PublicSaleModel.id,
+    #             PublicSaleModel.name,
+    #             RealEstateModel.jibun_address,
+    #             PublicSaleModel.subscription_start_date,
+    #             PublicSaleModel.subscription_end_date,
+    #             PublicSaleModel.min_down_payment,
+    #             PublicSaleModel.max_down_payment,
+    #             PublicSalePhotoModel.path,
+    #             func.avg(PublicSaleAvgPriceModel.supply_price).label(
+    #                 "avg_supply_price"
+    #             ),
+    #         )
+    #         .join(PublicSaleModel.real_estates)
+    #         .join(PublicSaleModel.public_sale_photos, isouter=True)
+    #         .join(PublicSaleModel.public_sale_avg_prices)
+    #         .filter(*public_filters)
+    #         .filter(or_(and_(*text_keyword_filters), and_(*number_keyword_filters)))
+    #         .group_by(PublicSaleModel.id, RealEstateModel.id, PublicSalePhotoModel.id)
+    #         .limit(30)
+    #     )
+    #
+    #     # query_cond2 = (
+    #     #     session.query(PrivateSaleModel)
+    #     #     .with_entities(
+    #     #         PrivateSaleModel.id,
+    #     #         PrivateSaleModel.name,
+    #     #         RealEstateModel.jibun_address,
+    #     #         literal("", String).label("subscription_start_date"),
+    #     #         literal("", String).label("subscription_end_date"),
+    #     #         literal(0, Integer).label("min_down_payment"),
+    #     #         literal(0, Integer).label("max_down_payment"),
+    #     #         literal("", String).label("path"),
+    #     #         literal(0, Integer).label("avg_supply_price"),
+    #     #         func.avg(PrivateSaleAvgPriceModel.trade_price).label("avg_trade_price"),
+    #     #     )
+    #     #     .join(PrivateSaleModel.real_estates)
+    #     #     .join(PrivateSaleModel.private_sale_avg_prices)
+    #     #     .filter(*private_filters)
+    #     #     .filter(and_(or_(*text_keyword_filters), or_(*number_keyword_filters)))
+    #     #     .group_by(PrivateSaleModel.id, RealEstateModel.id)
+    #     #     .limit(15)
+    #     # )
+    #
+    #     # query = query_cond1.union_all(query_cond2)
+    #     queryset = query_cond1.all()
+    #
+    #     return self._make_get_search_house_list_entity(
+    #         queryset=queryset, user_id=dto.user_id,
+    #     )
 
     def get_geometry_coordinates_from_real_estate(
         self, real_estate_id: int

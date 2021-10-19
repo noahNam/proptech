@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, StrictInt, ValidationError, validator
+from pydantic import BaseModel, StrictInt, ValidationError, validator, StrictStr
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.user.dto.user_dto import (
@@ -10,7 +10,7 @@ from core.domains.user.dto.user_dto import (
     GetUserInfoDto,
     GetUserDto,
     UpdateUserProfileDto,
-    GetUserProviderDto,
+    GetUserProviderDto, GetMonthlyIncomesDto,
 )
 from core.exceptions import InvalidRequestException
 
@@ -61,6 +61,12 @@ class UpsertUserInfoSchema(BaseModel):
 class GetUserInfoSchema(BaseModel):
     user_id: StrictInt
     survey_step: StrictInt
+
+
+class GetMonthlyIncomesSchema(BaseModel):
+    user_id: StrictInt
+    is_married: StrictStr
+    number_dependents: StrictStr
 
 
 class GetUserMainSchema(BaseModel):
@@ -195,6 +201,27 @@ class GetUserInfoRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetUserInfoRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class GetMonthlyIncomesRequestSchema:
+    def __init__(
+            self, user_id, is_married, number_dependents
+    ):
+        self.user_id = int(user_id) if user_id else None
+        self.is_married = is_married
+        self.number_dependents = number_dependents
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = GetMonthlyIncomesSchema(
+                user_id=self.user_id, is_married=self.is_married, number_dependents=self.number_dependents
+            ).dict()
+            return GetMonthlyIncomesDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[GetMonthlyIncomeRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 

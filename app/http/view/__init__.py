@@ -56,7 +56,11 @@ def handle_no_authorization_exception(error):
 
 @api.errorhandler(ExpiredSignatureError)
 def handle_signature_has_expired_exception(error):
-    pass
+    sentry_sdk.capture_exception(error)
+    return (
+        {"type": HTTPStatus.UNAUTHORIZED, "message": "Signature has expired"},
+        HTTPStatus.UNAUTHORIZED,
+    )
 
 
 @api.errorhandler(TokenValidationErrorException)

@@ -1,5 +1,6 @@
 from flasgger import swag_from
 from flask import request
+from flask_jwt_extended import jwt_required
 
 from app.http.requests.v1.user_request import (
     CreateUserRequestSchema,
@@ -10,7 +11,7 @@ from app.http.requests.v1.user_request import (
     GetUserMainRequestSchema,
     GetSurveysRequestSchema,
     UpdateUserProfileRequestSchema,
-    GetUserProviderRequestSchema,
+    GetUserProviderRequestSchema, GetMonthlyIncomesRequestSchema,
 )
 from app.http.responses.presenters.v1.user_presenter import (
     CreateUserPresenter,
@@ -23,9 +24,9 @@ from app.http.responses.presenters.v1.user_presenter import (
     GetSurveysPresenter,
     GetUserProfilePresenter,
     UpdateUserProfilePresenter,
-    GetUserProviderPresenter,
+    GetUserProviderPresenter, GetMonthlyIncomesPresenter,
 )
-from app.http.view import auth_required, api, current_user, jwt_required
+from app.http.view import auth_required, api, current_user
 from core.domains.user.use_case.v1.user_use_case import (
     CreateUserUseCase,
     CreateAppAgreeTermsUseCase,
@@ -37,7 +38,7 @@ from core.domains.user.use_case.v1.user_use_case import (
     GetSurveysUseCase,
     GetUserProfileUseCase,
     UpdateUserProfileUseCase,
-    GetUserProviderUseCase,
+    GetUserProviderUseCase, GetMonthlyIncomesUseCase,
 )
 
 
@@ -99,6 +100,18 @@ def get_user_info_view():
     ).validate_request_and_make_dto()
 
     return GetUserInfoPresenter().transform(GetUserInfoUseCase().execute(dto=dto))
+
+
+@api.route("/v1/users/info/income", methods=["GET"])
+@jwt_required
+@auth_required
+@swag_from("get_user_monthly_incomes.yml", methods=["GET"])
+def get_user_monthly_incomes_view():
+    dto = GetMonthlyIncomesRequestSchema(
+        is_married=request.args.get("is_married"), number_dependents=request.args.get("number_dependents"), user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return GetMonthlyIncomesPresenter().transform(GetMonthlyIncomesUseCase().execute(dto=dto))
 
 
 @api.route("/v1/users/provider", methods=["GET"])
