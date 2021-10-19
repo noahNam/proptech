@@ -51,7 +51,8 @@ from core.domains.house.entity.house_entity import (
     RealEstateLegalCodeEntity,
     AdministrativeDivisionLegalCodeEntity,
     RecentlyContractedEntity,
-    PublicSaleEntity, MapSearchEntity,
+    PublicSaleEntity,
+    MapSearchEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -782,9 +783,7 @@ class HouseRepository:
 
         return search_entities
 
-    def get_search_house_list(
-            self, keywords: str
-    ) -> List[MapSearchEntity]:
+    def get_search_house_list(self, keywords: str) -> List[MapSearchEntity]:
         """
             todo: 검색 성능 고도화 필요
             todo: private_sales 붙이므로 front 화면 변경 필요 (핑퐁 작업 필요)
@@ -813,7 +812,12 @@ class HouseRepository:
             ),
         )
 
-        private_filters.append(and_(RealEstateModel.is_available == "True", PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,), )
+        private_filters.append(
+            and_(
+                RealEstateModel.is_available == "True",
+                PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+            ),
+        )
 
         hangul = re.compile("[^ ㄱ-ㅣ가-힣]+")
         split_numbers = hangul.findall(keywords)
@@ -838,15 +842,27 @@ class HouseRepository:
 
         # text 검색 키워드
         for split_text in split_set:
-            real_estate_text_keyword_filters.append((RealEstateModel.name.contains(split_text)))
-            public_text_keyword_filters.append((PublicSaleModel.name.contains(split_text)))
-            private_text_keyword_filters.append((PrivateSaleModel.name.contains(split_text)))
+            real_estate_text_keyword_filters.append(
+                (RealEstateModel.name.contains(split_text))
+            )
+            public_text_keyword_filters.append(
+                (PublicSaleModel.name.contains(split_text))
+            )
+            private_text_keyword_filters.append(
+                (PrivateSaleModel.name.contains(split_text))
+            )
 
         # 숫자 검색 키워드
         for split_number in split_numbers:
-            real_estate_number_keyword_filters.append((RealEstateModel.name.contains(split_number)))
-            public_number_keyword_filters.append((PublicSaleModel.name.contains(split_number)))
-            private_number_keyword_filters.append((PrivateSaleModel.name.contains(split_number)))
+            real_estate_number_keyword_filters.append(
+                (RealEstateModel.name.contains(split_number))
+            )
+            public_number_keyword_filters.append(
+                (PublicSaleModel.name.contains(split_number))
+            )
+            private_number_keyword_filters.append(
+                (PrivateSaleModel.name.contains(split_number))
+            )
 
         if not split_set:
             split_keywords = keywords.split()
@@ -873,37 +889,56 @@ class HouseRepository:
 
         query_cond1 = (
             session.query(PublicSaleModel)
-                .with_entities(
-                    RealEstateModel.id,
-                    PublicSaleModel.name.label("name"),
-                    RealEstateModel.coordinates.ST_Y().label("latitude"),
-                    RealEstateModel.coordinates.ST_X().label("longitude"),
-                    literal("분양", String).label("house_type"),
+            .with_entities(
+                RealEstateModel.id,
+                PublicSaleModel.name.label("name"),
+                RealEstateModel.coordinates.ST_Y().label("latitude"),
+                RealEstateModel.coordinates.ST_X().label("longitude"),
+                literal("분양", String).label("house_type"),
+            )
+            .join(RealEstateModel, RealEstateModel.id == PublicSaleModel.real_estate_id)
+            .filter(*public_filters)
+            .filter(
+                or_(
+                    and_(
+                        *real_estate_text_keyword_filters,
+                        *real_estate_number_keyword_filters,
+                    ),
+                    and_(*public_text_keyword_filters, *public_number_keyword_filters),
                 )
-                .join(RealEstateModel, RealEstateModel.id == PublicSaleModel.real_estate_id)
-                .filter(*public_filters)
-                .filter(or_(and_(*real_estate_text_keyword_filters, *real_estate_number_keyword_filters), and_(*public_text_keyword_filters, *public_number_keyword_filters)))
-                .order_by((RealEstateModel.si_do == "서울특별시").desc())
-                .order_by((RealEstateModel.si_do == "경기도").desc())
-                .limit(10)
+            )
+            .order_by((RealEstateModel.si_do == "서울특별시").desc())
+            .order_by((RealEstateModel.si_do == "경기도").desc())
+            .limit(10)
         )
-
 
         query_cond2 = (
             session.query(PrivateSaleModel)
-                .with_entities(
-                    RealEstateModel.id,
-                    PrivateSaleModel.name.label("name"),
-                    RealEstateModel.coordinates.ST_Y().label("latitude"),
-                    RealEstateModel.coordinates.ST_X().label("longitude"),
-                    literal("매매", String).label("house_type"),
+            .with_entities(
+                RealEstateModel.id,
+                PrivateSaleModel.name.label("name"),
+                RealEstateModel.coordinates.ST_Y().label("latitude"),
+                RealEstateModel.coordinates.ST_X().label("longitude"),
+                literal("매매", String).label("house_type"),
+            )
+            .join(
+                RealEstateModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
+            )
+            .filter(*private_filters)
+            .filter(
+                or_(
+                    and_(
+                        *real_estate_text_keyword_filters,
+                        *real_estate_number_keyword_filters,
+                    ),
+                    and_(
+                        *private_text_keyword_filters, *private_number_keyword_filters
+                    ),
                 )
-                .join(RealEstateModel, RealEstateModel.id == PrivateSaleModel.real_estate_id)
-                .filter(*private_filters)
-                .filter(or_(and_(*real_estate_text_keyword_filters, *real_estate_number_keyword_filters), and_(*private_text_keyword_filters, *private_number_keyword_filters)))
-                .order_by((RealEstateModel.si_do == "서울특별시").desc())
-                .order_by((RealEstateModel.si_do == "경기도").desc())
-                .limit(15)
+            )
+            .order_by((RealEstateModel.si_do == "서울특별시").desc())
+            .order_by((RealEstateModel.si_do == "경기도").desc())
+            .limit(15)
         )
 
         query = query_cond1.union_all(query_cond2)
@@ -912,14 +947,15 @@ class HouseRepository:
 
         result = list()
         for query in query_set:
-            result.append(MapSearchEntity(
-                id=query[0],
-                name=query[1],
-                latitude=query[2],
-                longitude=query[3],
-                house_type=query[4]
-
-            ))
+            result.append(
+                MapSearchEntity(
+                    id=query[0],
+                    name=query[1],
+                    latitude=query[2],
+                    longitude=query[3],
+                    house_type=query[4],
+                )
+            )
 
         return result
 
