@@ -15,12 +15,12 @@ from app import db
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
-    RealEstateWithPrivateSaleEntity,
     HousePublicDetailEntity,
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
     RealEstateReportEntity,
     RealEstateLegalCodeEntity,
+    NearHouseEntity,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 
@@ -94,27 +94,13 @@ class RealEstateModel(db.Model):
             else None,
         )
 
-    def to_estate_with_private_sales_entity(
-        self, avg_trade: Optional[float], avg_private_pyoung: Optional[float]
-    ) -> RealEstateWithPrivateSaleEntity:
-        return RealEstateWithPrivateSaleEntity(
+    def to_near_house_entity(self) -> NearHouseEntity:
+        return NearHouseEntity(
             id=self.id,
-            name=self.name,
-            road_address=self.road_address,
-            jibun_address=self.jibun_address,
-            si_do=self.si_do,
-            si_gun_gu=self.si_gun_gu,
-            dong_myun=self.dong_myun,
-            ri=self.ri,
-            road_name=self.road_name,
-            road_number=self.road_number,
-            land_number=self.land_number,
-            is_available=self.is_available,
+            name=self.private_sales.name,
             latitude=self.latitude,
             longitude=self.longitude,
-            avg_trade_price=avg_trade,
-            avg_private_pyoung_number=avg_private_pyoung,
-            private_sales=self.private_sales.to_entity()
+            private_sales=self.private_sales.to_near_house_entity()
             if self.private_sales
             else None,
         )

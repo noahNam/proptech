@@ -173,7 +173,7 @@ class BoundingDegreeEnum(Enum):
         0.001도 : 111m
     """
 
-    DEGREE = 0.01
+    DEGREE = 0.06
 
 
 class PublicSaleStatusEnum(Enum):
