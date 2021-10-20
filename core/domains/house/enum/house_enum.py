@@ -230,7 +230,7 @@ class PrivateSaleContractStatusEnum(Enum):
             LONG_AGO: 현재 날짜로부터 3개월 이후에 오래된 거래가 있음
             RECENT_CONTRACT: 현재 날짜로부터 3개월 이전 기간에 거래가 있음
     """
+
     NOTHING = 0
     LONG_AGO = 1
     RECENT_CONTRACT = 2
-
