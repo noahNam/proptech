@@ -3,7 +3,7 @@ import re
 import sys
 from datetime import datetime, timedelta
 from time import time
-from typing import List
+from typing import List, Dict, Optional
 
 import inject
 import requests
@@ -18,6 +18,12 @@ from core.domains.house.entity.house_entity import (
     RealEstateLegalCodeEntity,
     PublicSaleEntity,
     PublicSalePhotoEntity,
+    RecentlyContractedEntity,
+    UpdateContractStatusTargetEntity,
+)
+from core.domains.house.enum.house_enum import (
+    RealTradeTypeEnum,
+    PrivateSaleContractStatusEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 
@@ -51,6 +57,13 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
 
         3. public_sale_details -> 취득세 계산
         - 매물 상세 페이지 -> 최대 최소 취득세의 경우 SQL max, min func() 쿼리 사용
+
+        4. private_sales -> 현재 날짜 기준 3개월 이내 거래 상태 업데이트 (trade_status, deposit_status)
+        - private_sales -> 아파트, 오피스텔 건만 업데이트
+        - private_sale_details -> max(contract_date): 최근 거래 기준, 매매, 전세만 업데이트
+        - 현재 날짜 기준 3개월 이내 거래 건이 있다 -> status: 2
+        - 현재 날짜 기준 3개월 이내 거래 건이 없지만 과거 거래가 있다 -> status: 1
+        - 거래가 전혀 없다 -> status: 0
     """
 
     def _calculate_house_acquisition_xax(
@@ -137,6 +150,56 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 }
             )
         return result_dict_list
+
+    def _make_private_sale_status_update_list(
+        self, target_list: List[UpdateContractStatusTargetEntity]
+    ) -> List[dict]:
+
+        result_dict_list = list()
+
+        for target in target_list:
+            status = self._get_private_sales_status(
+                min_contract_date=target.min_contract_date,
+                max_contract_date=target.max_contract_date,
+            )
+            if target.trade_type == RealTradeTypeEnum.TRADING:
+                result_dict_list.append(
+                    {
+                        "id": target.private_sales_id,
+                        "trade_status": status,
+                        "updated_at": get_server_timestamp(),
+                    }
+                )
+            elif target.trade_type == RealTradeTypeEnum.LONG_TERM_RENT:
+                result_dict_list.append(
+                    {
+                        "id": target.private_sales_id,
+                        "deposit_status": status,
+                        "updated_at": get_server_timestamp(),
+                    }
+                )
+            else:
+                continue
+
+        return result_dict_list
+
+    def _get_private_sales_status(
+        self, min_contract_date: Optional[str], max_contract_date: Optional[str]
+    ) -> int:
+        today = (datetime.now()).strftime("%Y%m%d")
+        three_month_from_today = (datetime.now() - timedelta(days=93)).strftime(
+            "%Y%m%d"
+        )
+
+        if not min_contract_date or not max_contract_date:
+            return PrivateSaleContractStatusEnum.NOTHING.value
+
+        if three_month_from_today <= max_contract_date <= today:
+            return PrivateSaleContractStatusEnum.RECENT_CONTRACT.value
+        elif max_contract_date <= three_month_from_today:
+            return PrivateSaleContractStatusEnum.LONG_AGO.value
+        else:
+            return PrivateSaleContractStatusEnum.NOTHING.value
 
     def execute(self):
         logger.info(f"🚀\tPreCalculateAverage Start - {self.client_id}")
@@ -334,6 +397,50 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #     sys.exit(0)
         #
         # exit(os.EX_OK)
+
+        # Batch_step_4 : update_private_sales_status
+        # (현재 날짜 기준 최근 3달 거래 여부 업데이트)
+        try:
+            start_time = time()
+            logger.info(f"🚀\tUpdate_private_sales_status : Start")
+
+            target_ids = self._house_repo.get_private_sales_all_id_list()
+
+            target_list: List[
+                UpdateContractStatusTargetEntity
+            ] = self._house_repo.get_update_status_target_of_private_sale_details(
+                private_sales_ids=target_ids
+            )
+
+            update_list = self._make_private_sale_status_update_list(
+                target_list=target_list
+            )
+
+            try:
+                self._house_repo.bulk_update_status_to_private_sales(
+                    update_list=update_list
+                )
+            except Exception as e:
+                logger.error(
+                    f"Update_private_sales_status - bulk_update_status_to_private_sales "
+                    f"error : {e}"
+                )
+                sys.exit(0)
+
+            logger.info(
+                f"🚀\tUpdate_private_sales_status : Finished !!, "
+                f"records: {time() - start_time} secs, "
+                f"{len(update_list)} Updated, "
+            )
+        except Exception as e:
+            logger.error(f"🚀\tUpdate_private_sales_status Error - {e}")
+            self.send_slack_message(
+                message=f"🚀\tUpdate_private_sales_status Error - {e}"
+            )
+            sentry_sdk.capture_exception(e)
+            sys.exit(0)
+
+        sys.exit(0)
 
     def send_slack_message(self, message: str):
         channel = "#engineering-class"

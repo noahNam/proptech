@@ -13,6 +13,7 @@ from sqlalchemy.sql.functions import _FunctionGenerator
 from app.extensions.database import session
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.math_helper import MathHelper
 from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import (
     get_month_from_today,
@@ -52,6 +53,7 @@ from core.domains.house.entity.house_entity import (
     RecentlyContractedEntity,
     PublicSaleEntity,
     MapSearchEntity,
+    UpdateContractStatusTargetEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -287,7 +289,7 @@ class HouseRepository:
             1평 = 3.3058 (제곱미터)
         """
         if supply_area:
-            return round(supply_area / 3.3058)
+            return MathHelper().round(supply_area / 3.3058)
         else:
             return None
 
@@ -1212,7 +1214,7 @@ class HouseRepository:
                         func.to_date(
                             func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
                         )
-                        - timedelta(days=31)
+                        - timedelta(days=93)
                     ),
                     "YYYYMMDD",
                 ).label("min_contract_date"),
@@ -1242,7 +1244,7 @@ class HouseRepository:
                         func.to_date(
                             func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
                         )
-                        - timedelta(days=31)
+                        - timedelta(days=93)
                     ),
                     "YYYYMMDD",
                 ).label("min_contract_date"),
@@ -2204,3 +2206,125 @@ class HouseRepository:
             return None
 
         return [query.to_near_house_entity() for query in query_set]
+
+    def get_update_status_target_of_private_sale_details(
+        self, private_sales_ids: List[int]
+    ) -> List[UpdateContractStatusTargetEntity]:
+        filters = list()
+        filters.append(
+            and_(PrivateSaleDetailModel.private_sales_id.in_(private_sales_ids),)
+        )
+
+        query_cond_1 = (
+            session.query(PrivateSaleDetailModel)
+            .with_entities(
+                PrivateSaleDetailModel.private_sales_id,
+                func.to_char(
+                    func.to_date(
+                        func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
+                    ),
+                    "YYYYMMDD",
+                ).label("max_contract_date"),
+                func.to_char(
+                    (
+                        func.to_date(
+                            func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
+                        )
+                        - timedelta(days=93)
+                    ),
+                    "YYYYMMDD",
+                ).label("min_contract_date"),
+                PrivateSaleDetailModel.trade_type,
+            )
+            .filter(*filters)
+            .filter(PrivateSaleDetailModel.trade_type == "매매")
+            .group_by(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.trade_type,
+            )
+        )
+
+        query_cond_2 = (
+            session.query(PrivateSaleDetailModel)
+            .with_entities(
+                PrivateSaleDetailModel.private_sales_id,
+                func.to_char(
+                    func.to_date(
+                        func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
+                    ),
+                    "YYYYMMDD",
+                ).label("max_contract_date"),
+                func.to_char(
+                    (
+                        func.to_date(
+                            func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
+                        )
+                        - timedelta(days=93)
+                    ),
+                    "YYYYMMDD",
+                ).label("min_contract_date"),
+                PrivateSaleDetailModel.trade_type,
+            )
+            .filter(*filters)
+            .filter(PrivateSaleDetailModel.trade_type == "전세")
+            .group_by(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.trade_type,
+            )
+        )
+
+        query = query_cond_1.union_all(query_cond_2)
+
+        query_set = query.all()
+
+        if not query_set:
+            return []
+
+        return [
+            UpdateContractStatusTargetEntity(
+                private_sales_id=query[0],
+                max_contract_date=query[1],
+                min_contract_date=query[2],
+                trade_type=query[3],
+            )
+            for query in query_set
+        ]
+
+    def bulk_update_status_to_private_sales(self, update_list: List[dict]) -> None:
+        try:
+            session.bulk_update_mappings(
+                PrivateSaleModel, [update_info for update_info in update_list],
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][bulk_update_status_to_private_sales] error : {e}"
+            )
+            raise UpdateFailErrorException
+
+    def get_private_sales_all_id_list(self,) -> Optional[List[int]]:
+        """
+            연립다세대 제외
+        """
+        target_ids = list()
+        filters = list()
+        filters.append(
+            and_(
+                PrivateSaleModel.is_available == "True",
+                PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+            )
+        )
+        query = session.query(PrivateSaleModel).filter(*filters)
+
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        for query in query_set:
+            if query.id:
+                target_ids.append(query.id)
+
+        return target_ids
