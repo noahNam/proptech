@@ -21,7 +21,10 @@ from core.domains.house.entity.house_entity import (
     RecentlyContractedEntity,
     UpdateContractStatusTargetEntity,
 )
-from core.domains.house.enum.house_enum import RealTradeTypeEnum, PrivateSaleContractStatusEnum
+from core.domains.house.enum.house_enum import (
+    RealTradeTypeEnum,
+    PrivateSaleContractStatusEnum,
+)
 from core.domains.house.repository.house_repository import HouseRepository
 
 logger = logger_.getLogger(__name__)
@@ -64,7 +67,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     """
 
     def _calculate_house_acquisition_xax(
-            self, private_area: float, supply_price: int
+        self, private_area: float, supply_price: int
     ) -> int:
         """
             todo: 부동산 정책이 매년 변경되므로 정기적으로 세율 변경 시 업데이트 필요합니다.
@@ -93,10 +96,10 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 - acquisition_tax(취득세 본세) + local_education_tax(지방교육세) + rural_special_tax(농어촌특별세)
         """
         if (
-                not private_area
-                or private_area == 0
-                or not supply_price
-                or supply_price == 0
+            not private_area
+            or private_area == 0
+            or not supply_price
+            or supply_price == 0
         ):
             return 0
 
@@ -132,7 +135,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return total_acquisition_tax
 
     def _make_acquisition_tax_update_list(
-            self, target_list: List[PublicSaleDetailModel]
+        self, target_list: List[PublicSaleDetailModel]
     ) -> List[dict]:
         result_dict_list = list()
         for target in target_list:
@@ -149,8 +152,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _make_private_sale_status_update_list(
-            self,
-            target_list: List[UpdateContractStatusTargetEntity]
+        self, target_list: List[UpdateContractStatusTargetEntity]
     ) -> List[dict]:
 
         result_dict_list = list()
@@ -158,7 +160,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         for target in target_list:
             status = self._get_private_sales_status(
                 min_contract_date=target.min_contract_date,
-                max_contract_date=target.max_contract_date
+                max_contract_date=target.max_contract_date,
             )
             if target.trade_type == RealTradeTypeEnum.TRADING:
                 result_dict_list.append(
@@ -182,12 +184,12 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _get_private_sales_status(
-            self,
-            min_contract_date: Optional[str],
-            max_contract_date: Optional[str]
+        self, min_contract_date: Optional[str], max_contract_date: Optional[str]
     ) -> int:
         today = (datetime.now()).strftime("%Y%m%d")
-        three_month_from_today = (datetime.now() - timedelta(days=93)).strftime("%Y%m%d")
+        three_month_from_today = (datetime.now() - timedelta(days=93)).strftime(
+            "%Y%m%d"
+        )
 
         if not min_contract_date or not max_contract_date:
             return PrivateSaleContractStatusEnum.NOTHING.value
@@ -406,12 +408,18 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
 
             target_list: List[
                 UpdateContractStatusTargetEntity
-            ] = self._house_repo.get_update_status_target_of_private_sale_details(private_sales_ids=target_ids)
+            ] = self._house_repo.get_update_status_target_of_private_sale_details(
+                private_sales_ids=target_ids
+            )
 
-            update_list = self._make_private_sale_status_update_list(target_list=target_list)
+            update_list = self._make_private_sale_status_update_list(
+                target_list=target_list
+            )
 
             try:
-                self._house_repo.bulk_update_status_to_private_sales(update_list=update_list)
+                self._house_repo.bulk_update_status_to_private_sales(
+                    update_list=update_list
+                )
             except Exception as e:
                 logger.error(
                     f"Update_private_sales_status - bulk_update_status_to_private_sales "
@@ -540,9 +548,9 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         )
 
     def _make_real_estates_legal_code_update_list(
-            self,
-            administrative_info: List[AdministrativeDivisionLegalCodeEntity],
-            target_list: List[RealEstateLegalCodeEntity],
+        self,
+        administrative_info: List[AdministrativeDivisionLegalCodeEntity],
+        target_list: List[RealEstateLegalCodeEntity],
     ) -> List[dict]:
         """
             real_estates.jibun_address 주소가 없을 경우 혹은 건축예정이라 불확실한 경우 직접 매뉴얼 작업 필요
@@ -565,7 +573,7 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
 
                 # 예) 안양1동 -> 안양동으로 처리하여 행정구역 안양동과 매칭되는지 확인
                 if cond_2.match(real_estate.jibun_address) and not cond_2.match(
-                        administrative.short_name
+                    administrative.short_name
                 ):
                     jibun_address_ = re.sub(r"[0-9]+", "", real_estate.jibun_address)
                     dong_myun_ = re.sub(r"[0-9]+", "", dong_myun_)
@@ -591,10 +599,10 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
                 dong_myun_ = dong_myun_.replace(".", "")
 
                 if (
-                        administrative_short_name_ == dong_myun_
-                        and si_do_ in administrative_name_
-                        and si_gun_gu_ in administrative_name_
-                        and administrative_name_ in jibun_address_
+                    administrative_short_name_ == dong_myun_
+                    and si_do_ in administrative_name_
+                    and si_gun_gu_ in administrative_name_
+                    and administrative_name_ in jibun_address_
                 ):
                     front_legal_code = administrative.front_legal_code
                     back_legal_code = administrative.back_legal_code
@@ -660,7 +668,7 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
         )
 
     def _make_default_image_create_list(
-            self, target_list: List[PublicSaleEntity], start_idx: int,
+        self, target_list: List[PublicSaleEntity], start_idx: int,
     ) -> List[dict]:
         """
             사용 전 필수 확인사항: default_image path

@@ -17,10 +17,16 @@ depends_on = None
 
 def upgrade():
     op.add_column(
-        "private_sales", sa.Column("trade_status", sa.SmallInteger(), nullable=False, server_default="0")
+        "private_sales",
+        sa.Column(
+            "trade_status", sa.SmallInteger(), nullable=False, server_default="0"
+        ),
     )
     op.add_column(
-        "private_sales", sa.Column("deposit_status", sa.SmallInteger(), nullable=False, server_default="0")
+        "private_sales",
+        sa.Column(
+            "deposit_status", sa.SmallInteger(), nullable=False, server_default="0"
+        ),
     )
     op.add_column(
         "private_sales",
