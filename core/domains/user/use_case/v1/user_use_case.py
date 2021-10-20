@@ -11,6 +11,7 @@ from app.extensions.queue.sender import QueueMessageSender
 from app.extensions.utils.enum.aws_enum import S3PathEnum, S3BucketEnum
 from app.extensions.utils.event_observer import send_message, get_event_object
 from app.extensions.utils.image_helper import S3Helper
+from app.extensions.utils.math_helper import MathHelper
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.notification.dto.notification_dto import GetBadgeDto
 from core.domains.notification.enum import NotificationTopicEnum
@@ -534,7 +535,7 @@ class GetUserInfoUseCase(UserBaseUseCase):
                         income_by_segment = (
                             int(my_basic_income) * percentage_num
                         ) / 100
-                        income_by_segment = format(round(income_by_segment), ",d")
+                        income_by_segment = format(int(MathHelper.round(num=income_by_segment)), ",d")
                         result_income_by_segment = str(income_by_segment) + "원 이하"
                         calc_result_list.append(result_income_by_segment)
 
@@ -610,7 +611,7 @@ class GetMonthlyIncomesUseCase(UserBaseUseCase):
                 calc_result_list.append(income_by_segment)
             else:
                 income_by_segment = (int(my_basic_income) * percentage_num) / 100
-                income_by_segment = format(round(income_by_segment), ",d")
+                income_by_segment = format(int(MathHelper.round(num=income_by_segment)), ",d")
                 result_income_by_segment = str(income_by_segment) + "원 이하"
                 calc_result_list.append(result_income_by_segment)
 
@@ -866,7 +867,7 @@ class GetSurveysUseCase(UserBaseUseCase):
             my_basic_income = income_result_dict.get(number_dependents)
 
             income_by_segment = my_basic_income * (int(monthly_income_user_value) / 100)
-            income_by_segment = format(round(income_by_segment), ",d")
+            income_by_segment = format(int(MathHelper.round(num=income_by_segment)), ",d")
             result_income_by_segment = str(income_by_segment)
 
             if my_basic_income == income_result_dict.get(8):
