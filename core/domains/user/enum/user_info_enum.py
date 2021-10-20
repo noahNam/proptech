@@ -114,7 +114,7 @@ class MonthlyIncomeEnum(Enum):
     COND_NM_1 = []
 
     # 2021년 맞벌이 기준
-    COND_CD_2 = [50, 80, 110, 120, 130, 140, 160, 0]
+    COND_CD_2 = [50, 80, 100, 110, 120, 130, 140, 160, 0]
     COND_NM_2 = []
 
 
