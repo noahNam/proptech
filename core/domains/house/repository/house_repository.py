@@ -65,7 +65,7 @@ from core.domains.house.enum.house_enum import (
     RentTypeEnum,
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
-    HousingCategoryEnum,
+    HousingCategoryEnum, PrivateSaleContractStatusEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -2186,6 +2186,7 @@ class HouseRepository:
                 PrivateSaleModel.real_estate_id == RealEstateModel.id,
                 PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value,
                 PrivateSaleModel.is_available == "True",
+                PrivateSaleModel.trade_status >= PrivateSaleContractStatusEnum.LONG_AGO.value
             )
         )
 
