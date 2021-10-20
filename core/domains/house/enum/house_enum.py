@@ -220,3 +220,17 @@ class BoundingPublicTypeEnum(Enum):
     PUBLIC_ONLY = 1
     PRIVATE_ONLY = 2
     ALL_PRE_SALE = 3
+
+
+class PrivateSaleContractStatusEnum(Enum):
+    """
+    사용 모델 : PrivateSaleModel
+    사용 목적 : house_worker_use_case -> 3개월 이내 거래여부 판별
+            NOTHING: 거래 없음
+            LONG_AGO: 현재 날짜로부터 3개월 이후에 오래된 거래가 있음
+            RECENT_CONTRACT: 현재 날짜로부터 3개월 이전 기간에 거래가 있음
+    """
+
+    NOTHING = 0
+    LONG_AGO = 1
+    RECENT_CONTRACT = 2
