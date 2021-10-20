@@ -536,3 +536,13 @@ class NearHouseEntity(BaseModel):
 
     class Config:
         use_enum_values = True
+
+
+class UpdateContractStatusTargetEntity(BaseModel):
+    private_sales_id: int
+    min_contract_date: Optional[str]
+    max_contract_date: Optional[str]
+    trade_type: Enum
+
+    class Config:
+        use_enum_values = True
