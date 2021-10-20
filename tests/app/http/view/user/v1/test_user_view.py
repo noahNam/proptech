@@ -625,12 +625,12 @@ def test_get_user_info_view_when_monthly_income_then_success(
         user_id=create_users[0].id,
         user_profile_id=create_users[0].id,
         code=CodeEnum.NUMBER_DEPENDENTS.value,
-        value="5",
+        value="1",
     )
     UserRepository().create_user_info(dto=upsert_user_info_dto)
     #############################################################################################
 
-    user_id = create_users[0].id
+    user_id = upsert_user_info_dto.user_id
     authorization = make_authorization(user_id=user_id)
     headers = make_header(
         authorization=authorization,
@@ -646,20 +646,20 @@ def test_get_user_info_view_when_monthly_income_then_success(
     data = response.get_json()["data"]
     assert response.status_code == 200
 
-    # 맞벌이, 부양가족 5인 기준
+    # 맞벌이, 부양가족 1인 기준
     for survay in data["surveys"]:
         if survay["code"] == CodeEnum.MONTHLY_INCOME.value:
             assert survay["code_values"]["name"] == [
-                "3,696,824원 이하",
-                "5,914,918원 이하",
-                "8,133,012원 이하",
-                "8,872,376원 이하",
-                "9,611,741원 이하",
-                "10,351,106원 이하",
-                "11,829,835원 이하",
-                "11,829,835원 초과",
+                '3,015,080원 이하',
+                '4,221,112원 이하',
+                '4,824,128원 이하',
+                '6,030,160원 이하',
+                '6,633,176원 이하',
+                '7,236,192원 이하',
+                '7,839,208원 이하',
+                '8,442,224원 이하',
+                '8,442,224원 초과'
             ]
-
 
 @patch(
     "core.domains.user.use_case.v1.user_use_case.UpsertUserInfoUseCase._send_sqs_message",
