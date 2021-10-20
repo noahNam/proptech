@@ -429,6 +429,7 @@ def test_get_user_info_when_monthly_income_then_success(
             assert value.code_values.name == [
                 "3,696,824원 이하",
                 "5,914,918원 이하",
+                "7,393,647원 이하",
                 "8,133,012원 이하",
                 "8,872,376원 이하",
                 "9,611,741원 이하",

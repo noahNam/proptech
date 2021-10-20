@@ -3,6 +3,7 @@ from typing import List
 
 import pytest
 
+from app.extensions.utils.math_helper import MathHelper
 from app.persistence.model import (
     AppAgreeTermsModel,
     UserProfileModel,
@@ -345,7 +346,7 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
 
         for percentage_num in monthly_income_enum:
             income_by_segment = (int(my_basic_income) * percentage_num) / 100
-            income_by_segment = round(income_by_segment)
+            income_by_segment = MathHelper.round(num=income_by_segment)
             calc_result_list.append(income_by_segment)
 
         user_info_code_value_entity = UserInfoCodeValueEntity()
