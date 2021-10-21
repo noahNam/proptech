@@ -66,6 +66,14 @@ typed-ast = ">=1.4.0"
 d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
 
 [[package]]
+name = "blinker"
+version = "1.4"
+description = "Fast, simple object-to-object and broadcast signaling"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "boto3"
 version = "1.12.17"
 description = "The AWS SDK for Python"
@@ -928,7 +936,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "31a0d115c637a1d48d3cb4fdadb562ec36f4024c68e50567bd2f478a77f407a8"
+content-hash = "bf3e71af5dd6cc917933b07dbfebbb05e5571cd11da1d9c5ddf9b4b2d55388a3"
 
 [metadata.files]
 alembic = [
@@ -950,6 +958,9 @@ attrs = [
 black = [
     {file = "black-19.10b0-py36-none-any.whl", hash = "sha256:1b30e59be925fafc1ee4565e5e08abef6b03fe455102883820fe5ee2e4734e0b"},
     {file = "black-19.10b0.tar.gz", hash = "sha256:c2edb73a08e9e0e6f65a0e6af18b059b8b1cdd5bef997d7a0b181df93dc81539"},
+]
+blinker = [
+    {file = "blinker-1.4.tar.gz", hash = "sha256:471aee25f3992bd325afa3772f1063dbdbbca947a041b8b89466dc00d606f8b6"},
 ]
 boto3 = [
     {file = "boto3-1.12.17-py2.py3-none-any.whl", hash = "sha256:ef2d050e0c37e00dab6ff1135befe7ed4b9e1ec26c752b8ad01d043e184ea6d1"},
