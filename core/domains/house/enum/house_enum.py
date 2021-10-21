@@ -155,13 +155,15 @@ class BannerSubTopic(Enum):
     BOTTOM_SCREEN_BANNER = 9
 
 
-class PricePerMeterEnum(Enum):
+class CalcPyoungEnum(Enum):
     """
-        평당가격 계산할 때 사용
-        AVG_DEFAULT_PYOUNG = 클러스터링시 보여주는 평수가 몇평 기준인지를 나타내는 상수
+        CALC_VAR : 평수 구할 때 사용하는 상수
+        TEMP_CALC_VAR : 전용면적으로 평수를 구할때 사용하는 상수
+        AVG_DEFAULT_PYOUNG : 클러스터링시 보여주는 평수가 몇평 기준인지를 나타내는 상수
     """
 
     CALC_VAR = 3.3058
+    TEMP_CALC_VAR = 1.35
     AVG_DEFAULT_PYOUNG = 34
 
 

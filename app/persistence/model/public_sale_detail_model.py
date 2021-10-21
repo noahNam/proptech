@@ -18,7 +18,7 @@ from core.domains.house.entity.house_entity import (
     PublicSaleDetailEntity,
     PublicSaleDetailReportEntity,
 )
-from core.domains.house.enum.house_enum import PricePerMeterEnum
+from core.domains.house.enum.house_enum import CalcPyoungEnum
 from core.domains.report.enum.report_enum import RegionEnum
 
 
@@ -137,7 +137,7 @@ class PublicSaleDetailModel(db.Model):
             pyoung_number=HouseHelper.convert_area_to_pyoung(self.supply_area),
             price_per_meter=int(
                 self.supply_price
-                / (self.supply_area / PricePerMeterEnum.CALC_VAR.value)
+                / (self.supply_area / CalcPyoungEnum.CALC_VAR.value)
             )
             if self.supply_price
             else None,
