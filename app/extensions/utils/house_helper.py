@@ -23,6 +23,8 @@ class HouseHelper:
     @classmethod
     def convert_area_to_temp_pyoung(cls, area: Optional[float]) -> Optional[int]:
         if area:
-            return int(MathHelper.round((area * 1.35) / PricePerMeterEnum.CALC_VAR.value))
+            return int(
+                MathHelper.round((area * 1.35) / PricePerMeterEnum.CALC_VAR.value)
+            )
         else:
             return None

@@ -1,24 +1,20 @@
 import re
 from datetime import timedelta
 from enum import Enum
-from math import ceil
 from typing import Optional, List, Any, Tuple
 
-from geoalchemy2 import Geometry, func as geo_func
-from sqlalchemy import and_, func, or_, literal, String, exists, Integer
+from geoalchemy2 import Geometry
+from sqlalchemy import and_, func, or_, literal, String, exists, Integer, case
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased, Query
 from sqlalchemy.sql.functions import _FunctionGenerator
 
 from app.extensions.database import session
+from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
-from app.extensions.utils.math_helper import MathHelper
 from app.extensions.utils.query_helper import RawQueryHelper
-from app.extensions.utils.time_helper import (
-    get_month_from_today,
-    get_server_timestamp,
-)
+from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
     PrivateSaleModel,
@@ -58,7 +54,6 @@ from core.domains.house.entity.house_entity import (
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
     BuildTypeEnum,
-    RealTradeTypeEnum,
     HouseTypeEnum,
     DivisionLevelEnum,
     PublicSaleStatusEnum,
@@ -66,6 +61,7 @@ from core.domains.house.enum.house_enum import (
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
     HousingCategoryEnum,
+    PricePerMeterEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -282,17 +278,6 @@ class HouseRepository:
 
         return self._make_bounding_administrative_entity(queryset=queryset)
 
-    def _convert_supply_area_to_pyoung_number(
-        self, supply_area: Optional[float]
-    ) -> Optional[int]:
-        """
-            1평 = 3.3058 (제곱미터)
-        """
-        if supply_area:
-            return MathHelper().round(supply_area / 3.3058)
-        else:
-            return None
-
     def _is_enable_real_estate(self, real_estate_id: int) -> bool:
         real_estate = (
             session.query(RealEstateModel).filter_by(id=real_estate_id).first()
@@ -388,10 +373,10 @@ class HouseRepository:
         # max_supply_price) [8]
         return house_with_public_sales[0].to_house_with_public_detail_entity(
             is_like=is_like,
-            min_pyoung_number=self._convert_supply_area_to_pyoung_number(
+            min_pyoung_number=HouseHelper.convert_area_to_pyoung(
                 house_with_public_sales[1]
             ),
-            max_pyoung_number=self._convert_supply_area_to_pyoung_number(
+            max_pyoung_number=HouseHelper.convert_area_to_pyoung(
                 house_with_public_sales[2]
             ),
             min_supply_area=house_with_public_sales[1],
@@ -399,7 +384,7 @@ class HouseRepository:
             avg_supply_price=house_with_public_sales[3],
             supply_price_per_pyoung=self._get_supply_price_per_pyoung(
                 supply_price=float(house_with_public_sales[3]),
-                avg_pyoung_number=self._convert_supply_area_to_pyoung_number(
+                avg_pyoung_number=HouseHelper.convert_area_to_pyoung(
                     house_with_public_sales[4]
                 ),
             ),
@@ -726,7 +711,7 @@ class HouseRepository:
 
         if queryset:
             for query in queryset:
-                # todo. 찜한 여부 제거 (퍼포먼스 이슈) -> 무조건 false 반환
+                # (더 이상 사용안함) 찜한 여부 제거 (퍼포먼스 이슈) -> 무조건 false 반환
                 # is_like = self.is_user_liked_house(
                 #     self.get_public_interest_house(
                 #         dto=GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
@@ -763,8 +748,7 @@ class HouseRepository:
 
     def get_search_house_list(self, keywords: str) -> List[MapSearchEntity]:
         """
-            todo: 검색 성능 고도화 필요
-            todo: private_sales 붙이므로 front 화면 변경 필요 (핑퐁 작업 필요)
+            todo: 검색 성능 고도화 필요, private_sales 붙이므로 front 화면 변경 필요 (핑퐁 작업 필요)
             - full_scan 방식
             - %LIKE% : 서로 다른 두 단어부터 검색 불가
             - Full Text Search 필요(ts_vector, pg_trgm, elastic_search...)
@@ -937,132 +921,6 @@ class HouseRepository:
 
         return result
 
-    # def get_search_house_list(
-    #     self, dto: GetSearchHouseListDto
-    # ) -> List[GetSearchHouseListEntity]:
-    #     """
-    #         todo: 검색 성능 고도화 필요
-    #         todo: private_sales 붙이므로 front 화면 변경 필요 (핑퐁 작업 필요)
-    #         - full_scan 방식
-    #         - %LIKE% : 서로 다른 두 단어부터 검색 불가
-    #         - Full Text Search 필요(ts_vector, pg_trgm, elastic_search...)
-    #     """
-    #     public_filters = list()
-    #     private_filters = list()
-    #     text_keyword_filters = list()
-    #     number_keyword_filters = list()
-    #
-    #     public_filters.append(
-    #         and_(
-    #             RealEstateModel.is_available == "True",
-    #             PublicSaleModel.is_available == "True",
-    #             PublicSaleModel.rent_type != RentTypeEnum.RENTAL.value,
-    #             PublicSalePhotoModel.is_thumbnail == True,
-    #         ),
-    #     )
-    #
-    #     private_filters.append(and_(RealEstateModel.is_available == "True",),)
-    #
-    #     hangul = re.compile("[^ ㄱ-ㅣ가-힣]+")
-    #     split_numbers = hangul.findall(dto.keywords)
-    #
-    #     split_list = list()
-    #     for split_number in split_numbers:
-    #         split_list.append(dto.keywords.split(split_number))
-    #
-    #     # 리스트안의 리스트 합치기
-    #     split_list = sum(split_list, [])
-    #
-    #     # 공백 원소 제거
-    #     split_list = list(filter(bool, split_list))
-    #
-    #     # 검색 효율 떨어뜨리는 문자 제거
-    #     word_list = ["단지", "아파트", "마을", "0"]
-    #     for word in word_list:
-    #         if word in split_list:
-    #             split_list.remove(word)
-    #
-    #     split_set = set(split_list)
-    #
-    #     # 문자열 키워드
-    #     for split_text in split_set:
-    #         text_keyword_filters.append((RealEstateModel.name.contains(split_text)))
-    #         number_keyword_filters.append((PublicSaleModel.name.contains(split_text)))
-    #
-    #     # 숫자 키워드
-    #     for split_number in split_numbers:
-    #         text_keyword_filters.append((RealEstateModel.name.contains(split_number)))
-    #         number_keyword_filters.append((PublicSaleModel.name.contains(split_number)))
-    #
-    #     if not text_keyword_filters:
-    #         split_keywords = dto.keywords.split()
-    #
-    #         # 검색 효율 떨어뜨리는 문자 제거
-    #         for word in word_list:
-    #             if word in split_keywords:
-    #                 split_keywords.remove(word)
-    #
-    #         for split_keyword in split_keywords:
-    #             text_keyword_filters.append(
-    #                 or_(
-    #                     (RealEstateModel.name.contains(split_keyword)),
-    #                     (PublicSaleModel.name.contains(split_keyword)),
-    #                 )
-    #             )
-    #
-    #     query_cond1 = (
-    #         session.query(PublicSaleModel)
-    #         .with_entities(
-    #             PublicSaleModel.id,
-    #             PublicSaleModel.name,
-    #             RealEstateModel.jibun_address,
-    #             PublicSaleModel.subscription_start_date,
-    #             PublicSaleModel.subscription_end_date,
-    #             PublicSaleModel.min_down_payment,
-    #             PublicSaleModel.max_down_payment,
-    #             PublicSalePhotoModel.path,
-    #             func.avg(PublicSaleAvgPriceModel.supply_price).label(
-    #                 "avg_supply_price"
-    #             ),
-    #         )
-    #         .join(PublicSaleModel.real_estates)
-    #         .join(PublicSaleModel.public_sale_photos, isouter=True)
-    #         .join(PublicSaleModel.public_sale_avg_prices)
-    #         .filter(*public_filters)
-    #         .filter(or_(and_(*text_keyword_filters), and_(*number_keyword_filters)))
-    #         .group_by(PublicSaleModel.id, RealEstateModel.id, PublicSalePhotoModel.id)
-    #         .limit(30)
-    #     )
-    #
-    #     # query_cond2 = (
-    #     #     session.query(PrivateSaleModel)
-    #     #     .with_entities(
-    #     #         PrivateSaleModel.id,
-    #     #         PrivateSaleModel.name,
-    #     #         RealEstateModel.jibun_address,
-    #     #         literal("", String).label("subscription_start_date"),
-    #     #         literal("", String).label("subscription_end_date"),
-    #     #         literal(0, Integer).label("min_down_payment"),
-    #     #         literal(0, Integer).label("max_down_payment"),
-    #     #         literal("", String).label("path"),
-    #     #         literal(0, Integer).label("avg_supply_price"),
-    #     #         func.avg(PrivateSaleAvgPriceModel.trade_price).label("avg_trade_price"),
-    #     #     )
-    #     #     .join(PrivateSaleModel.real_estates)
-    #     #     .join(PrivateSaleModel.private_sale_avg_prices)
-    #     #     .filter(*private_filters)
-    #     #     .filter(and_(or_(*text_keyword_filters), or_(*number_keyword_filters)))
-    #     #     .group_by(PrivateSaleModel.id, RealEstateModel.id)
-    #     #     .limit(15)
-    #     # )
-    #
-    #     # query = query_cond1.union_all(query_cond2)
-    #     queryset = query_cond1.all()
-    #
-    #     return self._make_get_search_house_list_entity(
-    #         queryset=queryset, user_id=dto.user_id,
-    #     )
-
     def get_geometry_coordinates_from_real_estate(
         self, real_estate_id: int
     ) -> Optional[Geometry]:
@@ -1197,12 +1055,12 @@ class HouseRepository:
             and_(PrivateSaleDetailModel.private_sales_id.in_(private_sales_ids),)
         )
 
-        # todo. 추후 배치 돌릴시에는 한달 검색 조건 추가 필요
         sub_query_cond_1 = (
             session.query(PrivateSaleDetailModel)
             .with_entities(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
                 func.to_char(
                     func.to_date(
                         func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
@@ -1224,6 +1082,7 @@ class HouseRepository:
             .group_by(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
                 PrivateSaleDetailModel.trade_type,
             )
         ).subquery()
@@ -1233,6 +1092,7 @@ class HouseRepository:
             .with_entities(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
                 func.to_char(
                     func.to_date(
                         func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
@@ -1254,6 +1114,7 @@ class HouseRepository:
             .group_by(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
                 PrivateSaleDetailModel.trade_type,
             )
         ).subquery()
@@ -1263,6 +1124,7 @@ class HouseRepository:
             .with_entities(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
                 func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
                 literal(0, Integer).label("avg_deposit_price"),
             )
@@ -1289,6 +1151,7 @@ class HouseRepository:
             .group_by(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
                 sub_query_cond_1.c.min_contract_date,
                 sub_query_cond_1.c.max_contract_date,
             )
@@ -1299,6 +1162,7 @@ class HouseRepository:
             .with_entities(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
                 literal(0, Integer).label("avg_trade_price"),
                 func.avg(PrivateSaleDetailModel.deposit_price).label(
                     "avg_deposit_price"
@@ -1327,12 +1191,34 @@ class HouseRepository:
             .group_by(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
                 sub_query_cond_2.c.min_contract_date,
                 sub_query_cond_2.c.max_contract_date,
             )
         )
 
         union_query = query_cond1.union_all(query_cond2).subquery()
+        pyoung_case = case(
+            [
+                (
+                    and_(
+                        union_query.columns.private_sale_details_supply_area != 0,
+                        union_query.columns.private_sale_details_supply_area != None,
+                    ),
+                    func.round(
+                        union_query.columns.private_sale_details_supply_area
+                        / PricePerMeterEnum.CALC_VAR.value
+                    ),
+                ),
+                (
+                    union_query.columns.private_sale_details_supply_area == 0,
+                    func.round(
+                        (union_query.columns.private_sale_details_private_area * 1.35)
+                        / PricePerMeterEnum.CALC_VAR.value
+                    ),
+                ),
+            ]
+        )
 
         query = (
             session.query(
@@ -1341,6 +1227,9 @@ class HouseRepository:
                 ),
                 union_query.columns.private_sale_details_private_area.label(
                     "private_area"
+                ),
+                union_query.columns.private_sale_details_supply_area.label(
+                    "supply_area"
                 ),
                 func.ceil(
                     func.max(union_query.columns.avg_trade_price).label(
@@ -1362,21 +1251,17 @@ class HouseRepository:
                     union_query.columns.private_sale_details_private_sales_id
                     == PrivateSaleAvgPriceModel.private_sales_id
                 )
-                & (
-                    func.ceil(
-                        (union_query.columns.private_sale_details_private_area * 1.35)
-                        / 3.3058
-                    )
-                    == PrivateSaleAvgPriceModel.pyoung
-                ),
+                & (func.round(pyoung_case) == PrivateSaleAvgPriceModel.pyoung),
                 isouter=True,
             )
             .group_by(
                 union_query.columns.private_sale_details_private_sales_id,
                 union_query.columns.private_sale_details_private_area,
+                union_query.columns.private_sale_details_supply_area,
             )
         )
 
+        RawQueryHelper.print_raw_query(query)
         query_set = query.all()
 
         if not query_set:
@@ -1386,9 +1271,10 @@ class HouseRepository:
             RecentlyContractedEntity(
                 private_sales_id=query[0],
                 private_area=query[1],
-                avg_trade_price=query[2],
-                avg_deposit_price=query[3],
-                private_sale_avg_price_id=query[4],
+                supply_area=query[2],
+                avg_trade_price=query[3],
+                avg_deposit_price=query[4],
+                private_sale_avg_price_id=query[5],
             )
             for query in query_set
         ]
@@ -1401,16 +1287,16 @@ class HouseRepository:
         avg_prices_update_list = list()
         avg_prices_create_list = list()
 
-        # query_set : [(private_area, avg_trade_prices, avg_deposit_prices), ...]
         for recent_info in recent_infos:
+            # 현재 공급면적이 없는 것들이 많기 때문에 이럴 경우 전용면적을 계산식을 통해 입력
+            pyoung = (
+                HouseHelper.convert_area_to_pyoung(recent_info.supply_area)
+                if not recent_info.supply_area and recent_info.supply_area != 0
+                else HouseHelper.convert_area_to_temp_pyoung(recent_info.private_area)
+            )
             avg_price_info = {
                 "private_sales_id": recent_info.private_sales_id,
-                "pyoung": ceil(
-                    recent_info.private_area * 1.35 / 3.3058
-                ),  # todo. 공급면적 들어오기 전까지 사용 수식
-                # "pyoung": self._convert_supply_area_to_pyoung_number(
-                #     supply_area=query[0]
-                # ),
+                "pyoung": pyoung,
                 "default_pyoung": default_pyoung_dict.get(recent_info.private_sales_id),
                 "trade_price": recent_info.avg_trade_price,
                 "deposit_price": recent_info.avg_deposit_price,
@@ -1482,10 +1368,11 @@ class HouseRepository:
             session.query(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
                 func.row_number()
                 .over(
                     partition_by=PrivateSaleDetailModel.private_sales_id,
-                    order_by=func.count(PrivateSaleDetailModel.private_area).desc(),
+                    order_by=func.count(PrivateSaleDetailModel.supply_area).desc(),
                 )
                 .label("rank"),
             )
@@ -1493,6 +1380,7 @@ class HouseRepository:
             .group_by(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
             )
         ).subquery()
 
@@ -1500,17 +1388,29 @@ class HouseRepository:
 
         query = (
             session.query(sub_q)
-            .with_entities(sub_q.c.private_sales_id, sub_q.c.private_area,)
-            .group_by(sub_q.c.private_sales_id, sub_q.c.private_area, sub_q.c.rank,)
+            .with_entities(
+                sub_q.c.private_sales_id, sub_q.c.private_area, sub_q.c.supply_area,
+            )
+            .group_by(
+                sub_q.c.private_sales_id,
+                sub_q.c.private_area,
+                sub_q.c.supply_area,
+                sub_q.c.rank,
+            )
             .having(sub_q.c.rank == 1)
         )
 
         query_set = query.all()
 
-        # todo. 공급면적 들어오기 전까지 사용 수식
         default_pyoung_dict = dict()
         for query in query_set:
-            default_pyoung_dict.update({query[0]: ceil(query[1] * 1.35 / 3.3058)})
+            # 현재 공급면적이 없는 것들이 많기 때문에 이럴 경우 전용면적을 계산식을 통해 입력
+            pyoung = (
+                HouseHelper.convert_area_to_pyoung(query[2])
+                if not query[2] and query[2] != 0
+                else HouseHelper.convert_area_to_temp_pyoung(query[1])
+            )
+            default_pyoung_dict.update({query[0]: pyoung})
 
         return default_pyoung_dict
 
@@ -1525,7 +1425,6 @@ class HouseRepository:
             .filter(PublicSaleDetailModel.public_sales_id == public_sales_id)
             .group_by(PublicSaleDetailModel.supply_area)
         )
-        # query_set: [(supply_area, avg_supply_price)]
         return query.all()
 
     def get_default_pyoung_number_for_public_sale(self, public_sales_id: int) -> int:
@@ -1545,11 +1444,10 @@ class HouseRepository:
             )
             .limit(1)
         )
-        # query_set: [(supply_area, max(count))]
         query_set = query.all()
 
-        return self._convert_supply_area_to_pyoung_number(
-            supply_area=query_set[0][0] if query_set else 0
+        return HouseHelper.convert_area_to_pyoung(
+            area=query_set[0][0] if query_set else 0
         )
 
     def _is_exists_public_sale_avg_prices(
@@ -1579,9 +1477,7 @@ class HouseRepository:
         for query in query_set:
             avg_price_info = {
                 "public_sales_id": public_sales_id,
-                "pyoung": self._convert_supply_area_to_pyoung_number(
-                    supply_area=query[0]
-                ),
+                "pyoung": HouseHelper.convert_area_to_pyoung(area=query[0]),
                 "default_pyoung": default_pyoung,
                 "supply_price": query[1],
             }
@@ -1660,7 +1556,28 @@ class HouseRepository:
         filters.append(PrivateSaleDetailModel.trade_type != "월세")
         filters.append(PrivateSaleDetailModel.is_available == True)
 
-        # todo. 평수 계산 변경
+        pyoung_case = case(
+            [
+                (
+                    and_(
+                        PrivateSaleDetailModel.supply_area != 0,
+                        PrivateSaleDetailModel.supply_area != None,
+                    ),
+                    func.round(
+                        PrivateSaleDetailModel.supply_area
+                        / PricePerMeterEnum.CALC_VAR.value
+                    ),
+                ),
+                (
+                    PrivateSaleDetailModel.supply_area == 0,
+                    func.round(
+                        (PrivateSaleDetailModel.private_area * 1.35)
+                        / PricePerMeterEnum.CALC_VAR.value
+                    ),
+                ),
+            ]
+        )
+
         query_cond1 = (
             session.query(PrivateSaleModel)
             .with_entities(
@@ -1668,9 +1585,7 @@ class HouseRepository:
                 PrivateSaleModel.id,
                 PrivateSaleModel.building_type,
                 PrivateSaleDetailModel.trade_type,
-                func.sum(
-                    func.round((PrivateSaleDetailModel.private_area * 1.35) / 3.3058)
-                ).label("pyoung"),
+                func.sum(pyoung_case).label("pyoung"),
                 func.sum(PrivateSaleDetailModel.trade_price).label(
                     "apt_sum_trade_price"
                 ),
@@ -1701,9 +1616,7 @@ class HouseRepository:
                 PrivateSaleModel.id,
                 PrivateSaleModel.building_type,
                 PrivateSaleDetailModel.trade_type,
-                func.sum(
-                    func.round((PrivateSaleDetailModel.private_area * 1.35) / 3.3058)
-                ).label("pyoung"),
+                func.sum(pyoung_case).label("pyoung"),
                 literal(0, Integer).label("apt_sum_trade_price"),
                 literal(0, Integer).label("apt_sum_deposit_price"),
                 func.sum(PrivateSaleDetailModel.trade_price).label(
@@ -1742,27 +1655,27 @@ class HouseRepository:
                     func.round(
                         func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.apt_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_deposit_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_deposit_price"),
             )
             .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
@@ -1816,27 +1729,27 @@ class HouseRepository:
                     func.round(
                         func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.apt_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_deposit_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_deposit_price"),
             )
             .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
@@ -1898,27 +1811,27 @@ class HouseRepository:
                     func.round(
                         func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.apt_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_deposit_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * 34
+                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_deposit_price"),
             )
             .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
