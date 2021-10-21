@@ -130,6 +130,7 @@ class PrivateSaleDetailEntity(BaseModel):
 class RecentlyContractedEntity(BaseModel):
     private_sales_id: int
     private_area: float
+    supply_area: Optional[float]
     avg_trade_price: Optional[int]
     avg_deposit_price: Optional[int]
     private_sale_avg_price_id: Optional[int]

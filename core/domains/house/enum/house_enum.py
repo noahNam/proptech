@@ -158,9 +158,11 @@ class BannerSubTopic(Enum):
 class PricePerMeterEnum(Enum):
     """
         평당가격 계산할 때 사용
+        AVG_DEFAULT_PYOUNG = 클러스터링시 보여주는 평수가 몇평 기준인지를 나타내는 상수
     """
 
     CALC_VAR = 3.3058
+    AVG_DEFAULT_PYOUNG = 34
 
 
 class BoundingDegreeEnum(Enum):

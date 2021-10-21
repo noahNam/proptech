@@ -12,6 +12,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, backref
 
 from app import db
+from app.extensions.utils.house_helper import HouseHelper
 from app.persistence.model.public_sale_model import PublicSaleModel
 from core.domains.house.entity.house_entity import (
     PublicSaleDetailEntity,
@@ -68,9 +69,11 @@ class PublicSaleDetailModel(db.Model):
             id=self.id,
             public_sales_id=self.public_sales_id,
             private_area=self.private_area,
-            private_pyoung_number=self.convert_area_to_pyoung(self.private_area),
+            private_pyoung_number=HouseHelper.convert_area_to_pyoung(
+                self.private_area
+            ),  # todo. @Harry 이거 왜 필요한가요?
             supply_area=self.supply_area,
-            supply_pyoung_number=self.convert_area_to_pyoung(self.supply_area),
+            supply_pyoung_number=HouseHelper.convert_area_to_pyoung(self.supply_area),
             supply_price=self.supply_price,
             total_household=self.total_household,
             acquisition_tax=self.acquisition_tax,
@@ -131,9 +134,7 @@ class PublicSaleDetailModel(db.Model):
             old_parent_house_hold=self.old_parent_house_hold,
             first_life_house_hold=self.first_life_house_hold,
             general_household=self.general_household,
-            pyoung_number=round(self.supply_area / PricePerMeterEnum.CALC_VAR.value)
-            if self.supply_area
-            else None,
+            pyoung_number=HouseHelper.convert_area_to_pyoung(self.supply_area),
             price_per_meter=int(
                 self.supply_price
                 / (self.supply_area / PricePerMeterEnum.CALC_VAR.value)
@@ -147,15 +148,6 @@ class PublicSaleDetailModel(db.Model):
             if self.general_supply_results
             else None,
         )
-
-    def convert_area_to_pyoung(self, area: Optional[float]) -> Optional[int]:
-        """
-            1평 = 3.3058 (제곱미터)
-        """
-        if area:
-            return round(area / 3.3058)
-        else:
-            return None
 
     @property
     def total_household(self) -> Optional[int]:
