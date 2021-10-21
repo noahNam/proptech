@@ -61,7 +61,7 @@ from core.domains.house.enum.house_enum import (
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
     HousingCategoryEnum,
-    PricePerMeterEnum,
+    CalcPyoungEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -1207,14 +1207,14 @@ class HouseRepository:
                     ),
                     func.round(
                         union_query.columns.private_sale_details_supply_area
-                        / PricePerMeterEnum.CALC_VAR.value
+                        / CalcPyoungEnum.CALC_VAR.value
                     ),
                 ),
                 (
                     union_query.columns.private_sale_details_supply_area == 0,
                     func.round(
-                        (union_query.columns.private_sale_details_private_area * 1.35)
-                        / PricePerMeterEnum.CALC_VAR.value
+                        (union_query.columns.private_sale_details_private_area * CalcPyoungEnum.TEMP_CALC_VAR.value)
+                        / CalcPyoungEnum.CALC_VAR.value
                     ),
                 ),
             ]
@@ -1565,14 +1565,14 @@ class HouseRepository:
                     ),
                     func.round(
                         PrivateSaleDetailModel.supply_area
-                        / PricePerMeterEnum.CALC_VAR.value
+                        / CalcPyoungEnum.CALC_VAR.value
                     ),
                 ),
                 (
                     PrivateSaleDetailModel.supply_area == 0,
                     func.round(
-                        (PrivateSaleDetailModel.private_area * 1.35)
-                        / PricePerMeterEnum.CALC_VAR.value
+                        (PrivateSaleDetailModel.private_area * CalcPyoungEnum.TEMP_CALC_VAR.value)
+                        / CalcPyoungEnum.CALC_VAR.value
                     ),
                 ),
             ]
@@ -1655,27 +1655,27 @@ class HouseRepository:
                     func.round(
                         func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.apt_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_deposit_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_deposit_price"),
             )
             .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
@@ -1729,27 +1729,27 @@ class HouseRepository:
                     func.round(
                         func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.apt_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_deposit_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_deposit_price"),
             )
             .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)
@@ -1811,27 +1811,27 @@ class HouseRepository:
                     func.round(
                         func.sum(sub_q.c.apt_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.apt_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("apt_per_deposit_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_trade_price) / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_trade_price"),
                 (
                     func.round(
                         func.sum(sub_q.c.op_sum_deposit_price)
                         / func.sum(sub_q.c.pyoung)
                     )
-                    * PricePerMeterEnum.AVG_DEFAULT_PYOUNG.value
+                    * CalcPyoungEnum.AVG_DEFAULT_PYOUNG.value
                 ).label("op_per_deposit_price"),
             )
             .join(sub_q, RealEstateModel.id == sub_q.c.private_sales_real_estate_id)

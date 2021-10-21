@@ -1,7 +1,7 @@
 from typing import Optional
 
 from app.extensions.utils.math_helper import MathHelper
-from core.domains.house.enum.house_enum import PricePerMeterEnum
+from core.domains.house.enum.house_enum import CalcPyoungEnum
 
 
 class HouseHelper:
@@ -16,7 +16,7 @@ class HouseHelper:
         """
 
         if area:
-            return int(MathHelper.round(area / PricePerMeterEnum.CALC_VAR.value))
+            return int(MathHelper.round(area / CalcPyoungEnum.CALC_VAR.value))
         else:
             return None
 
@@ -24,7 +24,7 @@ class HouseHelper:
     def convert_area_to_temp_pyoung(cls, area: Optional[float]) -> Optional[int]:
         if area:
             return int(
-                MathHelper.round((area * 1.35) / PricePerMeterEnum.CALC_VAR.value)
+                MathHelper.round((area * CalcPyoungEnum.TEMP_CALC_VAR.value) / CalcPyoungEnum.CALC_VAR.value)
             )
         else:
             return None
