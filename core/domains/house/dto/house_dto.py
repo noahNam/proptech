@@ -1,3 +1,5 @@
+from typing import Optional, List
+
 from pydantic import BaseModel
 
 
@@ -7,13 +9,14 @@ class CoordinatesRangeDto(BaseModel):
         경도: X (37.xxx)
     """
 
-    start_x: float
-    start_y: float
-    end_x: float
-    end_y: float
-    level: int
-    private_type: int
-    public_type: int
+    start_x: Optional[float]
+    start_y: Optional[float]
+    end_x: Optional[float]
+    end_y: Optional[float]
+    level: Optional[int]
+    private_type: Optional[int]
+    public_type: Optional[int]
+    public_status: Optional[List[int]]
 
 
 class UpsertInterestHouseDto(BaseModel):
