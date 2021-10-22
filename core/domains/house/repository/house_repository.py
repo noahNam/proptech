@@ -181,7 +181,7 @@ class HouseRepository:
         bounding_filter: _FunctionGenerator,
         private_filters: List[Any],
         public_filters: List[Any],
-        public_status_filters: List[int]
+        public_status_filters: List[int],
     ) -> Optional[list]:
         filters = list()
         filters.append(bounding_filter)
@@ -236,7 +236,10 @@ class HouseRepository:
                 continue
 
             # 분양진행 상태를 필터링한다.
-            if bounding_entity.public_sales and bounding_entity.public_sales.status in public_status_filters:
+            if (
+                bounding_entity.public_sales
+                and bounding_entity.public_sales.status in public_status_filters
+            ):
                 result.append(bounding_entity)
 
         return result

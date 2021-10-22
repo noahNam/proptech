@@ -162,7 +162,7 @@ class BoundingUseCase(HouseBaseUseCase):
                 bounding_filter=bounding_filter,
                 private_filters=private_filters,
                 public_filters=public_filters,
-                public_status_filters=dto.public_status
+                public_status_filters=dto.public_status,
             )
         else:
             bounding_entities = self._house_repo.get_administrative_divisions(dto=dto)
