@@ -850,9 +850,7 @@ class HouseRepository:
             )
             .join(RealEstateModel, RealEstateModel.id == PublicSaleModel.real_estate_id)
             .filter(*public_filters)
-            .filter(
-                and_(*public_text_keyword_filters, *public_number_keyword_filters),
-            )
+            .filter(and_(*public_text_keyword_filters, *public_number_keyword_filters),)
             .order_by((RealEstateModel.si_do == "서울특별시").desc())
             .order_by((RealEstateModel.si_do == "경기도").desc())
             .order_by(RealEstateModel.id.asc())
@@ -873,9 +871,7 @@ class HouseRepository:
             )
             .filter(*private_filters)
             .filter(
-                and_(
-                    *private_text_keyword_filters, *private_number_keyword_filters
-                ),
+                and_(*private_text_keyword_filters, *private_number_keyword_filters),
             )
             .order_by((RealEstateModel.si_do == "서울특별시").desc())
             .order_by((RealEstateModel.si_do == "경기도").desc())
@@ -1192,7 +1188,10 @@ class HouseRepository:
                 (
                     union_query.columns.private_sale_details_supply_area == 0,
                     func.round(
-                        (union_query.columns.private_sale_details_private_area * CalcPyoungEnum.TEMP_CALC_VAR.value)
+                        (
+                            union_query.columns.private_sale_details_private_area
+                            * CalcPyoungEnum.TEMP_CALC_VAR.value
+                        )
                         / CalcPyoungEnum.CALC_VAR.value
                     ),
                 ),
@@ -1549,7 +1548,10 @@ class HouseRepository:
                 (
                     PrivateSaleDetailModel.supply_area == 0,
                     func.round(
-                        (PrivateSaleDetailModel.private_area * CalcPyoungEnum.TEMP_CALC_VAR.value)
+                        (
+                            PrivateSaleDetailModel.private_area
+                            * CalcPyoungEnum.TEMP_CALC_VAR.value
+                        )
                         / CalcPyoungEnum.CALC_VAR.value
                     ),
                 ),

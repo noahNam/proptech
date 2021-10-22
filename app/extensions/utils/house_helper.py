@@ -24,7 +24,10 @@ class HouseHelper:
     def convert_area_to_temp_pyoung(cls, area: Optional[float]) -> Optional[int]:
         if area:
             return int(
-                MathHelper.round((area * CalcPyoungEnum.TEMP_CALC_VAR.value) / CalcPyoungEnum.CALC_VAR.value)
+                MathHelper.round(
+                    (area * CalcPyoungEnum.TEMP_CALC_VAR.value)
+                    / CalcPyoungEnum.CALC_VAR.value
+                )
             )
         else:
             return None
