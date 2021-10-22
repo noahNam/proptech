@@ -145,6 +145,7 @@ class BoundingUseCase(HouseBaseUseCase):
                 message=FailureType.INVALID_REQUEST_ERROR,
                 code=HTTPStatus.BAD_REQUEST,
             )
+
         private_filters = self._house_repo.get_bounding_private_type_filter(
             private_type=dto.private_type
         )
@@ -161,6 +162,7 @@ class BoundingUseCase(HouseBaseUseCase):
                 bounding_filter=bounding_filter,
                 private_filters=private_filters,
                 public_filters=public_filters,
+                public_status_filters=dto.public_status
             )
         else:
             bounding_entities = self._house_repo.get_administrative_divisions(dto=dto)

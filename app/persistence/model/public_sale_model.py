@@ -205,15 +205,31 @@ class PublicSaleModel(db.Model):
             return PublicSaleStatusEnum.UNKNOWN.value
 
         today = get_server_timestamp().strftime("%Y%m%d")
+        """
+            @Harry 아래 잘못되었는데 같은 로직 쓴 부분 찾아서 수정해주세요. 일단 제가 주석처리 해 놓았으니 확인하고 주석도 지워주세요. + 입주년,입주월 int 타입인데 어떤 이유였죠?
+                    
+                    입주자 모집공고일                       청약 마감일                               입주일
+            |--- 분양예정 ---|-------------분양 중--------------|---------------분양 완료-------------|--------매매------> 
+                                                                                              입주월말일기준(ex: 202109 -> 202110부터 매매가능)
+        """
+        # if today < self.subscription_start_date:
+        #     return PublicSaleStatusEnum.BEFORE_OPEN.value
+        # elif self.subscription_start_date <= today <= self.subscription_end_date:
+        #     return PublicSaleStatusEnum.IS_RECEIVING.value
+        # elif self.subscription_end_date < today:
+        #     return PublicSaleStatusEnum.IS_CLOSED.value
+        # else:
+        #     return PublicSaleStatusEnum.UNKNOWN.value
 
-        if today < self.subscription_start_date:
+        if today < self.offer_date:
             return PublicSaleStatusEnum.BEFORE_OPEN.value
-        elif self.subscription_start_date <= today <= self.subscription_end_date:
+        elif self.offer_date <= today <= self.subscription_end_date:
             return PublicSaleStatusEnum.IS_RECEIVING.value
         elif self.subscription_end_date < today:
             return PublicSaleStatusEnum.IS_CLOSED.value
         else:
             return PublicSaleStatusEnum.UNKNOWN.value
+
 
     def to_push_entity(self, message_type: str) -> PublicSalePushEntity:
         return PublicSalePushEntity(
