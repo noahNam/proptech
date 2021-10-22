@@ -756,15 +756,11 @@ class HouseRepository:
         public_filters = list()
         private_filters = list()
 
-        real_estate_text_keyword_filters = list()
         public_text_keyword_filters = list()
         private_text_keyword_filters = list()
 
-        real_estate_number_keyword_filters = list()
         public_number_keyword_filters = list()
         private_number_keyword_filters = list()
-
-        final_filters = list()
 
         public_filters.append(
             and_(
@@ -804,9 +800,6 @@ class HouseRepository:
 
         # text 검색 키워드
         for split_text in split_set:
-            real_estate_text_keyword_filters.append(
-                (RealEstateModel.name.contains(split_text))
-            )
             public_text_keyword_filters.append(
                 (PublicSaleModel.name.contains(split_text))
             )
@@ -816,9 +809,6 @@ class HouseRepository:
 
         # 숫자 검색 키워드
         for split_number in split_numbers:
-            real_estate_number_keyword_filters.append(
-                (RealEstateModel.name.contains(split_number))
-            )
             public_number_keyword_filters.append(
                 (PublicSaleModel.name.contains(split_number))
             )
@@ -827,6 +817,7 @@ class HouseRepository:
             )
 
         if not split_set:
+            # 띄어쓰기로 Like 검색
             split_keywords = keywords.split()
 
             # 검색 효율 떨어뜨리는 문자 제거
@@ -835,18 +826,11 @@ class HouseRepository:
             #         split_keywords.remove(word)
 
             for split_keyword in split_keywords:
-                real_estate_text_keyword_filters = []
                 public_text_keyword_filters.append(
-                    or_(
-                        (RealEstateModel.name.contains(split_keyword)),
-                        (PublicSaleModel.name.contains(split_keyword)),
-                    )
+                    PublicSaleModel.name.contains(split_keyword),
                 )
                 private_text_keyword_filters.append(
-                    or_(
-                        (RealEstateModel.name.contains(split_keyword)),
-                        (PrivateSaleModel.name.contains(split_keyword)),
-                    )
+                    PrivateSaleModel.name.contains(split_keyword),
                 )
 
         query_cond1 = (
@@ -861,16 +845,11 @@ class HouseRepository:
             .join(RealEstateModel, RealEstateModel.id == PublicSaleModel.real_estate_id)
             .filter(*public_filters)
             .filter(
-                or_(
-                    and_(
-                        *real_estate_text_keyword_filters,
-                        *real_estate_number_keyword_filters,
-                    ),
-                    and_(*public_text_keyword_filters, *public_number_keyword_filters),
-                )
+                and_(*public_text_keyword_filters, *public_number_keyword_filters),
             )
             .order_by((RealEstateModel.si_do == "서울특별시").desc())
             .order_by((RealEstateModel.si_do == "경기도").desc())
+            .order_by(RealEstateModel.id.asc())
             .limit(10)
         )
 
@@ -878,7 +857,7 @@ class HouseRepository:
             session.query(PrivateSaleModel)
             .with_entities(
                 RealEstateModel.id,
-                PrivateSaleModel.name.label("name"),
+                (RealEstateModel.dong_myun + " " + PrivateSaleModel.name).label("name"),
                 RealEstateModel.coordinates.ST_Y().label("latitude"),
                 RealEstateModel.coordinates.ST_X().label("longitude"),
                 literal("매매", String).label("house_type"),
@@ -888,23 +867,17 @@ class HouseRepository:
             )
             .filter(*private_filters)
             .filter(
-                or_(
-                    and_(
-                        *real_estate_text_keyword_filters,
-                        *real_estate_number_keyword_filters,
-                    ),
-                    and_(
-                        *private_text_keyword_filters, *private_number_keyword_filters
-                    ),
-                )
+                and_(
+                    *private_text_keyword_filters, *private_number_keyword_filters
+                ),
             )
             .order_by((RealEstateModel.si_do == "서울특별시").desc())
             .order_by((RealEstateModel.si_do == "경기도").desc())
+            .order_by(RealEstateModel.id.asc())
             .limit(15)
         )
 
         query = query_cond1.union_all(query_cond2)
-        RawQueryHelper.print_raw_query(query)
         query_set = query.all()
 
         result = list()
@@ -1261,7 +1234,6 @@ class HouseRepository:
             )
         )
 
-        RawQueryHelper.print_raw_query(query)
         query_set = query.all()
 
         if not query_set:
