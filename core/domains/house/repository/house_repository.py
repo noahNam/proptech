@@ -181,6 +181,7 @@ class HouseRepository:
         bounding_filter: _FunctionGenerator,
         private_filters: List[Any],
         public_filters: List[Any],
+        public_status_filters: List[int],
     ) -> Optional[list]:
         filters = list()
         filters.append(bounding_filter)
@@ -219,12 +220,29 @@ class HouseRepository:
             query = query_cond1
         else:
             query = query_cond1.union_all(query_cond2)
+
         query_set = query.all()
 
         if not query_set:
             return None
 
-        return [query.to_bounding_entity() for query in query_set]
+        result = list()
+        for query in query_set:
+            bounding_entity = query.to_bounding_entity()
+
+            # 결과에 실거래가(매매) 데이터는 무조건 보여준다. 쿼리 필터에서 실거래가 안보여줄때는 private_sales 데이터 자체가 없음
+            if not bounding_entity.public_sales:
+                result.append(bounding_entity)
+                continue
+
+            # 분양진행 상태를 필터링한다.
+            if (
+                bounding_entity.public_sales
+                and bounding_entity.public_sales.status in public_status_filters
+            ):
+                result.append(bounding_entity)
+
+        return result
 
     def _make_bounding_administrative_entity(
         self, queryset: Optional[list]

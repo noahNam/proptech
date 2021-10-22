@@ -80,12 +80,13 @@ def bounding_view():
             level=request.args.get("level"),
             private_type=request.args.get("private_type"),
             public_type=request.args.get("public_type"),
+            public_status=request.args.get("public_status"),
         ).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
-                message=f"Invalid Parameter input, check coordinates, level, private_type, public_type",
+                message=f"Invalid Parameter input, check coordinates, level, private_type, public_type, public_status",
             )
         )
     if dto.level < BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:
