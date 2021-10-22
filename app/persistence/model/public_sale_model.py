@@ -230,7 +230,6 @@ class PublicSaleModel(db.Model):
         else:
             return PublicSaleStatusEnum.UNKNOWN.value
 
-
     def to_push_entity(self, message_type: str) -> PublicSalePushEntity:
         return PublicSalePushEntity(
             id=self.id, name=self.name, region=self.region, message_type=message_type,
