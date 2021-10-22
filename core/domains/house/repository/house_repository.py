@@ -789,6 +789,12 @@ class HouseRepository:
 
         # 공백 원소 제거
         split_list = list(filter(bool, split_list))
+        split_keywords = list()
+        for split_text in split_list:
+            # 띄어쓰기 분리
+            text = split_text.split()
+            for c in text:
+                split_keywords.append(c)
 
         # 검색 효율 떨어뜨리는 문자 제거
         # word_list = ["단지", "아파트", "마을", "0"]
@@ -796,7 +802,7 @@ class HouseRepository:
         #     if word in split_list:
         #         split_list.remove(word)
 
-        split_set = set(split_list)
+        split_set = set(split_keywords)
 
         # text 검색 키워드
         for split_text in split_set:
