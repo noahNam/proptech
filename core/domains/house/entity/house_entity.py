@@ -435,6 +435,8 @@ class PrivateSaleBoundingEntity(BaseModel):
     id: int
     building_type: Enum
     default_pyoung: Optional[int]
+    default_trade_price: Optional[int]
+    default_deposit_price: Optional[int]
     trade_info: Optional[List[PrivateSaleAvgPriceTradeEntity]]
     deposit_info: Optional[List[PrivateSaleAvgPriceDepositEntity]]
     trade_status: Optional[int]
