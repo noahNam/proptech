@@ -1120,6 +1120,8 @@ class HouseRepository:
                 PrivateSaleDetailModel.supply_area,
                 func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
                 literal(0, Integer).label("avg_deposit_price"),
+                sub_query_cond_1.c.max_contract_date.label("max_trade_contract_date"),
+                literal(None, String).label("max_deposit_contract_date"),
             )
             .join(
                 sub_query_cond_1,
@@ -1160,6 +1162,8 @@ class HouseRepository:
                 func.avg(PrivateSaleDetailModel.deposit_price).label(
                     "avg_deposit_price"
                 ),
+                literal(None, String).label("max_trade_contract_date"),
+                sub_query_cond_2.c.max_contract_date.label("max_deposit_contract_date"),
             )
             .join(
                 sub_query_cond_2,
@@ -1240,6 +1244,12 @@ class HouseRepository:
                 func.max(PrivateSaleAvgPriceModel.id).label(
                     "private_sale_avg_price_id"
                 ),
+                func.max(union_query.columns.max_trade_contract_date).label(
+                    "max_trade_contract_date"
+                ),
+                func.max(union_query.columns.max_deposit_contract_date).label(
+                    "max_deposit_contract_date"
+                ),
             )
             .join(
                 PrivateSaleAvgPriceModel,
@@ -1257,6 +1267,7 @@ class HouseRepository:
             )
         )
 
+        RawQueryHelper.print_raw_query(query)
         query_set = query.all()
 
         if not query_set:
@@ -1270,6 +1281,8 @@ class HouseRepository:
                 avg_trade_price=query[3],
                 avg_deposit_price=query[4],
                 private_sale_avg_price_id=query[5],
+                max_trade_contract_date=query[6],
+                max_deposit_contract_date=query[7]
             )
             for query in query_set
         ]
@@ -1279,6 +1292,7 @@ class HouseRepository:
     ) -> Optional[Tuple[List[dict], List[dict]]]:
         if not recent_infos:
             return None
+
         avg_prices_update_list = list()
         avg_prices_create_list = list()
 
@@ -1289,12 +1303,19 @@ class HouseRepository:
                 if not recent_info.supply_area and recent_info.supply_area != 0
                 else HouseHelper.convert_area_to_temp_pyoung(recent_info.private_area)
             )
+
+            default_pyoung = default_pyoung_dict.get(recent_info.private_sales_id)
+            if not pyoung or not default_pyoung:
+                continue
+
             avg_price_info = {
                 "private_sales_id": recent_info.private_sales_id,
                 "pyoung": pyoung,
-                "default_pyoung": default_pyoung_dict.get(recent_info.private_sales_id),
+                "default_pyoung": default_pyoung,
                 "trade_price": recent_info.avg_trade_price,
                 "deposit_price": recent_info.avg_deposit_price,
+                "max_trade_contract_date": recent_info.max_trade_contract_date,
+                "max_deposit_contract_date": recent_info.max_deposit_contract_date,
                 "id": recent_info.private_sale_avg_price_id,
             }
 
@@ -1405,6 +1426,11 @@ class HouseRepository:
                 if not query[2] and query[2] != 0
                 else HouseHelper.convert_area_to_temp_pyoung(query[1])
             )
+
+            # 가드코드 추가
+            if not pyoung or pyoung == 0:
+                continue
+
             default_pyoung_dict.update({query[0]: pyoung})
 
         return default_pyoung_dict
