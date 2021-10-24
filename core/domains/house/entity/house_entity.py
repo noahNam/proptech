@@ -134,6 +134,8 @@ class RecentlyContractedEntity(BaseModel):
     avg_trade_price: Optional[int]
     avg_deposit_price: Optional[int]
     private_sale_avg_price_id: Optional[int]
+    max_trade_contract_date: Optional[str]
+    max_deposit_contract_date: Optional[str]
 
 
 class PrivateSaleEntity(BaseModel):
@@ -412,12 +414,14 @@ class PublicSaleReportEntity(BaseModel):
 class PrivateSaleAvgPriceTradeEntity(BaseModel):
     pyoung: int
     trade_price: Optional[int]
+    max_trade_contract_date: Optional[str]
     trade_visible: bool
 
 
 class PrivateSaleAvgPriceDepositEntity(BaseModel):
     pyoung: int
     deposit_price: Optional[int]
+    max_deposit_contract_date: Optional[str]
     deposit_visible: bool
 
 
