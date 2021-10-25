@@ -1,5 +1,5 @@
 import json
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
 from pydantic import (
     BaseModel,
@@ -136,10 +136,12 @@ class GetCoordinatesSchema(BaseModel):
 
     x_points: Tuple[StrictFloat, StrictFloat] = ()
     y_points: Tuple[StrictFloat, StrictFloat] = ()
-    level: StrictInt = None
-    private_type: StrictInt = None
-    public_type: StrictInt = None
+    level: Optional[StrictInt]
+    private_type: Optional[StrictInt]
+    public_type: Optional[StrictInt]
     public_status: List[StrictInt]
+    min_area: Optional[StrictInt]
+    max_area: Optional[StrictInt]
 
     @validator("x_points")
     def check_longitudes_range(cls, x_points) -> Tuple:
@@ -226,6 +228,8 @@ class GetCoordinatesRequestSchema:
         private_type,
         public_type,
         public_status,
+        min_area,
+        max_area,
     ):
         self._start_x = float(start_x) if start_x else None
         self._start_y = float(start_y) if start_y else None
@@ -239,6 +243,8 @@ class GetCoordinatesRequestSchema:
             if not public_status
             else json.loads(public_status)
         )
+        self._min_area = int(min_area) if min_area else None
+        self._max_area = int(max_area) if max_area else None
 
     def validate_request_and_make_dto(self):
         try:
@@ -249,6 +255,8 @@ class GetCoordinatesRequestSchema:
                 private_type=self._private_type,
                 public_type=self._public_type,
                 public_status=self._public_status,
+                min_area=self._min_area,
+                max_area=self._max_area,
             )
             return CoordinatesRangeDto(
                 start_x=schema.x_points[0],
@@ -259,6 +267,8 @@ class GetCoordinatesRequestSchema:
                 private_type=schema.private_type,
                 public_type=schema.public_type,
                 public_status=schema.public_status,
+                min_area=schema.min_area,
+                max_area=schema.max_area,
             )
         except ValidationError as e:
             logger.error(
