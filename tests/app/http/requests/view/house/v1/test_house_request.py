@@ -36,6 +36,8 @@ def test_get_coordinates_request_when_valid_request_then_success():
         private_type=private_type,
         public_type=public_type,
         public_status=None,
+        max_area=None,
+        min_area=None,
     ).validate_request_and_make_dto()
     assert result.start_x == start_x
     assert result.start_y == start_y
@@ -56,6 +58,8 @@ def test_get_coordinates_request_when_invalid_coordinates_then_fail():
             private_type=private_type,
             public_type=public_type,
             public_status=None,
+            max_area=None,
+            min_area=None,
         ).validate_request_and_make_dto()
 
 
@@ -71,6 +75,8 @@ def test_get_coordinates_request_when_invalid_private_type_then_fail():
             private_type=wrong_private_type,
             public_type=public_type,
             public_status=None,
+            max_area=None,
+            min_area=None,
         ).validate_request_and_make_dto()
 
 
@@ -86,6 +92,8 @@ def test_get_coordinates_request_when_invalid_public_type_then_fail():
             private_type=private_type,
             public_type=wrong_public_type,
             public_status=None,
+            max_area=None,
+            min_area=None,
         ).validate_request_and_make_dto()
 
 
@@ -101,6 +109,8 @@ def test_get_coordinates_request_when_invalid_level_then_fail():
             private_type=private_type,
             public_type=public_type,
             public_status=None,
+            max_area=None,
+            min_area=None,
         ).validate_request_and_make_dto()
 
 
