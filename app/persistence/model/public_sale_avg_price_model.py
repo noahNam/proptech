@@ -21,10 +21,15 @@ class PublicSaleAvgPriceModel(db.Model):
     pyoung = Column(SmallInteger, nullable=False)
     default_pyoung = Column(SmallInteger, nullable=False)
     supply_price = Column(Integer, nullable=True)
+    avg_competition = Column(SmallInteger, nullable=True)
+    min_score = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
     def to_entity(self) -> PublicSaleAvgPriceEntity:
         return PublicSaleAvgPriceEntity(
-            pyoung=self.pyoung, supply_price=self.supply_price,
+            pyoung=self.pyoung,
+            supply_price=self.supply_price,
+            avg_competition=self.avg_competition,
+            min_score=self.min_score,
         )

@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -22,13 +20,11 @@ from core.domains.house.entity.house_entity import (
     PublicSalePushEntity,
     PublicSaleDetailCalendarEntity,
     PublicSaleReportEntity,
-    PublicSaleBoundingEntity,
 )
 from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,
     RentTypeEnum,
     PreSaleTypeEnum,
-    PublicSaleStatusEnum,
 )
 
 
@@ -154,81 +150,6 @@ class PublicSaleModel(db.Model):
             if self.public_sale_details
             else None,
         )
-
-    def to_bounding_entity(self) -> PublicSaleBoundingEntity:
-        return PublicSaleBoundingEntity(
-            id=self.id,
-            name=self.name,
-            default_pyoung=self.default_pyoung,
-            housing_category=self.housing_category,
-            rent_type=self.rent_type,
-            trade_type=self.trade_type,
-            is_available=self.is_available,
-            subscription_start_date=self.subscription_start_date,
-            subscription_end_date=self.subscription_end_date,
-            status=self.status,
-            public_sale_photos=[
-                public_sale_photo.to_entity()
-                for public_sale_photo in self.public_sale_photos
-            ]
-            if self.public_sale_photos
-            else None,
-            public_sale_avg_prices=[
-                public_sale_avg_price.to_entity()
-                for public_sale_avg_price in self.public_sale_avg_prices
-            ]
-            if self.public_sale_avg_prices
-            else None,
-        )
-
-    @property
-    def default_pyoung(self) -> Optional[int]:
-        return (
-            self.public_sale_avg_prices[0].default_pyoung
-            if self.public_sale_avg_prices
-            else None
-        )
-
-    @property
-    def status(self) -> int:
-        """
-            todo: 리펙토링 필요, HouseRepository()._get_status() 로직과 겹침
-        """
-        if (
-            not self.subscription_start_date
-            or self.subscription_start_date == "0"
-            or self.subscription_start_date == "00000000"
-            or not self.subscription_end_date
-            or self.subscription_end_date == "0"
-            or self.subscription_end_date == "00000000"
-        ):
-            return PublicSaleStatusEnum.UNKNOWN.value
-
-        today = get_server_timestamp().strftime("%Y%m%d")
-        """
-            @Harry 아래 잘못되었는데 같은 로직 쓴 부분 찾아서 수정해주세요. 일단 제가 주석처리 해 놓았으니 확인하고 주석도 지워주세요. + 입주년,입주월 int 타입인데 어떤 이유였죠?
-                    
-                    입주자 모집공고일                       청약 마감일                               입주일
-            |--- 분양예정 ---|-------------분양 중--------------|---------------분양 완료-------------|--------매매------> 
-                                                                                              입주월말일기준(ex: 202109 -> 202110부터 매매가능)
-        """
-        # if today < self.subscription_start_date:
-        #     return PublicSaleStatusEnum.BEFORE_OPEN.value
-        # elif self.subscription_start_date <= today <= self.subscription_end_date:
-        #     return PublicSaleStatusEnum.IS_RECEIVING.value
-        # elif self.subscription_end_date < today:
-        #     return PublicSaleStatusEnum.IS_CLOSED.value
-        # else:
-        #     return PublicSaleStatusEnum.UNKNOWN.value
-
-        if today < self.offer_date:
-            return PublicSaleStatusEnum.BEFORE_OPEN.value
-        elif self.offer_date <= today <= self.subscription_end_date:
-            return PublicSaleStatusEnum.IS_RECEIVING.value
-        elif self.subscription_end_date < today:
-            return PublicSaleStatusEnum.IS_CLOSED.value
-        else:
-            return PublicSaleStatusEnum.UNKNOWN.value
 
     def to_push_entity(self, message_type: str) -> PublicSalePushEntity:
         return PublicSalePushEntity(
