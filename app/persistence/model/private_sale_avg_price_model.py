@@ -3,7 +3,7 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     DateTime,
-    SmallInteger,
+    SmallInteger, String,
 )
 
 from app import db
@@ -26,6 +26,8 @@ class PrivateSaleAvgPriceModel(db.Model):
     default_pyoung = Column(SmallInteger, nullable=False)
     trade_price = Column(Integer, nullable=True)
     deposit_price = Column(Integer, nullable=True)
+    max_trade_contract_date = Column(String(8), nullable=True)
+    max_deposit_contract_date = Column(String(8), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
 
@@ -46,11 +48,13 @@ class PrivateSaleAvgPriceModel(db.Model):
             trade_info=PrivateSaleAvgPriceTradeEntity(
                 pyoung=self.pyoung,
                 trade_price=self.trade_price,
+                max_trade_contract_date=self.max_trade_contract_date,
                 trade_visible=self.trade_visible,
             ),
             deposit_info=PrivateSaleAvgPriceDepositEntity(
                 pyoung=self.pyoung,
                 deposit_price=self.deposit_price,
+                max_deposit_contract_date=self.max_deposit_contract_date,
                 deposit_visible=self.deposit_visible,
             ),
         )

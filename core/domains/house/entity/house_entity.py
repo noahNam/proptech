@@ -130,9 +130,12 @@ class PrivateSaleDetailEntity(BaseModel):
 class RecentlyContractedEntity(BaseModel):
     private_sales_id: int
     private_area: float
+    supply_area: Optional[float]
     avg_trade_price: Optional[int]
     avg_deposit_price: Optional[int]
     private_sale_avg_price_id: Optional[int]
+    max_trade_contract_date: Optional[str]
+    max_deposit_contract_date: Optional[str]
 
 
 class PrivateSaleEntity(BaseModel):
@@ -411,12 +414,14 @@ class PublicSaleReportEntity(BaseModel):
 class PrivateSaleAvgPriceTradeEntity(BaseModel):
     pyoung: int
     trade_price: Optional[int]
+    max_trade_contract_date: Optional[str]
     trade_visible: bool
 
 
 class PrivateSaleAvgPriceDepositEntity(BaseModel):
     pyoung: int
     deposit_price: Optional[int]
+    max_deposit_contract_date: Optional[str]
     deposit_visible: bool
 
 
@@ -434,6 +439,8 @@ class PrivateSaleBoundingEntity(BaseModel):
     id: int
     building_type: Enum
     default_pyoung: Optional[int]
+    default_trade_price: Optional[int]
+    default_deposit_price: Optional[int]
     trade_info: Optional[List[PrivateSaleAvgPriceTradeEntity]]
     deposit_info: Optional[List[PrivateSaleAvgPriceDepositEntity]]
     trade_status: Optional[int]
@@ -533,6 +540,16 @@ class NearHouseEntity(BaseModel):
     latitude: float
     longitude: float
     private_sales: Optional[NearHousePrivateSaleEntity]
+
+    class Config:
+        use_enum_values = True
+
+
+class UpdateContractStatusTargetEntity(BaseModel):
+    private_sales_id: int
+    min_contract_date: Optional[str]
+    max_contract_date: Optional[str]
+    trade_type: Enum
 
     class Config:
         use_enum_values = True
