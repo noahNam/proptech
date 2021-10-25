@@ -54,8 +54,8 @@ class PrivateSaleModel(db.Model):
     heating_type = Column(String(10), nullable=True)
     floor_area_ratio = Column(SmallInteger, nullable=True)
     building_cover_ratio = Column(SmallInteger, nullable=True)
-    trade_status = Column(SmallInteger, nullable=True)
-    deposit_status = Column(SmallInteger, nullable=True)
+    trade_status = Column(SmallInteger, nullable=False, default=0)
+    deposit_status = Column(SmallInteger, nullable=False, default=0)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     is_available = Column(Boolean, nullable=False, default=False)
@@ -100,10 +100,28 @@ class PrivateSaleModel(db.Model):
         )
 
     def to_bounding_entity(self) -> PrivateSaleBoundingEntity:
+        default_trade_price = None
+        default_deposit_price = None
+
+        if self.private_sale_avg_prices:
+            for private_sale_avg_price in self.private_sale_avg_prices:
+                if private_sale_avg_price.pyoung != self.default_pyoung:
+                    continue
+
+                if private_sale_avg_price.trade_visible:
+                    default_trade_price = private_sale_avg_price.trade_price
+
+                if private_sale_avg_price.deposit_visible:
+                    default_deposit_price = private_sale_avg_price.deposit_price
+
+                break
+
         return PrivateSaleBoundingEntity(
             id=self.id,
             building_type=self.building_type,
             default_pyoung=self.default_pyoung,
+            default_trade_price=default_trade_price,
+            default_deposit_price=default_deposit_price,
             trade_info=[
                 PrivateSaleAvgPriceTradeEntity(
                     pyoung=private_sale_avg_price.pyoung,

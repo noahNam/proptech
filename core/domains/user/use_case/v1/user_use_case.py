@@ -535,7 +535,9 @@ class GetUserInfoUseCase(UserBaseUseCase):
                         income_by_segment = (
                             int(my_basic_income) * percentage_num
                         ) / 100
-                        income_by_segment = format(int(MathHelper.round(num=income_by_segment)), ",d")
+                        income_by_segment = format(
+                            int(MathHelper.round(num=income_by_segment)), ",d"
+                        )
                         result_income_by_segment = str(income_by_segment) + "원 이하"
                         calc_result_list.append(result_income_by_segment)
 
@@ -611,7 +613,9 @@ class GetMonthlyIncomesUseCase(UserBaseUseCase):
                 calc_result_list.append(income_by_segment)
             else:
                 income_by_segment = (int(my_basic_income) * percentage_num) / 100
-                income_by_segment = format(int(MathHelper.round(num=income_by_segment)), ",d")
+                income_by_segment = format(
+                    int(MathHelper.round(num=income_by_segment)), ",d"
+                )
                 result_income_by_segment = str(income_by_segment) + "원 이하"
                 calc_result_list.append(result_income_by_segment)
 
@@ -867,7 +871,9 @@ class GetSurveysUseCase(UserBaseUseCase):
             my_basic_income = income_result_dict.get(number_dependents)
 
             income_by_segment = my_basic_income * (int(monthly_income_user_value) / 100)
-            income_by_segment = format(int(MathHelper.round(num=income_by_segment)), ",d")
+            income_by_segment = format(
+                int(MathHelper.round(num=income_by_segment)), ",d"
+            )
             result_income_by_segment = str(income_by_segment)
 
             if my_basic_income == income_result_dict.get(8):

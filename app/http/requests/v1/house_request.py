@@ -1,4 +1,5 @@
-from typing import Tuple
+import json
+from typing import Tuple, List
 
 from pydantic import (
     BaseModel,
@@ -28,6 +29,7 @@ from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
+    PublicSaleStatusEnum,
 )
 from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import InvalidRequestException
@@ -137,6 +139,7 @@ class GetCoordinatesSchema(BaseModel):
     level: StrictInt = None
     private_type: StrictInt = None
     public_type: StrictInt = None
+    public_status: List[StrictInt]
 
     @validator("x_points")
     def check_longitudes_range(cls, x_points) -> Tuple:
@@ -214,7 +217,15 @@ class GetCoordinatesSchema(BaseModel):
 
 class GetCoordinatesRequestSchema:
     def __init__(
-        self, start_x, start_y, end_x, end_y, level, private_type, public_type
+        self,
+        start_x,
+        start_y,
+        end_x,
+        end_y,
+        level,
+        private_type,
+        public_type,
+        public_status,
     ):
         self._start_x = float(start_x) if start_x else None
         self._start_y = float(start_y) if start_y else None
@@ -223,6 +234,11 @@ class GetCoordinatesRequestSchema:
         self._level = int(level) if level else None
         self._private_type = int(private_type) if private_type else None
         self._public_type = int(public_type) if public_type else None
+        self._public_status = (
+            PublicSaleStatusEnum.list()
+            if not public_status
+            else json.loads(public_status)
+        )
 
     def validate_request_and_make_dto(self):
         try:
@@ -232,6 +248,7 @@ class GetCoordinatesRequestSchema:
                 level=self._level,
                 private_type=self._private_type,
                 public_type=self._public_type,
+                public_status=self._public_status,
             )
             return CoordinatesRangeDto(
                 start_x=schema.x_points[0],
@@ -241,6 +258,7 @@ class GetCoordinatesRequestSchema:
                 level=schema.level,
                 private_type=schema.private_type,
                 public_type=schema.public_type,
+                public_status=schema.public_status,
             )
         except ValidationError as e:
             logger.error(
