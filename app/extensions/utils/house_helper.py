@@ -39,12 +39,12 @@ class HouseHelper:
             todo: 리펙토링 필요, HouseRepository()._get_status() 로직과 겹침
         """
         if (
-                not offer_date
-                or offer_date == "0"
-                or offer_date == "00000000"
-                or not subscription_end_date
-                or subscription_end_date == "0"
-                or subscription_end_date == "00000000"
+            not offer_date
+            or offer_date == "0"
+            or offer_date == "00000000"
+            or not subscription_end_date
+            or subscription_end_date == "0"
+            or subscription_end_date == "00000000"
         ):
             return PublicSaleStatusEnum.UNKNOWN.value
 
@@ -76,11 +76,11 @@ class HouseHelper:
     @classmethod
     def convert_avg_competition(cls, avg_competition: Optional[int]) -> str:
         if not avg_competition or avg_competition == 0:
-            return '미달'
+            return "미달"
         return "{}:1".format(avg_competition)
 
     @classmethod
     def convert_min_score(cls, min_score: Optional[int]) -> str:
         if not min_score or min_score == 0:
-            return '미달'
+            return "미달"
         return "{}점".format(min_score)

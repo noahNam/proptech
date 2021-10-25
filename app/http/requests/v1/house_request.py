@@ -268,7 +268,7 @@ class GetCoordinatesRequestSchema:
                 public_type=schema.public_type,
                 public_status=schema.public_status,
                 min_area=schema.min_area,
-                max_area=schema.max_area
+                max_area=schema.max_area,
             )
         except ValidationError as e:
             logger.error(

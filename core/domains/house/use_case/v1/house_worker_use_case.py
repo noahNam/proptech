@@ -312,7 +312,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                     ) = self._house_repo.make_pre_calc_target_public_sale_avg_prices_list(
                         public_sales_id=idx,
                         default_info=default_info,
-                        competition_and_score_info=competition_and_score_info
+                        competition_and_score_info=competition_and_score_info,
                     )
                     if avg_price_create_list:
                         try:
