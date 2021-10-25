@@ -1791,7 +1791,7 @@ class HouseRepository:
             "default_pyoung": HouseHelper.convert_area_to_pyoung(
                 area=default_info["supply_area"]
             ),
-            "supply_price": default_info["supply_area"],
+            "supply_price": default_info["supply_price"],
             "avg_competition": competition_and_score_info["avg_competition"],
             "min_score": competition_and_score_info["min_score"],
         }
