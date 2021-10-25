@@ -3,7 +3,7 @@ import re
 import sys
 from datetime import datetime, timedelta
 from time import time
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 import inject
 import requests
@@ -18,7 +18,7 @@ from core.domains.house.entity.house_entity import (
     AdministrativeDivisionLegalCodeEntity,
     RealEstateLegalCodeEntity,
     PublicSaleEntity,
-    UpdateContractStatusTargetEntity,
+    UpdateContractStatusTargetEntity, RecentlyContractedEntity,
 )
 from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
@@ -226,7 +226,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #     private_sale_avg_prices_failed_list = list()
         #     # 매매, 전세 가격 평균 계산
         #     # target_ids = [idx for idx in range(1, 355105)]
-        #     target_ids = [idx for idx in range(250000, 355105)]
+        #     target_ids = [idx for idx in range(355100, 355105)]
         #
         #     # contract_date 기준 가장 최근에 거래된 row 가져오기
         #     recent_infos: List[
@@ -276,7 +276,8 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #         # f"Failed_list : {private_sale_avg_prices_failed_list}, "
         #     )
         #     # step 1까지만 실행
-        #     # sys.exit(0)
+        #     sys.exit(0)
+        #
         # except Exception as e:
         #     logger.error(f"🚀\tUpsert_private_sale_avg_prices Error - {e}")
         #     self.send_slack_message(
@@ -296,7 +297,8 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             public_sale_avg_prices_failed_list = list()
 
             # 공급 가격 평균 계산
-            for idx in range(29130, 42775):
+            # for idx in range(29130, 42775):
+            for idx in range(29418, 29419):
                 competition_and_score_info: dict = self._house_repo.get_competition_and_min_score(
                     public_sales_id=idx
                 )
