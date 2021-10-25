@@ -11,13 +11,13 @@ import sentry_sdk
 from sqlalchemy.orm import Query
 
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.math_helper import MathHelper
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import PublicSaleDetailModel
 from core.domains.house.entity.house_entity import (
     AdministrativeDivisionLegalCodeEntity,
     RealEstateLegalCodeEntity,
     PublicSaleEntity,
-    PublicSalePhotoEntity,
     RecentlyContractedEntity,
     UpdateContractStatusTargetEntity,
 )
@@ -71,6 +71,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     ) -> int:
         """
             todo: 부동산 정책이 매년 변경되므로 정기적으로 세율 변경 시 업데이트 필요합니다.
+            @Harry -> private_area가 맞나요?
             <취득세 계산 2021년도 기준>
             (부동산 종류가 주택일 경우로 한정합니다 - 상가, 오피스텔, 토지, 건물 제외)
             [parameters]
@@ -115,21 +116,27 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             acquisition_tax_rate = 0.01
             local_education_tax_rate = 0.01
 
-            acquisition_tax = supply_price * round(acquisition_tax_rate, 2)
+            acquisition_tax = supply_price * MathHelper.round(
+                num=acquisition_tax_rate, decimal_place=2
+            )
             local_education_tax = local_education_tax_rate
 
         elif 60000 < supply_price <= 90000:
             acquisition_tax_rate = (supply_price * 2 / 30000 - 3) * 0.01
-            acquisition_tax = supply_price * round(acquisition_tax_rate, 2)
+            acquisition_tax = supply_price * MathHelper.round(
+                num=acquisition_tax_rate, decimal_place=2
+            )
             local_education_tax = acquisition_tax * 0.1
 
         elif 90000 < supply_price:
             acquisition_tax_rate = 0.03
-            acquisition_tax = supply_price * round(acquisition_tax_rate, 2)
+            acquisition_tax = supply_price * MathHelper.round(
+                num=acquisition_tax_rate, decimal_place=2
+            )
             local_education_tax = local_education_tax_rate
 
-        total_acquisition_tax = round(
-            acquisition_tax + local_education_tax + rural_special_tax
+        total_acquisition_tax = MathHelper.round(
+            num=acquisition_tax + local_education_tax + rural_special_tax
         )
 
         return total_acquisition_tax
@@ -204,79 +211,83 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     def execute(self):
         logger.info(f"🚀\tPreCalculateAverage Start - {self.client_id}")
 
-        # # Batch_step_1 : Upsert_private_sale_avg_prices
-        # try:
-        #     start_time = time()
-        #     logger.info(f"🚀\tUpsert_private_sale_avg_prices : Start")
-        #
-        #     create_private_sale_avg_prices_count = 0
-        #     update_private_sale_avg_prices_count = 0
-        #     final_create_list = list()
-        #     final_update_list = list()
-        #     private_sale_avg_prices_failed_list = list()
-        #     # 매매, 전세 가격 평균 계산
-        #     target_ids = [idx for idx in range(650001, 1000001)]
-        #     # target_ids = [1, 2]
-        #
-        #     # contract_date 기준 가장 최근에 거래된 row 가져오기
-        #     recent_infos: List[
-        #         RecentlyContractedEntity
-        #     ] = self._house_repo.get_recently_contracted_private_sale_details(
-        #         private_sales_ids=target_ids
-        #     )
-        #
-        #     default_pyoung_dict: Dict = self._house_repo.get_default_pyoung_number_for_private_sale(
-        #         target_ids=target_ids
-        #     )
-        #
-        #     if recent_infos:
-        #         # avg_prices_info : [(supply_area, avg_trade_prices, avg_deposit_prices), ...]
-        #         (
-        #             avg_price_update_list,
-        #             avg_price_create_list,
-        #         ) = self._house_repo.make_pre_calc_target_private_sale_avg_prices_list(
-        #             recent_infos=recent_infos, default_pyoung_dict=default_pyoung_dict,
-        #         )
-        #
-        #         final_update_list.extend(avg_price_update_list)
-        #         final_create_list.extend(avg_price_create_list)
-        #
-        #     if final_create_list:
-        #         self._house_repo.create_private_sale_avg_prices(
-        #             create_list=final_create_list
-        #         )
-        #         create_private_sale_avg_prices_count += len(final_create_list)
-        #     else:
-        #         logger.info(
-        #             f"🚀\tUpsert_private_sale_avg_prices : Nothing avg_price_create_list"
-        #         )
-        #
-        #     if final_update_list:
-        #         self._house_repo.update_private_sale_avg_prices(
-        #             update_list=final_update_list
-        #         )
-        #         update_private_sale_avg_prices_count += len(final_update_list)
-        #
-        #     # private_sale_avg_prices_failed_list.append(recent_info.private_sales_id)
-        #     logger.info(
-        #         f"🚀\tUpsert_private_sale_avg_prices : Finished !!, "
-        #         f"records: {time() - start_time} secs, "
-        #         f"{create_private_sale_avg_prices_count} Created, "
-        #         f"{update_private_sale_avg_prices_count} Updated, "
-        #         # f"{len(private_sale_avg_prices_failed_list)} Failed, "
-        #         # f"Failed_list : {private_sale_avg_prices_failed_list}, "
-        #     )
-        #     # step 1까지만 실행
-        #     sys.exit(0)
-        #
-        # except Exception as e:
-        #     logger.error(f"🚀\tUpsert_private_sale_avg_prices Error - {e}")
-        #     self.send_slack_message(
-        #         message=f"🚀\tUpsert_private_sale_avg_prices Error - {e}"
-        #     )
-        #     sys.exit(0)
-        #
-        # # Batch_step_2 : Upsert_public_sale_avg_prices
+        # Batch_step_1 : Upsert_private_sale_avg_prices
+        """
+            타입이 다르고 평수가 같은 경우가 있는데 이 경우에 평균을 낼 경우 거래일자에 따라 오차가 커질 수 있으므로 둘다 upsert 하고 
+            front에서는 최근 거래일 기준에 가까운 것을 보여준다. -> 현재는 같은 평수가 있을 경우 거래일과는 상관없이 랜덤으로 보여주는 중
+        """
+        try:
+            start_time = time()
+            logger.info(f"🚀\tUpsert_private_sale_avg_prices : Start")
+
+            create_private_sale_avg_prices_count = 0
+            update_private_sale_avg_prices_count = 0
+            final_create_list = list()
+            final_update_list = list()
+            private_sale_avg_prices_failed_list = list()
+            # 매매, 전세 가격 평균 계산
+            # target_ids = [idx for idx in range(1, 355105)]
+            # target_ids = [idx for idx in range(50000, 100000)]
+            target_ids = [idx for idx in range(300000, 355105)]
+
+            # contract_date 기준 가장 최근에 거래된 row 가져오기
+            recent_infos: List[
+                RecentlyContractedEntity
+            ] = self._house_repo.get_recently_contracted_private_sale_details(
+                private_sales_ids=target_ids
+            )
+
+            default_pyoung_dict: Dict = self._house_repo.get_default_pyoung_number_for_private_sale(
+                target_ids=target_ids
+            )
+
+            if recent_infos:
+                (
+                    avg_price_update_list,
+                    avg_price_create_list,
+                ) = self._house_repo.make_pre_calc_target_private_sale_avg_prices_list(
+                    recent_infos=recent_infos, default_pyoung_dict=default_pyoung_dict,
+                )
+
+                final_update_list.extend(avg_price_update_list)
+                final_create_list.extend(avg_price_create_list)
+
+            if final_create_list:
+                self._house_repo.create_private_sale_avg_prices(
+                    create_list=final_create_list
+                )
+                create_private_sale_avg_prices_count += len(final_create_list)
+            else:
+                logger.info(
+                    f"🚀\tUpsert_private_sale_avg_prices : Nothing avg_price_create_list"
+                )
+
+            if final_update_list:
+                self._house_repo.update_private_sale_avg_prices(
+                    update_list=final_update_list
+                )
+                update_private_sale_avg_prices_count += len(final_update_list)
+
+            # private_sale_avg_prices_failed_list.append(recent_info.private_sales_id)
+            logger.info(
+                f"🚀\tUpsert_private_sale_avg_prices : Finished !!, "
+                f"records: {time() - start_time} secs, "
+                f"{create_private_sale_avg_prices_count} Created, "
+                f"{update_private_sale_avg_prices_count} Updated, "
+                # f"{len(private_sale_avg_prices_failed_list)} Failed, "
+                # f"Failed_list : {private_sale_avg_prices_failed_list}, "
+            )
+            # step 1까지만 실행
+            sys.exit(0)
+
+        except Exception as e:
+            logger.error(f"🚀\tUpsert_private_sale_avg_prices Error - {e}")
+            self.send_slack_message(
+                message=f"🚀\tUpsert_private_sale_avg_prices Error - {e}"
+            )
+            sys.exit(0)
+
+        # Batch_step_2 : Upsert_public_sale_avg_prices
         # try:
         #     start_time = time()
         #     logger.info(f"🚀\tUpsert_public_sale_avg_prices : Start")
@@ -354,8 +365,8 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #     )
         #     sentry_sdk.capture_exception(e)
         #     sys.exit(0)
-
-        # Batch_step_3 : Update_public_sale_acquisition_tax
+        #
+        # # Batch_step_3 : Update_public_sale_acquisition_tax
         # try:
         #     start_time = time()
         #     logger.info(f"🚀\tUpdate_public_sale_acquisition_tax : Start")
@@ -396,51 +407,49 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #     sentry_sdk.capture_exception(e)
         #     sys.exit(0)
         #
-        # exit(os.EX_OK)
-
-        # Batch_step_4 : update_private_sales_status
-        # (현재 날짜 기준 최근 3달 거래 여부 업데이트)
-        try:
-            start_time = time()
-            logger.info(f"🚀\tUpdate_private_sales_status : Start")
-
-            target_ids = self._house_repo.get_private_sales_all_id_list()
-
-            target_list: List[
-                UpdateContractStatusTargetEntity
-            ] = self._house_repo.get_update_status_target_of_private_sale_details(
-                private_sales_ids=target_ids
-            )
-
-            update_list = self._make_private_sale_status_update_list(
-                target_list=target_list
-            )
-
-            try:
-                self._house_repo.bulk_update_status_to_private_sales(
-                    update_list=update_list
-                )
-            except Exception as e:
-                logger.error(
-                    f"Update_private_sales_status - bulk_update_status_to_private_sales "
-                    f"error : {e}"
-                )
-                sys.exit(0)
-
-            logger.info(
-                f"🚀\tUpdate_private_sales_status : Finished !!, "
-                f"records: {time() - start_time} secs, "
-                f"{len(update_list)} Updated, "
-            )
-        except Exception as e:
-            logger.error(f"🚀\tUpdate_private_sales_status Error - {e}")
-            self.send_slack_message(
-                message=f"🚀\tUpdate_private_sales_status Error - {e}"
-            )
-            sentry_sdk.capture_exception(e)
-            sys.exit(0)
-
-        sys.exit(0)
+        # # Batch_step_4 : update_private_sales_status
+        # # (현재 날짜 기준 최근 3달 거래 여부 업데이트)
+        # try:
+        #     start_time = time()
+        #     logger.info(f"🚀\tUpdate_private_sales_status : Start")
+        #
+        #     target_ids = self._house_repo.get_private_sales_all_id_list()
+        #
+        #     target_list: List[
+        #         UpdateContractStatusTargetEntity
+        #     ] = self._house_repo.get_update_status_target_of_private_sale_details(
+        #         private_sales_ids=target_ids
+        #     )
+        #
+        #     update_list = self._make_private_sale_status_update_list(
+        #         target_list=target_list
+        #     )
+        #
+        #     try:
+        #         self._house_repo.bulk_update_status_to_private_sales(
+        #             update_list=update_list
+        #         )
+        #     except Exception as e:
+        #         logger.error(
+        #             f"Update_private_sales_status - bulk_update_status_to_private_sales "
+        #             f"error : {e}"
+        #         )
+        #         sys.exit(0)
+        #
+        #     logger.info(
+        #         f"🚀\tUpdate_private_sales_status : Finished !!, "
+        #         f"records: {time() - start_time} secs, "
+        #         f"{len(update_list)} Updated, "
+        #     )
+        # except Exception as e:
+        #     logger.error(f"🚀\tUpdate_private_sales_status Error - {e}")
+        #     self.send_slack_message(
+        #         message=f"🚀\tUpdate_private_sales_status Error - {e}"
+        #     )
+        #     sentry_sdk.capture_exception(e)
+        #     sys.exit(0)
+        #
+        # sys.exit(0)
 
     def send_slack_message(self, message: str):
         channel = "#engineering-class"
@@ -656,6 +665,7 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
 
 
 class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
+    # @Harry 사용하는 worker 인가요?
     def send_slack_message(self, message: str):
         channel = "#engineering-class"
 

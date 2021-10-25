@@ -1,6 +1,12 @@
 from enum import Enum
 
 
+class ExtendedEnum(Enum):
+    @classmethod
+    def list(cls):
+        return list(map(lambda c: c.value, cls))
+
+
 class HouseTypeEnum(Enum):
     """
         사용모델 : InterestHouseModel, RecentlyViewModel
@@ -155,12 +161,16 @@ class BannerSubTopic(Enum):
     BOTTOM_SCREEN_BANNER = 9
 
 
-class PricePerMeterEnum(Enum):
+class CalcPyoungEnum(Enum):
     """
-        평당가격 계산할 때 사용
+        CALC_VAR : 평수 구할 때 사용하는 상수
+        TEMP_CALC_VAR : 전용면적으로 평수를 구할때 사용하는 상수
+        AVG_DEFAULT_PYOUNG : 클러스터링시 보여주는 평수가 몇평 기준인지를 나타내는 상수
     """
 
     CALC_VAR = 3.3058
+    TEMP_CALC_VAR = 1.37
+    AVG_DEFAULT_PYOUNG = 34
 
 
 class BoundingDegreeEnum(Enum):
@@ -176,14 +186,14 @@ class BoundingDegreeEnum(Enum):
     DEGREE = 0.06
 
 
-class PublicSaleStatusEnum(Enum):
+class PublicSaleStatusEnum(ExtendedEnum):
     """
         사용 모델 : 분양 테이블
         사용 목적 : 지도 바운딩시 상태 표시
         UNKNOWN : 알 수 없음 (값이 없거나 잘못된 값)
         BEFORE_OPEN : 분양 예정
         IS_RECEIVING : 분양중/접수중
-        IS_CLOSED : 마감됨
+        IS_CLOSED : 마감됨/분양완료
     """
 
     UNKNOWN = 0
