@@ -29,7 +29,8 @@ from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
     MainRecentPublicInfoEntity,
     HousePublicDetailEntity,
-    MapSearchEntity, BoundingRealEstateEntity,
+    MapSearchEntity,
+    BoundingRealEstateEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -158,7 +159,9 @@ class BoundingUseCase(HouseBaseUseCase):
             bounding_filter = self._house_repo.get_bounding_filter_with_two_points(
                 dto=dto
             )
-            bounding_entities_list: Union[List[BoundingRealEstateEntity], List] = self._house_repo.get_bounding(
+            bounding_entities_list: Union[
+                List[BoundingRealEstateEntity], List
+            ] = self._house_repo.get_bounding(
                 bounding_filter=bounding_filter,
                 private_filters=private_filters,
                 public_filters=public_filters,
@@ -167,7 +170,9 @@ class BoundingUseCase(HouseBaseUseCase):
                 max_area=dto.max_area,
             )
         else:
-            bounding_entities_list = self._house_repo.get_administrative_divisions(dto=dto)
+            bounding_entities_list = self._house_repo.get_administrative_divisions(
+                dto=dto
+            )
 
         return UseCaseSuccessOutput(value=bounding_entities_list)
 

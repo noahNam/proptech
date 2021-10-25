@@ -3,7 +3,8 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     DateTime,
-    String, Float,
+    String,
+    Float,
 )
 
 from app import db

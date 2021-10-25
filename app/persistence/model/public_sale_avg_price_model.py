@@ -28,5 +28,8 @@ class PublicSaleAvgPriceModel(db.Model):
 
     def to_entity(self) -> PublicSaleAvgPriceEntity:
         return PublicSaleAvgPriceEntity(
-            pyoung=self.pyoung, supply_price=self.supply_price, avg_competition=self.avg_competition, min_score=self.min_score
+            pyoung=self.pyoung,
+            supply_price=self.supply_price,
+            avg_competition=self.avg_competition,
+            min_score=self.min_score,
         )
