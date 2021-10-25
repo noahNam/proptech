@@ -412,17 +412,15 @@ class PublicSaleReportEntity(BaseModel):
 
 
 class PrivateSaleAvgPriceTradeEntity(BaseModel):
-    pyoung: int
+    pyoung: float
     trade_price: Optional[int]
     max_trade_contract_date: Optional[str]
-    trade_visible: bool
 
 
 class PrivateSaleAvgPriceDepositEntity(BaseModel):
-    pyoung: int
+    pyoung: float
     deposit_price: Optional[int]
     max_deposit_contract_date: Optional[str]
-    deposit_visible: bool
 
 
 class PrivateSaleAvgPriceEntity(BaseModel):
@@ -433,56 +431,46 @@ class PrivateSaleAvgPriceEntity(BaseModel):
 class PublicSaleAvgPriceEntity(BaseModel):
     pyoung: int
     supply_price: Optional[int]
+    avg_competition: Optional[int]
+    min_score: Optional[int]
 
 
 class PrivateSaleBoundingEntity(BaseModel):
-    id: int
+    jibun_address: Optional[str]
+    road_address: Optional[str]
+    latitude: float
+    longitude: float
+    private_sales_id: int
     building_type: Enum
-    default_pyoung: Optional[int]
-    default_trade_price: Optional[int]
-    default_deposit_price: Optional[int]
-    trade_info: Optional[List[PrivateSaleAvgPriceTradeEntity]]
-    deposit_info: Optional[List[PrivateSaleAvgPriceDepositEntity]]
-    trade_status: Optional[int]
-    deposit_status: Optional[int]
+    name: Optional[str]
+    trade_pyoung: Optional[int]
+    trade_price: Optional[int]
+    deposit_pyoung: Optional[int]
+    deposit_price: Optional[int]
 
     class Config:
         use_enum_values = True
 
 
 class PublicSaleBoundingEntity(BaseModel):
-    id: int
-    name: str
-    default_pyoung: Optional[int]
+    jibun_address: Optional[str]
+    road_address: Optional[str]
+    latitude: float
+    longitude: float
+    public_sales_id: int
     housing_category: Enum
-    rent_type: Enum
-    trade_type: Enum
-    is_available: bool
-    subscription_start_date: Optional[str]
-    subscription_end_date: Optional[str]
+    name: Optional[str]
     status: int
-    public_sale_photos: List[PublicSalePhotoEntity]
-    public_sale_avg_prices: Optional[List[PublicSaleAvgPriceEntity]]
+    pyoung: Optional[int]
+    supply_price: int
+    avg_competition: Optional[str]
+    min_score: Optional[str]
 
     class Config:
         use_enum_values = True
 
 
 class BoundingRealEstateEntity(BaseModel):
-    id: int
-    name: Optional[str]
-    road_address: Optional[str]
-    jibun_address: str
-    si_do: str
-    si_gun_gu: str
-    dong_myun: str
-    ri: Optional[str]
-    road_name: Optional[str]
-    road_number: Optional[str]
-    land_number: Optional[str]
-    is_available: bool
-    latitude: float
-    longitude: float
     private_sales: Optional[PrivateSaleBoundingEntity]
     public_sales: Optional[PublicSaleBoundingEntity]
 
