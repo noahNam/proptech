@@ -33,7 +33,7 @@ class GetRecentViewListBaseSchema(BaseModel):
 
 
 class BoundingResponseSchema(BaseModel):
-    houses: Optional[List[BoundingRealEstateEntity]]
+    houses: List[BoundingRealEstateEntity]
 
 
 class BoundingAdministrativeResponseSchema(BaseModel):
