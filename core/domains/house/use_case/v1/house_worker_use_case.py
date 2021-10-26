@@ -71,8 +71,8 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     ) -> int:
         """
             todo: 부동산 정책이 매년 변경되므로 정기적으로 세율 변경 시 업데이트 필요합니다.
-            @Harry -> private_area가 맞나요?
             <취득세 계산 2021년도 기준>
+            [취득세 계산시, 전용면적을 사용합니다 (공급면적 X)]
             (부동산 종류가 주택일 경우로 한정합니다 - 상가, 오피스텔, 토지, 건물 제외)
             [parameters]
             - private_area: 전용면적
@@ -669,7 +669,9 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
 
 
 class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
-    # @Harry 사용하는 worker 인가요?
+    """
+        public_sale_photos -> 분양 정보 Default Image 일괄 저장 배치 코드
+    """
     def send_slack_message(self, message: str):
         channel = "#engineering-class"
 
