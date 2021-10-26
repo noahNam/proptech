@@ -202,7 +202,19 @@ class PublicSaleStatusEnum(ExtendedEnum):
     IS_CLOSED = 3
 
 
-class BoundingPrivateTypeEnum(Enum):
+class BoundingPrivateTypeEnum(ExtendedEnum):
+    """
+    사용 모델 : PrivateSaleModel
+    사용 목적 : 지도 바운딩시 실거래가 표시 유무
+            NOTHING: 미포함
+            APT_ONLY: 포함
+    """
+
+    NOTHING = 0
+    APT_ONLY = 1
+
+
+class BoundingIncludePrivateEnum(ExtendedEnum):
     """
     사용 모델 : PrivateSaleModel
     사용 목적 : 지도 바운딩시 받는 파라미터 표시
@@ -211,9 +223,8 @@ class BoundingPrivateTypeEnum(Enum):
             OP_ONLY : 오피스텔만 필터
     """
 
-    NOTHING = 0
-    APT_ONLY = 1
-    OP_ONLY = 2
+    NOT_INCLUDE = 0
+    INCLUDE = 1
 
 
 class BoundingPublicTypeEnum(Enum):
