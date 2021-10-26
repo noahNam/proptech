@@ -35,9 +35,6 @@ class HouseHelper:
 
     @classmethod
     def public_status(cls, offer_date: str, subscription_end_date: str) -> int:
-        """
-            todo: 리펙토링 필요, HouseRepository()._get_status() 로직과 겹침
-        """
         if (
             not offer_date
             or offer_date == "0"
@@ -49,21 +46,7 @@ class HouseHelper:
             return PublicSaleStatusEnum.UNKNOWN.value
 
         today = get_server_timestamp().strftime("%Y%m%d")
-        """
-            @Harry 아래 잘못되었는데 같은 로직 쓴 부분 찾아서 수정해주세요(주석처리 부분). + 입주년,입주월 int 타입인데 어떤 이유였죠? + PublicSaleStatusEnum.UNKNOWN.value 일때 front에서 어떻게 처리할지 협의됏나요?
 
-                    입주자 모집공고일                       청약 마감일                               입주일
-            |--- 분양예정 ---|-------------분양 중--------------|---------------분양 완료-------------|--------매매------> 
-                                                                                              입주월말일기준(ex: 202109 -> 202110부터 매매가능)
-        """
-        # if today < self.subscription_start_date:
-        #     return PublicSaleStatusEnum.BEFORE_OPEN.value
-        # elif self.subscription_start_date <= today <= self.subscription_end_date:
-        #     return PublicSaleStatusEnum.IS_RECEIVING.value
-        # elif self.subscription_end_date < today:
-        #     return PublicSaleStatusEnum.IS_CLOSED.value
-        # else:
-        #     return PublicSaleStatusEnum.UNKNOWN.value
         if today < offer_date:
             return PublicSaleStatusEnum.BEFORE_OPEN.value
         elif offer_date <= today <= subscription_end_date:
