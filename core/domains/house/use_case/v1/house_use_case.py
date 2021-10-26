@@ -126,10 +126,7 @@ class BoundingUseCase(HouseBaseUseCase):
             )
 
         # dto.private_type check
-        if (
-            dto.private_type < BoundingPrivateTypeEnum.NOTHING.value
-            or BoundingPrivateTypeEnum.OP_ONLY.value < dto.private_type
-        ):
+        if dto.private_type not in BoundingPrivateTypeEnum.list():
             return UseCaseFailureOutput(
                 type="private_type",
                 message=FailureType.INVALID_REQUEST_ERROR,
@@ -166,6 +163,7 @@ class BoundingUseCase(HouseBaseUseCase):
                 private_filters=private_filters,
                 public_filters=public_filters,
                 public_status_filters=dto.public_status,
+                include_private=dto.include_private,
                 min_area=dto.min_area,
                 max_area=dto.max_area,
             )

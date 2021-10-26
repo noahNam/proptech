@@ -65,7 +65,7 @@ from core.domains.house.enum.house_enum import (
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
     HousingCategoryEnum,
-    CalcPyoungEnum,
+    CalcPyoungEnum, BoundingIncludePrivateEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -195,251 +195,256 @@ class HouseRepository:
         private_filters: List[Any],
         public_filters: List[Any],
         public_status_filters: List[int],
+        include_private: Optional[int],
         min_area: Optional[int],
         max_area: Optional[int],
+
     ) -> Union[List[BoundingRealEstateEntity], List]:
         filters = list()
         filters.append(bounding_filter)
         filters.append(and_(RealEstateModel.is_available == "True",))
 
+        private_results = list()
+        public_results = list()
+
         real_estate_sub_query = (
             session.query(RealEstateModel).filter(*filters)
         ).subquery()
 
-        pyoung_filters = list()
-        pyoung_case = case(
-            [
-                (
-                    PrivateSaleAvgPriceModel.pyoung_div == "S",
-                    func.round(
-                        PrivateSaleAvgPriceModel.pyoung / CalcPyoungEnum.CALC_VAR.value
-                    ),
-                )
-            ],
-            else_=func.round(
-                (PrivateSaleAvgPriceModel.pyoung * CalcPyoungEnum.TEMP_CALC_VAR.value)
-                / CalcPyoungEnum.CALC_VAR.value
-            ),
-        )
-        if not min_area or not max_area:
-            pyoung_filters.append(
-                PrivateSaleAvgPriceModel.default_pyoung
-                == PrivateSaleAvgPriceModel.pyoung
-            )
-        else:
-            pyoung_filters.append(pyoung_case >= min_area)
-            pyoung_filters.append(pyoung_case <= max_area)
-
-        """
-            #(1) 면적 필터가 없을 때는 default_pyoung 기준으로 보여줌
-            #(2) 면적 필터가 있을 때는 면적 필터 범위안에서 계약일이 가장 최근의 것 하나를 보여줌
-        """
-        if len(pyoung_filters) == 1:
-            # (1)
-            private_query = (
-                session.query(real_estate_sub_query)
-                .with_entities(
-                    real_estate_sub_query.c.jibun_address,
-                    real_estate_sub_query.c.road_address,
-                    real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
-                    real_estate_sub_query.c.coordinates.ST_X().label("longitude"),
-                    PrivateSaleModel.id,
-                    PrivateSaleModel.building_type,
-                    PrivateSaleModel.name,
-                    pyoung_case.label("trade_pyoung"),
-                    PrivateSaleAvgPriceModel.trade_price,
-                    pyoung_case.label("deposit_pyoung"),
-                    PrivateSaleAvgPriceModel.deposit_price,
-                )
-                .join(
-                    PrivateSaleModel,
-                    PrivateSaleModel.real_estate_id == real_estate_sub_query.c.id,
-                )
-                .join(
-                    PrivateSaleAvgPriceModel,
-                    PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
-                )
-                .filter(*private_filters)
-                .filter(*pyoung_filters)
-            )
-
-            query_set = private_query.all()
-        else:
-            # (2)
-            # private_sales 매매 조회
-            private_trade_sub_q = (
-                session.query(real_estate_sub_query)
-                .with_entities(
-                    real_estate_sub_query.c.jibun_address,
-                    real_estate_sub_query.c.road_address,
-                    real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
-                    real_estate_sub_query.c.coordinates.ST_X().label("longitude"),
-                    PrivateSaleModel.id,
-                    PrivateSaleModel.building_type,
-                    PrivateSaleModel.name,
-                    pyoung_case.label("pyoung"),
-                    PrivateSaleAvgPriceModel.trade_price,
-                    PrivateSaleAvgPriceModel.max_trade_contract_date,
-                    func.row_number()
-                    .over(
-                        partition_by=PrivateSaleModel.id,
-                        order_by=func.coalesce(
-                            PrivateSaleAvgPriceModel.max_trade_contract_date, "19000101"
-                        ).desc(),
+        if include_private == BoundingIncludePrivateEnum.INCLUDE.value:
+            pyoung_filters = list()
+            pyoung_case = case(
+                [
+                    (
+                        PrivateSaleAvgPriceModel.pyoung_div == "S",
+                        func.round(
+                            PrivateSaleAvgPriceModel.pyoung / CalcPyoungEnum.CALC_VAR.value
+                        ),
                     )
-                    .label("trade_rank"),
-                )
-                .join(
-                    PrivateSaleModel,
-                    PrivateSaleModel.real_estate_id == real_estate_sub_query.c.id,
-                )
-                .join(
-                    PrivateSaleAvgPriceModel,
-                    PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
-                )
-                .filter(*private_filters)
-                .filter(*pyoung_filters)
-                .filter(PrivateSaleAvgPriceModel.trade_price > 0)
-            ).subquery()
-
-            private_trade_query = (
-                session.query(private_trade_sub_q)
-                .with_entities(
-                    func.max(private_trade_sub_q.c.jibun_address).label(
-                        "jibun_address"
-                    ),
-                    func.max(private_trade_sub_q.c.road_address).label("road_address"),
-                    func.max(private_trade_sub_q.c.latitude).label("latitude"),
-                    func.max(private_trade_sub_q.c.longitude).label("longitude"),
-                    private_trade_sub_q.c.id.label("id"),
-                    func.max(private_trade_sub_q.c.building_type).label(
-                        "building_type"
-                    ),
-                    func.max(private_trade_sub_q.c.name).label("name"),
-                    func.max(private_trade_sub_q.c.pyoung).label("trade_pyoung"),
-                    func.max(private_trade_sub_q.c.trade_price).label("trade_price"),
-                    literal(0, None).label("deposit_pyoung"),
-                    literal(0, None).label("deposit_price"),
-                )
-                .group_by(private_trade_sub_q.c.id, private_trade_sub_q.c.trade_rank,)
-                .having(private_trade_sub_q.c.trade_rank == 1)
+                ],
+                else_=func.round(
+                    (PrivateSaleAvgPriceModel.pyoung * CalcPyoungEnum.TEMP_CALC_VAR.value)
+                    / CalcPyoungEnum.CALC_VAR.value
+                ),
             )
+            if not min_area or not max_area:
+                pyoung_filters.append(
+                    PrivateSaleAvgPriceModel.default_pyoung
+                    == PrivateSaleAvgPriceModel.pyoung
+                )
+            else:
+                pyoung_filters.append(pyoung_case >= min_area)
+                pyoung_filters.append(pyoung_case <= max_area)
 
-            # private_sales 전세 조회
-            private_deposit_sub_q = (
-                session.query(real_estate_sub_query)
-                .with_entities(
-                    real_estate_sub_query.c.jibun_address,
-                    real_estate_sub_query.c.road_address,
-                    real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
-                    real_estate_sub_query.c.coordinates.ST_X().label("longitude"),
-                    PrivateSaleModel.id,
-                    PrivateSaleModel.building_type,
-                    PrivateSaleModel.name,
-                    pyoung_case.label("pyoung"),
-                    PrivateSaleAvgPriceModel.deposit_price,
-                    PrivateSaleAvgPriceModel.max_deposit_contract_date,
-                    func.row_number()
-                    .over(
-                        partition_by=PrivateSaleModel.id,
-                        order_by=func.coalesce(
-                            PrivateSaleAvgPriceModel.max_deposit_contract_date,
-                            "19000101",
-                        ).desc(),
+            """
+                #(1) 면적 필터가 없을 때는 default_pyoung 기준으로 보여줌
+                #(2) 면적 필터가 있을 때는 면적 필터 범위안에서 계약일이 가장 최근의 것 하나를 보여줌
+            """
+            if len(pyoung_filters) == 1:
+                # (1)
+                private_query = (
+                    session.query(real_estate_sub_query)
+                    .with_entities(
+                        real_estate_sub_query.c.jibun_address,
+                        real_estate_sub_query.c.road_address,
+                        real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
+                        real_estate_sub_query.c.coordinates.ST_X().label("longitude"),
+                        PrivateSaleModel.id,
+                        PrivateSaleModel.building_type,
+                        PrivateSaleModel.name,
+                        pyoung_case.label("trade_pyoung"),
+                        PrivateSaleAvgPriceModel.trade_price,
+                        pyoung_case.label("deposit_pyoung"),
+                        PrivateSaleAvgPriceModel.deposit_price,
                     )
-                    .label("deposit_rank"),
-                )
-                .join(
-                    PrivateSaleModel,
-                    PrivateSaleModel.real_estate_id == real_estate_sub_query.c.id,
-                )
-                .join(
-                    PrivateSaleAvgPriceModel,
-                    PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
-                )
-                .filter(*private_filters)
-                .filter(*pyoung_filters)
-                .filter(PrivateSaleAvgPriceModel.deposit_price > 0)
-            ).subquery()
-
-            private_deposit_query = (
-                session.query(private_deposit_sub_q)
-                .with_entities(
-                    func.max(private_deposit_sub_q.c.jibun_address).label(
-                        "jibun_address"
-                    ),
-                    func.max(private_deposit_sub_q.c.road_address).label(
-                        "road_address"
-                    ),
-                    func.max(private_deposit_sub_q.c.latitude).label("latitude"),
-                    func.max(private_deposit_sub_q.c.longitude).label("longitude"),
-                    private_deposit_sub_q.c.id.label("id"),
-                    func.max(private_deposit_sub_q.c.building_type).label(
-                        "building_type"
-                    ),
-                    func.max(private_deposit_sub_q.c.name).label("name"),
-                    literal(0, None).label("trade_pyoung"),
-                    literal(0, None).label("trade_price"),
-                    func.max(private_deposit_sub_q.c.pyoung).label("deposit_pyoung"),
-                    func.max(private_deposit_sub_q.c.deposit_price).label(
-                        "deposit_price"
-                    ),
-                )
-                .group_by(
-                    private_deposit_sub_q.c.id, private_deposit_sub_q.c.deposit_rank,
-                )
-                .having(private_deposit_sub_q.c.deposit_rank == 1)
-            )
-
-            union_q = private_trade_query.union_all(private_deposit_query).subquery()
-            final_query = (
-                session.query(union_q)
-                .with_entities(
-                    func.max(union_q.c.jibun_address).label("jibun_address"),
-                    func.max(union_q.c.road_address).label("road_address"),
-                    func.max(union_q.c.latitude).label("latitude"),
-                    func.max(union_q.c.longitude).label("longitude"),
-                    union_q.c.id.label("id"),
-                    func.max(union_q.c.building_type).label("building_type"),
-                    func.max(union_q.c.name).label("name"),
-                    func.sum(union_q.c.trade_pyoung).label("trade_pyoung"),
-                    func.sum(union_q.c.trade_price).label("trade_price"),
-                    func.sum(union_q.c.deposit_pyoung).label("deposit_pyoung"),
-                    func.sum(union_q.c.deposit_price).label("deposit_price"),
-                )
-                .group_by(union_q.c.id,)
-            )
-
-            query_set = final_query.all()
-
-        ######## 매매 쿼리 종료 ###############################################
-
-        private_results = list()
-        if query_set:
-            for query in query_set:
-                private_results.append(
-                    PrivateSaleBoundingEntity(
-                        jibun_address=query.jibun_address,
-                        road_address=query.road_address,
-                        latitude=query.latitude,
-                        longitude=query.longitude,
-                        private_sales_id=query.id,
-                        building_type=query.building_type,
-                        name=query.name,
-                        trade_pyoung=None
-                        if query.trade_pyoung == 0
-                        else query.trade_pyoung,
-                        trade_price=None
-                        if query.trade_price == 0
-                        else query.trade_price,
-                        deposit_pyoung=None
-                        if query.deposit_pyoung == 0
-                        else query.deposit_pyoung,
-                        deposit_price=None
-                        if query.deposit_price == 0
-                        else query.deposit_price,
+                    .join(
+                        PrivateSaleModel,
+                        PrivateSaleModel.real_estate_id == real_estate_sub_query.c.id,
                     )
+                    .join(
+                        PrivateSaleAvgPriceModel,
+                        PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
+                    )
+                    .filter(*private_filters)
+                    .filter(*pyoung_filters)
                 )
+
+                query_set = private_query.all()
+            else:
+                # (2)
+                # private_sales 매매 조회
+                private_trade_sub_q = (
+                    session.query(real_estate_sub_query)
+                    .with_entities(
+                        real_estate_sub_query.c.jibun_address,
+                        real_estate_sub_query.c.road_address,
+                        real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
+                        real_estate_sub_query.c.coordinates.ST_X().label("longitude"),
+                        PrivateSaleModel.id,
+                        PrivateSaleModel.building_type,
+                        PrivateSaleModel.name,
+                        pyoung_case.label("pyoung"),
+                        PrivateSaleAvgPriceModel.trade_price,
+                        PrivateSaleAvgPriceModel.max_trade_contract_date,
+                        func.row_number()
+                        .over(
+                            partition_by=PrivateSaleModel.id,
+                            order_by=func.coalesce(
+                                PrivateSaleAvgPriceModel.max_trade_contract_date, "19000101"
+                            ).desc(),
+                        )
+                        .label("trade_rank"),
+                    )
+                    .join(
+                        PrivateSaleModel,
+                        PrivateSaleModel.real_estate_id == real_estate_sub_query.c.id,
+                    )
+                    .join(
+                        PrivateSaleAvgPriceModel,
+                        PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
+                    )
+                    .filter(*private_filters)
+                    .filter(*pyoung_filters)
+                    .filter(PrivateSaleAvgPriceModel.trade_price > 0)
+                ).subquery()
+
+                private_trade_query = (
+                    session.query(private_trade_sub_q)
+                    .with_entities(
+                        func.max(private_trade_sub_q.c.jibun_address).label(
+                            "jibun_address"
+                        ),
+                        func.max(private_trade_sub_q.c.road_address).label("road_address"),
+                        func.max(private_trade_sub_q.c.latitude).label("latitude"),
+                        func.max(private_trade_sub_q.c.longitude).label("longitude"),
+                        private_trade_sub_q.c.id.label("id"),
+                        func.max(private_trade_sub_q.c.building_type).label(
+                            "building_type"
+                        ),
+                        func.max(private_trade_sub_q.c.name).label("name"),
+                        func.max(private_trade_sub_q.c.pyoung).label("trade_pyoung"),
+                        func.max(private_trade_sub_q.c.trade_price).label("trade_price"),
+                        literal(0, None).label("deposit_pyoung"),
+                        literal(0, None).label("deposit_price"),
+                    )
+                    .group_by(private_trade_sub_q.c.id, private_trade_sub_q.c.trade_rank,)
+                    .having(private_trade_sub_q.c.trade_rank == 1)
+                )
+
+                # private_sales 전세 조회
+                private_deposit_sub_q = (
+                    session.query(real_estate_sub_query)
+                    .with_entities(
+                        real_estate_sub_query.c.jibun_address,
+                        real_estate_sub_query.c.road_address,
+                        real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
+                        real_estate_sub_query.c.coordinates.ST_X().label("longitude"),
+                        PrivateSaleModel.id,
+                        PrivateSaleModel.building_type,
+                        PrivateSaleModel.name,
+                        pyoung_case.label("pyoung"),
+                        PrivateSaleAvgPriceModel.deposit_price,
+                        PrivateSaleAvgPriceModel.max_deposit_contract_date,
+                        func.row_number()
+                        .over(
+                            partition_by=PrivateSaleModel.id,
+                            order_by=func.coalesce(
+                                PrivateSaleAvgPriceModel.max_deposit_contract_date,
+                                "19000101",
+                            ).desc(),
+                        )
+                        .label("deposit_rank"),
+                    )
+                    .join(
+                        PrivateSaleModel,
+                        PrivateSaleModel.real_estate_id == real_estate_sub_query.c.id,
+                    )
+                    .join(
+                        PrivateSaleAvgPriceModel,
+                        PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
+                    )
+                    .filter(*private_filters)
+                    .filter(*pyoung_filters)
+                    .filter(PrivateSaleAvgPriceModel.deposit_price > 0)
+                ).subquery()
+
+                private_deposit_query = (
+                    session.query(private_deposit_sub_q)
+                    .with_entities(
+                        func.max(private_deposit_sub_q.c.jibun_address).label(
+                            "jibun_address"
+                        ),
+                        func.max(private_deposit_sub_q.c.road_address).label(
+                            "road_address"
+                        ),
+                        func.max(private_deposit_sub_q.c.latitude).label("latitude"),
+                        func.max(private_deposit_sub_q.c.longitude).label("longitude"),
+                        private_deposit_sub_q.c.id.label("id"),
+                        func.max(private_deposit_sub_q.c.building_type).label(
+                            "building_type"
+                        ),
+                        func.max(private_deposit_sub_q.c.name).label("name"),
+                        literal(0, None).label("trade_pyoung"),
+                        literal(0, None).label("trade_price"),
+                        func.max(private_deposit_sub_q.c.pyoung).label("deposit_pyoung"),
+                        func.max(private_deposit_sub_q.c.deposit_price).label(
+                            "deposit_price"
+                        ),
+                    )
+                    .group_by(
+                        private_deposit_sub_q.c.id, private_deposit_sub_q.c.deposit_rank,
+                    )
+                    .having(private_deposit_sub_q.c.deposit_rank == 1)
+                )
+
+                union_q = private_trade_query.union_all(private_deposit_query).subquery()
+                final_query = (
+                    session.query(union_q)
+                    .with_entities(
+                        func.max(union_q.c.jibun_address).label("jibun_address"),
+                        func.max(union_q.c.road_address).label("road_address"),
+                        func.max(union_q.c.latitude).label("latitude"),
+                        func.max(union_q.c.longitude).label("longitude"),
+                        union_q.c.id.label("id"),
+                        func.max(union_q.c.building_type).label("building_type"),
+                        func.max(union_q.c.name).label("name"),
+                        func.sum(union_q.c.trade_pyoung).label("trade_pyoung"),
+                        func.sum(union_q.c.trade_price).label("trade_price"),
+                        func.sum(union_q.c.deposit_pyoung).label("deposit_pyoung"),
+                        func.sum(union_q.c.deposit_price).label("deposit_price"),
+                    )
+                    .group_by(union_q.c.id,)
+                )
+
+                query_set = final_query.all()
+
+            if query_set:
+                for query in query_set:
+                    private_results.append(
+                        PrivateSaleBoundingEntity(
+                            jibun_address=query.jibun_address,
+                            road_address=query.road_address,
+                            latitude=query.latitude,
+                            longitude=query.longitude,
+                            private_sales_id=query.id,
+                            building_type=query.building_type,
+                            name=query.name,
+                            trade_pyoung=None
+                            if query.trade_pyoung == 0
+                            else query.trade_pyoung,
+                            trade_price=None
+                            if query.trade_price == 0
+                            else query.trade_price,
+                            deposit_pyoung=None
+                            if query.deposit_pyoung == 0
+                            else query.deposit_pyoung,
+                            deposit_price=None
+                            if query.deposit_price == 0
+                            else query.deposit_price,
+                        )
+                    )
+
+        # -------------------- 매매 쿼리 종료 --------------------
 
         # 분양 건 조회
         public_query = (
@@ -471,7 +476,6 @@ class HouseRepository:
         )
         query_set = public_query.all()
 
-        public_results = list()
         if query_set:
             for query in query_set:
                 status = HouseHelper.public_status(
