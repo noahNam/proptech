@@ -65,7 +65,8 @@ from core.domains.house.enum.house_enum import (
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
     HousingCategoryEnum,
-    CalcPyoungEnum, BoundingIncludePrivateEnum,
+    CalcPyoungEnum,
+    BoundingIncludePrivateEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -198,7 +199,6 @@ class HouseRepository:
         include_private: Optional[int],
         min_area: Optional[int],
         max_area: Optional[int],
-
     ) -> Union[List[BoundingRealEstateEntity], List]:
         filters = list()
         filters.append(bounding_filter)
@@ -218,12 +218,16 @@ class HouseRepository:
                     (
                         PrivateSaleAvgPriceModel.pyoung_div == "S",
                         func.round(
-                            PrivateSaleAvgPriceModel.pyoung / CalcPyoungEnum.CALC_VAR.value
+                            PrivateSaleAvgPriceModel.pyoung
+                            / CalcPyoungEnum.CALC_VAR.value
                         ),
                     )
                 ],
                 else_=func.round(
-                    (PrivateSaleAvgPriceModel.pyoung * CalcPyoungEnum.TEMP_CALC_VAR.value)
+                    (
+                        PrivateSaleAvgPriceModel.pyoung
+                        * CalcPyoungEnum.TEMP_CALC_VAR.value
+                    )
                     / CalcPyoungEnum.CALC_VAR.value
                 ),
             )
@@ -263,7 +267,8 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
+                        PrivateSaleAvgPriceModel.private_sales_id
+                        == PrivateSaleModel.id,
                     )
                     .filter(*private_filters)
                     .filter(*pyoung_filters)
@@ -290,7 +295,8 @@ class HouseRepository:
                         .over(
                             partition_by=PrivateSaleModel.id,
                             order_by=func.coalesce(
-                                PrivateSaleAvgPriceModel.max_trade_contract_date, "19000101"
+                                PrivateSaleAvgPriceModel.max_trade_contract_date,
+                                "19000101",
                             ).desc(),
                         )
                         .label("trade_rank"),
@@ -301,7 +307,8 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
+                        PrivateSaleAvgPriceModel.private_sales_id
+                        == PrivateSaleModel.id,
                     )
                     .filter(*private_filters)
                     .filter(*pyoung_filters)
@@ -314,7 +321,9 @@ class HouseRepository:
                         func.max(private_trade_sub_q.c.jibun_address).label(
                             "jibun_address"
                         ),
-                        func.max(private_trade_sub_q.c.road_address).label("road_address"),
+                        func.max(private_trade_sub_q.c.road_address).label(
+                            "road_address"
+                        ),
                         func.max(private_trade_sub_q.c.latitude).label("latitude"),
                         func.max(private_trade_sub_q.c.longitude).label("longitude"),
                         private_trade_sub_q.c.id.label("id"),
@@ -323,11 +332,15 @@ class HouseRepository:
                         ),
                         func.max(private_trade_sub_q.c.name).label("name"),
                         func.max(private_trade_sub_q.c.pyoung).label("trade_pyoung"),
-                        func.max(private_trade_sub_q.c.trade_price).label("trade_price"),
+                        func.max(private_trade_sub_q.c.trade_price).label(
+                            "trade_price"
+                        ),
                         literal(0, None).label("deposit_pyoung"),
                         literal(0, None).label("deposit_price"),
                     )
-                    .group_by(private_trade_sub_q.c.id, private_trade_sub_q.c.trade_rank,)
+                    .group_by(
+                        private_trade_sub_q.c.id, private_trade_sub_q.c.trade_rank,
+                    )
                     .having(private_trade_sub_q.c.trade_rank == 1)
                 )
 
@@ -361,7 +374,8 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
+                        PrivateSaleAvgPriceModel.private_sales_id
+                        == PrivateSaleModel.id,
                     )
                     .filter(*private_filters)
                     .filter(*pyoung_filters)
@@ -386,18 +400,23 @@ class HouseRepository:
                         func.max(private_deposit_sub_q.c.name).label("name"),
                         literal(0, None).label("trade_pyoung"),
                         literal(0, None).label("trade_price"),
-                        func.max(private_deposit_sub_q.c.pyoung).label("deposit_pyoung"),
+                        func.max(private_deposit_sub_q.c.pyoung).label(
+                            "deposit_pyoung"
+                        ),
                         func.max(private_deposit_sub_q.c.deposit_price).label(
                             "deposit_price"
                         ),
                     )
                     .group_by(
-                        private_deposit_sub_q.c.id, private_deposit_sub_q.c.deposit_rank,
+                        private_deposit_sub_q.c.id,
+                        private_deposit_sub_q.c.deposit_rank,
                     )
                     .having(private_deposit_sub_q.c.deposit_rank == 1)
                 )
 
-                union_q = private_trade_query.union_all(private_deposit_query).subquery()
+                union_q = private_trade_query.union_all(
+                    private_deposit_query
+                ).subquery()
                 final_query = (
                     session.query(union_q)
                     .with_entities(
