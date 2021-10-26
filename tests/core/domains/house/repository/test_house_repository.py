@@ -15,6 +15,7 @@ from core.domains.house.enum.house_enum import (
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
     BoundingLevelEnum,
+    BoundingIncludePrivateEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import GetUserDto
@@ -31,6 +32,7 @@ coordinates_dto = CoordinatesRangeDto(
     level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value,
     private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
     public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
+    include_private=BoundingIncludePrivateEnum.INCLUDE.value,
 )
 
 get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)

@@ -18,7 +18,8 @@ from core.domains.house.entity.house_entity import (
     AdministrativeDivisionLegalCodeEntity,
     RealEstateLegalCodeEntity,
     PublicSaleEntity,
-    UpdateContractStatusTargetEntity, RecentlyContractedEntity,
+    UpdateContractStatusTargetEntity,
+    RecentlyContractedEntity,
 )
 from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
