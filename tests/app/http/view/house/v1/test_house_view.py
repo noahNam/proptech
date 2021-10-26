@@ -189,13 +189,14 @@ def test_bounding_view_when_level_is_grater_than_queryset_flag_then_success_with
                         level=level,
                         private_type=private_type,
                         public_type=public_type,
+                        public_status=None,
+                        max_area=None,
+                        min_area=None,
                     ),
                     headers=headers,
                 )
     data = response.get_json()
     assert response.status_code == 200
-    assert data["id"] == bounding_entitiy.id
-    assert data["name"] == bounding_entitiy.name
     assert mock_get_bounding.called is True
     assert mock_result.called is True
 
