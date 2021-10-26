@@ -4,6 +4,7 @@ from typing import Union, List, Optional
 import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
+from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.banner.entity.banner_entity import (
     BannerEntity,
@@ -438,7 +439,10 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                     id=query.id,
                     name=query.name,
                     si_do=query.real_estates.si_do,
-                    status=query.status,
+                    status=HouseHelper().public_status(
+                        offer_date=query.offer_date,
+                        subscription_end_date=query.subscription_end_date
+                    ),
                     public_sale_photos=[
                         public_sale_photo.to_entity()
                         for public_sale_photo in query.public_sale_photos
