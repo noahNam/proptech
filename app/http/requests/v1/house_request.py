@@ -136,7 +136,8 @@ class GetCoordinatesSchema(BaseModel):
 
     x_points: Tuple[StrictFloat, StrictFloat] = ()
     y_points: Tuple[StrictFloat, StrictFloat] = ()
-    level: Optional[StrictInt]
+    level: StrictInt
+    include_private: StrictInt
     private_type: Optional[StrictInt]
     public_type: Optional[StrictInt]
     public_status: List[StrictInt]
@@ -200,10 +201,7 @@ class GetCoordinatesSchema(BaseModel):
 
     @validator("private_type")
     def check_private_type(cls, private_type) -> int:
-        if (
-            private_type < BoundingPrivateTypeEnum.NOTHING.value
-            or BoundingPrivateTypeEnum.OP_ONLY.value < private_type
-        ):
+        if private_type not in BoundingPrivateTypeEnum.list():
             raise ValidationError("Out of range: private_type")
         return private_type
 
@@ -225,6 +223,7 @@ class GetCoordinatesRequestSchema:
         end_x,
         end_y,
         level,
+        include_private,
         private_type,
         public_type,
         public_status,
@@ -236,6 +235,7 @@ class GetCoordinatesRequestSchema:
         self._end_x = float(end_x) if end_x else None
         self._end_y = float(end_y) if end_y else None
         self._level = int(level) if level else None
+        self._include_private = int(include_private) if include_private else None
         self._private_type = int(private_type) if private_type else None
         self._public_type = int(public_type) if public_type else None
         self._public_status = (
@@ -252,6 +252,7 @@ class GetCoordinatesRequestSchema:
                 x_points=(self._start_x, self._end_x),
                 y_points=(self._start_y, self._end_y),
                 level=self._level,
+                include_private=self._include_private,
                 private_type=self._private_type,
                 public_type=self._public_type,
                 public_status=self._public_status,
@@ -264,6 +265,7 @@ class GetCoordinatesRequestSchema:
                 end_x=schema.x_points[1],
                 end_y=schema.y_points[1],
                 level=schema.level,
+                include_private=schema.include_private,
                 private_type=schema.private_type,
                 public_type=schema.public_type,
                 public_status=schema.public_status,

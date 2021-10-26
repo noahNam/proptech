@@ -9,11 +9,12 @@ class CoordinatesRangeDto(BaseModel):
         경도: X (37.xxx)
     """
 
-    start_x: Optional[float]
-    start_y: Optional[float]
-    end_x: Optional[float]
-    end_y: Optional[float]
-    level: Optional[int]
+    start_x: float
+    start_y: float
+    end_x: float
+    end_y: float
+    level: int
+    include_private: int
     private_type: Optional[int]
     public_type: Optional[int]
     public_status: Optional[List[int]]
