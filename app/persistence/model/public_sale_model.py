@@ -13,6 +13,7 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, backref
 
 from app import db
+from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
 from core.domains.house.entity.house_entity import (
@@ -115,7 +116,10 @@ class PublicSaleModel(db.Model):
             offer_date=self.offer_date,
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,
-            status=self.status,
+            status=HouseHelper().public_status(
+                        offer_date=self.offer_date,
+                        subscription_end_date=self.subscription_end_date
+                    ),
             special_supply_date=self.special_supply_date,
             special_supply_etc_date=self.special_supply_etc_date,
             special_etc_gyeonggi_date=self.special_etc_gyeonggi_date,
