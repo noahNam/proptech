@@ -81,6 +81,8 @@ def bounding_view():
             private_type=request.args.get("private_type"),
             public_type=request.args.get("public_type"),
             public_status=request.args.get("public_status"),
+            min_area=request.args.get("min_area"),
+            max_area=request.args.get("max_area"),
         ).validate_request_and_make_dto()
     except InvalidRequestException:
         return failure_response(
