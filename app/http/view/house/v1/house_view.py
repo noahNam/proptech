@@ -89,7 +89,7 @@ def bounding_view():
         return failure_response(
             UseCaseFailureOutput(
                 type=FailureType.INVALID_REQUEST_ERROR,
-                message=f"Invalid Parameter input, check coordinates, level, private_type, public_type, public_status, include_private"
+                message=f"Invalid Parameter input, check coordinates, level, private_type, public_type, public_status, include_private",
             )
         )
     if dto.level < BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value:

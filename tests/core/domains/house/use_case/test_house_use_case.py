@@ -30,6 +30,7 @@ from core.domains.house.enum.house_enum import (
     PublicSaleStatusEnum,
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
+    BoundingIncludePrivateEnum,
 )
 from core.domains.house.use_case.v1.house_use_case import (
     UpsertInterestHouseUseCase,
@@ -58,6 +59,7 @@ coordinates_dto = CoordinatesRangeDto(
     level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value,
     private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
     public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
+    include_private=BoundingIncludePrivateEnum.INCLUDE.value,
 )
 
 
@@ -118,6 +120,7 @@ def test_bounding_use_case_when_get_wrong_level_then_400_error(
         level=23,
         private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
         public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
+        include_private=BoundingIncludePrivateEnum.INCLUDE.value,
     )
     result = BoundingUseCase().execute(dto=wrong_dto)
 
@@ -141,6 +144,7 @@ def test_bounding_use_case_when_get_no_coordinates_then_404_error(
         level=15,
         private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
         public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
+        include_private=BoundingIncludePrivateEnum.INCLUDE.value,
     )
     result = BoundingUseCase().execute(dto=wrong_dto)
 
@@ -183,6 +187,7 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
         level=BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value - 1,
         private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
         public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
+        include_private=BoundingIncludePrivateEnum.INCLUDE.value,
     )
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"

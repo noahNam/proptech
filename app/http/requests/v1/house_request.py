@@ -201,9 +201,7 @@ class GetCoordinatesSchema(BaseModel):
 
     @validator("private_type")
     def check_private_type(cls, private_type) -> int:
-        if (
-            private_type not in BoundingPrivateTypeEnum.list()
-        ):
+        if private_type not in BoundingPrivateTypeEnum.list():
             raise ValidationError("Out of range: private_type")
         return private_type
 
