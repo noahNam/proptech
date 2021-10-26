@@ -4,7 +4,7 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    SmallInteger,
+    SmallInteger, UniqueConstraint,
 )
 
 from app import db
@@ -14,6 +14,7 @@ from core.domains.house.entity.house_entity import GeneralSupplyResultReportEnti
 
 class GeneralSupplyResultModel(db.Model):
     __tablename__ = "general_supply_results"
+    __table_args__ = (UniqueConstraint("public_sale_details_id", "region"),)
 
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"),
@@ -24,6 +25,7 @@ class GeneralSupplyResultModel(db.Model):
         BigInteger,
         ForeignKey(PublicSaleDetailModel.id, ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
 
     region = Column(String(10), nullable=True)
