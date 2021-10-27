@@ -133,7 +133,7 @@ class GetCoordinatesSchema(BaseModel):
         --> 네이버지도에서 지원하는 zoom_level 값의 범위를 체크합니다.
             (기준: 6 - 가장 축소했을 때 level, 21 - 가장 확대했을 때 level
     """
-
+    user_id: StrictInt
     x_points: Tuple[StrictFloat, StrictFloat] = ()
     y_points: Tuple[StrictFloat, StrictFloat] = ()
     level: StrictInt
@@ -218,6 +218,7 @@ class GetCoordinatesSchema(BaseModel):
 class GetCoordinatesRequestSchema:
     def __init__(
         self,
+        user_id,
         start_x,
         start_y,
         end_x,
@@ -230,6 +231,7 @@ class GetCoordinatesRequestSchema:
         min_area,
         max_area,
     ):
+        self._user_id = int(user_id) if user_id else None
         self._start_x = float(start_x) if start_x else None
         self._start_y = float(start_y) if start_y else None
         self._end_x = float(end_x) if end_x else None
@@ -249,6 +251,7 @@ class GetCoordinatesRequestSchema:
     def validate_request_and_make_dto(self):
         try:
             schema = GetCoordinatesSchema(
+                user_id=self._user_id,
                 x_points=(self._start_x, self._end_x),
                 y_points=(self._start_y, self._end_y),
                 level=self._level,
@@ -260,6 +263,7 @@ class GetCoordinatesRequestSchema:
                 max_area=self._max_area,
             )
             return CoordinatesRangeDto(
+                user_id=schema.user_id,
                 start_x=schema.x_points[0],
                 start_y=schema.y_points[0],
                 end_x=schema.x_points[1],
