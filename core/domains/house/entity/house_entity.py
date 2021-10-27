@@ -415,12 +415,14 @@ class PrivateSaleAvgPriceTradeEntity(BaseModel):
     pyoung: float
     trade_price: Optional[int]
     max_trade_contract_date: Optional[str]
+    default_trade_pyoung: Optional[int]
 
 
 class PrivateSaleAvgPriceDepositEntity(BaseModel):
     pyoung: float
     deposit_price: Optional[int]
     max_deposit_contract_date: Optional[str]
+    default_deposit_pyoung: Optional[int]
 
 
 class PrivateSaleAvgPriceEntity(BaseModel):
@@ -515,23 +517,18 @@ class MapSearchEntity(BaseModel):
     house_type: str
 
 
-class NearHousePrivateSaleEntity(BaseModel):
-    id: int
-    building_type: Enum
-    default_pyoung: Optional[int]
-    trade_info: Optional[List[PrivateSaleAvgPriceTradeEntity]]
-    trade_status: Optional[int]
-
-    class Config:
-        use_enum_values = True
-
-
 class NearHouseEntity(BaseModel):
-    id: int
-    name: Optional[str]
+    real_estate_id: int
+    jibun_address: Optional[str]
+    road_address: Optional[str]
     latitude: float
     longitude: float
-    private_sales: Optional[NearHousePrivateSaleEntity]
+    private_sales_id: int
+    building_type: Enum
+    name: Optional[str]
+    trade_pyoung: Optional[int]
+    trade_price: Optional[int]
+    trade_status: Optional[int]
 
     class Config:
         use_enum_values = True
