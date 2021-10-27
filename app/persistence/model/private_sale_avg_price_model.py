@@ -40,10 +40,12 @@ class PrivateSaleAvgPriceModel(db.Model):
                 pyoung=self.pyoung,
                 trade_price=self.trade_price,
                 max_trade_contract_date=self.max_trade_contract_date,
+                default_trade_pyoung=self.default_trade_pyoung,
             ),
             deposit_info=PrivateSaleAvgPriceDepositEntity(
                 pyoung=self.pyoung,
                 deposit_price=self.deposit_price,
                 max_deposit_contract_date=self.max_deposit_contract_date,
+                default_deposit_pyoung=self.default_deposit_pyoung,
             ),
         )
