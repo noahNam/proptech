@@ -25,6 +25,7 @@ upsert_interest_house_dto = UpsertInterestHouseDto(
 )
 
 coordinates_dto = CoordinatesRangeDto(
+    user_id=1,
     start_x=126.5,
     start_y=37.7,
     end_x=127.9,
