@@ -4,7 +4,8 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    SmallInteger, UniqueConstraint,
+    SmallInteger,
+    UniqueConstraint,
 )
 
 from app import db
