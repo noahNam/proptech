@@ -9,6 +9,7 @@ class CoordinatesRangeDto(BaseModel):
         경도: X (37.xxx)
     """
 
+    user_id: int
     start_x: float
     start_y: float
     end_x: float

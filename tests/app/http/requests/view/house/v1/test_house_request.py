@@ -28,6 +28,7 @@ public_type = BoundingPublicTypeEnum.PUBLIC_ONLY.value
 
 def test_get_coordinates_request_when_valid_request_then_success():
     result = GetCoordinatesRequestSchema(
+        user_id=1,
         start_x=start_x,
         start_y=start_y,
         end_x=end_x,
@@ -51,6 +52,7 @@ def test_get_coordinates_request_when_invalid_coordinates_then_fail():
     wrong_start_x = 110
     with pytest.raises(InvalidRequestException):
         GetCoordinatesRequestSchema(
+            user_id=1,
             start_x=wrong_start_x,
             start_y=start_y,
             end_x=end_x,
@@ -69,6 +71,7 @@ def test_get_coordinates_request_when_invalid_private_type_then_fail():
     wrong_private_type = 5
     with pytest.raises(InvalidRequestException):
         GetCoordinatesRequestSchema(
+            user_id=1,
             start_x=start_x,
             start_y=start_y,
             end_x=end_x,
@@ -87,6 +90,7 @@ def test_get_coordinates_request_when_invalid_public_type_then_fail():
     wrong_public_type = 5
     with pytest.raises(InvalidRequestException):
         GetCoordinatesRequestSchema(
+            user_id=1,
             start_x=start_x,
             start_y=start_y,
             end_x=end_x,
@@ -105,6 +109,7 @@ def test_get_coordinates_request_when_invalid_level_then_fail():
     wrong_level = 30
     with pytest.raises(InvalidRequestException):
         GetCoordinatesRequestSchema(
+            user_id=1,
             start_x=start_x,
             start_y=start_y,
             end_x=end_x,
