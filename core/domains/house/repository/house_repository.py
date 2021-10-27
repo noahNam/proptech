@@ -69,6 +69,7 @@ from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,
     CalcPyoungEnum,
     BoundingIncludePrivateEnum,
+    RealTradeTypeEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -214,7 +215,8 @@ class HouseRepository:
         ).subquery()
 
         if include_private == BoundingIncludePrivateEnum.INCLUDE.value:
-            pyoung_filters = list()
+            trade_pyoung_filters = list()
+            deposit_pyoung_filters = list()
             pyoung_case = case(
                 [
                     (
@@ -234,34 +236,40 @@ class HouseRepository:
                 ),
             )
             if not min_area or not max_area:
-                pyoung_filters.append(
-                    PrivateSaleAvgPriceModel.default_pyoung
+                trade_pyoung_filters.append(
+                    PrivateSaleAvgPriceModel.default_trade_pyoung
+                    == PrivateSaleAvgPriceModel.pyoung
+                )
+                deposit_pyoung_filters.append(
+                    PrivateSaleAvgPriceModel.default_deposit_pyoung
                     == PrivateSaleAvgPriceModel.pyoung
                 )
             else:
-                pyoung_filters.append(pyoung_case >= min_area)
-                pyoung_filters.append(pyoung_case <= max_area)
+                trade_pyoung_filters.append(pyoung_case >= min_area)
+                trade_pyoung_filters.append(pyoung_case <= max_area)
+                deposit_pyoung_filters.append(pyoung_case >= min_area)
+                deposit_pyoung_filters.append(pyoung_case <= max_area)
 
             """
                 #(1) 면적 필터가 없을 때는 default_pyoung 기준으로 보여줌
                 #(2) 면적 필터가 있을 때는 면적 필터 범위안에서 계약일이 가장 최근의 것 하나를 보여줌
             """
-            if len(pyoung_filters) == 1:
+            if len(trade_pyoung_filters) == 1:
                 # (1)
-                private_query = (
+                private_trade_query = (
                     session.query(real_estate_sub_query)
                     .with_entities(
-                        real_estate_sub_query.c.jibun_address,
-                        real_estate_sub_query.c.road_address,
+                        real_estate_sub_query.c.jibun_address.label("jibun_address"),
+                        real_estate_sub_query.c.road_address.label("road_address"),
                         real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
                         real_estate_sub_query.c.coordinates.ST_X().label("longitude"),
-                        PrivateSaleModel.id,
-                        PrivateSaleModel.building_type,
-                        PrivateSaleModel.name,
+                        PrivateSaleModel.id.label("id"),
+                        PrivateSaleModel.building_type.label("building_type"),
+                        PrivateSaleModel.name.label("name"),
                         pyoung_case.label("trade_pyoung"),
-                        PrivateSaleAvgPriceModel.trade_price,
-                        pyoung_case.label("deposit_pyoung"),
-                        PrivateSaleAvgPriceModel.deposit_price,
+                        PrivateSaleAvgPriceModel.trade_price.label("trade_price"),
+                        literal(0, None).label("deposit_pyoung"),
+                        literal(0, None).label("deposit_price"),
                     )
                     .join(
                         PrivateSaleModel,
@@ -273,13 +281,63 @@ class HouseRepository:
                         == PrivateSaleModel.id,
                     )
                     .filter(*private_filters)
-                    .filter(*pyoung_filters)
+                    .filter(*trade_pyoung_filters)
                 )
 
+                private_deposit_query = (
+                    session.query(real_estate_sub_query)
+                    .with_entities(
+                        real_estate_sub_query.c.jibun_address.label("jibun_address"),
+                        real_estate_sub_query.c.road_address.label("road_address"),
+                        real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
+                        real_estate_sub_query.c.coordinates.ST_X().label("longitude"),
+                        PrivateSaleModel.id.label("id"),
+                        PrivateSaleModel.building_type.label("building_type"),
+                        PrivateSaleModel.name.label("name"),
+                        literal(0, None).label("trade_pyoung"),
+                        literal(0, None).label("trade_price"),
+                        pyoung_case.label("deposit_pyoung"),
+                        PrivateSaleAvgPriceModel.deposit_price.label("deposit_price"),
+                    )
+                    .join(
+                        PrivateSaleModel,
+                        PrivateSaleModel.real_estate_id == real_estate_sub_query.c.id,
+                    )
+                    .join(
+                        PrivateSaleAvgPriceModel,
+                        PrivateSaleAvgPriceModel.private_sales_id
+                        == PrivateSaleModel.id,
+                    )
+                    .filter(*private_filters)
+                    .filter(*deposit_pyoung_filters)
+                )
+
+                union_q = private_trade_query.union_all(
+                    private_deposit_query
+                ).subquery()
+                private_query = (
+                    session.query(union_q)
+                    .with_entities(
+                        func.max(union_q.c.jibun_address).label("jibun_address"),
+                        func.max(union_q.c.road_address).label("road_address"),
+                        func.max(union_q.c.latitude).label("latitude"),
+                        func.max(union_q.c.longitude).label("longitude"),
+                        union_q.c.id,
+                        func.max(union_q.c.building_type).label("building_type"),
+                        func.max(union_q.c.name).label("name"),
+                        func.max(union_q.c.trade_pyoung).label("trade_pyoung"),
+                        func.max(union_q.c.trade_price).label("trade_price"),
+                        func.max(union_q.c.deposit_pyoung).label("deposit_pyoung"),
+                        func.max(union_q.c.deposit_price).label("deposit_price"),
+                    )
+                    .group_by(union_q.c.id)
+                )
                 query_set = private_query.all()
+
             else:
                 # (2)
                 # private_sales 매매 조회
+                # 가장 최근 계약일 기준으로 매매가 조회
                 private_trade_sub_q = (
                     session.query(real_estate_sub_query)
                     .with_entities(
@@ -313,7 +371,7 @@ class HouseRepository:
                         == PrivateSaleModel.id,
                     )
                     .filter(*private_filters)
-                    .filter(*pyoung_filters)
+                    .filter(*trade_pyoung_filters)
                     .filter(PrivateSaleAvgPriceModel.trade_price > 0)
                 ).subquery()
 
@@ -347,6 +405,7 @@ class HouseRepository:
                 )
 
                 # private_sales 전세 조회
+                # 가장 최근 계약일 기준으로 전세가 조회
                 private_deposit_sub_q = (
                     session.query(real_estate_sub_query)
                     .with_entities(
@@ -380,7 +439,7 @@ class HouseRepository:
                         == PrivateSaleModel.id,
                     )
                     .filter(*private_filters)
-                    .filter(*pyoung_filters)
+                    .filter(*deposit_pyoung_filters)
                     .filter(PrivateSaleAvgPriceModel.deposit_price > 0)
                 ).subquery()
 
@@ -429,10 +488,10 @@ class HouseRepository:
                         union_q.c.id.label("id"),
                         func.max(union_q.c.building_type).label("building_type"),
                         func.max(union_q.c.name).label("name"),
-                        func.sum(union_q.c.trade_pyoung).label("trade_pyoung"),
-                        func.sum(union_q.c.trade_price).label("trade_price"),
-                        func.sum(union_q.c.deposit_pyoung).label("deposit_pyoung"),
-                        func.sum(union_q.c.deposit_price).label("deposit_price"),
+                        func.max(union_q.c.trade_pyoung).label("trade_pyoung"),
+                        func.max(union_q.c.trade_price).label("trade_price"),
+                        func.max(union_q.c.deposit_pyoung).label("deposit_pyoung"),
+                        func.max(union_q.c.deposit_price).label("deposit_price"),
                     )
                     .group_by(union_q.c.id,)
                 )
@@ -1516,15 +1575,11 @@ class HouseRepository:
                 union_query.columns.private_sale_details_supply_area.label(
                     "supply_area"
                 ),
-                func.round(
-                    func.max(union_query.columns.avg_trade_price).label(
-                        "avg_trade_price"
-                    )
+                func.round(func.max(union_query.columns.avg_trade_price)).label(
+                    "avg_trade_price"
                 ),
-                func.round(
-                    func.max(union_query.columns.avg_deposit_price).label(
-                        "avg_deposit_price"
-                    )
+                func.round(func.max(union_query.columns.avg_deposit_price)).label(
+                    "avg_deposit_price"
                 ),
                 func.max(PrivateSaleAvgPriceModel.id).label(
                     "private_sale_avg_price_id"
@@ -1559,14 +1614,14 @@ class HouseRepository:
 
         return [
             RecentlyContractedEntity(
-                private_sales_id=query[0],
-                private_area=query[1],
-                supply_area=query[2],
-                avg_trade_price=query[3],
-                avg_deposit_price=query[4],
-                private_sale_avg_price_id=query[5],
-                max_trade_contract_date=query[6],
-                max_deposit_contract_date=query[7],
+                private_sales_id=query.private_sales_id,
+                private_area=query.private_area,
+                supply_area=query.supply_area,
+                avg_trade_price=query.avg_trade_price,
+                avg_deposit_price=query.avg_deposit_price,
+                private_sale_avg_price_id=query.private_sale_avg_price_id,
+                max_trade_contract_date=query.max_trade_contract_date,
+                max_deposit_contract_date=query.max_deposit_contract_date,
             )
             for query in query_set
         ]
@@ -1596,7 +1651,8 @@ class HouseRepository:
             avg_price_info = {
                 "private_sales_id": recent_info.private_sales_id,
                 "pyoung": pyoung,
-                "default_pyoung": default_pyoung,
+                "default_trade_pyoung": default_pyoung["default_trade_pyoung"],
+                "default_deposit_pyoung": default_pyoung["default_deposit_pyoung"],
                 "pyoung_div": pyoung_div,
                 "trade_price": recent_info.avg_trade_price,
                 "deposit_price": recent_info.avg_deposit_price,
@@ -1666,7 +1722,8 @@ class HouseRepository:
             )
         )
 
-        sub_query = (
+        # 매매 거래 중 가장 건수가 많은 type 조회
+        trade_sub_query = (
             session.query(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
@@ -1674,11 +1731,17 @@ class HouseRepository:
                 func.row_number()
                 .over(
                     partition_by=PrivateSaleDetailModel.private_sales_id,
-                    order_by=func.count(PrivateSaleDetailModel.supply_area).desc(),
+                    order_by=and_(
+                        func.count(PrivateSaleDetailModel.private_area).desc(),
+                        func.max(PrivateSaleDetailModel.contract_date).desc(),
+                    ),
                 )
                 .label("rank"),
             )
             .filter(*default_filters)
+            .filter(
+                PrivateSaleDetailModel.trade_type == RealTradeTypeEnum.TRADING.value
+            )
             .group_by(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
@@ -1686,45 +1749,117 @@ class HouseRepository:
             )
         ).subquery()
 
-        sub_q = aliased(sub_query)
+        trade_sub_q = aliased(trade_sub_query)
 
-        query = (
-            session.query(sub_q)
+        trade_query = (
+            session.query(trade_sub_q)
             .with_entities(
-                sub_q.c.private_sales_id, sub_q.c.private_area, sub_q.c.supply_area,
+                trade_sub_q.c.private_sales_id.label("private_sales_id"),
+                trade_sub_q.c.private_area.label("trade_private_area"),
+                trade_sub_q.c.supply_area.label("trade_supply_area"),
+                literal(0, None).label("deposit_private_area"),
+                literal(0, None).label("deposit_supply_area"),
             )
             .group_by(
-                sub_q.c.private_sales_id,
-                sub_q.c.private_area,
-                sub_q.c.supply_area,
-                sub_q.c.rank,
+                trade_sub_q.c.private_sales_id,
+                trade_sub_q.c.private_area,
+                trade_sub_q.c.supply_area,
+                trade_sub_q.c.rank,
             )
-            .having(sub_q.c.rank == 1)
+            .having(trade_sub_q.c.rank == 1)
         )
 
-        query_set = query.all()
+        # 전세 거래 중 가장 건수가 많은 type 조회
+        deposit_sub_query = (
+            session.query(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
+                func.row_number()
+                .over(
+                    partition_by=PrivateSaleDetailModel.private_sales_id,
+                    order_by=and_(
+                        func.count(PrivateSaleDetailModel.private_area).desc(),
+                        func.max(PrivateSaleDetailModel.contract_date).desc(),
+                    ),
+                )
+                .label("rank"),
+            )
+            .filter(*default_filters)
+            .filter(
+                PrivateSaleDetailModel.trade_type
+                == RealTradeTypeEnum.LONG_TERM_RENT.value
+            )
+            .group_by(
+                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_area,
+                PrivateSaleDetailModel.supply_area,
+            )
+        ).subquery()
+
+        deposit_sub_q = aliased(deposit_sub_query)
+
+        deposit_query = (
+            session.query(deposit_sub_q)
+            .with_entities(
+                deposit_sub_q.c.private_sales_id.label("private_sales_id"),
+                literal(0, None).label("trade_private_area"),
+                literal(0, None).label("trade_supply_area"),
+                deposit_sub_q.c.private_area.label("deposit_private_area"),
+                deposit_sub_q.c.supply_area.label("deposit_supply_area"),
+            )
+            .group_by(
+                deposit_sub_q.c.private_sales_id,
+                deposit_sub_q.c.private_area,
+                deposit_sub_q.c.supply_area,
+                deposit_sub_q.c.rank,
+            )
+            .having(deposit_sub_q.c.rank == 1)
+        )
+
+        union_query = trade_query.union_all(deposit_query).subquery()
+        final_query = (
+            session.query(union_query)
+            .with_entities(
+                union_query.c.private_sales_id.label("private_sales_id"),
+                func.max(union_query.c.trade_private_area).label("trade_private_area"),
+                func.max(union_query.c.trade_supply_area).label("trade_supply_area"),
+                func.max(union_query.c.deposit_private_area).label(
+                    "deposit_private_area"
+                ),
+                func.max(union_query.c.deposit_supply_area).label(
+                    "deposit_supply_area"
+                ),
+            )
+            .group_by(union_query.c.private_sales_id)
+        )
+
+        query_set = final_query.all()
 
         default_pyoung_dict = dict()
         for query in query_set:
             # 현재 공급면적이 없는 것들이 많기 때문에 이럴 경우 전용면적을 계산식을 통해 입력
-            # pyoung = (
-            #     HouseHelper.convert_area_to_pyoung(query[2])
-            #     if not query[2] and query[2] != 0
-            #     else HouseHelper.convert_area_to_temp_pyoung(query[1])
-            # )
-
             # 평 계산시 겹치는 것들이 있기 때문에 정확도를 위해 supply_area 없을때는, private_area 로 평을 대체
-            pyoung = (
-                query.supply_area
-                if not query.supply_area and query.supply_area != 0
-                else query.private_area
+            trade_default_pyoung = (
+                query.trade_supply_area
+                if not query.trade_supply_area and query.trade_supply_area != 0
+                else query.trade_private_area
             )
 
-            # 가드코드 추가
-            if not pyoung or pyoung == 0:
-                continue
+            deposit_default_pyoung = (
+                query.deposit_supply_area
+                if not query.deposit_supply_area and query.deposit_supply_area != 0
+                else query.deposit_private_area
+            )
 
-            default_pyoung_dict.update({query.private_sales_id: pyoung})
+            default_pyoung_dict.update(
+                {
+                    query.private_sales_id: {
+                        "default_trade_pyoung": trade_default_pyoung,
+                        "default_deposit_pyoung": deposit_default_pyoung,
+                    }
+                }
+            )
 
         return default_pyoung_dict
 
