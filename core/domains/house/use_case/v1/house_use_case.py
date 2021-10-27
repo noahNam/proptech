@@ -266,7 +266,6 @@ class GetHousePublicNearPrivateSalesUseCase(HouseBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        # 분양 매물 상세 query -> house_with_public_sales
         coordinates = self._house_repo.get_geometry_coordinates_from_public_sale(
             dto.house_id
         )
@@ -441,7 +440,7 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                     si_do=query.real_estates.si_do,
                     status=HouseHelper().public_status(
                         offer_date=query.offer_date,
-                        subscription_end_date=query.subscription_end_date
+                        subscription_end_date=query.subscription_end_date,
                     ),
                     public_sale_photos=[
                         public_sale_photo.to_entity()
