@@ -441,7 +441,7 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                     si_do=query.real_estates.si_do,
                     status=HouseHelper().public_status(
                         offer_date=query.offer_date,
-                        subscription_end_date=query.subscription_end_date
+                        subscription_end_date=query.subscription_end_date,
                     ),
                     public_sale_photos=[
                         public_sale_photo.to_entity()
