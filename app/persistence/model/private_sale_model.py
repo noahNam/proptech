@@ -106,7 +106,7 @@ class PrivateSaleModel(db.Model):
                 PrivateSaleAvgPriceTradeEntity(
                     pyoung=private_sale_avg_price.pyoung,
                     trade_price=private_sale_avg_price.trade_price,
-                    max_trade_contract_date=private_sale_avg_price.max_trade_contract_date
+                    max_trade_contract_date=private_sale_avg_price.max_trade_contract_date,
                 )
                 for private_sale_avg_price in self.private_sale_avg_prices
             ]

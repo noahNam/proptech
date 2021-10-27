@@ -672,6 +672,7 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
     """
         public_sale_photos -> 분양 정보 Default Image 일괄 저장 배치 코드
     """
+
     def send_slack_message(self, message: str):
         channel = "#engineering-class"
 

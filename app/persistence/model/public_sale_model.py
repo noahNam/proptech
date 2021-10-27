@@ -117,9 +117,9 @@ class PublicSaleModel(db.Model):
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,
             status=HouseHelper().public_status(
-                        offer_date=self.offer_date,
-                        subscription_end_date=self.subscription_end_date
-                    ),
+                offer_date=self.offer_date,
+                subscription_end_date=self.subscription_end_date,
+            ),
             special_supply_date=self.special_supply_date,
             special_supply_etc_date=self.special_supply_etc_date,
             special_etc_gyeonggi_date=self.special_etc_gyeonggi_date,
