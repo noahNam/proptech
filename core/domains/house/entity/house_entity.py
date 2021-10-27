@@ -518,6 +518,7 @@ class MapSearchEntity(BaseModel):
 
 
 class NearHouseEntity(BaseModel):
+    real_estate_id: int
     jibun_address: Optional[str]
     road_address: Optional[str]
     latitude: float
