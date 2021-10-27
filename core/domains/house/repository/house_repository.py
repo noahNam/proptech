@@ -2664,6 +2664,7 @@ class HouseRepository:
         private_trade_query = (
             session.query(real_estate_sub_query)
             .with_entities(
+                real_estate_sub_query.c.id.label("real_estate_id"),
                 real_estate_sub_query.c.jibun_address.label("jibun_address"),
                 real_estate_sub_query.c.road_address.label("road_address"),
                 real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
@@ -2696,6 +2697,7 @@ class HouseRepository:
         for query in query_set:
             near_houses_entities.append(
                 NearHouseEntity(
+                    real_estate_id=query.real_estate_id,
                     jibun_address=query.jibun_address,
                     road_address=query.road_address,
                     latitude=query.latitude,
