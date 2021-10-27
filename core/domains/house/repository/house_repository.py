@@ -54,6 +54,7 @@ from core.domains.house.entity.house_entity import (
     PublicSaleBoundingEntity,
     PrivateSaleBoundingEntity,
     BoundingRealEstateEntity,
+    NearHouseEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -2570,36 +2571,98 @@ class HouseRepository:
 
     def get_near_houses_bounding(
         self, bounding_filter: _FunctionGenerator
-    ) -> Optional[list]:
+    ) -> Optional[List[NearHouseEntity]]:
         filters = list()
-
+        pyoung_filters = list()
         private_filters = list()
+
+        filters.append(bounding_filter)
+        filters.append(RealEstateModel.is_available == "True",)
+
         private_filters.append(
             and_(
-                PrivateSaleModel.real_estate_id == RealEstateModel.id,
-                PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value,
                 PrivateSaleModel.is_available == "True",
-                PrivateSaleModel.trade_status >= PrivateSaleContractStatusEnum.LONG_AGO.value
+                PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value,
+                PrivateSaleModel.trade_status
+                >= PrivateSaleContractStatusEnum.LONG_AGO.value,
             )
         )
 
-        filters.append(bounding_filter)
-        filters.append(RealEstateModel.is_available == "True")
-
-        query = (
-            session.query(RealEstateModel)
-            .join(PrivateSaleModel)
-            .options(selectinload(RealEstateModel.private_sales))
-            .options(joinedload("private_sales.private_sale_avg_prices"))
-            .filter(*filters, *private_filters)
+        pyoung_filters.append(
+            PrivateSaleAvgPriceModel.default_trade_pyoung
+            == PrivateSaleAvgPriceModel.pyoung
         )
 
-        query_set = query.all()
+        pyoung_case = case(
+            [
+                (
+                    PrivateSaleAvgPriceModel.pyoung_div == "S",
+                    func.round(
+                        PrivateSaleAvgPriceModel.pyoung / CalcPyoungEnum.CALC_VAR.value
+                    ),
+                )
+            ],
+            else_=func.round(
+                (PrivateSaleAvgPriceModel.pyoung * CalcPyoungEnum.TEMP_CALC_VAR.value)
+                / CalcPyoungEnum.CALC_VAR.value
+            ),
+        )
+
+        real_estate_sub_query = (
+            session.query(RealEstateModel).filter(*filters)
+        ).subquery()
+
+        private_trade_query = (
+            session.query(real_estate_sub_query)
+            .with_entities(
+                real_estate_sub_query.c.jibun_address.label("jibun_address"),
+                real_estate_sub_query.c.road_address.label("road_address"),
+                real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
+                real_estate_sub_query.c.coordinates.ST_X().label("longitude"),
+                PrivateSaleModel.id.label("id"),
+                PrivateSaleModel.building_type.label("building_type"),
+                PrivateSaleModel.name.label("name"),
+                PrivateSaleModel.trade_status.label("trade_status"),
+                pyoung_case.label("trade_pyoung"),
+                PrivateSaleAvgPriceModel.trade_price.label("trade_price"),
+            )
+            .join(
+                PrivateSaleModel,
+                PrivateSaleModel.real_estate_id == real_estate_sub_query.c.id,
+            )
+            .join(
+                PrivateSaleAvgPriceModel,
+                PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
+            )
+            .filter(*private_filters, *pyoung_filters)
+        )
+
+        query_set = private_trade_query.all()
 
         if not query_set:
             return None
 
-        return [query.to_near_house_entity() for query in query_set]
+        near_houses_entities = list()
+
+        for query in query_set:
+            near_houses_entities.append(
+                NearHouseEntity(
+                    jibun_address=query.jibun_address,
+                    road_address=query.road_address,
+                    latitude=query.latitude,
+                    longitude=query.longitude,
+                    private_sales_id=query.id,
+                    building_type=query.building_type,
+                    name=query.name,
+                    trade_status=query.trade_status,
+                    trade_pyoung=None
+                    if query.trade_pyoung == 0
+                    else query.trade_pyoung,
+                    trade_price=None if query.trade_price == 0 else query.trade_price,
+                )
+            )
+
+        return near_houses_entities
 
     def get_update_status_target_of_private_sale_details(
         self, private_sales_ids: List[int]

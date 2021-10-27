@@ -14,13 +14,11 @@ from sqlalchemy.orm import relationship, backref, column_property
 from app import db
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.entity.house_entity import (
-    BoundingRealEstateEntity,
     HousePublicDetailEntity,
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
     RealEstateReportEntity,
     RealEstateLegalCodeEntity,
-    NearHouseEntity,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 
@@ -69,17 +67,6 @@ class RealEstateModel(db.Model):
         backref=backref("real_estates", cascade="all, delete"),
         uselist=False,
     )
-
-    def to_near_house_entity(self) -> NearHouseEntity:
-        return NearHouseEntity(
-            id=self.id,
-            name=self.private_sales.name,
-            latitude=self.latitude,
-            longitude=self.longitude,
-            private_sales=self.private_sales.to_near_house_entity()
-            if self.private_sales
-            else None,
-        )
 
     def to_house_with_public_detail_entity(
         self,

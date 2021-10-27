@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -17,11 +15,7 @@ from sqlalchemy.orm import relationship, backref
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
-from core.domains.house.entity.house_entity import (
-    PrivateSaleEntity,
-    PrivateSaleAvgPriceTradeEntity,
-    NearHousePrivateSaleEntity,
-)
+from core.domains.house.entity.house_entity import PrivateSaleEntity
 from core.domains.house.enum.house_enum import BuildTypeEnum
 
 
@@ -95,22 +89,4 @@ class PrivateSaleModel(db.Model):
             deposit_status=self.deposit_status,
             created_at=self.created_at,
             updated_at=self.updated_at,
-        )
-
-    def to_near_house_entity(self) -> NearHousePrivateSaleEntity:
-        return NearHousePrivateSaleEntity(
-            id=self.id,
-            building_type=self.building_type,
-            default_pyoung=self.default_pyoung,
-            trade_info=[
-                PrivateSaleAvgPriceTradeEntity(
-                    pyoung=private_sale_avg_price.pyoung,
-                    trade_price=private_sale_avg_price.trade_price,
-                    max_trade_contract_date=private_sale_avg_price.max_trade_contract_date
-                )
-                for private_sale_avg_price in self.private_sale_avg_prices
-            ]
-            if self.private_sale_avg_prices
-            else None,
-            trade_status=self.trade_status,
         )
