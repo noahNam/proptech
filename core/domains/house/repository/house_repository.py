@@ -66,7 +66,8 @@ from core.domains.house.enum.house_enum import (
     BoundingPublicTypeEnum,
     HousingCategoryEnum,
     CalcPyoungEnum,
-    BoundingIncludePrivateEnum, RealTradeTypeEnum,
+    BoundingIncludePrivateEnum,
+    RealTradeTypeEnum,
 )
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 from core.domains.user.dto.user_dto import GetUserDto
@@ -309,7 +310,9 @@ class HouseRepository:
                     .filter(*deposit_pyoung_filters)
                 )
 
-                union_q = private_trade_query.union_all(private_deposit_query).subquery()
+                union_q = private_trade_query.union_all(
+                    private_deposit_query
+                ).subquery()
                 private_query = (
                     session.query(union_q)
                     .with_entities(
@@ -1570,15 +1573,11 @@ class HouseRepository:
                 union_query.columns.private_sale_details_supply_area.label(
                     "supply_area"
                 ),
-                func.round(
-                    func.max(union_query.columns.avg_trade_price)
-                ).label(
-                        "avg_trade_price"
+                func.round(func.max(union_query.columns.avg_trade_price)).label(
+                    "avg_trade_price"
                 ),
-                func.round(
-                    func.max(union_query.columns.avg_deposit_price)
-                ).label(
-                        "avg_deposit_price"
+                func.round(func.max(union_query.columns.avg_deposit_price)).label(
+                    "avg_deposit_price"
                 ),
                 func.max(PrivateSaleAvgPriceModel.id).label(
                     "private_sale_avg_price_id"
@@ -1650,8 +1649,8 @@ class HouseRepository:
             avg_price_info = {
                 "private_sales_id": recent_info.private_sales_id,
                 "pyoung": pyoung,
-                "default_trade_pyoung": default_pyoung['default_trade_pyoung'],
-                "default_deposit_pyoung": default_pyoung['default_deposit_pyoung'],
+                "default_trade_pyoung": default_pyoung["default_trade_pyoung"],
+                "default_deposit_pyoung": default_pyoung["default_deposit_pyoung"],
                 "pyoung_div": pyoung_div,
                 "trade_price": recent_info.avg_trade_price,
                 "deposit_price": recent_info.avg_deposit_price,
@@ -1730,12 +1729,17 @@ class HouseRepository:
                 func.row_number()
                 .over(
                     partition_by=PrivateSaleDetailModel.private_sales_id,
-                    order_by=and_(func.count(PrivateSaleDetailModel.private_area).desc(), func.max(PrivateSaleDetailModel.contract_date).desc()),
+                    order_by=and_(
+                        func.count(PrivateSaleDetailModel.private_area).desc(),
+                        func.max(PrivateSaleDetailModel.contract_date).desc(),
+                    ),
                 )
                 .label("rank"),
             )
             .filter(*default_filters)
-            .filter(PrivateSaleDetailModel.trade_type == RealTradeTypeEnum.TRADING.value)
+            .filter(
+                PrivateSaleDetailModel.trade_type == RealTradeTypeEnum.TRADING.value
+            )
             .group_by(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
@@ -1772,12 +1776,18 @@ class HouseRepository:
                 func.row_number()
                 .over(
                     partition_by=PrivateSaleDetailModel.private_sales_id,
-                    order_by=and_(func.count(PrivateSaleDetailModel.private_area).desc(), func.max(PrivateSaleDetailModel.contract_date).desc()),
+                    order_by=and_(
+                        func.count(PrivateSaleDetailModel.private_area).desc(),
+                        func.max(PrivateSaleDetailModel.contract_date).desc(),
+                    ),
                 )
                 .label("rank"),
             )
             .filter(*default_filters)
-            .filter(PrivateSaleDetailModel.trade_type == RealTradeTypeEnum.LONG_TERM_RENT.value)
+            .filter(
+                PrivateSaleDetailModel.trade_type
+                == RealTradeTypeEnum.LONG_TERM_RENT.value
+            )
             .group_by(
                 PrivateSaleDetailModel.private_sales_id,
                 PrivateSaleDetailModel.private_area,
@@ -1812,8 +1822,12 @@ class HouseRepository:
                 union_query.c.private_sales_id.label("private_sales_id"),
                 func.max(union_query.c.trade_private_area).label("trade_private_area"),
                 func.max(union_query.c.trade_supply_area).label("trade_supply_area"),
-                func.max(union_query.c.deposit_private_area).label("deposit_private_area"),
-                func.max(union_query.c.deposit_supply_area).label("deposit_supply_area"),
+                func.max(union_query.c.deposit_private_area).label(
+                    "deposit_private_area"
+                ),
+                func.max(union_query.c.deposit_supply_area).label(
+                    "deposit_supply_area"
+                ),
             )
             .group_by(union_query.c.private_sales_id)
         )
@@ -1836,7 +1850,14 @@ class HouseRepository:
                 else query.deposit_private_area
             )
 
-            default_pyoung_dict.update({query.private_sales_id: {'default_trade_pyoung': trade_default_pyoung, 'default_deposit_pyoung': deposit_default_pyoung}})
+            default_pyoung_dict.update(
+                {
+                    query.private_sales_id: {
+                        "default_trade_pyoung": trade_default_pyoung,
+                        "default_deposit_pyoung": deposit_default_pyoung,
+                    }
+                }
+            )
 
         return default_pyoung_dict
 
