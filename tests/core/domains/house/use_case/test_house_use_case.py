@@ -52,6 +52,7 @@ upsert_interest_house_dto = UpsertInterestHouseDto(
 )
 
 coordinates_dto = CoordinatesRangeDto(
+    user_id=1,
     start_x=126.5,
     start_y=37.7,
     end_x=127.9,
@@ -113,6 +114,7 @@ def test_bounding_use_case_when_get_wrong_level_then_400_error(
         level 값이 범위 밖이면 400 에러
     """
     wrong_dto = CoordinatesRangeDto(
+        user_id=1,
         start_x=126.5,
         start_y=37.7,
         end_x=127.9,
@@ -137,6 +139,7 @@ def test_bounding_use_case_when_get_no_coordinates_then_404_error(
         좌표 값이 없으면(0이면) 404 에러
     """
     wrong_dto = CoordinatesRangeDto(
+        user_id=1,
         start_x=0,
         start_y=37.7,
         end_x=127.9,
@@ -180,6 +183,7 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
         HouseRepository().get_administrative_by_coordinates_range_dto 호출
     """
     lower_dto = CoordinatesRangeDto(
+        user_id=1,
         start_x=126.5,
         start_y=37.7,
         end_x=127.9,
