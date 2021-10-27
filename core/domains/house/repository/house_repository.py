@@ -260,6 +260,7 @@ class HouseRepository:
                 private_trade_query = (
                     session.query(real_estate_sub_query)
                     .with_entities(
+                        real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address.label("jibun_address"),
                         real_estate_sub_query.c.road_address.label("road_address"),
                         real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
@@ -271,6 +272,10 @@ class HouseRepository:
                         PrivateSaleAvgPriceModel.trade_price.label("trade_price"),
                         literal(0, None).label("deposit_pyoung"),
                         literal(0, None).label("deposit_price"),
+                        func.coalesce(PrivateSaleModel.trade_status, 0).label(
+                            "trade_status"
+                        ),
+                        literal(0, None).label("deposit_status"),
                     )
                     .join(
                         PrivateSaleModel,
@@ -288,6 +293,7 @@ class HouseRepository:
                 private_deposit_query = (
                     session.query(real_estate_sub_query)
                     .with_entities(
+                        real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address.label("jibun_address"),
                         real_estate_sub_query.c.road_address.label("road_address"),
                         real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
@@ -299,6 +305,10 @@ class HouseRepository:
                         literal(0, None).label("trade_price"),
                         pyoung_case.label("deposit_pyoung"),
                         PrivateSaleAvgPriceModel.deposit_price.label("deposit_price"),
+                        literal(0, None).label("trade_status"),
+                        func.coalesce(PrivateSaleModel.deposit_status, 0).label(
+                            "deposit_status"
+                        ),
                     )
                     .join(
                         PrivateSaleModel,
@@ -319,6 +329,7 @@ class HouseRepository:
                 private_query = (
                     session.query(union_q)
                     .with_entities(
+                        func.max(union_q.c.real_estate_id).label("real_estate_id"),
                         func.max(union_q.c.jibun_address).label("jibun_address"),
                         func.max(union_q.c.road_address).label("road_address"),
                         func.max(union_q.c.latitude).label("latitude"),
@@ -330,6 +341,8 @@ class HouseRepository:
                         func.max(union_q.c.trade_price).label("trade_price"),
                         func.max(union_q.c.deposit_pyoung).label("deposit_pyoung"),
                         func.max(union_q.c.deposit_price).label("deposit_price"),
+                        func.max(union_q.c.trade_status).label("trade_status"),
+                        func.max(union_q.c.deposit_status).label("deposit_status"),
                     )
                     .group_by(union_q.c.id)
                 )
@@ -342,6 +355,7 @@ class HouseRepository:
                 private_trade_sub_q = (
                     session.query(real_estate_sub_query)
                     .with_entities(
+                        real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address,
                         real_estate_sub_query.c.road_address,
                         real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
@@ -349,6 +363,10 @@ class HouseRepository:
                         PrivateSaleModel.id,
                         PrivateSaleModel.building_type,
                         PrivateSaleModel.name,
+                        func.coalesce(PrivateSaleModel.trade_status, 0).label(
+                            "trade_status"
+                        ),
+                        literal(0, None).label("deposit_status"),
                         pyoung_case.label("pyoung"),
                         PrivateSaleAvgPriceModel.trade_price,
                         PrivateSaleAvgPriceModel.max_trade_contract_date,
@@ -379,6 +397,9 @@ class HouseRepository:
                 private_trade_query = (
                     session.query(private_trade_sub_q)
                     .with_entities(
+                        func.max(private_trade_sub_q.c.real_estate_id).label(
+                            "real_estate_id"
+                        ),
                         func.max(private_trade_sub_q.c.jibun_address).label(
                             "jibun_address"
                         ),
@@ -392,6 +413,12 @@ class HouseRepository:
                             "building_type"
                         ),
                         func.max(private_trade_sub_q.c.name).label("name"),
+                        func.max(private_trade_sub_q.c.trade_status).label(
+                            "trade_status"
+                        ),
+                        func.max(private_trade_sub_q.c.deposit_status).label(
+                            "deposit_status"
+                        ),
                         func.max(private_trade_sub_q.c.pyoung).label("trade_pyoung"),
                         func.max(private_trade_sub_q.c.trade_price).label(
                             "trade_price"
@@ -410,6 +437,7 @@ class HouseRepository:
                 private_deposit_sub_q = (
                     session.query(real_estate_sub_query)
                     .with_entities(
+                        real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address,
                         real_estate_sub_query.c.road_address,
                         real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
@@ -417,6 +445,10 @@ class HouseRepository:
                         PrivateSaleModel.id,
                         PrivateSaleModel.building_type,
                         PrivateSaleModel.name,
+                        literal(0, None).label("trade_status"),
+                        func.coalesce(PrivateSaleModel.deposit_status, 0).label(
+                            "deposit_status"
+                        ),
                         pyoung_case.label("pyoung"),
                         PrivateSaleAvgPriceModel.deposit_price,
                         PrivateSaleAvgPriceModel.max_deposit_contract_date,
@@ -447,6 +479,9 @@ class HouseRepository:
                 private_deposit_query = (
                     session.query(private_deposit_sub_q)
                     .with_entities(
+                        func.max(private_deposit_sub_q.c.real_estate_id).label(
+                            "real_estate_id"
+                        ),
                         func.max(private_deposit_sub_q.c.jibun_address).label(
                             "jibun_address"
                         ),
@@ -460,6 +495,12 @@ class HouseRepository:
                             "building_type"
                         ),
                         func.max(private_deposit_sub_q.c.name).label("name"),
+                        func.max(private_deposit_sub_q.c.trade_status).label(
+                            "trade_status"
+                        ),
+                        func.max(private_deposit_sub_q.c.deposit_status).label(
+                            "deposit_status"
+                        ),
                         literal(0, None).label("trade_pyoung"),
                         literal(0, None).label("trade_price"),
                         func.max(private_deposit_sub_q.c.pyoung).label(
@@ -482,6 +523,7 @@ class HouseRepository:
                 final_query = (
                     session.query(union_q)
                     .with_entities(
+                        func.max(union_q.c.real_estate_id).label("real_estate_id"),
                         func.max(union_q.c.jibun_address).label("jibun_address"),
                         func.max(union_q.c.road_address).label("road_address"),
                         func.max(union_q.c.latitude).label("latitude"),
@@ -489,6 +531,8 @@ class HouseRepository:
                         union_q.c.id.label("id"),
                         func.max(union_q.c.building_type).label("building_type"),
                         func.max(union_q.c.name).label("name"),
+                        func.max(union_q.c.trade_status).label("trade_status"),
+                        func.max(union_q.c.deposit_status).label("deposit_status"),
                         func.max(union_q.c.trade_pyoung).label("trade_pyoung"),
                         func.max(union_q.c.trade_price).label("trade_price"),
                         func.max(union_q.c.deposit_pyoung).label("deposit_pyoung"),
@@ -503,6 +547,7 @@ class HouseRepository:
                 for query in query_set:
                     private_results.append(
                         PrivateSaleBoundingEntity(
+                            real_estate_id=query.real_estate_id,
                             jibun_address=query.jibun_address,
                             road_address=query.road_address,
                             latitude=query.latitude,
@@ -510,6 +555,8 @@ class HouseRepository:
                             private_sales_id=query.id,
                             building_type=query.building_type,
                             name=query.name,
+                            trade_status=query.trade_status,
+                            deposit_status=query.deposit_status,
                             trade_pyoung=None
                             if query.trade_pyoung == 0
                             else query.trade_pyoung,
@@ -531,6 +578,7 @@ class HouseRepository:
         public_query = (
             session.query(real_estate_sub_query)
             .with_entities(
+                real_estate_sub_query.c.id.label("real_estate_id"),
                 real_estate_sub_query.c.jibun_address,
                 real_estate_sub_query.c.road_address,
                 real_estate_sub_query.c.coordinates.ST_Y().label("latitude"),
@@ -573,6 +621,7 @@ class HouseRepository:
 
                 public_results.append(
                     PublicSaleBoundingEntity(
+                        real_estate_id=query.real_estate_id,
                         jibun_address=query.jibun_address,
                         road_address=query.road_address,
                         latitude=query.latitude,

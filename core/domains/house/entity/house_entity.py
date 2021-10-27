@@ -438,6 +438,7 @@ class PublicSaleAvgPriceEntity(BaseModel):
 
 
 class PrivateSaleBoundingEntity(BaseModel):
+    real_estate_id: int
     jibun_address: Optional[str]
     road_address: Optional[str]
     latitude: float
@@ -445,6 +446,8 @@ class PrivateSaleBoundingEntity(BaseModel):
     private_sales_id: int
     building_type: Enum
     name: Optional[str]
+    trade_status: Optional[int]
+    deposit_status: Optional[int]
     trade_pyoung: Optional[int]
     trade_price: Optional[int]
     deposit_pyoung: Optional[int]
@@ -455,6 +458,7 @@ class PrivateSaleBoundingEntity(BaseModel):
 
 
 class PublicSaleBoundingEntity(BaseModel):
+    real_estate_id: str
     jibun_address: Optional[str]
     road_address: Optional[str]
     latitude: float
