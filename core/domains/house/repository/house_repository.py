@@ -65,6 +65,8 @@ from core.domains.house.enum.house_enum import (
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
     HousingCategoryEnum,
+    PrivateSaleContractStatusEnum,
+    HousingCategoryEnum,
     CalcPyoungEnum,
     BoundingIncludePrivateEnum,
     RealTradeTypeEnum,
@@ -2577,6 +2579,7 @@ class HouseRepository:
                 PrivateSaleModel.real_estate_id == RealEstateModel.id,
                 PrivateSaleModel.building_type == BuildTypeEnum.APARTMENT.value,
                 PrivateSaleModel.is_available == "True",
+                PrivateSaleModel.trade_status >= PrivateSaleContractStatusEnum.LONG_AGO.value
             )
         )
 
