@@ -133,6 +133,7 @@ class GetCoordinatesSchema(BaseModel):
         --> 네이버지도에서 지원하는 zoom_level 값의 범위를 체크합니다.
             (기준: 6 - 가장 축소했을 때 level, 21 - 가장 확대했을 때 level
     """
+
     user_id: StrictInt
     x_points: Tuple[StrictFloat, StrictFloat] = ()
     y_points: Tuple[StrictFloat, StrictFloat] = ()
