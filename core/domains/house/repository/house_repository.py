@@ -83,7 +83,11 @@ class HouseRepository:
     def create_interest_house(self, dto: UpsertInterestHouseDto) -> None:
         try:
             interest_house = InterestHouseModel(
-                user_id=dto.user_id, house_id=dto.house_id, type=dto.type, is_like=True
+                user_id=dto.user_id,
+                house_id=dto.house_id,
+                type=dto.type,
+                is_like=True,
+                created_at=get_server_timestamp(),
             )
             session.add(interest_house)
             session.commit()
@@ -1715,6 +1719,7 @@ class HouseRepository:
                 avg_price_info.update({"updated_at": get_server_timestamp()})
                 avg_prices_update_list.append(avg_price_info)
             else:
+                avg_price_info.update({"created_at": get_server_timestamp()})
                 avg_prices_create_list.append(avg_price_info)
 
         return avg_prices_update_list, avg_prices_create_list
@@ -2015,6 +2020,7 @@ class HouseRepository:
             avg_price_info.update({"updated_at": get_server_timestamp()})
             avg_prices_update_list.append(avg_price_info)
         else:
+            avg_price_info.update({"created_at": get_server_timestamp()})
             avg_prices_create_list.append(avg_price_info)
 
         return avg_prices_update_list, avg_prices_create_list
@@ -2564,9 +2570,7 @@ class HouseRepository:
         query_set = query.all()
         return [query.to_entity() for query in query_set] if query_set else None
 
-    def insert_default_apt_images_to_public_sale_photos(
-        self, create_list: List[dict]
-    ) -> None:
+    def insert_images_to_public_sale_photos(self, create_list: List[dict]) -> None:
         try:
             session.bulk_insert_mappings(
                 PublicSalePhotoModel, [create_info for create_info in create_list]
@@ -2576,7 +2580,7 @@ class HouseRepository:
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
-                f"[HouseRepository][insert_default_apt_images_to_public_sale_photos] error : {e}"
+                f"[HouseRepository][insert_images_to_public_sale_photos] error : {e}"
             )
             raise NotUniqueErrorException
 
