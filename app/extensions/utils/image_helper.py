@@ -1,3 +1,8 @@
+import os
+from datetime import datetime
+from pathlib import Path
+from uuid import uuid4
+
 import boto3
 from botocore.exceptions import ClientError
 from flask import current_app
@@ -45,3 +50,17 @@ class S3Helper:
     @classmethod
     def get_cloudfront_url(cls):
         return f"https://{CloudFrontEnum.TOADHOME_CLOUD_FRONT_DOMAIN.value}"
+
+    @classmethod
+    def get_image_upload_dir(cls):
+        app_dir = Path(__file__).resolve(strict=True).parent
+        return os.path.join(app_dir, "upload_images_list")
+
+    @classmethod
+    def get_image_upload_uuid_path(cls, image_table_name, extension):
+        dir_name = image_table_name
+        ymd_path = str(datetime.now().year)
+        uuid_name = str(uuid4())
+        extension = extension
+
+        return "/".join([dir_name, ymd_path, uuid_name + "." + extension,])
