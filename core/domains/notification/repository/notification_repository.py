@@ -116,7 +116,10 @@ class NotificationRepository:
     ) -> None:
         try:
             receive_push_type_history = ReceivePushTypeHistoryModel(
-                user_id=dto.user_id, push_type=dto.push_type, is_active=dto.is_active
+                user_id=dto.user_id,
+                push_type=dto.push_type,
+                is_active=dto.is_active,
+                created_at=get_server_timestamp(),
             )
 
             session.add(receive_push_type_history)
