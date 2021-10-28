@@ -60,6 +60,7 @@ class UserRepository:
                 join_date=get_server_timestamp().strftime("%Y%m%d"),
                 is_active=dto.is_active,
                 is_out=dto.is_out,
+                created_at=get_server_timestamp(),
             )
             session.add(user)
             session.commit()
@@ -80,6 +81,7 @@ class UserRepository:
                 is_active=dto.is_active_device,
                 is_auth=dto.is_auth,
                 endpoint="",
+                created_at=get_server_timestamp(),
             )
             session.add(device)
             session.commit()
@@ -140,6 +142,7 @@ class UserRepository:
                 required_terms_yn=dto.required_terms_yn,
                 receive_marketing_yn=dto.receive_marketing_yn,
                 receive_marketing_date=receive_marketing_date,
+                created_at=get_server_timestamp(),
             )
             session.add(user)
             session.commit()
@@ -189,7 +192,7 @@ class UserRepository:
     def create_user_nickname(self, dto: UpsertUserInfoDetailDto) -> int:
         try:
             user_profile = UserProfileModel(
-                user_id=dto.user_id, nickname=dto.value, last_update_code=dto.code
+                user_id=dto.user_id, nickname=dto.value, last_update_code=dto.code, created_at=get_server_timestamp(),
             )
 
             session.add(user_profile)
@@ -223,7 +226,7 @@ class UserRepository:
     def create_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
             user_info = UserInfoModel(
-                user_profile_id=dto.user_profile_id, code=dto.code, value=dto.value
+                user_profile_id=dto.user_profile_id, code=dto.code, value=dto.value, created_at=get_server_timestamp(),
             )
             session.add(user_info)
             session.commit()
@@ -413,7 +416,7 @@ class UserRepository:
     def create_recently_view(self, dto: RecentlyViewDto) -> None:
         try:
             view_info = RecentlyViewModel(
-                user_id=dto.user_id, house_id=dto.house_id, type=dto.type
+                user_id=dto.user_id, house_id=dto.house_id, type=dto.type, created_at=get_server_timestamp(),
             )
             session.add(view_info)
             session.commit()
