@@ -2591,6 +2591,8 @@ class HouseRepository:
             .limit(1)
         )
         query_set = query.first()
+        if not query_set:
+            return None
         return query_set.to_entity()
 
     def get_main_recent_public_info_list(self) -> Optional[list]:
