@@ -6,6 +6,7 @@ from strgen import StringGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     PromotionModel,
     PromotionUsageCountModel,
@@ -82,6 +83,7 @@ class PaymentRepository:
                 sign=dto.sign,
                 is_active=True,
                 created_by=dto.created_by,
+                created_at=get_server_timestamp(),
             )
 
             session.add(ticket)
@@ -238,6 +240,7 @@ class PaymentRepository:
                 sign=TicketSignEnum.PLUS.value,
                 is_active=True,
                 created_by="system",
+                created_at=get_server_timestamp(),
             )
 
             session.add(ticket)
