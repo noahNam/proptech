@@ -1,9 +1,11 @@
+import io
 import os
 from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
 import boto3
+from PIL import Image
 from botocore.exceptions import ClientError
 from flask import current_app
 
@@ -18,22 +20,32 @@ logger = logger_.getLogger(__name__)
 
 class S3Helper:
     @classmethod
-    def upload(cls, bucket, file_name, object_name):
+    def upload(cls, bucket, file_name, object_name, extension):
         """
         :param bucket: s3 bucket
         :param file_name: 파일
         :param object_name: 저장할 경로 + 파일
+        :param object_name: 확장자
         :return:
         """
         result_flag = False
         client = boto3.client(
-            AwsServiceEnum.S3.value,
+            service_name=AwsServiceEnum.S3.value,
+            region_name=current_app.config.get("AWS_REGION_NAME"),
             aws_access_key_id=current_app.config.get("AWS_ACCESS_KEY"),
             aws_secret_access_key=current_app.config.get("AWS_SECRET_ACCESS_KEY"),
         )
 
         try:
-            client.put_object(Body=file_name, Bucket=bucket, Key=object_name)
+            loaded_image = Image.open(file_name)
+            buffer = io.BytesIO()
+            loaded_image.save(buffer, extension)
+            buffer.seek(0)
+            if extension == 'jpg':
+                content_type = "image/jpeg"
+            else:
+                content_type = f"image/{extension}"
+            client.put_object(Body=buffer, Bucket=bucket, Key=object_name, ContentType="image/*")
         except ClientError as e:
             logger.error(
                 f"[S3Helper][upload] bucket : {bucket} file_name : {file_name} error : {e}"

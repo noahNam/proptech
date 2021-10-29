@@ -787,7 +787,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         result_dict[dir_list[dir_idx]] = entry
         return result_dict
 
-    def make_upload_list(self, roots, dir_name: list, file_list, photos_start_idx):
+    def make_upload_list(self, dir_name: list, file_list, photos_start_idx):
         logger.info(f"🚀\tUpload_target : {dir_name[0]}")
 
         public_sale_photos_start_idx = photos_start_idx
@@ -823,8 +823,8 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             "created_at": get_server_timestamp(),
                         }
                     )
-                    file_name = roots + r'/' + dir_name[0] + r'/' + image_name
-                    S3Helper().upload(bucket='toadhome-tanos-bucket', file_name=file_name, object_name=path)
+                    file_name = S3Helper().get_image_upload_dir() + r'/' + dir_name[0] + r'/' + image_name
+                    S3Helper().upload(bucket='toadhome-tanos-bucket', file_name=file_name, object_name=path, extension=extension)
                     public_sale_photos_start_idx = public_sale_photos_start_idx + 1
 
             return public_sale_photos
@@ -834,7 +834,6 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         logger.info(f"🚀\tupload_job 위치 : {S3Helper().get_image_upload_dir()}")
         start_time = time()
 
-        _root = None
         _dirs = None
         cnt = 0
 
@@ -865,7 +864,6 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             values = list(entry.values())
 
             public_sale_photos = self.make_upload_list(
-                roots=_root,
                 dir_name=key,
                 file_list=values,
                 photos_start_idx=public_sale_photos_start_idx,
