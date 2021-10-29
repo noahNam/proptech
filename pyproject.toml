@@ -30,6 +30,7 @@ StringGenerator = "^0.4.4"
 Flask-Cors = "^3.0.10"
 pytz = "^2021.3"
 blinker = "^1.4"
+Pillow = "^8.4.0"
 
 [tool.poetry.dev-dependencies]
 black = "^19.10b0"
