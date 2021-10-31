@@ -1367,6 +1367,7 @@ class HouseRepository:
                 PublicSalePhotoModel,
                 (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
                 & (PublicSalePhotoModel.is_thumbnail == True),
+                isouter=True,
             )
             .options(contains_eager(PublicSaleModel.public_sale_photos))
             .filter(PublicSaleModel.id.in_(public_house_ids))
