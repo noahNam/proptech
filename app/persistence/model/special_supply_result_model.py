@@ -24,6 +24,7 @@ class SpecialSupplyResultModel(db.Model):
         BigInteger,
         ForeignKey(PublicSaleDetailModel.id, ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
 
     region = Column(String(10), nullable=True)

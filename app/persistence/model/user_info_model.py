@@ -26,7 +26,7 @@ class UserInfoModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     user_profile_id = Column(
-        BigInteger, ForeignKey(UserProfileModel.id), nullable=False
+        BigInteger, ForeignKey(UserProfileModel.id), nullable=False, index=True,
     )
     code = Column(SmallInteger, nullable=True)
     value = Column(String(12), nullable=True)
