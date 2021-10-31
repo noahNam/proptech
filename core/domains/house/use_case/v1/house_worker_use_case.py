@@ -794,8 +794,8 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             if os.path.splitext(image_name)[-1] in ['.JPG', '.jpg']:
                 changed_image_name = os.path.splitext(image_name)[0] + ".jpeg"
                 before_img = Image.open(full_path)
-                before_img.save(fp=Path(path+changed_image_name), format="jpeg")
-                os.rename(src=full_path, dst=Path(path+changed_image_name))
+                before_img.save(fp=Path(path + changed_image_name), format="jpeg")
+                os.rename(src=full_path, dst=Path(path + changed_image_name))
 
             elif os.path.splitext(image_name)[-1] in ['.PNG']:
                 changed_image_name = os.path.splitext(image_name)[0] + ".png"
@@ -806,10 +806,11 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         result_dict[dir_list[dir_idx]] = entry
         return result_dict
 
-    def make_upload_list(self, dir_name: list, file_list, photos_start_idx):
+    def make_upload_list(self, dir_name: list, file_list, photos_start_idx, detail_photos_start_idx):
         logger.info(f"🚀\tUpload_target : {dir_name[0]}")
 
         public_sale_photos_start_idx = photos_start_idx
+        public_sale_detail_photos_start_idx = detail_photos_start_idx
         public_sale_photos = list()
         public_sale_detail_photos = list()
 
@@ -851,8 +852,40 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                         extension=extension
                     )
                     public_sale_photos_start_idx = public_sale_photos_start_idx + 1
+                else:
+                    table_name = "public_sale_detail_photos"
+                    try:
+                        public_sale_details_id = int(image_name.split("(")[1].rsplit(")")[0])
+                        file_name = image_name.split("(")[0]
+                        extension = os.path.splitext(image_name)[-1].split(".")[1].lower()
+                        path = S3Helper().get_image_upload_uuid_path(
+                            image_table_name=table_name, extension=extension
+                        )
+                        public_sale_detail_photos.append(
+                            {
+                                "id": public_sale_detail_photos_start_idx,
+                                "public_sales_id": public_sale_details_id,
+                                "file_name": file_name,
+                                "path": path,
+                                "extension": extension,
+                                "created_at": get_server_timestamp(),
+                            }
+                        )
 
-            return public_sale_photos
+                        file_name = S3Helper().get_image_upload_dir() + r'/' + dir_name[0] + r'/' + image_name
+                        S3Helper().upload(
+                            bucket='toadhome-tanos-bucket',
+                            file_name=file_name,
+                            object_name=path,
+                            extension=extension
+                        )
+                        public_sale_detail_photos_start_idx = public_sale_detail_photos_start_idx + 1
+
+                    except IndexError:
+                        # FK 없는 이미지 이름은 제외
+                        continue
+
+            return public_sale_photos, public_sale_detail_photos
 
     def execute(self):
         logger.info(f"🚀\tInsertUploadPhotoUseCase Start - {self.client_id}")
@@ -865,10 +898,20 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         recent_public_sale_photos_info = (
             self._house_repo.get_recent_public_sale_photos()
         )
+        recent_public_sale_detail_photos_info = (
+            self._house_repo.get_recent_public_sale_detail_photos()
+        )
+
         if not recent_public_sale_photos_info:
             public_sale_photos_start_idx = 1
         else:
             public_sale_photos_start_idx = recent_public_sale_photos_info.id
+
+        if not recent_public_sale_detail_photos_info:
+            public_sale_detail_photos_start_idx = 1
+        else:
+            public_sale_detail_photos_start_idx = recent_public_sale_detail_photos_info.id
+
         upload_list: List[Dict] = list()
         for (roots, dirs, file_names) in os.walk(S3Helper().get_image_upload_dir()):
             entry = []
@@ -887,17 +930,33 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             key = list(entry.keys())
             values = list(entry.values())
 
-            public_sale_photos = self.make_upload_list(
+            (public_sale_photos, public_sale_detail_photos) = self.make_upload_list(
                 dir_name=key,
                 file_list=values,
                 photos_start_idx=public_sale_photos_start_idx,
+                detail_photos_start_idx=public_sale_detail_photos_start_idx
             )
+            # Bulk insert public_sale_photos
             try:
                 self._house_repo.insert_images_to_public_sale_photos(create_list=public_sale_photos)
+                logger.info(f"🚀\t [insert_images_to_public_sale_photos] - Done! "
+                            f"{len(public_sale_photos)} finished, "
+                            f"records: {time() - start_time} secs")
+            except Exception as e:
+                logger.error(f"insert_images_to_public_sale_photos error : {e}")
+                exit(os.EX_OK)
+
+            # Bulk insert public_sale_detail_photos
+            try:
+                self._house_repo.insert_images_to_public_sale_photos(create_list=public_sale_photos)
+                logger.info(f"🚀\t [insert_images_to_public_sale_detail_photos] - Done! "
+                            f"{len(public_sale_detail_photos)} created, "
+                            f"records: {time() - start_time} secs")
             except Exception as e:
                 logger.error(f"insert_images_to_public_sale_photos error : {e}")
                 exit(os.EX_OK)
 
             public_sale_photos_start_idx = public_sale_photos_start_idx + len(public_sale_photos)
+            public_sale_detail_photos_start_idx = public_sale_detail_photos_start_idx + len(public_sale_detail_photos)
 
         exit(os.EX_OK)
