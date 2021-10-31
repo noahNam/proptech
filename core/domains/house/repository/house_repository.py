@@ -241,26 +241,21 @@ class HouseRepository:
                 ),
             )
 
-            if (not min_area and min_area != 0) or not max_area:
-                trade_pyoung_filters.append(
-                    PrivateSaleAvgPriceModel.default_trade_pyoung
-                    == PrivateSaleAvgPriceModel.pyoung
-                )
-                deposit_pyoung_filters.append(
-                    PrivateSaleAvgPriceModel.default_deposit_pyoung
-                    == PrivateSaleAvgPriceModel.pyoung
-                )
-            else:
+            if (min_area or min_area == 0) and max_area:
                 trade_pyoung_filters.append(pyoung_case >= min_area)
                 trade_pyoung_filters.append(pyoung_case <= max_area)
                 deposit_pyoung_filters.append(pyoung_case >= min_area)
                 deposit_pyoung_filters.append(pyoung_case <= max_area)
 
             """
-                #(1) 면적 필터가 없을 때는 default_pyoung 기준으로 보여줌
-                #(2) 면적 필터가 있을 때는 면적 필터 범위안에서 계약일이 가장 최근의 것 하나를 보여줌
+                # (1) 면적 필터가 없을 때는 default_pyoung 기준으로 보여줌
+                      * 아파트 또는 오피스텔에 매매정보가 없어도 보여줌 (left outer join)
+                
+                # (2) 면적 필터가 있을 때는 면적 필터 범위안에서 계약일이 가장 최근의 것 하나를 보여줌
+                      * 아파트 또는 오피스텔에 매매정보가 없으면 안보여줌 (inner join)
+                        * 평수 필터에서 해당 평수가 존재하지 않으면 맵에서 안보여주기로 했기 때문에
             """
-            if len(trade_pyoung_filters) == 1:
+            if not trade_pyoung_filters:
                 # (1)
                 private_trade_query = (
                     session.query(real_estate_sub_query)
@@ -275,8 +270,8 @@ class HouseRepository:
                         PrivateSaleModel.name.label("name"),
                         pyoung_case.label("trade_pyoung"),
                         PrivateSaleAvgPriceModel.trade_price.label("trade_price"),
-                        literal(0, None).label("deposit_pyoung"),
-                        literal(0, None).label("deposit_price"),
+                        literal(None, None).label("deposit_pyoung"),
+                        literal(None, None).label("deposit_price"),
                         func.coalesce(PrivateSaleModel.trade_status, 0).label(
                             "trade_status"
                         ),
@@ -288,11 +283,17 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sales_id
-                        == PrivateSaleModel.id,
+                        (
+                            PrivateSaleAvgPriceModel.private_sales_id
+                            == PrivateSaleModel.id
+                        )
+                        & (
+                            PrivateSaleAvgPriceModel.default_trade_pyoung
+                            == PrivateSaleAvgPriceModel.pyoung
+                        ),
+                        isouter=True,
                     )
                     .filter(*private_filters)
-                    .filter(*trade_pyoung_filters)
                 )
 
                 private_deposit_query = (
@@ -306,8 +307,8 @@ class HouseRepository:
                         PrivateSaleModel.id.label("id"),
                         PrivateSaleModel.building_type.label("building_type"),
                         PrivateSaleModel.name.label("name"),
-                        literal(0, None).label("trade_pyoung"),
-                        literal(0, None).label("trade_price"),
+                        literal(None, None).label("trade_pyoung"),
+                        literal(None, None).label("trade_price"),
                         pyoung_case.label("deposit_pyoung"),
                         PrivateSaleAvgPriceModel.deposit_price.label("deposit_price"),
                         literal(0, None).label("trade_status"),
@@ -321,11 +322,17 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sales_id
-                        == PrivateSaleModel.id,
+                        (
+                            PrivateSaleAvgPriceModel.private_sales_id
+                            == PrivateSaleModel.id
+                        )
+                        & (
+                            PrivateSaleAvgPriceModel.default_deposit_pyoung
+                            == PrivateSaleAvgPriceModel.pyoung
+                        ),
+                        isouter=True,
                     )
                     .filter(*private_filters)
-                    .filter(*deposit_pyoung_filters)
                 )
 
                 union_q = private_trade_query.union_all(
@@ -427,8 +434,8 @@ class HouseRepository:
                         func.max(private_trade_sub_q.c.trade_price).label(
                             "trade_price"
                         ),
-                        literal(0, None).label("deposit_pyoung"),
-                        literal(0, None).label("deposit_price"),
+                        literal(None, None).label("deposit_pyoung"),
+                        literal(None, None).label("deposit_price"),
                     )
                     .group_by(
                         private_trade_sub_q.c.id, private_trade_sub_q.c.trade_rank,
@@ -505,8 +512,8 @@ class HouseRepository:
                         func.max(private_deposit_sub_q.c.deposit_status).label(
                             "deposit_status"
                         ),
-                        literal(0, None).label("trade_pyoung"),
-                        literal(0, None).label("trade_price"),
+                        literal(None, None).label("trade_pyoung"),
+                        literal(None, None).label("trade_price"),
                         func.max(private_deposit_sub_q.c.pyoung).label(
                             "deposit_pyoung"
                         ),
@@ -544,7 +551,7 @@ class HouseRepository:
                     )
                     .group_by(union_q.c.id,)
                 )
-
+                RawQueryHelper.print_raw_query(final_query)
                 query_set = final_query.all()
 
             if query_set:
