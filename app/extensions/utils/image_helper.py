@@ -37,15 +37,13 @@ class S3Helper:
         )
 
         try:
-            loaded_image = Image.open(file_name)
+            f = open(file_name, 'rb')
+            loaded_image = Image.open(f)
             buffer = io.BytesIO()
             loaded_image.save(buffer, extension)
             buffer.seek(0)
-            if extension == 'jpg':
-                content_type = "image/jpeg"
-            else:
-                content_type = f"image/{extension}"
             client.put_object(Body=buffer, Bucket=bucket, Key=object_name, ContentType="image/*")
+            f.close()
         except ClientError as e:
             logger.error(
                 f"[S3Helper][upload] bucket : {bucket} file_name : {file_name} error : {e}"
