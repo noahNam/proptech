@@ -16,7 +16,7 @@ class UserAnalysisCategoryDetailModel(db.Model):
 
     id = Column(SmallInteger().with_variant(Integer, "sqlite"), primary_key=True)
     user_analysis_category_id = Column(
-        SmallInteger, ForeignKey(UserAnalysisCategoryModel.id), nullable=False
+        SmallInteger, ForeignKey(UserAnalysisCategoryModel.id), nullable=False, index=True,
     )
     format_text = Column(Text, nullable=False)
 

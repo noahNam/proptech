@@ -21,7 +21,7 @@ class UserProfileModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
-    user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True)
+    user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True, index=True,)
     nickname = Column(String(12), nullable=True)
     last_update_code = Column(SmallInteger, nullable=True)
     survey_step = Column(SmallInteger, nullable=True)

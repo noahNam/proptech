@@ -18,7 +18,7 @@ class DeviceTokenModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
     device_id = Column(
-        BigInteger, ForeignKey(DeviceModel.id), nullable=False, unique=True
+        BigInteger, ForeignKey(DeviceModel.id), nullable=False, unique=True, index=True,
     )
     token = Column(String(163), nullable=False)
 

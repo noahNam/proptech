@@ -20,7 +20,7 @@ class RoomInfoModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     dong_info_id = Column(
-        BigInteger, ForeignKey(DongInfoModel.id, ondelete="CASCADE"), nullable=False
+        BigInteger, ForeignKey(DongInfoModel.id, ondelete="CASCADE"), nullable=False, index=True,
     )
     area_type = Column(String(5), nullable=True)
     private_area = Column(Float, nullable=True)
