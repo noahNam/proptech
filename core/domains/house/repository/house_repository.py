@@ -713,11 +713,24 @@ class HouseRepository:
         return True
 
     def is_enable_public_sale_house(self, house_id: int) -> bool:
-        house = session.query(PublicSaleModel).filter_by(id=house_id).first()
+        try:
+            house = session.query(PublicSaleModel).filter_by(id=house_id).first()
+        except Exception:
+            house = None
 
         if not house or house.is_available == "False":
             return False
         elif not self._is_enable_real_estate(house.real_estate_id):
+            return False
+        return True
+
+    def is_enable_public_sale_detail_info(self, public_sale_details_id: int) -> bool:
+        try:
+            detail_info = session.query(PublicSaleDetailModel).filter_by(id=public_sale_details_id).first()
+        except Exception:
+            detail_info = None
+
+        if not detail_info or detail_info.public_sales.is_available == "False":
             return False
         return True
 
@@ -2573,6 +2586,8 @@ class HouseRepository:
 
     def insert_images_to_public_sale_photos(self, create_list: List[dict]) -> None:
         try:
+            print("---"*30)
+            print(create_list)
             session.bulk_insert_mappings(
                 PublicSalePhotoModel, [create_info for create_info in create_list]
             )
