@@ -22,7 +22,7 @@ class ReceivePushTypeModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True)
+    user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, unique=True, index=True,)
     is_official = Column(Boolean, nullable=False, default=True)
     is_private = Column(Boolean, nullable=False, default=True)
     is_marketing = Column(Boolean, nullable=False, default=True)

@@ -18,7 +18,7 @@ class BannerImageModel(db.Model):
     __tablename__ = "banner_images"
 
     id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True)
-    banner_id = Column(BigInteger, ForeignKey(BannerModel.id), nullable=False)
+    banner_id = Column(BigInteger, ForeignKey(BannerModel.id), nullable=False, index=True,)
     file_name = Column(String(20), nullable=False)
     path = Column(String(150), nullable=False)
     extension = Column(String(4), nullable=False)
