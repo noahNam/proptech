@@ -2,12 +2,14 @@ import os
 import re
 import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 from time import time
 from typing import List, Optional, Dict
 
 import inject
 import requests
 import sentry_sdk
+from PIL import Image
 from sqlalchemy.orm import Query
 
 from app.extensions.utils.image_helper import S3Helper
@@ -68,7 +70,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     """
 
     def _calculate_house_acquisition_xax(
-        self, private_area: float, supply_price: int
+            self, private_area: float, supply_price: int
     ) -> int:
         """
             todo: 부동산 정책이 매년 변경되므로 정기적으로 세율 변경 시 업데이트 필요합니다.
@@ -98,10 +100,10 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 - acquisition_tax(취득세 본세) + local_education_tax(지방교육세) + rural_special_tax(농어촌특별세)
         """
         if (
-            not private_area
-            or private_area == 0
-            or not supply_price
-            or supply_price == 0
+                not private_area
+                or private_area == 0
+                or not supply_price
+                or supply_price == 0
         ):
             return 0
 
@@ -143,7 +145,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return total_acquisition_tax
 
     def _make_acquisition_tax_update_list(
-        self, target_list: List[PublicSaleDetailModel]
+            self, target_list: List[PublicSaleDetailModel]
     ) -> List[dict]:
         result_dict_list = list()
         for target in target_list:
@@ -160,7 +162,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _make_private_sale_status_update_list(
-        self, target_list: List[UpdateContractStatusTargetEntity]
+            self, target_list: List[UpdateContractStatusTargetEntity]
     ) -> List[dict]:
 
         result_dict_list = list()
@@ -192,7 +194,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _get_private_sales_status(
-        self, min_contract_date: Optional[str], max_contract_date: Optional[str]
+            self, min_contract_date: Optional[str], max_contract_date: Optional[str]
     ) -> int:
         today = (datetime.now()).strftime("%Y%m%d")
         three_month_from_today = (datetime.now() - timedelta(days=93)).strftime(
@@ -562,9 +564,9 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         )
 
     def _make_real_estates_legal_code_update_list(
-        self,
-        administrative_info: List[AdministrativeDivisionLegalCodeEntity],
-        target_list: List[RealEstateLegalCodeEntity],
+            self,
+            administrative_info: List[AdministrativeDivisionLegalCodeEntity],
+            target_list: List[RealEstateLegalCodeEntity],
     ) -> List[dict]:
         """
             real_estates.jibun_address 주소가 없을 경우 혹은 건축예정이라 불확실한 경우 직접 매뉴얼 작업 필요
@@ -587,7 +589,7 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
 
                 # 예) 안양1동 -> 안양동으로 처리하여 행정구역 안양동과 매칭되는지 확인
                 if cond_2.match(real_estate.jibun_address) and not cond_2.match(
-                    administrative.short_name
+                        administrative.short_name
                 ):
                     jibun_address_ = re.sub(r"[0-9]+", "", real_estate.jibun_address)
                     dong_myun_ = re.sub(r"[0-9]+", "", dong_myun_)
@@ -613,10 +615,10 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
                 dong_myun_ = dong_myun_.replace(".", "")
 
                 if (
-                    administrative_short_name_ == dong_myun_
-                    and si_do_ in administrative_name_
-                    and si_gun_gu_ in administrative_name_
-                    and administrative_name_ in jibun_address_
+                        administrative_short_name_ == dong_myun_
+                        and si_do_ in administrative_name_
+                        and si_gun_gu_ in administrative_name_
+                        and administrative_name_ in jibun_address_
                 ):
                     front_legal_code = administrative.front_legal_code
                     back_legal_code = administrative.back_legal_code
@@ -686,7 +688,7 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
         )
 
     def _make_default_image_create_list(
-        self, target_list: List[PublicSaleEntity], start_idx: int,
+            self, target_list: List[PublicSaleEntity], start_idx: int,
     ) -> List[dict]:
         """
             사용 전 필수 확인사항: default_image path
@@ -779,9 +781,26 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         )
 
     def collect_file_list(self, dir_list, file_list, dir_idx) -> dict:
+        """
+            파일 확장자 정규화 처리
+            '.JPG' or '.jpg' -> '.jpeg'
+            '.PNG' -> '.png'
+        """
         entry = list()
         result_dict = dict()
         for image_name in file_list:
+            path = S3Helper().get_image_upload_dir() + "/" + dir_list[dir_idx] + "/"
+            full_path = Path(S3Helper().get_image_upload_dir() + "/" + dir_list[dir_idx] + "/" + image_name)
+            if os.path.splitext(image_name)[-1] in ['.JPG', '.jpg']:
+                changed_image_name = os.path.splitext(image_name)[0] + ".jpeg"
+                before_img = Image.open(full_path)
+                before_img.save(fp=Path(path+changed_image_name), format="jpeg")
+                os.rename(src=full_path, dst=Path(path+changed_image_name))
+
+            elif os.path.splitext(image_name)[-1] in ['.PNG']:
+                changed_image_name = os.path.splitext(image_name)[0] + ".png"
+                before_img = Image.open(full_path)
+                before_img.save(fp=Path(path + changed_image_name), format="png")
             entry.append(image_name)
 
         result_dict[dir_list[dir_idx]] = entry
@@ -824,7 +843,13 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                         }
                     )
                     file_name = S3Helper().get_image_upload_dir() + r'/' + dir_name[0] + r'/' + image_name
-                    S3Helper().upload(bucket='toadhome-tanos-bucket', file_name=file_name, object_name=path, extension=extension)
+
+                    S3Helper().upload(
+                        bucket='toadhome-tanos-bucket',
+                        file_name=file_name,
+                        object_name=path,
+                        extension=extension
+                    )
                     public_sale_photos_start_idx = public_sale_photos_start_idx + 1
 
             return public_sale_photos
@@ -847,7 +872,6 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         upload_list: List[Dict] = list()
         for (roots, dirs, file_names) in os.walk(S3Helper().get_image_upload_dir()):
             entry = []
-            _root = roots
             if len(dirs) > 0:
                 _dirs = dirs
             if len(file_names) > 0:
