@@ -27,7 +27,8 @@ from app.persistence.model import (
     PublicSalePhotoModel,
     PublicSaleAvgPriceModel,
     PrivateSaleAvgPriceModel,
-    GeneralSupplyResultModel, PublicSaleDetailPhotoModel,
+    GeneralSupplyResultModel,
+    PublicSaleDetailPhotoModel,
 )
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
@@ -726,7 +727,11 @@ class HouseRepository:
 
     def is_enable_public_sale_detail_info(self, public_sale_details_id: int) -> bool:
         try:
-            detail_info = session.query(PublicSaleDetailModel).filter_by(id=public_sale_details_id).first()
+            detail_info = (
+                session.query(PublicSaleDetailModel)
+                .filter_by(id=public_sale_details_id)
+                .first()
+            )
         except Exception:
             detail_info = None
 
@@ -2586,7 +2591,7 @@ class HouseRepository:
 
     def insert_images_to_public_sale_photos(self, create_list: List[dict]) -> None:
         try:
-            print("---"*30)
+            print("---" * 30)
             print(create_list)
             session.bulk_insert_mappings(
                 PublicSalePhotoModel, [create_info for create_info in create_list]
@@ -2600,7 +2605,9 @@ class HouseRepository:
             )
             raise NotUniqueErrorException
 
-    def insert_images_to_public_sale_detail_photos(self, create_list: List[dict]) -> None:
+    def insert_images_to_public_sale_detail_photos(
+        self, create_list: List[dict]
+    ) -> None:
         try:
             session.bulk_insert_mappings(
                 PublicSaleDetailPhotoModel, [create_info for create_info in create_list]
@@ -2650,7 +2657,7 @@ class HouseRepository:
             .join(
                 PublicSalePhotoModel,
                 (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
-                & (PublicSalePhotoModel.is_thumbnail == "True")
+                & (PublicSalePhotoModel.is_thumbnail == "True"),
             )
             .options(joinedload(PublicSaleModel.real_estates))
             .options(contains_eager("public_sale_photos"))

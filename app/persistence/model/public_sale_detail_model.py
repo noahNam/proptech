@@ -73,7 +73,9 @@ class PublicSaleDetailModel(db.Model):
                 self.private_area
             ),  # Sinbad 요청 entity
             supply_area=self.supply_area,
-            supply_pyoung_number=HouseHelper.convert_area_to_pyoung(self.supply_area),  # Sinbad 요청 entity
+            supply_pyoung_number=HouseHelper.convert_area_to_pyoung(
+                self.supply_area
+            ),  # Sinbad 요청 entity
             supply_price=self.supply_price,
             total_household=self.total_household,
             acquisition_tax=self.acquisition_tax,
