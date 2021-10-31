@@ -28,6 +28,7 @@ from app.persistence.model import (
     PublicSaleAvgPriceModel,
     PrivateSaleAvgPriceModel,
     GeneralSupplyResultModel,
+    PublicSaleDetailPhotoModel,
 )
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
@@ -713,11 +714,28 @@ class HouseRepository:
         return True
 
     def is_enable_public_sale_house(self, house_id: int) -> bool:
-        house = session.query(PublicSaleModel).filter_by(id=house_id).first()
+        try:
+            house = session.query(PublicSaleModel).filter_by(id=house_id).first()
+        except Exception:
+            house = None
 
         if not house or house.is_available == "False":
             return False
         elif not self._is_enable_real_estate(house.real_estate_id):
+            return False
+        return True
+
+    def is_enable_public_sale_detail_info(self, public_sale_details_id: int) -> bool:
+        try:
+            detail_info = (
+                session.query(PublicSaleDetailModel)
+                .filter_by(id=public_sale_details_id)
+                .first()
+            )
+        except Exception:
+            detail_info = None
+
+        if not detail_info or detail_info.public_sales.is_available == "False":
             return False
         return True
 
@@ -2573,6 +2591,8 @@ class HouseRepository:
 
     def insert_images_to_public_sale_photos(self, create_list: List[dict]) -> None:
         try:
+            print("---" * 30)
+            print(create_list)
             session.bulk_insert_mappings(
                 PublicSalePhotoModel, [create_info for create_info in create_list]
             )
@@ -2585,6 +2605,22 @@ class HouseRepository:
             )
             raise NotUniqueErrorException
 
+    def insert_images_to_public_sale_detail_photos(
+        self, create_list: List[dict]
+    ) -> None:
+        try:
+            session.bulk_insert_mappings(
+                PublicSaleDetailPhotoModel, [create_info for create_info in create_list]
+            )
+
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][insert_images_to_public_sale_detail_photos] error : {e}"
+            )
+            raise NotUniqueErrorException
+
     def get_recent_public_sale_photos(self):
         query = (
             session.query(PublicSalePhotoModel)
@@ -2592,6 +2628,19 @@ class HouseRepository:
             .limit(1)
         )
         query_set = query.first()
+        if not query_set:
+            return None
+        return query_set.to_entity()
+
+    def get_recent_public_sale_detail_photos(self):
+        query = (
+            session.query(PublicSaleDetailPhotoModel)
+            .order_by(PublicSaleDetailPhotoModel.id.desc())
+            .limit(1)
+        )
+        query_set = query.first()
+        if not query_set:
+            return None
         return query_set.to_entity()
 
     def get_main_recent_public_info_list(self) -> Optional[list]:
@@ -2611,6 +2660,7 @@ class HouseRepository:
                 & (PublicSalePhotoModel.is_thumbnail == "True"),
             )
             .options(joinedload(PublicSaleModel.real_estates))
+            .options(contains_eager("public_sale_photos"))
             .filter(*filters)
             .order_by(PublicSaleModel.subscription_end_date.desc())
             .limit(12)

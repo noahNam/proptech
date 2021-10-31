@@ -469,6 +469,12 @@ class GetHouseMainUseCase(HouseBaseUseCase):
         recent_public_info_entities = self._make_recent_public_info_entity(
             recent_public_infos=recent_public_infos
         )
+        if not recent_public_infos:
+            return UseCaseFailureOutput(
+                type="recent_public_infos",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
 
         # get present calendar info
         now = get_server_timestamp()

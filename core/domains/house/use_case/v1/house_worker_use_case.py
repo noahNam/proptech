@@ -2,14 +2,17 @@ import os
 import re
 import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 from time import time
 from typing import List, Optional, Dict
 
 import inject
 import requests
 import sentry_sdk
+from PIL import Image
 from sqlalchemy.orm import Query
 
+from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.math_helper import MathHelper
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -692,12 +695,14 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
         """
         create_list = list()
         pk = start_idx + 1
+        dev_path = ""
+        prod_path = "public_sale_photos/2021/ad1f07f8-323a-4405-b946-8cdbe2040a81.png"
         for public_sale in target_list:
             dict_for_insert = {
                 "id": pk,
                 "public_sales_id": public_sale.id,
                 "file_name": "default_apt_image",
-                "path": "public_sale_photos/2021/ad1f07f8-323a-4405-b946-8cdbe2040a81.png",
+                "path": prod_path,
                 "extension": "png",
             }
             create_list.append(dict_for_insert)
@@ -729,11 +734,11 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
         )
 
         try:
-            self._house_repo.insert_default_apt_images_to_public_sale_photos(
+            self._house_repo.insert_images_to_public_sale_photos(
                 create_list=create_list
             )
         except Exception as e:
-            logger.error(f"insert_default_apt_images_to_public_sale_photos error : {e}")
+            logger.error(f"insert_images_to_public_sale_photos error : {e}")
             exit(os.EX_OK)
 
         logger.info(
@@ -741,5 +746,278 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
             f"records: {time() - start_time} secs, "
             f"{len(create_list)} Created, "
         )
+
+        exit(os.EX_OK)
+
+
+class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
+    """
+        <아래 테이블의 이미지를 업로드 합니다.>
+        - public_sale_photos
+        - public_sale_detail_photos
+
+        <사용 방법>
+        업로드 할 폴더들(예: e편한세상 강일 어반브릿지(42384))을 app/extensions/utils/upload_images_list/에 넣고 worker 실행
+        업로드 후 app/upload_images_list 내 업로드 폴더들 삭제해야 합니다. (tanos 용량 증가, 동일 이미지 다시 업로드 방지)
+        upload_images_list 디렉토리는 커밋에 올리지 않습니다. 사용 후 제거 해주세요.
+
+        <Manual 실행 시 주의 사항>
+        config.py AWS 관련 config 시크릿 값 직접 넣어주어야 합니다
+        S3Helper().upload() 함수 -> bucket 이름 직접 넣어주어야 합니다.
+        테스트시 DB sequence 경우에 따라 초기화해줘야 할 필요가 있습니다. (전부 삭제 후 다시 업로드시)
+        업로드 대상 폴더 내에 중복 public_sale_details_id가 없어야 합니다 - 사전에 제거 필요(예: 윗층-아랫층)
+        업로드 대상 폴더 내에 평면도 없음(폴더) 가 없어야 합니다 - 사전에 제거 필요
+        파일명: 이름(PK) -> PK가 없는 파일 이름은 업로드 무시하고 넘어갑니다
+
+        todo: public_sale_detail_photos 로직 추가
+    """
+
+    def send_slack_message(self, message: str):
+        channel = "#engineering-class"
+
+        text = "[Batch Error] InsertUploadPhotoUseCase -> " + message
+        slack_token = os.environ.get("SLACK_TOKEN")
+        requests.post(
+            "https://slack.com/api/chat.postMessage",
+            headers={"Authorization": "Bearer " + slack_token},
+            data={"channel": channel, "text": text},
+        )
+
+    def collect_file_list(self, dir_list, file_list, dir_idx) -> dict:
+        """
+            파일 확장자 정규화 처리
+            '.JPG' or '.jpg' -> '.jpeg'
+            '.PNG' -> '.png'
+        """
+        entry = list()
+        result_dict = dict()
+        for image_name in file_list:
+            path = S3Helper().get_image_upload_dir() + "/" + dir_list[dir_idx] + "/"
+            full_path = Path(
+                S3Helper().get_image_upload_dir()
+                + "/"
+                + dir_list[dir_idx]
+                + "/"
+                + image_name
+            )
+            if os.path.splitext(image_name)[-1] in [".JPG", ".jpg"]:
+                changed_image_name = os.path.splitext(image_name)[0] + ".jpeg"
+                before_img = Image.open(full_path)
+                before_img.save(fp=Path(path + changed_image_name), format="jpeg")
+                os.rename(src=full_path, dst=Path(path + changed_image_name))
+
+            elif os.path.splitext(image_name)[-1] in [".PNG"]:
+                changed_image_name = os.path.splitext(image_name)[0] + ".png"
+                before_img = Image.open(full_path)
+                before_img.save(fp=Path(path + changed_image_name), format="png")
+            entry.append(image_name)
+
+        result_dict[dir_list[dir_idx]] = entry
+        return result_dict
+
+    def make_upload_list(
+        self, dir_name: list, file_list, photos_start_idx, detail_photos_start_idx
+    ):
+        logger.info(f"🚀\tUpload_target : {dir_name[0]}")
+
+        public_sale_photos_start_idx = photos_start_idx
+        public_sale_detail_photos_start_idx = detail_photos_start_idx
+        public_sale_photos = list()
+        public_sale_detail_photos = list()
+
+        for image_list in file_list:
+            for image_name in image_list:
+                if "@" in image_name:
+                    # @ 문자가 있는 파일 이름 : public_sale_photos 테이블 upload 대상
+                    table_name = "public_sale_photos"
+                    is_thumbnail = False
+
+                    public_sales_id = int(dir_name[0].split("(")[1].rsplit(")")[0])
+
+                    if self._house_repo.is_enable_public_sale_house(
+                        house_id=public_sales_id
+                    ):
+
+                        seq = int(image_name.split("@")[0]) - 1
+                        if seq == 0:
+                            is_thumbnail = True
+                        file_name = image_name.split("@")[1].split(".")[0]
+                        extension = (
+                            os.path.splitext(image_name)[-1].split(".")[1].lower()
+                        )
+                        path = S3Helper().get_image_upload_uuid_path(
+                            image_table_name=table_name, extension=extension
+                        )
+
+                        public_sale_photos.append(
+                            {
+                                "id": public_sale_photos_start_idx,
+                                "public_sales_id": public_sales_id,
+                                "file_name": file_name,
+                                "path": path,
+                                "extension": extension,
+                                "is_thumbnail": is_thumbnail,
+                                "seq": seq,
+                                "created_at": get_server_timestamp(),
+                            }
+                        )
+                        file_name = (
+                            S3Helper().get_image_upload_dir()
+                            + r"/"
+                            + dir_name[0]
+                            + r"/"
+                            + image_name
+                        )
+
+                        S3Helper().upload(
+                            bucket="toadhome-tanos-bucket",
+                            file_name=file_name,
+                            object_name=path,
+                            extension=extension,
+                        )
+                        public_sale_photos_start_idx = public_sale_photos_start_idx + 1
+                    else:
+                        logger.info(f"🚀\tpublic_sales_id : {public_sales_id} failed")
+                else:
+                    table_name = "public_sale_detail_photos"
+                    try:
+                        public_sale_details_id = int(
+                            image_name.split("(")[1].rsplit(")")[0]
+                        )
+
+                        if self._house_repo.is_enable_public_sale_detail_info(
+                            public_sale_details_id
+                        ):
+
+                            file_name = image_name.split("(")[0]
+                            extension = (
+                                os.path.splitext(image_name)[-1].split(".")[1].lower()
+                            )
+                            path = S3Helper().get_image_upload_uuid_path(
+                                image_table_name=table_name, extension=extension
+                            )
+                            public_sale_detail_photos.append(
+                                {
+                                    "id": public_sale_detail_photos_start_idx,
+                                    "public_sale_details_id": public_sale_details_id,
+                                    "file_name": file_name,
+                                    "path": path,
+                                    "extension": extension,
+                                    "created_at": get_server_timestamp(),
+                                }
+                            )
+
+                            file_name = (
+                                S3Helper().get_image_upload_dir()
+                                + r"/"
+                                + dir_name[0]
+                                + r"/"
+                                + image_name
+                            )
+                            S3Helper().upload(
+                                bucket="toadhome-tanos-bucket",
+                                file_name=file_name,
+                                object_name=path,
+                                extension=extension,
+                            )
+                            public_sale_detail_photos_start_idx = (
+                                public_sale_detail_photos_start_idx + 1
+                            )
+                        else:
+                            logger.info(
+                                f"🚀\tpublic_sales_detail_id : {public_sale_details_id} failed"
+                            )
+
+                    except Exception:
+                        # FK 없는 이미지 이름은 제외
+                        continue
+
+            return public_sale_photos, public_sale_detail_photos
+
+    def execute(self):
+        logger.info(f"🚀\tInsertUploadPhotoUseCase Start - {self.client_id}")
+        logger.info(f"🚀\tupload_job 위치 : {S3Helper().get_image_upload_dir()}")
+        start_time = time()
+
+        _dirs = None
+        cnt = 0
+
+        recent_public_sale_photos_info = (
+            self._house_repo.get_recent_public_sale_photos()
+        )
+        recent_public_sale_detail_photos_info = (
+            self._house_repo.get_recent_public_sale_detail_photos()
+        )
+
+        if not recent_public_sale_photos_info:
+            public_sale_photos_start_idx = 1
+        else:
+            public_sale_photos_start_idx = recent_public_sale_photos_info.id
+
+        if not recent_public_sale_detail_photos_info:
+            public_sale_detail_photos_start_idx = 1
+        else:
+            public_sale_detail_photos_start_idx = (
+                recent_public_sale_detail_photos_info.id
+            )
+
+        upload_list: List[Dict] = list()
+        for (roots, dirs, file_names) in os.walk(S3Helper().get_image_upload_dir()):
+            entry = []
+            if len(dirs) > 0:
+                _dirs = dirs
+            if len(file_names) > 0:
+                for file_name in file_names:
+                    entry.append(file_name)
+
+                upload_list.append(
+                    self.collect_file_list(dir_list=_dirs, file_list=entry, dir_idx=cnt)
+                )
+                cnt = cnt + 1
+
+        for entry in upload_list:
+            key = list(entry.keys())
+            values = list(entry.values())
+
+            (public_sale_photos, public_sale_detail_photos) = self.make_upload_list(
+                dir_name=key,
+                file_list=values,
+                photos_start_idx=public_sale_photos_start_idx,
+                detail_photos_start_idx=public_sale_detail_photos_start_idx,
+            )
+            # Bulk insert public_sale_photos
+            try:
+                self._house_repo.insert_images_to_public_sale_photos(
+                    create_list=public_sale_photos
+                )
+                logger.info(
+                    f"🚀\t [insert_images_to_public_sale_photos] - Done! "
+                    f"{len(public_sale_photos)} finished, "
+                    f"records: {time() - start_time} secs"
+                )
+            except Exception as e:
+                logger.error(f"insert_images_to_public_sale_photos error : {e}")
+                exit(os.EX_OK)
+
+            # Bulk insert public_sale_detail_photos
+            try:
+                self._house_repo.insert_images_to_public_sale_detail_photos(
+                    create_list=public_sale_detail_photos
+                )
+                logger.info(
+                    f"🚀\t [insert_images_to_public_sale_detail_photos] - Done! "
+                    f"{len(public_sale_detail_photos)} created, "
+                    f"records: {time() - start_time} secs"
+                )
+            except Exception as e:
+                logger.error(f"insert_images_to_public_sale_photos error : {e}")
+                exit(os.EX_OK)
+
+            public_sale_photos_start_idx = public_sale_photos_start_idx + len(
+                public_sale_photos
+            )
+            public_sale_detail_photos_start_idx = (
+                public_sale_detail_photos_start_idx + len(public_sale_detail_photos)
+            )
 
         exit(os.EX_OK)
