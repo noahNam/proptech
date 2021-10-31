@@ -2609,9 +2609,10 @@ class HouseRepository:
             .join(
                 PublicSalePhotoModel,
                 (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
-                & (PublicSalePhotoModel.is_thumbnail == "True"),
+                & (PublicSalePhotoModel.is_thumbnail == "True")
             )
             .options(joinedload(PublicSaleModel.real_estates))
+            .options(contains_eager("public_sale_photos"))
             .filter(*filters)
             .order_by(PublicSaleModel.subscription_end_date.desc())
             .limit(12)
