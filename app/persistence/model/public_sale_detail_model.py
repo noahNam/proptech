@@ -71,9 +71,11 @@ class PublicSaleDetailModel(db.Model):
             private_area=self.private_area,
             private_pyoung_number=HouseHelper.convert_area_to_pyoung(
                 self.private_area
-            ),  # todo. @Harry 이거 왜 필요한가요?
+            ),  # Sinbad 요청 entity
             supply_area=self.supply_area,
-            supply_pyoung_number=HouseHelper.convert_area_to_pyoung(self.supply_area),
+            supply_pyoung_number=HouseHelper.convert_area_to_pyoung(
+                self.supply_area
+            ),  # Sinbad 요청 entity
             supply_price=self.supply_price,
             total_household=self.total_household,
             acquisition_tax=self.acquisition_tax,
