@@ -240,7 +240,8 @@ class HouseRepository:
                     / CalcPyoungEnum.CALC_VAR.value
                 ),
             )
-            if not min_area or not max_area:
+
+            if (not min_area and min_area != 0) or not max_area:
                 trade_pyoung_filters.append(
                     PrivateSaleAvgPriceModel.default_trade_pyoung
                     == PrivateSaleAvgPriceModel.pyoung
@@ -351,7 +352,6 @@ class HouseRepository:
                     .group_by(union_q.c.id)
                 )
                 query_set = private_query.all()
-
             else:
                 # (2)
                 # private_sales 매매 조회
