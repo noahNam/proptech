@@ -352,7 +352,6 @@ class HouseRepository:
                     .group_by(union_q.c.id)
                 )
                 query_set = private_query.all()
-                RawQueryHelper.print_raw_query(private_query)
             else:
                 # (2)
                 # private_sales 매매 조회
