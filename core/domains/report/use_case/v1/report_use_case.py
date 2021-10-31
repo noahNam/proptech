@@ -212,13 +212,16 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             last_swap = 0
             for i in range(end):
                 # 102A, 84A str로 비교시 84A가 크기 때문에 숫자로 재비교
-                number1 = "".join(re.findall("\d+", expected_competitions[i].house_structure_type)[0])
-                number2 = "".join(re.findall("\d+", expected_competitions[i + 1].house_structure_type)[0])
+                number1 = "".join(
+                    re.findall("\d+", expected_competitions[i].house_structure_type)[0]
+                )
+                number2 = "".join(
+                    re.findall(
+                        "\d+", expected_competitions[i + 1].house_structure_type
+                    )[0]
+                )
 
-                if (
-                    int(number1)
-                    > int(number2)
-                ):
+                if int(number1) > int(number2):
                     expected_competitions[i], expected_competitions[i + 1] = (
                         expected_competitions[i + 1],
                         expected_competitions[i],
@@ -231,15 +234,27 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             last_swap = 0
             for i in range(end):
                 # 위의 숫자기반 정렬을 알파벳 순으로 다시 재정렬
-                word1 = "".join(re.findall("[a-zA-Z]+", expected_competitions[i].house_structure_type))
-                word2 = "".join(re.findall("[a-zA-Z]+", expected_competitions[i + 1].house_structure_type))
+                word1 = "".join(
+                    re.findall(
+                        "[a-zA-Z]+", expected_competitions[i].house_structure_type
+                    )
+                )
+                word2 = "".join(
+                    re.findall(
+                        "[a-zA-Z]+", expected_competitions[i + 1].house_structure_type
+                    )
+                )
 
-                number1 = "".join(re.findall("\d+", expected_competitions[i].house_structure_type)[0])
-                number2 = "".join(re.findall("\d+", expected_competitions[i + 1].house_structure_type)[0])
+                number1 = "".join(
+                    re.findall("\d+", expected_competitions[i].house_structure_type)[0]
+                )
+                number2 = "".join(
+                    re.findall(
+                        "\d+", expected_competitions[i + 1].house_structure_type
+                    )[0]
+                )
 
-                if (
-                        (number1 == number2) and (word1 > word2)
-                ):
+                if (number1 == number2) and (word1 > word2):
                     expected_competitions[i], expected_competitions[i + 1] = (
                         expected_competitions[i + 1],
                         expected_competitions[i],
