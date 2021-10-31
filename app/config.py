@@ -27,7 +27,10 @@ class Config:
 
     # AWS ENV
     AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY") or "AKIA5IBYL2SRU6O3XLE4"
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY") or "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"
+    AWS_SECRET_ACCESS_KEY = (
+        os.environ.get("AWS_SECRET_ACCESS_KEY")
+        or "vUZYC93OF/z94OOuii2tj1sHBZ02UmzJCK7LLQ/Q"
+    )
     AWS_REGION_NAME = os.environ.get("AWS_REGION_NAME") or "ap-northeast-2"
 
     # SQS
@@ -45,12 +48,11 @@ class LocalConfig(Config):
     DEBUG = True
 
     # Local environment configuration using Docker API service
-    # SQLALCHEMY_DATABASE_URI = (
-    #     "postgresql+psycopg2://toadhome_tanos:!Dkvkxhr117@localhost:5432/tanos"
-    # )
+    SQLALCHEMY_DATABASE_URI = (
+        "postgresql+psycopg2://toadhome_tanos:!Dkvkxhr117@localhost:5432/tanos"
+    )
     # Prod migrate
     # SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://postgres:%s@localhost:5432/tanos" % urlquote("password")
-    SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://toadhome_tanos:%s@localhost:5432/tanos" % urlquote("Ska!rl##gur*2214")
 
 
 class TestConfig(Config):

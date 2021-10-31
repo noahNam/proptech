@@ -37,12 +37,14 @@ class S3Helper:
         )
 
         try:
-            f = open(file_name, 'rb')
+            f = open(file_name, "rb")
             loaded_image = Image.open(f)
             buffer = io.BytesIO()
             loaded_image.save(buffer, extension)
             buffer.seek(0)
-            client.put_object(Body=buffer, Bucket=bucket, Key=object_name, ContentType="image/*")
+            client.put_object(
+                Body=buffer, Bucket=bucket, Key=object_name, ContentType="image/*"
+            )
             f.close()
         except ClientError as e:
             logger.error(
