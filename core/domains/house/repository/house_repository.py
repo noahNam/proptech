@@ -27,7 +27,7 @@ from app.persistence.model import (
     PublicSalePhotoModel,
     PublicSaleAvgPriceModel,
     PrivateSaleAvgPriceModel,
-    GeneralSupplyResultModel,
+    GeneralSupplyResultModel, PublicSaleDetailPhotoModel,
 )
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
@@ -2585,10 +2585,35 @@ class HouseRepository:
             )
             raise NotUniqueErrorException
 
+    def insert_images_to_public_sale_detail_photos(self, create_list: List[dict]) -> None:
+        try:
+            session.bulk_insert_mappings(
+                PublicSaleDetailPhotoModel, [create_info for create_info in create_list]
+            )
+
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][insert_images_to_public_sale_detail_photos] error : {e}"
+            )
+            raise NotUniqueErrorException
+
     def get_recent_public_sale_photos(self):
         query = (
             session.query(PublicSalePhotoModel)
             .order_by(PublicSalePhotoModel.id.desc())
+            .limit(1)
+        )
+        query_set = query.first()
+        if not query_set:
+            return None
+        return query_set.to_entity()
+
+    def get_recent_public_sale_detail_photos(self):
+        query = (
+            session.query(PublicSaleDetailPhotoModel)
+            .order_by(PublicSaleDetailPhotoModel.id.desc())
             .limit(1)
         )
         query_set = query.first()
