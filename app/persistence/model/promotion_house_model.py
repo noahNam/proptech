@@ -17,7 +17,9 @@ class PromotionHouseModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
-    promotion_id = Column(SmallInteger, ForeignKey(PromotionModel.id), nullable=False, index=True,)
+    promotion_id = Column(
+        SmallInteger, ForeignKey(PromotionModel.id), nullable=False, index=True,
+    )
     house_id = Column(BigInteger, nullable=False, index=True)
 
     def to_entity(self) -> PromotionHouseEntity:

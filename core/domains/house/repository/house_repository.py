@@ -552,7 +552,6 @@ class HouseRepository:
                     )
                     .group_by(union_q.c.id,)
                 )
-                RawQueryHelper.print_raw_query(final_query)
                 query_set = final_query.all()
 
             if query_set:
@@ -2598,8 +2597,6 @@ class HouseRepository:
 
     def insert_images_to_public_sale_photos(self, create_list: List[dict]) -> None:
         try:
-            print("---" * 30)
-            print(create_list)
             session.bulk_insert_mappings(
                 PublicSalePhotoModel, [create_info for create_info in create_list]
             )
