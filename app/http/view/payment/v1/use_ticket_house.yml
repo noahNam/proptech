@@ -17,7 +17,7 @@ requestBody:
             type: integer
             example: 1
 responses:
-  '200':
+  '200 #1':
     description: 참고링크 -> https://www.notion.so/apartalk/tanos-v1-payments-ticket-749e9cef60a64347a0ec6afd698a47f8
     content:
       application/json:
@@ -37,18 +37,42 @@ responses:
                       example: ticket used
             meta:
               type: null
-  '400 #1':
-    description: invalid_request_error
+  '200 #2':
+    description: 티켓수가 부족할 때
     content:
       application/json:
         schema:
           properties:
-            detail:
-              type: integer
-              example: 400
-            message:
-              type: string
-              example: insufficient number of tickets
+            data:
+              type: object
+              properties:
+                ticket_usage_result:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      example: failure
+                    message:
+                      type: string
+                      example: insufficient number of tickets
+  '200 #3':
+    description: 프로모션 횟수는 전부 사용했고, 유료티켓도 없는 경우
+    content:
+      application/json:
+        schema:
+          properties:
+            data:
+              type: object
+              properties:
+                ticket_usage_result:
+                  type: object
+                  properties:
+                    type:
+                      type: string
+                      example: failure
+                    message:
+                      type: string
+                      example: no ticket for promotion
   '400 #2':
     description: invalid_request_error
     content:

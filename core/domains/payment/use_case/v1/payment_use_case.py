@@ -169,10 +169,10 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
             )
             if not number_of_ticket:
                 # 티켓 수가 부족할 때
-                return UseCaseFailureOutput(
-                    type=HTTPStatus.BAD_REQUEST,
-                    message="insufficient number of tickets",
-                    code=HTTPStatus.BAD_REQUEST,
+                return UseCaseSuccessOutput(
+                    value=self._make_failure_dict(
+                        message="insufficient number of tickets"
+                    )
                 )
 
             result: Optional[
@@ -243,10 +243,10 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
                     )
                     if not number_of_ticket:
                         # 티켓 수가 부족할 때
-                        return UseCaseFailureOutput(
-                            type=HTTPStatus.BAD_REQUEST,
-                            message="insufficient number of tickets",
-                            code=HTTPStatus.BAD_REQUEST,
+                        return UseCaseSuccessOutput(
+                            value=self._make_failure_dict(
+                                message="insufficient number of tickets"
+                            )
                         )
 
                     result: Optional[
@@ -317,7 +317,6 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
     ) -> Optional[UseCaseFailureOutput]:
         response: int = self._call_jarvis_house_analytics_api(dto=dto)
         if response == HTTPStatus.OK:
-            print("@@@@ no enter")
             # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
                 user_id=dto.user_id,

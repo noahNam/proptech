@@ -16,7 +16,9 @@ class TicketTargetModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False
     )
-    ticket_id = Column(BigInteger, ForeignKey(TicketModel.id), nullable=False, index=True,)
+    ticket_id = Column(
+        BigInteger, ForeignKey(TicketModel.id), nullable=False, index=True,
+    )
     public_house_id = Column(BigInteger, nullable=False)
 
     def to_entity(self) -> TicketTargetEntity:
