@@ -17,7 +17,9 @@ from core.domains.house.entity.house_entity import (
     PublicSaleDetailCalendarEntity,
     MainRecentPublicInfoEntity,
     DetailCalendarInfoEntity,
-    MapSearchEntity, PublicSaleEntity, PublicSaleDetailEntity,
+    MapSearchEntity,
+    PublicSaleEntity,
+    PublicSaleDetailEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -28,7 +30,9 @@ from core.domains.house.enum.house_enum import (
     PreSaleTypeEnum,
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
-    BoundingIncludePrivateEnum, HousingCategoryEnum, RentTypeEnum,
+    BoundingIncludePrivateEnum,
+    HousingCategoryEnum,
+    RentTypeEnum,
 )
 from core.use_case_output import UseCaseSuccessOutput
 
@@ -408,8 +412,10 @@ def test_house_public_detail_view_when_valid_request_id(
         offer_notice_url=public_sales.offer_notice_url,
         subscription_start_date=public_sales.subscription_start_date,
         subscription_end_date=public_sales.subscription_end_date,
-        status=HouseHelper().public_status(offer_date=public_sales.offer_date,
-                                           subscription_end_date=public_sales.subscription_end_date),
+        status=HouseHelper().public_status(
+            offer_date=public_sales.offer_date,
+            subscription_end_date=public_sales.subscription_end_date,
+        ),
         special_supply_date=public_sales.special_supply_date,
         special_supply_etc_date=public_sales.special_supply_etc_date,
         special_etc_gyeonggi_date=public_sales.special_etc_gyeonggi_date,
@@ -430,8 +436,11 @@ def test_house_public_detail_view_when_valid_request_id(
         reference_url=public_sales.reference_url,
         created_at=public_sales.created_at,
         updated_at=public_sales.updated_at,
-        public_sale_photos=[public_sale_photo_1.to_entity(), public_sale_photo_2.to_entity()],
-        public_sale_details=[detail_entity]
+        public_sale_photos=[
+            public_sale_photo_1.to_entity(),
+            public_sale_photo_2.to_entity(),
+        ],
+        public_sale_details=[detail_entity],
     )
 
     mock_entity = HousePublicDetailEntity(
@@ -479,7 +488,7 @@ def test_house_public_detail_view_when_valid_request_id(
                         headers=headers,
                     )
 
-    data = response.get_json()['data']
+    data = response.get_json()["data"]
 
     assert response.status_code == 200
     assert mock_house_public_detail.called is True

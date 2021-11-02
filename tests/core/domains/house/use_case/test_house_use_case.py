@@ -19,7 +19,9 @@ from core.domains.house.entity.house_entity import (
     SimpleCalendarInfoEntity,
     PublicSaleSimpleCalendarEntity,
     HousePublicDetailEntity,
-    MainRecentPublicInfoEntity, PublicSaleEntity, PublicSaleDetailEntity,
+    MainRecentPublicInfoEntity,
+    PublicSaleEntity,
+    PublicSaleDetailEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -255,8 +257,10 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         offer_notice_url=public_sales.offer_notice_url,
         subscription_start_date=public_sales.subscription_start_date,
         subscription_end_date=public_sales.subscription_end_date,
-        status=HouseHelper().public_status(offer_date=public_sales.offer_date,
-                                           subscription_end_date=public_sales.subscription_end_date),
+        status=HouseHelper().public_status(
+            offer_date=public_sales.offer_date,
+            subscription_end_date=public_sales.subscription_end_date,
+        ),
         special_supply_date=public_sales.special_supply_date,
         special_supply_etc_date=public_sales.special_supply_etc_date,
         special_etc_gyeonggi_date=public_sales.special_etc_gyeonggi_date,
@@ -277,8 +281,11 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         reference_url=public_sales.reference_url,
         created_at=public_sales.created_at,
         updated_at=public_sales.updated_at,
-        public_sale_photos=[public_sale_photo_1.to_entity(), public_sale_photo_2.to_entity()],
-        public_sale_details=[detail_entity]
+        public_sale_photos=[
+            public_sale_photo_1.to_entity(),
+            public_sale_photo_2.to_entity(),
+        ],
+        public_sale_details=[detail_entity],
     )
 
     mock_entity = HousePublicDetailEntity(
