@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from app.extensions.utils.house_helper import HouseHelper
 from app.persistence.model import InterestHouseModel, RecentlyViewModel
 from core.domains.house.dto.house_dto import (
     UpsertInterestHouseDto,
@@ -19,6 +20,8 @@ from core.domains.house.entity.house_entity import (
     PublicSaleSimpleCalendarEntity,
     HousePublicDetailEntity,
     MainRecentPublicInfoEntity,
+    PublicSaleEntity,
+    PublicSaleDetailEntity,
 )
 from core.domains.house.enum.house_enum import (
     HouseTypeEnum,
@@ -207,8 +210,9 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
 def test_get_house_public_detail_use_case_when_enable_public_sale_house(
     session,
     create_interest_house,
-    create_real_estate_with_private_sale,
     create_real_estate_with_public_sale,
+    public_sale_photo_factory,
+    public_sale_factory,
 ):
     """
         사용 가능한 분양 매물이면
@@ -216,6 +220,73 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         성공시, RecentlyViewModel이 pypubsub에 의해 생성되어야 한다
     """
     get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)
+
+    public_sales = public_sale_factory.build(public_sale_details=True)
+    public_sale_photo_1 = public_sale_photo_factory.build(id=1, public_sales_id=1)
+    public_sale_photo_2 = public_sale_photo_factory.build(id=2, public_sales_id=1)
+    session.add(public_sale_photo_1, public_sale_photo_2)
+    session.commit()
+
+    detail_entity = PublicSaleDetailEntity(
+        id=public_sales.public_sale_details[0].id,
+        public_sales_id=public_sales.public_sale_details[0].public_sales_id,
+        private_area=public_sales.public_sale_details[0].private_area,
+        private_pyoung_number=10,
+        supply_area=public_sales.public_sale_details[0].supply_area,
+        supply_pyoung_number=20,
+        supply_price=public_sales.public_sale_details[0].supply_price,
+        acquisition_tax=public_sales.public_sale_details[0].acquisition_tax,
+        area_type="84A",
+        special_household=public_sales.public_sale_details[0].special_household,
+        general_household=public_sales.public_sale_details[0].general_household,
+        total_household=public_sales.public_sale_details[0].total_household,
+    )
+
+    public_sales_entity = PublicSaleEntity(
+        id=public_sales.id,
+        real_estate_id=public_sales.real_estate_id,
+        name=public_sales.name,
+        region=public_sales.region,
+        housing_category=public_sales.housing_category,
+        rent_type=public_sales.rent_type,
+        trade_type=public_sales.trade_type,
+        construct_company=public_sales.construct_company,
+        supply_household=public_sales.supply_household,
+        is_available=public_sales.is_available,
+        offer_date=public_sales.offer_date,
+        offer_notice_url=public_sales.offer_notice_url,
+        subscription_start_date=public_sales.subscription_start_date,
+        subscription_end_date=public_sales.subscription_end_date,
+        status=HouseHelper().public_status(
+            offer_date=public_sales.offer_date,
+            subscription_end_date=public_sales.subscription_end_date,
+        ),
+        special_supply_date=public_sales.special_supply_date,
+        special_supply_etc_date=public_sales.special_supply_etc_date,
+        special_etc_gyeonggi_date=public_sales.special_etc_gyeonggi_date,
+        first_supply_date=public_sales.first_supply_date,
+        first_supply_etc_date=public_sales.first_supply_etc_date,
+        first_etc_gyeonggi_date=public_sales.first_etc_gyeonggi_date,
+        second_supply_date=public_sales.second_supply_date,
+        second_supply_etc_date=public_sales.second_supply_etc_date,
+        second_etc_gyeonggi_date=public_sales.second_etc_gyeonggi_date,
+        notice_winner_date=public_sales.notice_winner_date,
+        contract_start_date=public_sales.contract_start_date,
+        contract_end_date=public_sales.contract_end_date,
+        move_in_year=public_sales.move_in_year,
+        move_in_month=public_sales.move_in_month,
+        min_down_payment=public_sales.min_down_payment,
+        max_down_payment=public_sales.max_down_payment,
+        down_payment_ratio=public_sales.down_payment_ratio,
+        reference_url=public_sales.reference_url,
+        created_at=public_sales.created_at,
+        updated_at=public_sales.updated_at,
+        public_sale_photos=[
+            public_sale_photo_1.to_entity(),
+            public_sale_photo_2.to_entity(),
+        ],
+        public_sale_details=[detail_entity],
+    )
 
     mock_entity = HousePublicDetailEntity(
         id=1,
@@ -241,7 +312,7 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         supply_price_per_pyoung=123,
         min_acquisition_tax=100000,
         max_acquisition_tax=200000,
-        public_sales=None,
+        public_sales=public_sales_entity,
     )
 
     with patch(
@@ -251,9 +322,7 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         with patch(
             "core.domains.house.repository.house_repository.HouseRepository.get_house_with_public_sales"
         ) as mock_house_public_detail:
-            mock_house_public_detail.return_value = create_real_estate_with_public_sale[
-                0
-            ]
+            mock_house_public_detail.return_value = create_real_estate_with_public_sale
             with patch(
                 "core.domains.house.repository.house_repository.HouseRepository.make_house_public_detail_entity"
             ) as mock_result:

@@ -32,6 +32,8 @@ from core.domains.house.entity.house_entity import (
     HousePublicDetailEntity,
     MapSearchEntity,
     BoundingRealEstateEntity,
+    PublicSalePhotoEntity,
+    PublicSaleDetailEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -177,6 +179,16 @@ class BoundingUseCase(HouseBaseUseCase):
 
 
 class GetHousePublicDetailUseCase(HouseBaseUseCase):
+    def _sort_public_sale_photos(self, photos: List[PublicSalePhotoEntity]):
+        if not photos:
+            return None
+        photos.sort(key=lambda obj: obj.seq, reverse=False)
+
+    def _sort_public_sale_detail_photos(self, details: List[PublicSaleDetailEntity]):
+        if not details:
+            return None
+        details.sort(key=lambda obj: obj.area_type.upper(), reverse=False)
+
     def execute(
         self, dto: GetHousePublicDetailDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
@@ -219,6 +231,11 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             is_like=is_like,
             button_link_list=button_link_list,
             ticket_usage_results=ticket_usage_results,
+        )
+
+        self._sort_public_sale_photos(photos=entities.public_sales.public_sale_photos)
+        self._sort_public_sale_detail_photos(
+            details=entities.public_sales.public_sale_details
         )
 
         recently_view_dto = RecentlyViewDto(
