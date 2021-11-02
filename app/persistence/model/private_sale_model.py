@@ -48,6 +48,7 @@ class PrivateSaleModel(db.Model):
     building_cover_ratio = Column(SmallInteger, nullable=True)
     trade_status = Column(SmallInteger, nullable=False, default=0)
     deposit_status = Column(SmallInteger, nullable=False, default=0)
+    public_ref_id = Column(BigInteger().with_variant(Integer, "sqlite"), nullable=True)
     created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
     is_available = Column(Boolean, nullable=False, default=False)
