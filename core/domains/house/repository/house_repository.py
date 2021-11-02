@@ -1129,30 +1129,6 @@ class HouseRepository:
 
         return result
 
-    def _get_status(
-        self, subscription_start_date: str, subscription_end_date: str
-    ) -> [int]:
-        if (
-            not subscription_start_date
-            or subscription_start_date == "0"
-            or subscription_start_date == "00000000"
-            or not subscription_end_date
-            or subscription_end_date == "0"
-            or subscription_end_date == "00000000"
-        ):
-            return PublicSaleStatusEnum.UNKNOWN.value
-
-        today = get_server_timestamp().strftime("%Y%m%d")
-
-        if today < subscription_start_date:
-            return PublicSaleStatusEnum.BEFORE_OPEN.value
-        elif subscription_start_date <= today <= subscription_end_date:
-            return PublicSaleStatusEnum.IS_RECEIVING.value
-        elif subscription_end_date < today:
-            return PublicSaleStatusEnum.IS_CLOSED.value
-        else:
-            return PublicSaleStatusEnum.UNKNOWN.value
-
     def _make_get_search_house_list_entity(
         self, queryset: Optional[List], user_id: int
     ) -> List[GetSearchHouseListEntity]:
@@ -1182,9 +1158,9 @@ class HouseRepository:
                         else None,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
-                        status=self._get_status(
-                            subscription_start_date=query.subscription_start_date,
-                            subscription_end_date=query.subscription_end_date,
+                        status=HouseHelper().public_status(
+                            offer_date=query.offer_date,
+                            subscription_end_date=query.subscription_end_date
                         ),
                         avg_down_payment=avg_down_payment,
                         avg_supply_price=query.avg_supply_price
