@@ -38,7 +38,6 @@ class PublicSaleDetailEntity(BaseModel):
     supply_price: int
     acquisition_tax: int
     area_type: str
-    area_type: Optional[str]
     special_household: Optional[int]
     general_household: Optional[int]
     total_household: Optional[int]

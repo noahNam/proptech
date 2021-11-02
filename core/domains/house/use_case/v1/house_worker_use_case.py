@@ -769,7 +769,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         업로드 대상 폴더 내에 평면도 없음(폴더) 가 없어야 합니다 - 사전에 제거 필요
         파일명: 이름(PK) -> PK가 없는 파일 이름은 업로드 무시하고 넘어갑니다
 
-        todo: public_sale_detail_photos 로직 추가
+        todo: 빈 폴더 Exception (통과되도록), 지나간 폴더 목록 logger, update 로직(가능하면 s3 삭제(나중))
     """
 
     def send_slack_message(self, message: str):
