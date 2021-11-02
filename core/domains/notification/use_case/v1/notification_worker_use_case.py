@@ -1,10 +1,10 @@
 import os
 import sys
+from time import time
 from typing import List, Optional
 
 import inject
 import requests
-import sentry_sdk
 
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.message_converter import MessageConverter
@@ -36,20 +36,22 @@ class BaseNotificationWorkerUseCase:
     def client_id(self) -> str:
         return f"{self.topic}-{os.getpid()}"
 
-    def send_slack_message(self, message: str):
-        channel = "#engineering-class"
+    def send_slack_message(self, title: str, message: str):
+        channel = "#batch-log"
 
-        text = "[Batch Error] PrePrcsNotificationUseCase -> " + message
+        text = title + "\n" + message
         slack_token = os.environ.get("SLACK_TOKEN")
-        requests.post(
-            "https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer " + slack_token},
-            data={"channel": channel, "text": text},
-        )
+        if slack_token:
+            requests.post(
+                "https://slack.com/api/chat.postMessage",
+                headers={"Authorization": "Bearer " + slack_token},
+                data={"channel": channel, "text": text},
+            )
 
 
 class PrePrcsNotificationUseCase(BaseNotificationWorkerUseCase):
     def execute(self):
+        start_time = time()
         logger.info(f"🚀\tPrePrcsNotification Start - {self.client_id}")
 
         # public sales 테이블의 모집공고일, 특별공급/1순위/2순위/당첨자발표일을 오늘 날짜 기준으로 조회한다.
@@ -64,15 +66,20 @@ class PrePrcsNotificationUseCase(BaseNotificationWorkerUseCase):
         except Exception as e:
             logger.error(f"🚀\tget_push_target_of_public_sales Error - {e}")
             self.send_slack_message(
-                message=f"🚀\tget_push_target_of_public_sales Error - {e}"
+                title="☠️ [PrePrcsNotificationUseCase] >>> 유저가 찜한 분양정보 중에 특별한 이벤트가 있을 경우 Push 보낼 메세지 Convert",
+                message=f"get_push_target_of_public_sales Error - {e}",
             )
-            sentry_sdk.capture_exception(e)
             sys.exit(0)
 
         try:
             if not target_public_sales:
                 logger.info(
                     f"🚀\tPrePrcsNotification Success - nothing target_public_sales"
+                )
+                self.send_slack_message(
+                    title="🚀 [PrePrcsNotificationUseCase] >>> 유저가 찜한 분양정보 중에 특별한 이벤트가 있을 경우 Push 보낼 메세지 Convert",
+                    message=f"PrePrcsNotification Success - nothing target_public_sales!! \n "
+                    f"records: {time() - start_time} secs",
                 )
                 sys.exit(0)
 
@@ -82,9 +89,9 @@ class PrePrcsNotificationUseCase(BaseNotificationWorkerUseCase):
         except Exception as e:
             logger.error(f"🚀\t_convert_message_for_public_sales Error - {e}")
             self.send_slack_message(
-                message=f"🚀\t_convert_message_for_public_sales Error - {e}"
+                title="☠️ [PrePrcsNotificationUseCase] >>> 유저가 찜한 분양정보 중에 특별한 이벤트가 있을 경우 Push 보낼 메세지 Convert",
+                message=f"_convert_message_for_public_sales Error - {e}",
             )
-            sentry_sdk.capture_exception(e)
             sys.exit(0)
 
         # notifications 테이블에 insert 한다.
@@ -92,6 +99,11 @@ class PrePrcsNotificationUseCase(BaseNotificationWorkerUseCase):
             if not notification_list:
                 logger.info(
                     f"🚀\tPrePrcsNotification Success - nothing notification_list"
+                )
+                self.send_slack_message(
+                    title="🚀 [PrePrcsNotificationUseCase] >>> 유저가 찜한 분양정보 중에 특별한 이벤트가 있을 경우 Push 보낼 메세지 Convert",
+                    message=f"PrePrcsNotification Success - nothing notification_list!! \n "
+                    f"records: {time() - start_time} secs",
                 )
                 sys.exit(0)
 
@@ -101,13 +113,18 @@ class PrePrcsNotificationUseCase(BaseNotificationWorkerUseCase):
         except Exception as e:
             logger.error(f"🚀\tcreate_private_notifications Error - {e}")
             self.send_slack_message(
-                message=f"🚀\tcreate_private_notifications Error - {e}"
+                title="☠️ [PrePrcsNotificationUseCase] >>> 유저가 찜한 분양정보 중에 특별한 이벤트가 있을 경우 Push 보낼 메세지 Convert",
+                message=f"create_private_notifications Error - {e}",
             )
-            sentry_sdk.capture_exception(e)
             sys.exit(0)
 
         logger.info(
             f"🚀\tPrePrcsNotification Success -  {len(target_public_sales)} / {len(notification_list)}"
+        )
+        self.send_slack_message(
+            title="🚀 [PrePrcsNotificationUseCase] >>> 유저가 찜한 분양정보 중에 특별한 이벤트가 있을 경우 Push 보낼 메세지 Convert",
+            message=f"PrePrcsNotification Success -  {len(target_public_sales)} / {len(notification_list)} \n "
+            f"records: {time() - start_time} secs",
         )
 
     def _convert_message_for_public_sales(
@@ -207,6 +224,7 @@ class PrePrcsNotificationUseCase(BaseNotificationWorkerUseCase):
 
 class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
     def execute(self):
+        start_time = time()
         logger.info(f"🚀\tConvertNoticePushMessage Start - {self.client_id}")
         notice_push_message, notification_list = None, None
 
@@ -217,8 +235,11 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
 
         except Exception as e:
             logger.error(f"🚀\tget_notice_push_message Error - {e}")
-            self.send_slack_message(message=f"🚀\tget_notice_push_message Error - {e}")
-            sentry_sdk.capture_exception(e)
+            self.send_slack_message(
+                title="☠️ [ConvertNoticePushMessageUseCase] >>> 공지사항 Push 보낼 메세지를 Convert",
+                message=f"get_notice_push_message Error - {e}",
+            )
+            sys.exit(0)
 
         try:
             if notice_push_message:
@@ -232,9 +253,10 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
         except Exception as e:
             logger.error(f"🚀\t_convert_message_for_notice Error - {e}")
             self.send_slack_message(
-                message=f"🚀\t_convert_message_for_notice Error - {e}"
+                title="☠️ [ConvertNoticePushMessageUseCase] >>> 공지사항 Push 보낼 메세지를 Convert",
+                message=f"_convert_message_for_notice Error - {e}",
             )
-            sentry_sdk.capture_exception(e)
+            sys.exit(0)
 
         # notifications 테이블에 insert 하고, notice_template 상태를 업데이트 한다.
         try:
@@ -255,9 +277,16 @@ class ConvertNoticePushMessageUseCase(BaseNotificationWorkerUseCase):
         except Exception as e:
             logger.error(f"🚀\tcreate_notice_notifications Error - {e}")
             self.send_slack_message(
-                message=f"🚀\tcreate_notice_notifications Error - {e}"
+                title="☠️ [ConvertNoticePushMessageUseCase] >>> 공지사항 Push 보낼 메세지를 Convert",
+                message=f"create_notice_notifications Error - {e}",
             )
-            sentry_sdk.capture_exception(e)
+            sys.exit(0)
+
+        self.send_slack_message(
+            title="🚀 [ConvertNoticePushMessageUseCase] >>> 공지사항 Push 보낼 메세지를 Convert",
+            message=f"ConvertNoticePushMessageUseCase Success - {len(notification_list)} \n "
+            f"records: {time() - start_time} secs",
+        )
 
         exit(os.EX_OK)
 
