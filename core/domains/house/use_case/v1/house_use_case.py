@@ -187,6 +187,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
     def _sort_public_sale_detail_photos(self, details: List[PublicSaleDetailEntity]):
         if not details:
             return None
+
         details.sort(key=lambda obj: obj.area_type.upper(), reverse=False)
 
     def execute(

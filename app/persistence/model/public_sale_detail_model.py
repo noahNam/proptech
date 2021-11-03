@@ -1,5 +1,3 @@
-from typing import Optional
-
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -43,10 +41,10 @@ class PublicSaleDetailModel(db.Model):
     acquisition_tax = Column(Integer, nullable=False)
     area_type = Column(String(5), nullable=True)
     special_household = Column(SmallInteger, nullable=True)
-    multi_children_house_hold = Column(SmallInteger, nullable=True)
-    newlywed_house_hold = Column(SmallInteger, nullable=True)
-    old_parent_house_hold = Column(SmallInteger, nullable=True)
-    first_life_house_hold = Column(SmallInteger, nullable=True)
+    multi_children_household = Column(SmallInteger, nullable=True)
+    newlywed_household = Column(SmallInteger, nullable=True)
+    old_parent_household = Column(SmallInteger, nullable=True)
+    first_life_household = Column(SmallInteger, nullable=True)
     general_household = Column(SmallInteger, nullable=True)
 
     # 1:1 relationship
@@ -118,7 +116,6 @@ class PublicSaleDetailModel(db.Model):
             for _ in range(none_count):
                 special_supply_list.remove(None)
         ##################################################################################################
-
         return PublicSaleDetailReportEntity(
             id=self.id,
             public_sales_id=self.public_sales_id,
@@ -127,15 +124,16 @@ class PublicSaleDetailModel(db.Model):
             supply_price=self.supply_price,
             acquisition_tax=self.acquisition_tax,
             area_type=self.area_type,
-            public_sale_detail_photos=self.public_sale_detail_photos.to_entity()
+            public_sale_detail_photo=self.public_sale_detail_photos.path
             if self.public_sale_detail_photos
             else None,
             special_household=self.special_household,
-            multi_children_house_hold=self.multi_children_house_hold,
-            newlywed_house_hold=self.newlywed_house_hold,
-            old_parent_house_hold=self.old_parent_house_hold,
-            first_life_house_hold=self.first_life_house_hold,
+            multi_children_household=self.multi_children_household,
+            newlywed_household=self.newlywed_household,
+            old_parent_household=self.old_parent_household,
+            first_life_household=self.first_life_household,
             general_household=self.general_household,
+            total_household=self.total_household,
             pyoung_number=HouseHelper.convert_area_to_pyoung(self.supply_area),
             price_per_meter=int(
                 self.supply_price / (self.supply_area / CalcPyoungEnum.CALC_VAR.value)
@@ -151,5 +149,7 @@ class PublicSaleDetailModel(db.Model):
         )
 
     @property
-    def total_household(self) -> Optional[int]:
-        return self.general_household + self.special_household
+    def total_household(self) -> int:
+        general_household = self.general_household if self.general_household else 0
+        special_household = self.special_household if self.special_household else 0
+        return general_household + special_household
