@@ -95,7 +95,7 @@ responses:
                           area_type:
                             type: integer
                             example: 39
-                          first_life_house_hold:
+                          first_life_household:
                             type: integer
                             example: 20
                           general_household:
@@ -104,13 +104,13 @@ responses:
                           speical_household:
                             type: integer
                             example: 20
-                          multi_children_house_hold:
+                          multi_children_household:
                             type: integer
                             example: 20
-                          newlywed_house_hold:
+                          newlywed_household:
                             type: integer
                             example: 20
-                          old_parent_house_hold:
+                          old_parent_household:
                             type: integer
                             example: 20
                           pyoung_number:
