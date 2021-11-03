@@ -19,7 +19,7 @@ class PostAttachmentModel(db.Model):
     __tablename__ = "post_attachments"
 
     id = Column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True)
-    post_id = Column(BigInteger, ForeignKey(PostModel.id), nullable=False)
+    post_id = Column(BigInteger, ForeignKey(PostModel.id), nullable=False, index=True,)
     type = Column(SmallInteger, default=0, nullable=False)
     file_name = Column(String(50), nullable=False)
     path = Column(String(150), nullable=False)

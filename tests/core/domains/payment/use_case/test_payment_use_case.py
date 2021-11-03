@@ -112,8 +112,8 @@ def test_use_house_ticket_when_no_prom_no_available_ticket_then_return_failure_o
 
     result = UseHouseTicketUseCase().execute(dto=use_ticket_dto)
 
-    assert isinstance(result, UseCaseFailureOutput)
-    assert result.message == "insufficient number of tickets"
+    assert isinstance(result, UseCaseSuccessOutput)
+    assert result.value["message"] == "insufficient number of tickets"
 
 
 @patch(
@@ -736,7 +736,7 @@ def test_use_house_ticket_when_not_exist_house_exist_some_type_prom_no_available
     use_ticket_dto.house_id = 99
     result = UseHouseTicketUseCase().execute(dto=use_ticket_dto)
 
-    assert isinstance(result, UseCaseFailureOutput)
+    assert isinstance(result, UseCaseSuccessOutput)
     assert result.value["message"] == "insufficient number of tickets"
 
 

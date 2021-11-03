@@ -26,6 +26,7 @@ class RoomPhotoModel(db.Model):
         ForeignKey(RoomInfoModel.id, ondelete="CASCADE"),
         nullable=False,
         unique=True,
+        index=True,
     )
 
     type = Column(String(3), nullable=False)

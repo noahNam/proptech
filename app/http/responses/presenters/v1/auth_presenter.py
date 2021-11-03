@@ -17,7 +17,6 @@ class AuthenticationPresenter:
         try:
             schema = AuthenticationResponseSchema(result=response.type)
         except ValidationError as e:
-            print(e)
             return failure_response(
                 UseCaseFailureOutput(
                     type=FailureType.SYSTEM_ERROR,
@@ -38,7 +37,6 @@ class AuthSmsSendPresenter:
             try:
                 schema = AuthenticationResponseSchema(result=output.type)
             except ValidationError as e:
-                print(e)
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",
