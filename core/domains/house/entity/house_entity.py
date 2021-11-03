@@ -377,14 +377,15 @@ class PublicSaleDetailReportEntity(BaseModel):
     supply_price: int
     acquisition_tax: int
     special_household: Optional[int]
-    multi_children_house_hold: Optional[int]
-    newlywed_house_hold: Optional[int]
-    old_parent_house_hold: Optional[int]
-    first_life_house_hold: Optional[int]
+    multi_children_household: Optional[int]
+    newlywed_household: Optional[int]
+    old_parent_household: Optional[int]
+    first_life_household: Optional[int]
     general_household: Optional[int]
+    total_household: Optional[int]
     pyoung_number: Optional[int] = 0
     price_per_meter: Optional[int] = 0
-    public_sale_detail_photos: Optional[PublicSaleDetailPhotoEntity]
+    public_sale_detail_photo: Optional[str]
     special_supply_results: List[SpecialSupplyResultReportEntity] = None
     general_supply_results: List[GeneralSupplyResultReportEntity] = None
 
@@ -405,7 +406,7 @@ class PublicSaleReportEntity(BaseModel):
     second_supply_etc_date: Optional[str]
     second_etc_gyeonggi_date: Optional[str]
     notice_winner_date: Optional[str]
-    public_sale_photo: Optional[List[PublicSalePhotoEntity]]
+    public_sale_photos: Optional[List[PublicSalePhotoEntity]]
     public_sale_details: List[PublicSaleDetailReportEntity] = None
     real_estates: RealEstateReportEntity
 
