@@ -38,6 +38,7 @@ from core.domains.report.schema.report_schema import (
     GetSurveysUserReportSchema,
     GetSurveysResultBaseSchema,
     PublicSaleReportSchema,
+    PublicSaleDetailReportSchema,
 )
 from core.domains.user.dto.user_dto import AvgMonthlyIncomeWokrerDto
 from core.domains.user.entity.user_entity import UserProfileEntity, SidoCodeEntity
@@ -453,7 +454,26 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
         for public_sale_detail in public_sale_details:
             area_type = "".join(re.findall("\d+", public_sale_detail.area_type)[0])
 
-            public_sale_detail_dict.setdefault(area_type, []).append(public_sale_detail)
+            public_sale_detail_report_schema = PublicSaleDetailReportSchema(
+                area_type=public_sale_detail.area_type,
+                private_area=public_sale_detail.private_area,
+                supply_area=public_sale_detail.supply_area,
+                supply_price=public_sale_detail.supply_price,
+                special_household=public_sale_detail.special_household,
+                multi_children_household=public_sale_detail.multi_children_household,
+                newlywed_household=public_sale_detail.newlywed_household,
+                old_parent_household=public_sale_detail.old_parent_household,
+                first_life_household=public_sale_detail.first_life_household,
+                general_household=public_sale_detail.general_household,
+                total_household=public_sale_detail.total_household,
+                price_per_meter=public_sale_detail.price_per_meter,
+                pyoung_number=public_sale_detail.pyoung_number,
+                public_sale_detail_photo=public_sale_detail.public_sale_detail_photo,
+            )
+
+            public_sale_detail_dict.setdefault(area_type, []).append(
+                public_sale_detail_report_schema
+            )
 
         return public_sale_detail_dict
 
