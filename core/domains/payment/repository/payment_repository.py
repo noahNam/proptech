@@ -1,7 +1,7 @@
 from typing import Optional, List
 
 from sqlalchemy import exc, exists
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, contains_eager
 from strgen import StringGenerator
 
 from app.extensions.database import session
@@ -45,8 +45,8 @@ class PaymentRepository:
                 & (PromotionUsageCountModel.user_id == user_id),
                 isouter=True,
             )
+            .options(contains_eager(PromotionModel.promotion_usage_count))
             .options(selectinload(PromotionModel.promotion_houses))
-            .options(selectinload(PromotionModel.promotion_usage_count))
             .filter(*filters)
         )
         promotion = query.first()

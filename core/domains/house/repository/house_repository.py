@@ -28,6 +28,7 @@ from app.persistence.model import (
     PublicSaleAvgPriceModel,
     PrivateSaleAvgPriceModel,
     GeneralSupplyResultModel,
+    PublicSaleDetailPhotoModel,
 )
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
@@ -240,26 +241,22 @@ class HouseRepository:
                     / CalcPyoungEnum.CALC_VAR.value
                 ),
             )
-            if not min_area or not max_area:
-                trade_pyoung_filters.append(
-                    PrivateSaleAvgPriceModel.default_trade_pyoung
-                    == PrivateSaleAvgPriceModel.pyoung
-                )
-                deposit_pyoung_filters.append(
-                    PrivateSaleAvgPriceModel.default_deposit_pyoung
-                    == PrivateSaleAvgPriceModel.pyoung
-                )
-            else:
+
+            if (min_area or min_area == 0) and max_area:
                 trade_pyoung_filters.append(pyoung_case >= min_area)
                 trade_pyoung_filters.append(pyoung_case <= max_area)
                 deposit_pyoung_filters.append(pyoung_case >= min_area)
                 deposit_pyoung_filters.append(pyoung_case <= max_area)
 
             """
-                #(1) 면적 필터가 없을 때는 default_pyoung 기준으로 보여줌
-                #(2) 면적 필터가 있을 때는 면적 필터 범위안에서 계약일이 가장 최근의 것 하나를 보여줌
+                # (1) 면적 필터가 없을 때는 default_pyoung 기준으로 보여줌
+                      * 아파트 또는 오피스텔에 매매정보가 없어도 보여줌 (left outer join)
+                
+                # (2) 면적 필터가 있을 때는 면적 필터 범위안에서 계약일이 가장 최근의 것 하나를 보여줌
+                      * 아파트 또는 오피스텔에 매매정보가 없으면 안보여줌 (inner join)
+                        * 평수 필터에서 해당 평수가 존재하지 않으면 맵에서 안보여주기로 했기 때문에
             """
-            if len(trade_pyoung_filters) == 1:
+            if not trade_pyoung_filters:
                 # (1)
                 private_trade_query = (
                     session.query(real_estate_sub_query)
@@ -274,8 +271,8 @@ class HouseRepository:
                         PrivateSaleModel.name.label("name"),
                         pyoung_case.label("trade_pyoung"),
                         PrivateSaleAvgPriceModel.trade_price.label("trade_price"),
-                        literal(0, None).label("deposit_pyoung"),
-                        literal(0, None).label("deposit_price"),
+                        literal(None, None).label("deposit_pyoung"),
+                        literal(None, None).label("deposit_price"),
                         func.coalesce(PrivateSaleModel.trade_status, 0).label(
                             "trade_status"
                         ),
@@ -287,11 +284,17 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sales_id
-                        == PrivateSaleModel.id,
+                        (
+                            PrivateSaleAvgPriceModel.private_sales_id
+                            == PrivateSaleModel.id
+                        )
+                        & (
+                            PrivateSaleAvgPriceModel.default_trade_pyoung
+                            == PrivateSaleAvgPriceModel.pyoung
+                        ),
+                        isouter=True,
                     )
                     .filter(*private_filters)
-                    .filter(*trade_pyoung_filters)
                 )
 
                 private_deposit_query = (
@@ -305,8 +308,8 @@ class HouseRepository:
                         PrivateSaleModel.id.label("id"),
                         PrivateSaleModel.building_type.label("building_type"),
                         PrivateSaleModel.name.label("name"),
-                        literal(0, None).label("trade_pyoung"),
-                        literal(0, None).label("trade_price"),
+                        literal(None, None).label("trade_pyoung"),
+                        literal(None, None).label("trade_price"),
                         pyoung_case.label("deposit_pyoung"),
                         PrivateSaleAvgPriceModel.deposit_price.label("deposit_price"),
                         literal(0, None).label("trade_status"),
@@ -320,11 +323,17 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sales_id
-                        == PrivateSaleModel.id,
+                        (
+                            PrivateSaleAvgPriceModel.private_sales_id
+                            == PrivateSaleModel.id
+                        )
+                        & (
+                            PrivateSaleAvgPriceModel.default_deposit_pyoung
+                            == PrivateSaleAvgPriceModel.pyoung
+                        ),
+                        isouter=True,
                     )
                     .filter(*private_filters)
-                    .filter(*deposit_pyoung_filters)
                 )
 
                 union_q = private_trade_query.union_all(
@@ -351,7 +360,6 @@ class HouseRepository:
                     .group_by(union_q.c.id)
                 )
                 query_set = private_query.all()
-
             else:
                 # (2)
                 # private_sales 매매 조회
@@ -427,8 +435,8 @@ class HouseRepository:
                         func.max(private_trade_sub_q.c.trade_price).label(
                             "trade_price"
                         ),
-                        literal(0, None).label("deposit_pyoung"),
-                        literal(0, None).label("deposit_price"),
+                        literal(None, None).label("deposit_pyoung"),
+                        literal(None, None).label("deposit_price"),
                     )
                     .group_by(
                         private_trade_sub_q.c.id, private_trade_sub_q.c.trade_rank,
@@ -505,8 +513,8 @@ class HouseRepository:
                         func.max(private_deposit_sub_q.c.deposit_status).label(
                             "deposit_status"
                         ),
-                        literal(0, None).label("trade_pyoung"),
-                        literal(0, None).label("trade_price"),
+                        literal(None, None).label("trade_pyoung"),
+                        literal(None, None).label("trade_price"),
                         func.max(private_deposit_sub_q.c.pyoung).label(
                             "deposit_pyoung"
                         ),
@@ -544,7 +552,6 @@ class HouseRepository:
                     )
                     .group_by(union_q.c.id,)
                 )
-
                 query_set = final_query.all()
 
             if query_set:
@@ -713,11 +720,28 @@ class HouseRepository:
         return True
 
     def is_enable_public_sale_house(self, house_id: int) -> bool:
-        house = session.query(PublicSaleModel).filter_by(id=house_id).first()
+        try:
+            house = session.query(PublicSaleModel).filter_by(id=house_id).first()
+        except Exception:
+            house = None
 
         if not house or house.is_available == "False":
             return False
         elif not self._is_enable_real_estate(house.real_estate_id):
+            return False
+        return True
+
+    def is_enable_public_sale_detail_info(self, public_sale_details_id: int) -> bool:
+        try:
+            detail_info = (
+                session.query(PublicSaleDetailModel)
+                .filter_by(id=public_sale_details_id)
+                .first()
+            )
+        except Exception:
+            detail_info = None
+
+        if not detail_info or detail_info.public_sales.is_available == "False":
             return False
         return True
 
@@ -1367,6 +1391,7 @@ class HouseRepository:
                 PublicSalePhotoModel,
                 (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
                 & (PublicSalePhotoModel.is_thumbnail == True),
+                isouter=True,
             )
             .options(contains_eager(PublicSaleModel.public_sale_photos))
             .filter(PublicSaleModel.id.in_(public_house_ids))
@@ -2584,6 +2609,22 @@ class HouseRepository:
             )
             raise NotUniqueErrorException
 
+    def insert_images_to_public_sale_detail_photos(
+        self, create_list: List[dict]
+    ) -> None:
+        try:
+            session.bulk_insert_mappings(
+                PublicSaleDetailPhotoModel, [create_info for create_info in create_list]
+            )
+
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][insert_images_to_public_sale_detail_photos] error : {e}"
+            )
+            raise NotUniqueErrorException
+
     def get_recent_public_sale_photos(self):
         query = (
             session.query(PublicSalePhotoModel)
@@ -2591,6 +2632,19 @@ class HouseRepository:
             .limit(1)
         )
         query_set = query.first()
+        if not query_set:
+            return None
+        return query_set.to_entity()
+
+    def get_recent_public_sale_detail_photos(self):
+        query = (
+            session.query(PublicSaleDetailPhotoModel)
+            .order_by(PublicSaleDetailPhotoModel.id.desc())
+            .limit(1)
+        )
+        query_set = query.first()
+        if not query_set:
+            return None
         return query_set.to_entity()
 
     def get_main_recent_public_info_list(self) -> Optional[list]:
@@ -2610,6 +2664,7 @@ class HouseRepository:
                 & (PublicSalePhotoModel.is_thumbnail == "True"),
             )
             .options(joinedload(PublicSaleModel.real_estates))
+            .options(contains_eager("public_sale_photos"))
             .filter(*filters)
             .order_by(PublicSaleModel.subscription_end_date.desc())
             .limit(12)

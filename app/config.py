@@ -26,8 +26,11 @@ class Config:
     NCP_SECRET_KEY = os.environ.get("NCP_SECRET_KEY") or ""
 
     # AWS ENV
-    AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY") or ""
-    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY") or ""
+    AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY") or "***REMOVED***"
+    AWS_SECRET_ACCESS_KEY = (
+        os.environ.get("AWS_SECRET_ACCESS_KEY")
+        or "***REMOVED***"
+    )
     AWS_REGION_NAME = os.environ.get("AWS_REGION_NAME") or "ap-northeast-2"
 
     # SQS

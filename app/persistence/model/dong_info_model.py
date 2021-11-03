@@ -19,7 +19,10 @@ class DongInfoModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     private_sales_id = Column(
-        BigInteger, ForeignKey(PrivateSaleModel.id, ondelete="CASCADE"), nullable=False
+        BigInteger,
+        ForeignKey(PrivateSaleModel.id, ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
     dong = Column(String(10), nullable=True)
     floor = Column(SmallInteger, nullable=True)

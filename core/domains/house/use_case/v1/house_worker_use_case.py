@@ -2,14 +2,16 @@ import os
 import re
 import sys
 from datetime import datetime, timedelta
+from pathlib import Path
 from time import time
 from typing import List, Optional, Dict
 
 import inject
 import requests
-import sentry_sdk
+from PIL import Image
 from sqlalchemy.orm import Query
 
+from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.math_helper import MathHelper
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -39,6 +41,18 @@ class BaseHouseWorkerUseCase:
     @property
     def client_id(self) -> str:
         return f"{self.topic}-{os.getpid()}"
+
+    def send_slack_message(self, title: str, message: str):
+        channel = "#batch-log"
+
+        text = title + "\n" + message
+        slack_token = os.environ.get("SLACK_TOKEN")
+        if slack_token:
+            requests.post(
+                "https://slack.com/api/chat.postMessage",
+                headers={"Authorization": "Bearer " + slack_token},
+                data={"channel": channel, "text": text},
+            )
 
 
 class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
@@ -224,10 +238,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             update_private_sale_avg_prices_count = 0
             final_create_list = list()
             final_update_list = list()
-            private_sale_avg_prices_failed_list = list()
             # 매매, 전세 가격 평균 계산
             # target_ids = [idx for idx in range(1, 355105)]
-            target_ids = [idx for idx in range(250000, 355105)]
+            target_ids = [idx for idx in range(1, 100000)]
 
             # contract_date 기준 가장 최근에 거래된 row 가져오기
             recent_infos: List[
@@ -267,29 +280,32 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 )
                 update_private_sale_avg_prices_count += len(final_update_list)
 
-            # private_sale_avg_prices_failed_list.append(recent_info.private_sales_id)
             logger.info(
                 f"🚀\tUpsert_private_sale_avg_prices : Finished !!, "
                 f"records: {time() - start_time} secs, "
                 f"{create_private_sale_avg_prices_count} Created, "
                 f"{update_private_sale_avg_prices_count} Updated, "
-                # f"{len(private_sale_avg_prices_failed_list)} Failed, "
-                # f"Failed_list : {private_sale_avg_prices_failed_list}, "
             )
-            # step 1까지만 실행
-            sys.exit(0)
+
+            self.send_slack_message(
+                title="🚀 [PreCalculateAverageUseCase Step1] >>> 매매,전세 평균가 계산 배치",
+                message=f"Upsert_private_sale_avg_prices : Finished !! \n "
+                f"records: {time() - start_time} secs \n "
+                f"{create_private_sale_avg_prices_count} Created \n "
+                f"{update_private_sale_avg_prices_count} Updated",
+            )
 
         except Exception as e:
-            logger.error(f"🚀\tUpsert_private_sale_avg_prices Error - {e}")
+            logger.error(f"\tUpsert_private_sale_avg_prices Error - {e}")
             self.send_slack_message(
-                message=f"🚀\tUpsert_private_sale_avg_prices Error - {e}"
+                title="☠️ [PreCalculateAverageUseCase Step1] >>> 매매,전세 평균가 계산 배치",
+                message=f"Upsert_private_sale_avg_prices Error - {e}",
             )
             sys.exit(0)
 
         # Batch_step_2 : Upsert_public_sale_avg_prices
         # try:
         #     # @Harry -> fail list 에 존재하지 않는 id가 그냥 다 찍히는 것 같습니다. 에러와 구분이 어렵습니다. 수정 부탁드립니다. ex) public_sales_id =  29131, 29132, 29133, 29134 ...
-        #
         #     start_time = time()
         #     logger.info(f"🚀\tUpsert_public_sale_avg_prices : Start")
         #
@@ -299,7 +315,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #
         #     # 공급 가격 평균 계산
         #     # for idx in range(29130, 42775):
-        #     for idx in range(29418, 29419):
+        #     for idx in range(42775, 42785):
         #         competition_and_score_info: dict = self._house_repo.get_competition_and_min_score(
         #             public_sales_id=idx
         #         )
@@ -318,41 +334,30 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #                 competition_and_score_info=competition_and_score_info,
         #             )
         #             if avg_price_create_list:
-        #                 try:
-        #                     self._house_repo.create_public_sale_avg_prices(
-        #                         create_list=avg_price_create_list
-        #                     )
-        #                     create_public_sale_avg_prices_count += len(
-        #                         avg_price_create_list
-        #                     )
-        #                 except Exception as e:
-        #                     logger.error(
-        #                         f"Upsert_public_sale_avg_prices - create_public_sale_avg_prices "
-        #                         f"public_sales_id : {idx} error : {e}"
-        #                     )
+        #                 self._house_repo.create_public_sale_avg_prices(
+        #                     create_list=avg_price_create_list
+        #                 )
+        #                 create_public_sale_avg_prices_count += len(
+        #                     avg_price_create_list
+        #                 )
         #             else:
         #                 logger.info(
         #                     f"🚀\tUpsert_public_sale_avg_prices : Nothing avg_price_create_list"
         #                 )
         #             if avg_price_update_list:
-        #                 try:
-        #                     self._house_repo.update_public_sale_avg_prices(
-        #                         update_list=avg_price_update_list
-        #                     )
-        #                     update_public_sale_avg_prices_count += len(
-        #                         avg_price_update_list
-        #                     )
-        #                 except Exception as e:
-        #                     logger.error(
-        #                         f"Upsert_public_sale_avg_prices - update_public_sale_avg_prices "
-        #                         f"public_sales_id : {idx} error : {e}"
-        #                     )
+        #                 self._house_repo.update_public_sale_avg_prices(
+        #                     update_list=avg_price_update_list
+        #                 )
+        #                 update_public_sale_avg_prices_count += len(
+        #                     avg_price_update_list
+        #                 )
         #             else:
         #                 logger.info(
         #                     f"🚀\tUpsert_public_sale_avg_prices : Nothing avg_price_update_list"
         #                 )
         #         else:
         #             public_sale_avg_prices_failed_list.append(idx)
+        #
         #     logger.info(
         #         f"🚀\tUpsert_public_sale_avg_prices : Finished !!, "
         #         f"records: {time() - start_time} secs, "
@@ -361,22 +366,37 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #         f"{len(public_sale_avg_prices_failed_list)} Failed, "
         #         f"Failed_list : {public_sale_avg_prices_failed_list}, "
         #     )
+        #
+        #     emoji = "🚀"
+        #     if public_sale_avg_prices_failed_list:
+        #         emoji = "☠️"
+        #
+        #     self.send_slack_message(
+        #         title=f"{emoji} [PreCalculateAverageUseCase Step2] >>> 분양 평균가 계산 배치",
+        #         message=f"Upsert_public_sale_avg_prices : Finished !! \n "
+        #                 f"records: {time() - start_time} secs \n "
+        #                 f"{create_public_sale_avg_prices_count} Created \n "
+        #                 f"{update_public_sale_avg_prices_count} Updated \n "
+        #                 f"{len(public_sale_avg_prices_failed_list)} Failed \n "
+        #                 f"Failed_list : {public_sale_avg_prices_failed_list}"
+        #     )
+        #
         # except Exception as e:
         #     logger.error(f"🚀\tUpsert_public_sale_avg_prices Error - {e}")
         #     self.send_slack_message(
-        #         message=f"🚀\tUpsert_public_sale_avg_prices Error - {e}"
+        #         title="☠️ [PreCalculateAverageUseCase Step2] >>> 분양 평균가 계산 배치",
+        #         message=f"Upsert_public_sale_avg_prices Error - {e}"
         #     )
-        #     sentry_sdk.capture_exception(e)
         #     sys.exit(0)
 
-        # # Batch_step_3 : Update_public_sale_acquisition_tax
+        # Batch_step_3 : Update_public_sale_acquisition_tax
         # try:
         #     start_time = time()
         #     logger.info(f"🚀\tUpdate_public_sale_acquisition_tax : Start")
         #
         #     # PublicSaleDetails.acquisition_tax == 0 건에 대하여 취득세 계산 후 업데이트
         #     target_list = self._house_repo.get_acquisition_tax_calc_target_list()
-        #     update_list = None
+        #     update_list = list()
         #     if target_list:
         #         update_list = self._make_acquisition_tax_update_list(
         #             target_list=target_list
@@ -386,33 +406,35 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #             f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_target_list"
         #         )
         #     if update_list:
-        #         try:
-        #             self._house_repo.update_acquisition_taxes(update_list=update_list)
-        #         except Exception as e:
-        #             logger.error(
-        #                 f"Update_public_sale_acquisition_tax - update_acquisition_taxes "
-        #                 f"error : {e}"
-        #             )
+        #         self._house_repo.update_acquisition_taxes(update_list=update_list)
         #     else:
         #         logger.info(
         #             f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_update_list"
         #         )
+        #
         #     logger.info(
         #         f"🚀\tUpdate_public_sale_acquisition_tax : Finished !!, "
         #         f"records: {time() - start_time} secs, "
         #         f"{len(update_list)} Updated, "
         #     )
+        #     self.send_slack_message(
+        #         title=f"🚀 [PreCalculateAverageUseCase Step3] >>> 취득세 계산 배치",
+        #         message=f"Update_public_sale_acquisition_tax : Finished !! \n "
+        #                 f"records: {time() - start_time} secs \n "
+        #                 f"{len(update_list)} Updated"
+        #     )
+        #
         # except Exception as e:
         #     logger.error(f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}")
         #     self.send_slack_message(
-        #         message=f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}"
+        #         title="☠️ [PreCalculateAverageUseCase Step3] >>> 취득세 계산 배치",
+        #         message=f"Update_public_sale_acquisition_tax Error - {e}"
         #     )
-        #     sentry_sdk.capture_exception(e)
         #     sys.exit(0)
-        #
-        # # Batch_step_4 : update_private_sales_status
-        # # (현재 날짜 기준 최근 3달 거래 여부 업데이트)
-        # # @Harry 현재날짜 기준이 아니라 마지막 최종 거래일인 것 같습니다. step1과 어떤점이 다른지 잘모르겠습니다. 이부분 하실때 저한테 확인 먼저 부탁드립니다.
+
+        # Batch_step_4 : update_private_sales_status
+        # (현재 날짜 기준 최근 3달 거래 여부 업데이트)
+        # @Harry 현재날짜 기준이 아니라 마지막 최종 거래일인 것 같습니다. step1과 어떤점이 다른지 잘모르겠습니다. 이부분 하실때 저한테 확인 먼저 부탁드립니다.
         # try:
         #     start_time = time()
         #     logger.info(f"🚀\tUpdate_private_sales_status : Start")
@@ -429,42 +451,32 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #         target_list=target_list
         #     )
         #
-        #     try:
-        #         self._house_repo.bulk_update_status_to_private_sales(
-        #             update_list=update_list
-        #         )
-        #     except Exception as e:
-        #         logger.error(
-        #             f"Update_private_sales_status - bulk_update_status_to_private_sales "
-        #             f"error : {e}"
-        #         )
-        #         sys.exit(0)
+        #     self._house_repo.bulk_update_status_to_private_sales(
+        #         update_list=update_list
+        #     )
         #
         #     logger.info(
         #         f"🚀\tUpdate_private_sales_status : Finished !!, "
         #         f"records: {time() - start_time} secs, "
         #         f"{len(update_list)} Updated, "
         #     )
+        #
+        #     self.send_slack_message(
+        #         title=f"🚀 [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
+        #         message=f"Update_private_sales_status : Finished !! \n "
+        #                 f"records: {time() - start_time} secs \n "
+        #                 f"{len(update_list)} Updated"
+        #     )
+        #
         # except Exception as e:
         #     logger.error(f"🚀\tUpdate_private_sales_status Error - {e}")
         #     self.send_slack_message(
-        #         message=f"🚀\tUpdate_private_sales_status Error - {e}"
+        #         title="☠️ [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
+        #         message=f"Update_private_sales_status Error - {e}"
         #     )
-        #     sentry_sdk.capture_exception(e)
         #     sys.exit(0)
         #
         # sys.exit(0)
-
-    def send_slack_message(self, message: str):
-        channel = "#engineering-class"
-
-        text = "[Batch Error] PreCalculateAverageUseCase -> " + message
-        slack_token = os.environ.get("SLACK_TOKEN")
-        requests.post(
-            "https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer " + slack_token},
-            data={"channel": channel, "text": text},
-        )
 
 
 class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
@@ -526,40 +538,31 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
                 f"Failed_list : {failure_list}, "
             )
 
+            emoji = "🚀"
+            if failure_list:
+                emoji = "☠️"
+
+            self.send_slack_message(
+                title=f"{emoji} [PreCalculateAdministrativeDivisionUseCase] >>> 행정구역별 매매,전세 평균가 계산",
+                message=f"PreCalculateAdministrativeDivisionUseCase : Finished !! \n "
+                f"records: {time() - start_time} secs \n "
+                f"{len(update_list)} Updated"
+                f"{len(failure_list)} Failed"
+                f"Failed_list : {failure_list}",
+            )
+
         except Exception as e:
             logger.error(f"🚀\tPreCalculateAdministrative Error - {e}")
             self.send_slack_message(
-                message=f"🚀\tPreCalculateAdministrative Error - {e}"
+                title="☠️ [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
+                message=f"PreCalculateAdministrative Error - {e}",
             )
-            sentry_sdk.capture_exception(e)
             sys.exit(0)
 
         exit(os.EX_OK)
 
-    def send_slack_message(self, message: str):
-        channel = "#engineering-class"
-
-        text = "[Batch Error] PreCalculateAdministrativeDivisionUseCase -> " + message
-        slack_token = os.environ.get("SLACK_TOKEN")
-        requests.post(
-            "https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer " + slack_token},
-            data={"channel": channel, "text": text},
-        )
-
 
 class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
-    def send_slack_message(self, message: str):
-        channel = "#engineering-class"
-
-        text = "[Batch Error] AddLegalCodeUseCase -> " + message
-        slack_token = os.environ.get("SLACK_TOKEN")
-        requests.post(
-            "https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer " + slack_token},
-            data={"channel": channel, "text": text},
-        )
-
     def _make_real_estates_legal_code_update_list(
         self,
         administrative_info: List[AdministrativeDivisionLegalCodeEntity],
@@ -673,17 +676,6 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
         public_sale_photos -> 분양 정보 Default Image 일괄 저장 배치 코드
     """
 
-    def send_slack_message(self, message: str):
-        channel = "#engineering-class"
-
-        text = "[Batch Error] InsertDefaultPhotoUseCase -> " + message
-        slack_token = os.environ.get("SLACK_TOKEN")
-        requests.post(
-            "https://slack.com/api/chat.postMessage",
-            headers={"Authorization": "Bearer " + slack_token},
-            data={"channel": channel, "text": text},
-        )
-
     def _make_default_image_create_list(
         self, target_list: List[PublicSaleEntity], start_idx: int,
     ) -> List[dict]:
@@ -692,12 +684,14 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
         """
         create_list = list()
         pk = start_idx + 1
+        dev_path = ""
+        prod_path = "public_sale_photos/2021/ad1f07f8-323a-4405-b946-8cdbe2040a81.png"
         for public_sale in target_list:
             dict_for_insert = {
                 "id": pk,
                 "public_sales_id": public_sale.id,
                 "file_name": "default_apt_image",
-                "path": "public_sale_photos/2021/ad1f07f8-323a-4405-b946-8cdbe2040a81.png",
+                "path": prod_path,
                 "extension": "png",
             }
             create_list.append(dict_for_insert)
@@ -729,11 +723,11 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
         )
 
         try:
-            self._house_repo.insert_default_apt_images_to_public_sale_photos(
+            self._house_repo.insert_images_to_public_sale_photos(
                 create_list=create_list
             )
         except Exception as e:
-            logger.error(f"insert_default_apt_images_to_public_sale_photos error : {e}")
+            logger.error(f"insert_images_to_public_sale_photos error : {e}")
             exit(os.EX_OK)
 
         logger.info(
@@ -741,5 +735,267 @@ class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
             f"records: {time() - start_time} secs, "
             f"{len(create_list)} Created, "
         )
+
+        exit(os.EX_OK)
+
+
+class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
+    """
+        <아래 테이블의 이미지를 업로드 합니다.>
+        - public_sale_photos
+        - public_sale_detail_photos
+
+        <사용 방법>
+        업로드 할 폴더들(예: e편한세상 강일 어반브릿지(42384))을 app/extensions/utils/upload_images_list/에 넣고 worker 실행
+        업로드 후 app/upload_images_list 내 업로드 폴더들 삭제해야 합니다. (tanos 용량 증가, 동일 이미지 다시 업로드 방지)
+        upload_images_list 디렉토리는 커밋에 올리지 않습니다. 사용 후 제거 해주세요.
+
+        <Manual 실행 시 주의 사항>
+        config.py AWS 관련 config 시크릿 값 직접 넣어주어야 합니다
+        S3Helper().upload() 함수 -> bucket 이름 직접 넣어주어야 합니다.
+        테스트시 DB sequence 경우에 따라 초기화해줘야 할 필요가 있습니다. (전부 삭제 후 다시 업로드시)
+        업로드 대상 폴더 내에 중복 public_sale_details_id가 없어야 합니다 - 사전에 제거 필요(예: 윗층-아랫층)
+        업로드 대상 폴더 내에 평면도 없음(폴더) 가 없어야 합니다 - 사전에 제거 필요
+        파일명: 이름(PK) -> PK가 없는 파일 이름은 업로드 무시하고 넘어갑니다
+
+        todo: 빈 폴더 Exception (통과되도록), 지나간 폴더 목록 logger, update 로직(가능하면 s3 삭제(나중))
+    """
+
+    def collect_file_list(self, dir_list, file_list, dir_idx) -> dict:
+        """
+            파일 확장자 정규화 처리
+            '.JPG' or '.jpg' -> '.jpeg'
+            '.PNG' -> '.png'
+        """
+        entry = list()
+        result_dict = dict()
+        for image_name in file_list:
+            path = S3Helper().get_image_upload_dir() + "/" + dir_list[dir_idx] + "/"
+            full_path = Path(
+                S3Helper().get_image_upload_dir()
+                + "/"
+                + dir_list[dir_idx]
+                + "/"
+                + image_name
+            )
+            if os.path.splitext(image_name)[-1] in [".JPG", ".jpg"]:
+                changed_image_name = os.path.splitext(image_name)[0] + ".jpeg"
+                before_img = Image.open(full_path)
+                before_img.save(fp=Path(path + changed_image_name), format="jpeg")
+                os.rename(src=full_path, dst=Path(path + changed_image_name))
+
+            elif os.path.splitext(image_name)[-1] in [".PNG"]:
+                changed_image_name = os.path.splitext(image_name)[0] + ".png"
+                before_img = Image.open(full_path)
+                before_img.save(fp=Path(path + changed_image_name), format="png")
+            entry.append(image_name)
+
+        result_dict[dir_list[dir_idx]] = entry
+        return result_dict
+
+    def make_upload_list(
+        self, dir_name: list, file_list, photos_start_idx, detail_photos_start_idx
+    ):
+        logger.info(f"🚀\tUpload_target : {dir_name[0]}")
+
+        public_sale_photos_start_idx = photos_start_idx
+        public_sale_detail_photos_start_idx = detail_photos_start_idx
+        public_sale_photos = list()
+        public_sale_detail_photos = list()
+
+        for image_list in file_list:
+            for image_name in image_list:
+                if "@" in image_name:
+                    # @ 문자가 있는 파일 이름 : public_sale_photos 테이블 upload 대상
+                    table_name = "public_sale_photos"
+                    is_thumbnail = False
+
+                    public_sales_id = int(dir_name[0].split("(")[1].rsplit(")")[0])
+
+                    if self._house_repo.is_enable_public_sale_house(
+                        house_id=public_sales_id
+                    ):
+
+                        seq = int(image_name.split("@")[0]) - 1
+                        if seq == 0:
+                            is_thumbnail = True
+                        file_name = image_name.split("@")[1].split(".")[0]
+                        extension = (
+                            os.path.splitext(image_name)[-1].split(".")[1].lower()
+                        )
+                        path = S3Helper().get_image_upload_uuid_path(
+                            image_table_name=table_name, extension=extension
+                        )
+
+                        public_sale_photos.append(
+                            {
+                                "id": public_sale_photos_start_idx,
+                                "public_sales_id": public_sales_id,
+                                "file_name": file_name,
+                                "path": path,
+                                "extension": extension,
+                                "is_thumbnail": is_thumbnail,
+                                "seq": seq,
+                                "created_at": get_server_timestamp(),
+                            }
+                        )
+                        file_name = (
+                            S3Helper().get_image_upload_dir()
+                            + r"/"
+                            + dir_name[0]
+                            + r"/"
+                            + image_name
+                        )
+
+                        S3Helper().upload(
+                            bucket="toadhome-tanos-bucket",
+                            file_name=file_name,
+                            object_name=path,
+                            extension=extension,
+                        )
+                        public_sale_photos_start_idx = public_sale_photos_start_idx + 1
+                    else:
+                        logger.info(f"🚀\tpublic_sales_id : {public_sales_id} failed")
+                else:
+                    table_name = "public_sale_detail_photos"
+                    try:
+                        public_sale_details_id = int(
+                            image_name.split("(")[1].rsplit(")")[0]
+                        )
+
+                        if self._house_repo.is_enable_public_sale_detail_info(
+                            public_sale_details_id
+                        ):
+
+                            file_name = image_name.split("(")[0]
+                            extension = (
+                                os.path.splitext(image_name)[-1].split(".")[1].lower()
+                            )
+                            path = S3Helper().get_image_upload_uuid_path(
+                                image_table_name=table_name, extension=extension
+                            )
+                            public_sale_detail_photos.append(
+                                {
+                                    "id": public_sale_detail_photos_start_idx,
+                                    "public_sale_details_id": public_sale_details_id,
+                                    "file_name": file_name,
+                                    "path": path,
+                                    "extension": extension,
+                                    "created_at": get_server_timestamp(),
+                                }
+                            )
+
+                            file_name = (
+                                S3Helper().get_image_upload_dir()
+                                + r"/"
+                                + dir_name[0]
+                                + r"/"
+                                + image_name
+                            )
+                            S3Helper().upload(
+                                bucket="toadhome-tanos-bucket",
+                                file_name=file_name,
+                                object_name=path,
+                                extension=extension,
+                            )
+                            public_sale_detail_photos_start_idx = (
+                                public_sale_detail_photos_start_idx + 1
+                            )
+                        else:
+                            logger.info(
+                                f"🚀\tpublic_sales_detail_id : {public_sale_details_id} failed"
+                            )
+
+                    except Exception:
+                        # FK 없는 이미지 이름은 제외
+                        continue
+
+            return public_sale_photos, public_sale_detail_photos
+
+    def execute(self):
+        logger.info(f"🚀\tInsertUploadPhotoUseCase Start - {self.client_id}")
+        logger.info(f"🚀\tupload_job 위치 : {S3Helper().get_image_upload_dir()}")
+        start_time = time()
+
+        _dirs = None
+        cnt = 0
+
+        recent_public_sale_photos_info = (
+            self._house_repo.get_recent_public_sale_photos()
+        )
+        recent_public_sale_detail_photos_info = (
+            self._house_repo.get_recent_public_sale_detail_photos()
+        )
+
+        if not recent_public_sale_photos_info:
+            public_sale_photos_start_idx = 1
+        else:
+            public_sale_photos_start_idx = recent_public_sale_photos_info.id
+
+        if not recent_public_sale_detail_photos_info:
+            public_sale_detail_photos_start_idx = 1
+        else:
+            public_sale_detail_photos_start_idx = (
+                recent_public_sale_detail_photos_info.id
+            )
+
+        upload_list: List[Dict] = list()
+        for (roots, dirs, file_names) in os.walk(S3Helper().get_image_upload_dir()):
+            entry = []
+            if len(dirs) > 0:
+                _dirs = dirs
+            if len(file_names) > 0:
+                for file_name in file_names:
+                    entry.append(file_name)
+
+                upload_list.append(
+                    self.collect_file_list(dir_list=_dirs, file_list=entry, dir_idx=cnt)
+                )
+                cnt = cnt + 1
+
+        for entry in upload_list:
+            key = list(entry.keys())
+            values = list(entry.values())
+
+            (public_sale_photos, public_sale_detail_photos) = self.make_upload_list(
+                dir_name=key,
+                file_list=values,
+                photos_start_idx=public_sale_photos_start_idx,
+                detail_photos_start_idx=public_sale_detail_photos_start_idx,
+            )
+            # Bulk insert public_sale_photos
+            try:
+                self._house_repo.insert_images_to_public_sale_photos(
+                    create_list=public_sale_photos
+                )
+                logger.info(
+                    f"🚀\t [insert_images_to_public_sale_photos] - Done! "
+                    f"{len(public_sale_photos)} finished, "
+                    f"records: {time() - start_time} secs"
+                )
+            except Exception as e:
+                logger.error(f"insert_images_to_public_sale_photos error : {e}")
+                exit(os.EX_OK)
+
+            # Bulk insert public_sale_detail_photos
+            try:
+                self._house_repo.insert_images_to_public_sale_detail_photos(
+                    create_list=public_sale_detail_photos
+                )
+                logger.info(
+                    f"🚀\t [insert_images_to_public_sale_detail_photos] - Done! "
+                    f"{len(public_sale_detail_photos)} created, "
+                    f"records: {time() - start_time} secs"
+                )
+            except Exception as e:
+                logger.error(f"insert_images_to_public_sale_photos error : {e}")
+                exit(os.EX_OK)
+
+            public_sale_photos_start_idx = public_sale_photos_start_idx + len(
+                public_sale_photos
+            )
+            public_sale_detail_photos_start_idx = (
+                public_sale_detail_photos_start_idx + len(public_sale_detail_photos)
+            )
 
         exit(os.EX_OK)
