@@ -9,15 +9,22 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
-revision = '4033f894780d'
-down_revision = 'e600def058d2'
+revision = "4033f894780d"
+down_revision = "e600def058d2"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.add_column('private_sales', sa.Column('public_ref_id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), nullable=True))
+    op.add_column(
+        "private_sales",
+        sa.Column(
+            "public_ref_id",
+            sa.BigInteger().with_variant(sa.Integer(), "sqlite"),
+            nullable=True,
+        ),
+    )
 
 
 def downgrade():
-    op.drop_column('private_sales', 'public_ref_id')
+    op.drop_column("private_sales", "public_ref_id")
