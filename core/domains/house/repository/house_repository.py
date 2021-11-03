@@ -1160,7 +1160,7 @@ class HouseRepository:
                         subscription_end_date=query.subscription_end_date,
                         status=HouseHelper().public_status(
                             offer_date=query.offer_date,
-                            subscription_end_date=query.subscription_end_date
+                            subscription_end_date=query.subscription_end_date,
                         ),
                         avg_down_payment=avg_down_payment,
                         avg_supply_price=query.avg_supply_price
@@ -2554,21 +2554,26 @@ class HouseRepository:
             )
             raise UpdateFailErrorException
 
-    def get_target_list_of_public_sales(self) -> List[PublicSaleEntity]:
+    def get_target_list_of_public_sales(self) -> Optional[List[PublicSaleEntity]]:
         filters = list()
         filters.append(
             and_(
                 PublicSaleModel.is_available == "True",
-                PublicSaleModel.public_sale_photos == None,
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE,
             )
         )
         query = (
             session.query(PublicSaleModel)
             .options(joinedload(PublicSaleModel.public_sale_photos))
             .options(joinedload(PublicSaleModel.public_sale_details))
+            .options(joinedload("public_sale_details.public_sale_detail_photos"))
             .filter(*filters)
         )
         query_set = query.all()
+
+        if not query_set:
+            return None
+
         return [query.to_entity() for query in query_set] if query_set else None
 
     def insert_images_to_public_sale_photos(self, create_list: List[dict]) -> None:
@@ -2871,3 +2876,78 @@ class HouseRepository:
                 target_ids.append(query.id)
 
         return target_ids
+
+    def get_real_estates_have_both_used_public_and_private_sales(
+        self, real_estates_ids: List[int]
+    ) -> Optional[List]:
+        entry_list = list()
+        filters = list()
+        filters.append(
+            and_(
+                RealEstateModel.id.in_(real_estates_ids),
+                RealEstateModel.is_available == "True",
+            )
+        )
+        query = (
+            session.query(RealEstateModel)
+            .join(
+                PublicSaleModel,
+                (PublicSaleModel.real_estate_id == RealEstateModel.id)
+                & (PublicSaleModel.is_available == "False"),
+            )
+            .join(
+                PrivateSaleModel,
+                (PrivateSaleModel.real_estate_id == RealEstateModel.id)
+                & (PrivateSaleModel.is_available == "True"),
+            )
+            .options(contains_eager(RealEstateModel.public_sales))
+            .options(contains_eager(RealEstateModel.private_sales))
+            .filter(*filters)
+        )
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        if query_set:
+            for query in query_set:
+                # query[0]: real_estates_id
+                entry_list.append(query[0])
+
+        return entry_list
+
+    def bulk_update_public_sales(self, update_list: List[dict]) -> None:
+        try:
+            session.bulk_update_mappings(
+                PrivateSaleModel, [update_info for update_info in update_list],
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(f"[HouseRepository][bulk_update_public_sales] error : {e}")
+            raise UpdateFailErrorException
+
+    def get_recent_private_sales(self):
+        query = (
+            session.query(PrivateSaleModel)
+            .options(joinedload(PrivateSaleModel.private_sale_details))
+            .order_by(PrivateSaleModel.id.desc())
+            .limit(1)
+        )
+        query_set = query.first()
+        if not query_set:
+            return None
+        return query_set.to_entity()
+
+    def bulk_create_private_sale(self, create_list: List[dict]) -> None:
+        try:
+            session.bulk_insert_mappings(
+                PrivateSaleModel, [create_info for create_info in create_list]
+            )
+
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(f"[HouseRepository][bulk_create_private_sale] error : {e}")
+            raise NotUniqueErrorException
