@@ -8,7 +8,10 @@ import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.house.entity.house_entity import PublicSaleReportEntity
+from core.domains.house.entity.house_entity import (
+    PublicSaleReportEntity,
+    PublicSaleDetailReportEntity,
+)
 from core.domains.house.enum import HouseTopicEnum
 from core.domains.report.dto.report_dto import (
     GetExpectedCompetitionDto,
@@ -34,6 +37,7 @@ from core.domains.report.schema.report_schema import (
     GetUserSurveysResponseSchema,
     GetSurveysUserReportSchema,
     GetSurveysResultBaseSchema,
+    PublicSaleReportSchema,
 )
 from core.domains.user.dto.user_dto import AvgMonthlyIncomeWokrerDto
 from core.domains.user.entity.user_entity import UserProfileEntity, SidoCodeEntity
@@ -368,27 +372,98 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
-        report_public_sale_info: PublicSaleReportEntity = self._get_public_sale_info(
+        report_public_sale_infos: PublicSaleReportEntity = self._get_public_sale_info(
             house_id=dto.house_id
         )
 
         # 근처 가장 최근 청약정보
         report_recently_public_sale_info: PublicSaleReportEntity = self._get_recently_public_sale_info(
-            si_gun_gu=report_public_sale_info.real_estates.si_gun_gu
+            si_gun_gu=report_public_sale_infos.real_estates.si_gun_gu
+        )
+
+        # 기획변경으로 인한 response entity 변경 -> entity object 생성
+        public_sale_detail_dict: dict = self._make_response_object_to_report_public_sale_info(
+            report_public_sale_infos=report_public_sale_infos
         )
 
         result: GetSaleInfoResponseSchema = self._make_response_schema(
-            report_public_sale_info, report_recently_public_sale_info
+            report_public_sale_infos,
+            report_recently_public_sale_info,
+            public_sale_detail_dict,
         )
 
         return UseCaseSuccessOutput(value=result)
 
+    def _make_response_object_to_report_public_sale_info(
+        self, report_public_sale_infos: PublicSaleReportEntity,
+    ) -> dict:
+
+        public_sale_details: List[
+            PublicSaleDetailReportEntity
+        ] = report_public_sale_infos.public_sale_details
+
+        end = len(public_sale_details) - 1
+        while end > 0:
+            last_swap = 0
+            for i in range(end):
+                # 102A, 84A str로 비교시 84A가 크기 때문에 숫자로 재비교
+                number1 = "".join(
+                    re.findall("\d+", public_sale_details[i].area_type)[0]
+                )
+                number2 = "".join(
+                    re.findall("\d+", public_sale_details[i + 1].area_type)[0]
+                )
+
+                if int(number1) > int(number2):
+                    public_sale_details[i], public_sale_details[i + 1] = (
+                        public_sale_details[i + 1],
+                        public_sale_details[i],
+                    )
+                    last_swap = i
+            end = last_swap
+
+        end = len(public_sale_details) - 1
+        while end > 0:
+            last_swap = 0
+            for i in range(end):
+                # 위의 숫자기반 정렬을 알파벳 순으로 다시 재정렬
+                word1 = "".join(
+                    re.findall("[a-zA-Z]+", public_sale_details[i].area_type)
+                )
+                word2 = "".join(
+                    re.findall("[a-zA-Z]+", public_sale_details[i + 1].area_type)
+                )
+
+                number1 = "".join(
+                    re.findall("\d+", public_sale_details[i].area_type)[0]
+                )
+                number2 = "".join(
+                    re.findall("\d+", public_sale_details[i + 1].area_type)[0]
+                )
+
+                if (number1 == number2) and (word1 > word2):
+                    public_sale_details[i], public_sale_details[i + 1] = (
+                        public_sale_details[i + 1],
+                        public_sale_details[i],
+                    )
+                    last_swap = i
+            end = last_swap
+
+        public_sale_detail_dict = dict()
+        for public_sale_detail in public_sale_details:
+            area_type = "".join(re.findall("\d+", public_sale_detail.area_type)[0])
+
+            public_sale_detail_dict.setdefault(area_type, []).append(public_sale_detail)
+
+        return public_sale_detail_dict
+
     def _make_response_schema(
         self,
-        report_public_sale_info: PublicSaleReportEntity,
+        report_public_sale_infos: PublicSaleReportEntity,
         report_recently_public_sale_info: PublicSaleReportEntity,
+        public_sale_detail_dict: dict,
     ) -> GetSaleInfoResponseSchema:
-        report_recently_public_sale_info = VicinityPublicSaleReportSchema(
+        recently_sale_info_schema = VicinityPublicSaleReportSchema(
             id=report_recently_public_sale_info.id,
             name=report_recently_public_sale_info.name,
             supply_household=report_recently_public_sale_info.supply_household,
@@ -398,9 +473,30 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
             longitude=report_recently_public_sale_info.real_estates.longitude,
         )
 
+        public_sale_report_schema = PublicSaleReportSchema(
+            supply_household=report_public_sale_infos.supply_household,
+            offer_date=report_public_sale_infos.offer_date,
+            special_supply_date=report_public_sale_infos.special_supply_date,
+            special_supply_etc_date=report_public_sale_infos.special_supply_etc_date,
+            special_etc_gyeonggi_date=report_public_sale_infos.special_etc_gyeonggi_date,
+            first_supply_date=report_public_sale_infos.first_supply_date,
+            first_supply_etc_date=report_public_sale_infos.first_supply_etc_date,
+            first_etc_gyeonggi_date=report_public_sale_infos.first_etc_gyeonggi_date,
+            second_supply_date=report_public_sale_infos.second_supply_date,
+            second_supply_etc_date=report_public_sale_infos.second_supply_etc_date,
+            second_etc_gyeonggi_date=report_public_sale_infos.second_etc_gyeonggi_date,
+            notice_winner_date=report_public_sale_infos.notice_winner_date,
+            public_sale_photos=[
+                public_sale_photo.path
+                for public_sale_photo in report_public_sale_infos.public_sale_photos
+            ],
+            public_sale_details=public_sale_detail_dict,
+            real_estates=report_public_sale_infos.real_estates,
+        )
+
         return GetSaleInfoResponseSchema(
-            sale_info=report_public_sale_info,
-            recently_sale_info=report_recently_public_sale_info,
+            sale_info=public_sale_report_schema,
+            recently_sale_info=recently_sale_info_schema,
         )
 
 

@@ -202,7 +202,7 @@ class PublicSaleModel(db.Model):
             second_supply_etc_date=self.second_supply_etc_date,
             second_etc_gyeonggi_date=self.second_etc_gyeonggi_date,
             notice_winner_date=self.notice_winner_date,
-            public_sale_photo=[
+            public_sale_photos=[
                 public_sale_photo.to_entity()
                 for public_sale_photo in self.public_sale_photos
             ]
