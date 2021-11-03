@@ -254,3 +254,17 @@ class PrivateSaleContractStatusEnum(Enum):
     NOTHING = 0
     LONG_AGO = 1
     RECENT_CONTRACT = 2
+
+
+class ReplacePublicToPrivateSalesEnum(Enum):
+    """
+        사용 모델 : PublicSales
+        사용 목적 : house_worker_use_case -> 매매 전환 대상 여부 판별
+                NO: 매매 전환 대상 아님
+                YES: 매매 전환 대상
+                UNKNOWN: 값이 없거나 잘못되어 알 수 없음
+    """
+
+    NO = 0
+    YES = 1
+    UNKNOWN = 2
