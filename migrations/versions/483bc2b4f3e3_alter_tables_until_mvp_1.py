@@ -64,19 +64,19 @@ def upgrade():
     )
     op.add_column(
         "public_sale_details",
-        sa.Column("multi_children_house_hold", sa.SmallInteger(), nullable=True,),
+        sa.Column("multi_children_household", sa.SmallInteger(), nullable=True,),
     )
     op.add_column(
         "public_sale_details",
-        sa.Column("newlywed_house_hold", sa.SmallInteger(), nullable=True,),
+        sa.Column("newlywed_household", sa.SmallInteger(), nullable=True,),
     )
     op.add_column(
         "public_sale_details",
-        sa.Column("old_parent_house_hold", sa.SmallInteger(), nullable=True,),
+        sa.Column("old_parent_household", sa.SmallInteger(), nullable=True,),
     )
     op.add_column(
         "public_sale_details",
-        sa.Column("first_life_house_hold", sa.SmallInteger(), nullable=True,),
+        sa.Column("first_life_household", sa.SmallInteger(), nullable=True,),
     )
     op.add_column(
         "public_sale_details",
@@ -101,10 +101,10 @@ def upgrade():
 def downgrade():
     op.drop_column("public_sale_details", "general_household")
     op.drop_column("public_sale_details", "special_household")
-    op.drop_column("public_sale_details", "multi_children_house_hold")
-    op.drop_column("public_sale_details", "newlywed_house_hold")
-    op.drop_column("public_sale_details", "old_parent_house_hold")
-    op.drop_column("public_sale_details", "first_life_house_hold")
+    op.drop_column("public_sale_details", "multi_children_household")
+    op.drop_column("public_sale_details", "newlywed_household")
+    op.drop_column("public_sale_details", "old_parent_household")
+    op.drop_column("public_sale_details", "first_life_household")
     op.drop_table("general_supply_results")
     op.drop_table("special_supply_results")
     op.drop_column("public_sales", "second_etc_gyeonggi_date")
