@@ -31,17 +31,34 @@ class ReportPublicSaleDetailPhotoSchema(BaseModel):
     path: StrictStr
 
 
+class PublicSaleDetailReportBaseSchema(BaseModel):
+    area: StrictStr
+    private_area: StrictFloat
+    supply_area: StrictFloat
+    supply_price: StrictInt
+    special_household: StrictInt
+    multi_children_household: StrictInt
+    newlywed_household: StrictInt
+    old_parent_household: StrictInt
+    first_life_household: StrictInt
+    general_household: StrictInt
+    price_per_meter: StrictInt
+    pyoung_number: StrictInt
+    public_sale_detail_photos: Optional[ReportPublicSaleDetailPhotoSchema]
+
+
 class PublicSaleDetailReportSchema(BaseModel):
     area_type: StrictStr
     private_area: StrictFloat
     supply_area: StrictFloat
     supply_price: StrictInt
     special_household: StrictInt
-    multi_children_house_hold: StrictInt
-    newlywed_house_hold: StrictInt
-    old_parent_house_hold: StrictInt
-    first_life_house_hold: StrictInt
+    multi_children_household: StrictInt
+    newlywed_household: StrictInt
+    old_parent_household: StrictInt
+    first_life_household: StrictInt
     general_household: StrictInt
+    total_household: StrictInt
     price_per_meter: StrictInt
     pyoung_number: StrictInt
     public_sale_detail_photos: Optional[ReportPublicSaleDetailPhotoSchema]
@@ -64,8 +81,8 @@ class PublicSaleReportSchema(BaseModel):
     second_supply_etc_date: Optional[StrictStr]
     second_etc_gyeonggi_date: Optional[StrictStr]
     notice_winner_date: Optional[StrictStr]
-    public_sale_photo: Optional[List[ReportPublicSalePhotoSchema]]
-    public_sale_details: List[PublicSaleDetailReportSchema] = None
+    public_sale_photos: Optional[List[str]]
+    public_sale_details: Optional[dict]
     real_estates: RealEstateReportSchema
 
 
