@@ -125,7 +125,9 @@ class PublicSaleDetailModel(db.Model):
             supply_price=self.supply_price,
             acquisition_tax=self.acquisition_tax,
             area_type=self.area_type,
-            public_sale_detail_photo=S3Helper.get_cloudfront_url() + "/" + self.public_sale_detail_photos.path
+            public_sale_detail_photo=S3Helper.get_cloudfront_url()
+            + "/"
+            + self.public_sale_detail_photos.path
             if self.public_sale_detail_photos
             else None,
             special_household=self.special_household,
