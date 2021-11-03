@@ -39,7 +39,7 @@ class PrivateSaleModel(db.Model):
         index=True,
     )
     supply_household = Column(SmallInteger, nullable=True)
-    move_in_year = Column(String(8), nullable=True)
+    move_in_year = Column(String(6), nullable=True)
     construct_company = Column(String(30), nullable=True)
     dong_num = Column(SmallInteger, nullable=True)
     park_space_num = Column(Float, nullable=True)
