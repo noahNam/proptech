@@ -11,6 +11,7 @@ from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.house_helper import HouseHelper
+from app.extensions.utils.image_helper import S3Helper
 from app.persistence.model.public_sale_model import PublicSaleModel
 from core.domains.house.entity.house_entity import (
     PublicSaleDetailEntity,
@@ -124,7 +125,7 @@ class PublicSaleDetailModel(db.Model):
             supply_price=self.supply_price,
             acquisition_tax=self.acquisition_tax,
             area_type=self.area_type,
-            public_sale_detail_photo=self.public_sale_detail_photos.path
+            public_sale_detail_photo=S3Helper.get_cloudfront_url() + "/" + self.public_sale_detail_photos.path
             if self.public_sale_detail_photos
             else None,
             special_household=self.special_household,
