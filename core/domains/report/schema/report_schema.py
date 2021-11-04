@@ -61,7 +61,7 @@ class PublicSaleDetailReportSchema(BaseModel):
     total_household: StrictInt
     price_per_meter: StrictInt
     pyoung_number: StrictInt
-    public_sale_detail_photos: Optional[ReportPublicSaleDetailPhotoSchema]
+    public_sale_detail_photo: Optional[str]
 
 
 class RealEstateReportSchema(BaseModel):
