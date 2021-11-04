@@ -77,7 +77,7 @@ def upgrade():
         "private_sales", sa.Column("supply_household", sa.SmallInteger(), nullable=True)
     )
     op.add_column(
-        "private_sales", sa.Column("move_in_year", sa.String(length=8), nullable=True)
+        "private_sales", sa.Column("move_in_year", sa.String(length=6), nullable=True)
     )
     op.add_column(
         "private_sales",
