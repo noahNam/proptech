@@ -59,9 +59,6 @@ class PostRepository:
                 .join(PostModel.post_attachments, isouter=True)
                 .filter(*search_filter)
                 .filter(*previous_post_id_filter)
-                .order_by(
-                    PostModel.category_detail_id.asc(), PostModel.contents_num.asc()
-                )
             )
 
             # 공지사항 포스트일경우 Pagination 적용
@@ -76,8 +73,12 @@ class PostRepository:
                 )
             else:
                 post_list = (
-                    query.order_by(PostModel.id.asc())
-                    .order_by(PostAttachmentModel.id.asc())
+                    query.order_by(
+                        PostModel.category_id.asc(),
+                        PostModel.category_detail_id.asc(),
+                        PostModel.contents_num.asc(),
+                        PostAttachmentModel.id.asc()
+                    )
                     .all()
                 )
             return [post.to_entity() for post in post_list]
