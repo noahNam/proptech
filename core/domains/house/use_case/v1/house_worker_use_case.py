@@ -22,7 +22,7 @@ from core.domains.house.entity.house_entity import (
     RealEstateLegalCodeEntity,
     PublicSaleEntity,
     UpdateContractStatusTargetEntity,
-    RecentlyContractedEntity,
+    RecentlyContractedEntity, PrivateSaleEntity, CheckIdsRealEstateEntity,
 )
 from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
@@ -84,7 +84,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     """
 
     def _calculate_house_acquisition_xax(
-        self, private_area: float, supply_price: int
+            self, private_area: float, supply_price: int
     ) -> int:
         """
             todo: 부동산 정책이 매년 변경되므로 정기적으로 세율 변경 시 업데이트 필요합니다.
@@ -114,10 +114,10 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 - acquisition_tax(취득세 본세) + local_education_tax(지방교육세) + rural_special_tax(농어촌특별세)
         """
         if (
-            not private_area
-            or private_area == 0
-            or not supply_price
-            or supply_price == 0
+                not private_area
+                or private_area == 0
+                or not supply_price
+                or supply_price == 0
         ):
             return 0
 
@@ -159,7 +159,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return total_acquisition_tax
 
     def _make_acquisition_tax_update_list(
-        self, target_list: List[PublicSaleDetailModel]
+            self, target_list: List[PublicSaleDetailModel]
     ) -> List[dict]:
         result_dict_list = list()
         for target in target_list:
@@ -176,7 +176,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _make_private_sale_status_update_list(
-        self, target_list: List[UpdateContractStatusTargetEntity]
+            self, target_list: List[UpdateContractStatusTargetEntity]
     ) -> List[dict]:
 
         result_dict_list = list()
@@ -208,7 +208,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _get_private_sales_status(
-        self, min_contract_date: Optional[str], max_contract_date: Optional[str]
+            self, min_contract_date: Optional[str], max_contract_date: Optional[str]
     ) -> int:
         today = (datetime.now()).strftime("%Y%m%d")
         three_month_from_today = (datetime.now() - timedelta(days=93)).strftime(
@@ -293,9 +293,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             self.send_slack_message(
                 title="🚀 [PreCalculateAverageUseCase Step1] >>> 매매,전세 평균가 계산 배치",
                 message=f"Upsert_private_sale_avg_prices : Finished !! \n "
-                f"records: {time() - start_time} secs \n "
-                f"{create_private_sale_avg_prices_count} Created \n "
-                f"{update_private_sale_avg_prices_count} Updated",
+                        f"records: {time() - start_time} secs \n "
+                        f"{create_private_sale_avg_prices_count} Created \n "
+                        f"{update_private_sale_avg_prices_count} Updated",
             )
 
         except Exception as e:
@@ -454,7 +454,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #         target_list=target_list
         #     )
         #
-        #     self._house_repo.bulk_update_status_to_private_sales(
+        #     self._house_repo.bulk_update_private_sales(
         #         update_list=update_list
         #     )
         #
@@ -548,10 +548,10 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
             self.send_slack_message(
                 title=f"{emoji} [PreCalculateAdministrativeDivisionUseCase] >>> 행정구역별 매매,전세 평균가 계산",
                 message=f"PreCalculateAdministrativeDivisionUseCase : Finished !! \n "
-                f"records: {time() - start_time} secs \n "
-                f"{len(update_list)} Updated"
-                f"{len(failure_list)} Failed"
-                f"Failed_list : {failure_list}",
+                        f"records: {time() - start_time} secs \n "
+                        f"{len(update_list)} Updated"
+                        f"{len(failure_list)} Failed"
+                        f"Failed_list : {failure_list}",
             )
 
         except Exception as e:
@@ -567,9 +567,9 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
 
 class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
     def _make_real_estates_legal_code_update_list(
-        self,
-        administrative_info: List[AdministrativeDivisionLegalCodeEntity],
-        target_list: List[RealEstateLegalCodeEntity],
+            self,
+            administrative_info: List[AdministrativeDivisionLegalCodeEntity],
+            target_list: List[RealEstateLegalCodeEntity],
     ) -> List[dict]:
         """
             real_estates.jibun_address 주소가 없을 경우 혹은 건축예정이라 불확실한 경우 직접 매뉴얼 작업 필요
@@ -592,7 +592,7 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
 
                 # 예) 안양1동 -> 안양동으로 처리하여 행정구역 안양동과 매칭되는지 확인
                 if cond_2.match(real_estate.jibun_address) and not cond_2.match(
-                    administrative.short_name
+                        administrative.short_name
                 ):
                     jibun_address_ = re.sub(r"[0-9]+", "", real_estate.jibun_address)
                     dong_myun_ = re.sub(r"[0-9]+", "", dong_myun_)
@@ -618,10 +618,10 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
                 dong_myun_ = dong_myun_.replace(".", "")
 
                 if (
-                    administrative_short_name_ == dong_myun_
-                    and si_do_ in administrative_name_
-                    and si_gun_gu_ in administrative_name_
-                    and administrative_name_ in jibun_address_
+                        administrative_short_name_ == dong_myun_
+                        and si_do_ in administrative_name_
+                        and si_gun_gu_ in administrative_name_
+                        and administrative_name_ in jibun_address_
                 ):
                     front_legal_code = administrative.front_legal_code
                     back_legal_code = administrative.back_legal_code
@@ -729,7 +729,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         return result_dict
 
     def make_upload_list(
-        self, dir_name: list, file_list, photos_start_idx, detail_photos_start_idx
+            self, dir_name: list, file_list, photos_start_idx, detail_photos_start_idx
     ):
         logger.info(f"🚀\tUpload_target : {dir_name[0]}")
 
@@ -748,7 +748,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                     public_sales_id = int(dir_name[0].split("(")[1].rsplit(")")[0])
 
                     if self._house_repo.is_enable_public_sale_house(
-                        house_id=public_sales_id
+                            house_id=public_sales_id
                     ):
 
                         seq = int(image_name.split("@")[0]) - 1
@@ -775,11 +775,11 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             }
                         )
                         file_name = (
-                            S3Helper().get_image_upload_dir()
-                            + r"/"
-                            + dir_name[0]
-                            + r"/"
-                            + image_name
+                                S3Helper().get_image_upload_dir()
+                                + r"/"
+                                + dir_name[0]
+                                + r"/"
+                                + image_name
                         )
 
                         S3Helper().upload(
@@ -799,7 +799,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                         )
 
                         if self._house_repo.is_enable_public_sale_detail_info(
-                            public_sale_details_id
+                                public_sale_details_id
                         ):
 
                             file_name = image_name.split("(")[0]
@@ -821,11 +821,11 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             )
 
                             file_name = (
-                                S3Helper().get_image_upload_dir()
-                                + r"/"
-                                + dir_name[0]
-                                + r"/"
-                                + image_name
+                                    S3Helper().get_image_upload_dir()
+                                    + r"/"
+                                    + dir_name[0]
+                                    + r"/"
+                                    + image_name
                             )
                             S3Helper().upload(
                                 bucket="toadhome-tanos-bucket",
@@ -834,7 +834,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                                 extension=extension,
                             )
                             public_sale_detail_photos_start_idx = (
-                                public_sale_detail_photos_start_idx + 1
+                                    public_sale_detail_photos_start_idx + 1
                             )
                         else:
                             logger.info(
@@ -930,7 +930,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                 public_sale_photos
             )
             public_sale_detail_photos_start_idx = (
-                public_sale_detail_photos_start_idx + len(public_sale_detail_photos)
+                    public_sale_detail_photos_start_idx + len(public_sale_detail_photos)
             )
 
         exit(os.EX_OK)
@@ -954,7 +954,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
     """
 
     def _get_replace_target(
-        self, public_sales: List[PublicSaleEntity]
+            self, public_sales: List[PublicSaleEntity]
     ) -> List[PublicSaleEntity]:
         replace_target = list()
         for public_sale in public_sales:
@@ -968,7 +968,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
         return replace_target
 
     def _make_disable_update_list_to_replace_target(
-        self, target_list: List[PublicSaleEntity]
+            self, target_list: List[PublicSaleEntity]
     ) -> List[dict]:
         result_dict_list = list()
         for target in target_list:
@@ -982,13 +982,14 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _make_replace_private_sales_create_list(
-        self,
-        target_list: List[PublicSaleEntity],
-        avoid_pk_list: List[int],
-        start_pk: int,
+            self,
+            target_list: List[PublicSaleEntity],
+            avoid_pk_list: List[int],
+            start_pk: int,
     ) -> List[dict]:
         result_dict_list = list()
         start_idx = start_pk
+
         for target in target_list:
             if avoid_pk_list:
                 if target.real_estate_id in avoid_pk_list:
@@ -1000,8 +1001,9 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
                             "real_estate_id": target.real_estate_id,
                             "name": target.name,
                             "building_type": BuildTypeEnum.APARTMENT,
-                            "move_in_year": str(target.move_in_year)
-                            + str(target.move_in_month),
+                            "move_in_year": HouseHelper().add_move_in_year_and_move_in_month_to_str(
+                                move_in_year=target.move_in_year, move_in_month=target.move_in_month
+                            ),
                             "construct_company": target.construct_company
                             if target.construct_company
                             else None,
@@ -1022,7 +1024,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
                         "name": target.name,
                         "building_type": BuildTypeEnum.APARTMENT,
                         "move_in_year": str(target.move_in_year)
-                        + str(target.move_in_month),
+                                        + str(target.move_in_month),
                         "construct_company": target.construct_company
                         if target.construct_company
                         else None,
@@ -1036,6 +1038,24 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
                 )
                 start_idx = start_idx + 1
 
+        return result_dict_list
+
+    def _make_update_list_for_update_public_ref_id(
+            self,
+            target_list: List[CheckIdsRealEstateEntity]
+    ) -> List[dict]:
+        result_dict_list = list()
+        for target in target_list:
+            result_dict_list.append(
+                {
+                    "id": target.private_sales_id,
+                    "supply_household": target.supply_household,
+                    "construct_company": target.construct_company,
+                    "move_in_year": target.move_in_year,
+                    "public_ref_id": target.public_sales_id,
+                    "updated_at": get_server_timestamp(),
+                }
+            )
         return result_dict_list
 
     def execute(self):
@@ -1063,6 +1083,39 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
         if recent_private_sale_info:
             private_sale_start_idx = recent_private_sale_info.id + 1
 
+        target_ids = [target.real_estate_id for target in replace_targets]
+
+        # 타겟 중 이미 매매 전환되어 private_sales 가 생성된 건이 있는지 확인
+        already_created_private_sales = self._house_repo.get_private_sales_have_real_estates_both_public_and_private(
+            target_ids
+        )
+
+        avoid_pk_list = [target.real_estate_id for target in already_created_private_sales]
+
+        # 이미 매매 전환되어 private_sales 건에 대한 public_ref_id update 처리
+        real_estates_with_fks = self._house_repo.get_real_estates_have_both_public_and_private(avoid_pk_list)
+
+        public_ref_id_update_list = self._make_update_list_for_update_public_ref_id(real_estates_with_fks)
+
+        try:
+            self._house_repo.bulk_update_private_sales(update_list=public_ref_id_update_list)
+        except Exception as e:
+            logger.error(f"🚀\t [bulk_update_private_sales] - Error : {e} ")
+            exit(os.EX_OK)
+
+        # 최초 생성 매매건 - 이미 생성되어 있는 real_estates_id는 패스하고 insert 진행
+        create_list = self._make_replace_private_sales_create_list(
+            target_list=replace_targets,
+            avoid_pk_list=avoid_pk_list,
+            start_pk=private_sale_start_idx,
+        )
+
+        try:
+            self._house_repo.bulk_create_private_sale(create_list=create_list)
+        except Exception as e:
+            logger.error(f"🚀\t [bulk_update_public_sales] - Error : {e} ")
+            exit(os.EX_OK)
+
         # bulk_update : 전환 대상 public_sales is_available = False 처리
         update_list = self._make_disable_update_list_to_replace_target(
             target_list=replace_targets
@@ -1073,35 +1126,17 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
             logger.error(f"🚀\t [bulk_update_public_sales] - Error : {e} ")
             exit(os.EX_OK)
 
-        target_ids = [target.id for target in replace_targets]
-
-        # 타겟 중 이미 매매 전환되어 private_sales 가 생성된 건이 있는지 확인
-        avoid_pk_list = self._house_repo.get_real_estates_have_both_used_public_and_private_sales(
-            target_ids
-        )
-
-        create_list = self._make_replace_private_sales_create_list(
-            target_list=replace_targets,
-            avoid_pk_list=avoid_pk_list,
-            start_pk=private_sale_start_idx,
-        )
-
-        try:
-            self._house_repo.bulk_create_private_sale(create_list=create_list)
-            if avoid_pk_list:
-                logger.info(
-                    f"🚀\t [bulk_create_private_sale] - Done! "
-                    f"{len(replace_targets) - len(avoid_pk_list)} / {len(replace_targets)} created, "
-                    f"records: {time() - start_time} secs"
-                )
-            else:
-                logger.info(
-                    f"🚀\t [bulk_create_private_sale] - Done! "
-                    f"{len(replace_targets)} created, "
-                    f"records: {time() - start_time} secs"
-                )
-        except Exception as e:
-            logger.error(f"🚀\t [bulk_update_public_sales] - Error : {e} ")
-            exit(os.EX_OK)
+        if avoid_pk_list:
+            logger.info(
+                f"🚀\t [bulk_create_private_sale] - Done! "
+                f"{len(replace_targets) - len(avoid_pk_list)} / {len(replace_targets)} created, "
+                f"records: {time() - start_time} secs"
+            )
+        else:
+            logger.info(
+                f"🚀\t [bulk_create_private_sale] - Done! "
+                f"{len(replace_targets)} created, "
+                f"records: {time() - start_time} secs"
+            )
 
         exit(os.EX_OK)
