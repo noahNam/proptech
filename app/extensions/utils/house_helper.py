@@ -2,7 +2,12 @@ from typing import Optional
 
 from app.extensions.utils.math_helper import MathHelper
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.house.enum.house_enum import CalcPyoungEnum, PublicSaleStatusEnum
+from core.domains.house.enum.house_enum import (
+    CalcPyoungEnum,
+    PublicSaleStatusEnum,
+    ReplacePublicToPrivateSalesEnum,
+    CalendarYearThreshHold,
+)
 
 
 class HouseHelper:
@@ -67,3 +72,53 @@ class HouseHelper:
         if not min_score or min_score == 0:
             return "미달"
         return "{}점".format(min_score)
+
+    @classmethod
+    def is_public_to_private_target(cls, move_in_year: int, move_in_month: int) -> int:
+        """
+            판별 가능 연도 범위
+            CalendarYearThreshHold Enum MIN_YEAR ~ MAX_YEAR (현재 2017 ~ 2030 (App 달력 표시 가능 연도 범위))
+            범위 조절해야 할 경우 CalendarYearThreshHold Enum 값 수정해주세요
+        """
+        if (
+            not isinstance(move_in_year, int)
+            or not isinstance(move_in_month, int)
+            or (move_in_month < 1)
+            or (move_in_month > 12)
+            or (move_in_year < CalendarYearThreshHold.MIN_YEAR.value)
+            or (move_in_year > CalendarYearThreshHold.MAX_YEAR.value)
+        ):
+            return ReplacePublicToPrivateSalesEnum.UNKNOWN.value
+
+        today = get_server_timestamp()
+
+        if today.year < move_in_year:
+            return ReplacePublicToPrivateSalesEnum.NO.value
+        elif today.year == move_in_year:
+            if today.month > move_in_month:
+                return ReplacePublicToPrivateSalesEnum.YES.value
+            else:
+                return ReplacePublicToPrivateSalesEnum.NO.value
+        elif today.year > move_in_year:
+            return ReplacePublicToPrivateSalesEnum.YES.value
+        else:
+            return ReplacePublicToPrivateSalesEnum.UNKNOWN.value
+
+    @classmethod
+    def add_move_in_year_and_move_in_month_to_str(
+        cls, move_in_year: int, move_in_month: int
+    ) -> Optional[str]:
+        """
+            ex) 2021, 1 -> str(202101)
+        """
+        if not isinstance(move_in_year, int) or not isinstance(move_in_month, int):
+            return None
+
+        if 0 < move_in_month < 10:
+            month_to_str = "0" + str(move_in_month)
+        else:
+            month_to_str = str(move_in_month)
+
+        year_to_str = str(move_in_year)
+
+        return year_to_str + month_to_str
