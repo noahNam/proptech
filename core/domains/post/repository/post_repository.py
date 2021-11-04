@@ -72,11 +72,12 @@ class PostRepository:
                     .all()
                 )
             else:
-                post_list = (
-                    query.order_by(PostModel.id.asc())
-                    .order_by(PostAttachmentModel.id.asc())
-                    .all()
-                )
+                post_list = query.order_by(
+                    PostModel.category_id.asc(),
+                    PostModel.category_detail_id.asc(),
+                    PostModel.contents_num.asc(),
+                    PostAttachmentModel.id.asc(),
+                ).all()
             return [post.to_entity() for post in post_list]
         except Exception as e:
             logger.error(
