@@ -103,3 +103,23 @@ class HouseHelper:
             return ReplacePublicToPrivateSalesEnum.YES.value
         else:
             return ReplacePublicToPrivateSalesEnum.UNKNOWN.value
+
+    @classmethod
+    def add_move_in_year_and_move_in_month_to_str(cls, move_in_year: int, move_in_month: int) -> Optional[str]:
+        """
+            ex) 2021, 1 -> str(202101)
+        """
+        if (
+                not isinstance(move_in_year, int)
+                or not isinstance(move_in_month, int)
+        ):
+            return None
+
+        if 0 < move_in_month < 10:
+            month_to_str = "0" + str(move_in_month)
+        else:
+            month_to_str = str(move_in_month)
+
+        year_to_str = str(move_in_year)
+
+        return year_to_str + month_to_str
