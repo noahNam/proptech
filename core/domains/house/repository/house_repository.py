@@ -55,7 +55,8 @@ from core.domains.house.entity.house_entity import (
     PublicSaleBoundingEntity,
     PrivateSaleBoundingEntity,
     BoundingRealEstateEntity,
-    NearHouseEntity, CheckIdsRealEstateEntity,
+    NearHouseEntity,
+    CheckIdsRealEstateEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -2576,20 +2577,20 @@ class HouseRepository:
 
         return [query.to_entity() for query in query_set] if query_set else None
 
-    def get_target_list_of_public_sales_by_pk_list(self, target_ids: List[int]) -> Optional[List[PublicSaleEntity]]:
+    def get_target_list_of_public_sales_by_pk_list(
+        self, target_ids: List[int]
+    ) -> Optional[List[PublicSaleEntity]]:
         """
             for retry when failed batch
         """
         filters = list()
-        filters.append(
-            PublicSaleModel.id.in_(target_ids)
-        )
+        filters.append(PublicSaleModel.id.in_(target_ids))
         query = (
             session.query(PublicSaleModel)
-                .options(joinedload(PublicSaleModel.public_sale_photos))
-                .options(joinedload(PublicSaleModel.public_sale_details))
-                .options(joinedload("public_sale_details.public_sale_detail_photos"))
-                .filter(*filters)
+            .options(joinedload(PublicSaleModel.public_sale_photos))
+            .options(joinedload(PublicSaleModel.public_sale_details))
+            .options(joinedload("public_sale_details.public_sale_detail_photos"))
+            .filter(*filters)
         )
         query_set = query.all()
 
@@ -2869,9 +2870,7 @@ class HouseRepository:
             session.commit()
         except Exception as e:
             session.rollback()
-            logger.error(
-                f"[HouseRepository][bulk_update_private_sales] error : {e}"
-            )
+            logger.error(f"[HouseRepository][bulk_update_private_sales] error : {e}")
             raise UpdateFailErrorException
 
     def get_private_sales_all_id_list(self,) -> Optional[List[int]]:
@@ -2903,11 +2902,7 @@ class HouseRepository:
         self, real_estates_ids: List[int]
     ) -> Optional[List]:
         filters = list()
-        filters.append(
-            and_(
-                PrivateSaleModel.real_estate_id.in_(real_estates_ids),
-            )
-        )
+        filters.append(and_(PrivateSaleModel.real_estate_id.in_(real_estates_ids),))
         query = (
             session.query(PrivateSaleModel)
             .options(joinedload(PrivateSaleModel.private_sale_details))
@@ -2931,7 +2926,6 @@ class HouseRepository:
             session.rollback()
             logger.error(f"[HouseRepository][bulk_update_public_sales] error : {e}")
             raise UpdateFailErrorException
-
 
     def get_recent_private_sales(self):
         query = (
@@ -2958,7 +2952,9 @@ class HouseRepository:
             logger.error(f"[HouseRepository][bulk_create_private_sale] error : {e}")
             for entry in create_list:
                 failed_pk_list.append(entry.id)
-            logger.info(f"[HouseRepository][bulk_create_private_sale]-failed_list: {failed_pk_list})")
+            logger.info(
+                f"[HouseRepository][bulk_create_private_sale]-failed_list: {failed_pk_list})"
+            )
             raise NotUniqueErrorException
 
     def get_real_estates_have_both_public_and_private(
@@ -2982,9 +2978,7 @@ class HouseRepository:
             .join(
                 PrivateSaleModel, PrivateSaleModel.real_estate_id == RealEstateModel.id
             )
-            .join(
-                PublicSaleModel, PublicSaleModel.real_estate_id == RealEstateModel.id
-            )
+            .join(PublicSaleModel, PublicSaleModel.real_estate_id == RealEstateModel.id)
             .filter(*filters)
         )
         query_set = query.all()
@@ -2999,11 +2993,15 @@ class HouseRepository:
                     public_sales_id=query.public_sales_id,
                     private_sales_id=query.private_sales_id,
                     move_in_year=HouseHelper().add_move_in_year_and_move_in_month_to_str(
-                        move_in_year=query.move_in_year, move_in_month=query.move_in_month
+                        move_in_year=query.move_in_year,
+                        move_in_month=query.move_in_month,
                     )
-                    if query.move_in_year and query.move_in_month else None,
+                    if query.move_in_year and query.move_in_month
+                    else None,
                     supply_household=query.supply_household,
-                    construct_company=query.construct_company if query.construct_company else None
+                    construct_company=query.construct_company
+                    if query.construct_company
+                    else None,
                 )
             )
 
