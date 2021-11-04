@@ -56,6 +56,7 @@ from core.domains.house.entity.house_entity import (
     PrivateSaleBoundingEntity,
     BoundingRealEstateEntity,
     NearHouseEntity,
+    CheckIdsRealEstateEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -1129,30 +1130,6 @@ class HouseRepository:
 
         return result
 
-    def _get_status(
-        self, subscription_start_date: str, subscription_end_date: str
-    ) -> [int]:
-        if (
-            not subscription_start_date
-            or subscription_start_date == "0"
-            or subscription_start_date == "00000000"
-            or not subscription_end_date
-            or subscription_end_date == "0"
-            or subscription_end_date == "00000000"
-        ):
-            return PublicSaleStatusEnum.UNKNOWN.value
-
-        today = get_server_timestamp().strftime("%Y%m%d")
-
-        if today < subscription_start_date:
-            return PublicSaleStatusEnum.BEFORE_OPEN.value
-        elif subscription_start_date <= today <= subscription_end_date:
-            return PublicSaleStatusEnum.IS_RECEIVING.value
-        elif subscription_end_date < today:
-            return PublicSaleStatusEnum.IS_CLOSED.value
-        else:
-            return PublicSaleStatusEnum.UNKNOWN.value
-
     def _make_get_search_house_list_entity(
         self, queryset: Optional[List], user_id: int
     ) -> List[GetSearchHouseListEntity]:
@@ -1182,8 +1159,8 @@ class HouseRepository:
                         else None,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
-                        status=self._get_status(
-                            subscription_start_date=query.subscription_start_date,
+                        status=HouseHelper().public_status(
+                            offer_date=query.offer_date,
                             subscription_end_date=query.subscription_end_date,
                         ),
                         avg_down_payment=avg_down_payment,
@@ -2578,21 +2555,48 @@ class HouseRepository:
             )
             raise UpdateFailErrorException
 
-    def get_target_list_of_public_sales(self) -> List[PublicSaleEntity]:
+    def get_target_list_of_public_sales(self) -> Optional[List[PublicSaleEntity]]:
         filters = list()
         filters.append(
             and_(
                 PublicSaleModel.is_available == "True",
-                PublicSaleModel.public_sale_photos == None,
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE,
             )
         )
         query = (
             session.query(PublicSaleModel)
             .options(joinedload(PublicSaleModel.public_sale_photos))
             .options(joinedload(PublicSaleModel.public_sale_details))
+            .options(joinedload("public_sale_details.public_sale_detail_photos"))
             .filter(*filters)
         )
         query_set = query.all()
+
+        if not query_set:
+            return None
+
+        return [query.to_entity() for query in query_set] if query_set else None
+
+    def get_target_list_of_public_sales_by_pk_list(
+        self, target_ids: List[int]
+    ) -> Optional[List[PublicSaleEntity]]:
+        """
+            for retry when failed batch
+        """
+        filters = list()
+        filters.append(PublicSaleModel.id.in_(target_ids))
+        query = (
+            session.query(PublicSaleModel)
+            .options(joinedload(PublicSaleModel.public_sale_photos))
+            .options(joinedload(PublicSaleModel.public_sale_details))
+            .options(joinedload("public_sale_details.public_sale_detail_photos"))
+            .filter(*filters)
+        )
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
         return [query.to_entity() for query in query_set] if query_set else None
 
     def insert_images_to_public_sale_photos(self, create_list: List[dict]) -> None:
@@ -2857,7 +2861,7 @@ class HouseRepository:
             for query in query_set
         ]
 
-    def bulk_update_status_to_private_sales(self, update_list: List[dict]) -> None:
+    def bulk_update_private_sales(self, update_list: List[dict]) -> None:
         try:
             session.bulk_update_mappings(
                 PrivateSaleModel, [update_info for update_info in update_list],
@@ -2866,9 +2870,7 @@ class HouseRepository:
             session.commit()
         except Exception as e:
             session.rollback()
-            logger.error(
-                f"[HouseRepository][bulk_update_status_to_private_sales] error : {e}"
-            )
+            logger.error(f"[HouseRepository][bulk_update_private_sales] error : {e}")
             raise UpdateFailErrorException
 
     def get_private_sales_all_id_list(self,) -> Optional[List[int]]:
@@ -2895,3 +2897,112 @@ class HouseRepository:
                 target_ids.append(query.id)
 
         return target_ids
+
+    def get_private_sales_have_real_estates_both_public_and_private(
+        self, real_estates_ids: List[int]
+    ) -> Optional[List]:
+        filters = list()
+        filters.append(and_(PrivateSaleModel.real_estate_id.in_(real_estates_ids),))
+        query = (
+            session.query(PrivateSaleModel)
+            .options(joinedload(PrivateSaleModel.private_sale_details))
+            .filter(*filters)
+        )
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        return [query.to_entity() for query in query_set] if query_set else None
+
+    def bulk_update_public_sales(self, update_list: List[dict]) -> None:
+        try:
+            session.bulk_update_mappings(
+                PublicSaleModel, [update_info for update_info in update_list],
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(f"[HouseRepository][bulk_update_public_sales] error : {e}")
+            raise UpdateFailErrorException
+
+    def get_recent_private_sales(self):
+        query = (
+            session.query(PrivateSaleModel)
+            .options(joinedload(PrivateSaleModel.private_sale_details))
+            .order_by(PrivateSaleModel.id.desc())
+            .limit(1)
+        )
+        query_set = query.first()
+        if not query_set:
+            return None
+        return query_set.to_entity()
+
+    def bulk_create_private_sale(self, create_list: List[dict]) -> None:
+        failed_pk_list = list()
+        try:
+            session.bulk_insert_mappings(
+                PrivateSaleModel, [create_info for create_info in create_list]
+            )
+
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(f"[HouseRepository][bulk_create_private_sale] error : {e}")
+            for entry in create_list:
+                failed_pk_list.append(entry.id)
+            logger.info(
+                f"[HouseRepository][bulk_create_private_sale]-failed_list: {failed_pk_list})"
+            )
+            raise NotUniqueErrorException
+
+    def get_real_estates_have_both_public_and_private(
+        self, real_estates_ids: List[int]
+    ) -> Optional[List[CheckIdsRealEstateEntity]]:
+        result = list()
+        filters = list()
+        filters.append(RealEstateModel.id.in_(real_estates_ids),)
+
+        query = (
+            session.query(RealEstateModel)
+            .with_entities(
+                RealEstateModel.id.label("real_estate_id"),
+                PrivateSaleModel.id.label("private_sales_id"),
+                PublicSaleModel.id.label("public_sales_id"),
+                PublicSaleModel.move_in_year.label("move_in_year"),
+                PublicSaleModel.move_in_month.label("move_in_month"),
+                PublicSaleModel.supply_household.label("supply_household"),
+                PublicSaleModel.construct_company.label("construct_company"),
+            )
+            .join(
+                PrivateSaleModel, PrivateSaleModel.real_estate_id == RealEstateModel.id
+            )
+            .join(PublicSaleModel, PublicSaleModel.real_estate_id == RealEstateModel.id)
+            .filter(*filters)
+        )
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        for query in query_set:
+            result.append(
+                CheckIdsRealEstateEntity(
+                    real_estate_id=query.real_estate_id,
+                    public_sales_id=query.public_sales_id,
+                    private_sales_id=query.private_sales_id,
+                    move_in_year=HouseHelper().add_move_in_year_and_move_in_month_to_str(
+                        move_in_year=query.move_in_year,
+                        move_in_month=query.move_in_month,
+                    )
+                    if query.move_in_year and query.move_in_month
+                    else None,
+                    supply_household=query.supply_household,
+                    construct_company=query.construct_company
+                    if query.construct_company
+                    else None,
+                )
+            )
+
+        return result
