@@ -888,7 +888,8 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
 
         passed_dirs = list()
         _dir = None
-        cnt = 0
+        total_public_sale_photos = 0
+        total_public_sale_detail_photos = 0
 
         recent_public_sale_photos_info = (
             self._house_repo.get_recent_public_sale_photos()
@@ -949,11 +950,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             #     self._house_repo.insert_images_to_public_sale_photos(
             #         create_list=public_sale_photos
             #     )
-            #     logger.info(
-            #         f"🚀\t [insert_images_to_public_sale_photos] - Done! "
-            #         f"{len(public_sale_photos)} finished, "
-            #         f"records: {time() - start_time} secs"
-            #     )
+            #     total_public_sale_photos = total_public_sale_photos + len(public_sale_photos)
             # except Exception as e:
             #     logger.error(f"insert_images_to_public_sale_photos error : {e}")
             #     exit(os.EX_OK)
@@ -963,11 +960,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             #     self._house_repo.insert_images_to_public_sale_detail_photos(
             #         create_list=public_sale_detail_photos
             #     )
-            #     logger.info(
-            #         f"🚀\t [insert_images_to_public_sale_detail_photos] - Done! "
-            #         f"{len(public_sale_detail_photos)} created, "
-            #         f"records: {time() - start_time} secs"
-            #     )
+            #     total_public_sale_detail_photos = total_public_sale_detail_photos + len(public_sale_detail_photos)
             # except Exception as e:
             #     logger.error(f"insert_images_to_public_sale_photos error : {e}")
             #     exit(os.EX_OK)
@@ -978,6 +971,12 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             public_sale_detail_photos_start_idx = (
                     public_sale_detail_photos_start_idx + len(public_sale_detail_photos)
             )
+        logger.info(
+            f"🚀\tInsertUploadPhotoUseCase - Done! "
+            f"public_sale_photos: {total_public_sale_photos} upserted, "
+            f"public_sale_detail_photos: {total_public_sale_detail_photos} upserted, "
+            f"records: {time() - start_time} secs"
+        )
 
         exit(os.EX_OK)
 
