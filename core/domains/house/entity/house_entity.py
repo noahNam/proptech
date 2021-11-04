@@ -542,3 +542,16 @@ class UpdateContractStatusTargetEntity(BaseModel):
 
     class Config:
         use_enum_values = True
+
+
+class CheckIdsRealEstateEntity(BaseModel):
+    """
+        기존에 이미 매매건으로 전환된 private_sales 에 대하여 업데이트 하기 위한 엔티티
+    """
+
+    real_estate_id: int
+    public_sales_id: int
+    private_sales_id: int
+    supply_household: Optional[int]
+    move_in_year: Optional[str]
+    construct_company: Optional[str]
