@@ -11,6 +11,7 @@ import requests
 from PIL import Image
 from sqlalchemy.orm import Query
 
+from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.math_helper import MathHelper
@@ -22,10 +23,14 @@ from core.domains.house.entity.house_entity import (
     PublicSaleEntity,
     UpdateContractStatusTargetEntity,
     RecentlyContractedEntity,
+    PrivateSaleEntity,
+    CheckIdsRealEstateEntity,
 )
 from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
     PrivateSaleContractStatusEnum,
+    ReplacePublicToPrivateSalesEnum,
+    BuildTypeEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 
@@ -451,7 +456,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #         target_list=target_list
         #     )
         #
-        #     self._house_repo.bulk_update_status_to_private_sales(
+        #     self._house_repo.bulk_update_private_sales(
         #         update_list=update_list
         #     )
         #
@@ -666,74 +671,6 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
             f"🚀\tAddLegalCodeUseCase : Finished !!, "
             f"records: {time() - start_time} secs, "
             f"{len(update_list)} Updated, "
-        )
-
-        exit(os.EX_OK)
-
-
-class InsertDefaultPhotoUseCase(BaseHouseWorkerUseCase):
-    """
-        public_sale_photos -> 분양 정보 Default Image 일괄 저장 배치 코드
-    """
-
-    def _make_default_image_create_list(
-        self, target_list: List[PublicSaleEntity], start_idx: int,
-    ) -> List[dict]:
-        """
-            사용 전 필수 확인사항: default_image path
-        """
-        create_list = list()
-        pk = start_idx + 1
-        dev_path = ""
-        prod_path = "public_sale_photos/2021/ad1f07f8-323a-4405-b946-8cdbe2040a81.png"
-        for public_sale in target_list:
-            dict_for_insert = {
-                "id": pk,
-                "public_sales_id": public_sale.id,
-                "file_name": "default_apt_image",
-                "path": prod_path,
-                "extension": "png",
-            }
-            create_list.append(dict_for_insert)
-            pk = pk + 1
-        return create_list
-
-    def execute(self):
-        start_time = time()
-        logger.info(f"🚀\tInsertDefaultPhotoUseCase Start - {self.client_id}")
-
-        target_list: List[
-            PublicSaleEntity
-        ] = self._house_repo.get_target_list_of_public_sales()
-        if not target_list:
-            logger.info(
-                f"🚀\tget_target_list_of_public_sales : Nothing target_list_of_public_sales"
-            )
-            exit(os.EX_OK)
-
-        recent_photo_info = self._house_repo.get_recent_public_sale_photos()
-        if not recent_photo_info:
-            logger.info(
-                f"🚀\tget_recent_public_sale_photos : No recent public_sale_photos"
-            )
-            exit(os.EX_OK)
-
-        create_list = self._make_default_image_create_list(
-            target_list=target_list, start_idx=recent_photo_info.id,
-        )
-
-        try:
-            self._house_repo.insert_images_to_public_sale_photos(
-                create_list=create_list
-            )
-        except Exception as e:
-            logger.error(f"insert_images_to_public_sale_photos error : {e}")
-            exit(os.EX_OK)
-
-        logger.info(
-            f"🚀\tInsertDefaultPhotoUseCase : Finished !!, "
-            f"records: {time() - start_time} secs, "
-            f"{len(create_list)} Created, "
         )
 
         exit(os.EX_OK)
@@ -996,6 +933,220 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             )
             public_sale_detail_photos_start_idx = (
                 public_sale_detail_photos_start_idx + len(public_sale_detail_photos)
+            )
+
+        exit(os.EX_OK)
+
+
+class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
+    """
+        - What : 분양 마감 건에 대하여 매매 매물로 전환 배치
+        - When : 매월 1일 한번 시행
+        1. Target : 모든 public_sales (분양매물)에 대하여 마감된 매물
+            - move_in_year, move_in_month (입주가능년월)을 배치 코드를 실행하는 현재 년월과 대조한다.
+            - 대조시, 년도가 달라지는 경우에 주의한다 (예시 : 2021.01(현재) 2020.12 입주가능할경우)
+            - 현재 년월과 비교하여 1달 이상 지났을 경우 private_sales 전환 대상
+            - 주의 : 사전에 이미 전환된 private_sales가 있을 수 있다
+            - -> private_sales 생성 전, 하나의 real_estates id로 public_sales와 private_sales 동시 사용중인 매물을 체크
+        2. private_sales 전환 대상 public_sales에 대하여 private_sales 생성
+            - public_sales is_available = False 처리
+            - 기존 분양 정보를 참고하여 새로운 private_sales 생성
+            - 이때, private_sales.public_ref_id에 전환 전 public_sales id 저장
+            - 막 매매 전환된 건이므로 구체적 매매 정보(private_sale_details)는 아예 없는 상태
+    """
+
+    def _get_replace_target(
+        self, public_sales: List[PublicSaleEntity]
+    ) -> List[PublicSaleEntity]:
+        replace_target = list()
+        for public_sale in public_sales:
+            result = HouseHelper().is_public_to_private_target(
+                move_in_year=public_sale.move_in_year,
+                move_in_month=public_sale.move_in_month,
+            )
+            if result == ReplacePublicToPrivateSalesEnum.YES.value:
+                replace_target.append(public_sale)
+
+        return replace_target
+
+    def _make_disable_update_list_to_replace_target(
+        self, target_list: List[PublicSaleEntity]
+    ) -> List[dict]:
+        result_dict_list = list()
+        for target in target_list:
+            result_dict_list.append(
+                {
+                    "id": target.id,
+                    "is_available": False,
+                    "updated_at": get_server_timestamp(),
+                }
+            )
+        return result_dict_list
+
+    def _make_replace_private_sales_create_list(
+        self,
+        target_list: List[PublicSaleEntity],
+        avoid_pk_list: List[int],
+        start_pk: int,
+    ) -> List[dict]:
+        result_dict_list = list()
+        start_idx = start_pk
+
+        for target in target_list:
+            if avoid_pk_list:
+                if target.real_estate_id in avoid_pk_list:
+                    continue
+                else:
+                    result_dict_list.append(
+                        {
+                            "id": start_idx,
+                            "real_estate_id": target.real_estate_id,
+                            "name": target.name,
+                            "building_type": BuildTypeEnum.APARTMENT,
+                            "move_in_year": HouseHelper().add_move_in_year_and_move_in_month_to_str(
+                                move_in_year=target.move_in_year,
+                                move_in_month=target.move_in_month,
+                            ),
+                            "construct_company": target.construct_company
+                            if target.construct_company
+                            else None,
+                            "supply_household": target.supply_household
+                            if target.supply_household
+                            else None,
+                            "is_available": True,
+                            "public_ref_id": target.id,
+                            "created_at": get_server_timestamp(),
+                        }
+                    )
+                    start_idx = start_idx + 1
+            else:
+                result_dict_list.append(
+                    {
+                        "id": start_pk,
+                        "real_estate_id": target.real_estate_id,
+                        "name": target.name,
+                        "building_type": BuildTypeEnum.APARTMENT,
+                        "move_in_year": str(target.move_in_year)
+                        + str(target.move_in_month),
+                        "construct_company": target.construct_company
+                        if target.construct_company
+                        else None,
+                        "supply_household": target.supply_household
+                        if target.supply_household
+                        else None,
+                        "is_available": True,
+                        "public_ref_id": target.id,
+                        "created_at": get_server_timestamp(),
+                    }
+                )
+                start_idx = start_idx + 1
+
+        return result_dict_list
+
+    def _make_update_list_for_update_public_ref_id(
+        self, target_list: List[CheckIdsRealEstateEntity]
+    ) -> List[dict]:
+        result_dict_list = list()
+        for target in target_list:
+            result_dict_list.append(
+                {
+                    "id": target.private_sales_id,
+                    "supply_household": target.supply_household,
+                    "construct_company": target.construct_company,
+                    "move_in_year": target.move_in_year,
+                    "public_ref_id": target.public_sales_id,
+                    "updated_at": get_server_timestamp(),
+                }
+            )
+        return result_dict_list
+
+    def execute(self):
+        logger.info(f"🚀\tReplacePublicToPrivateUseCase Start - {self.client_id}")
+        start_time = time()
+
+        # public_sales: 이용 가능한 분양 타입 매물
+        public_sales = self._house_repo.get_target_list_of_public_sales()
+
+        if not public_sales:
+            logger.info(
+                f"🚀\t [get_target_list_of_public_sales] - Nothing to replace target "
+            )
+            exit(os.EX_OK)
+
+        # replace_targets: 매매 전환 대상 리스트
+        replace_targets = self._get_replace_target(public_sales=public_sales)
+
+        if not replace_targets:
+            logger.info(f"🚀\t [get_replace_target] - Nothing to replace target ")
+            exit(os.EX_OK)
+
+        private_sale_start_idx = 1
+        recent_private_sale_info = self._house_repo.get_recent_private_sales()
+        if recent_private_sale_info:
+            private_sale_start_idx = recent_private_sale_info.id + 1
+
+        target_ids = [target.real_estate_id for target in replace_targets]
+
+        # 타겟 중 이미 매매 전환되어 private_sales 가 생성된 건이 있는지 확인
+        already_created_private_sales = self._house_repo.get_private_sales_have_real_estates_both_public_and_private(
+            target_ids
+        )
+
+        avoid_pk_list = [
+            target.real_estate_id for target in already_created_private_sales
+        ]
+
+        # 이미 매매 전환되어 private_sales 건에 대한 public_ref_id update 처리
+        real_estates_with_fks = self._house_repo.get_real_estates_have_both_public_and_private(
+            avoid_pk_list
+        )
+
+        public_ref_id_update_list = self._make_update_list_for_update_public_ref_id(
+            real_estates_with_fks
+        )
+
+        try:
+            self._house_repo.bulk_update_private_sales(
+                update_list=public_ref_id_update_list
+            )
+        except Exception as e:
+            logger.error(f"🚀\t [bulk_update_private_sales] - Error : {e} ")
+            exit(os.EX_OK)
+
+        # 최초 생성 매매건 - 이미 생성되어 있는 real_estates_id는 패스하고 insert 진행
+        create_list = self._make_replace_private_sales_create_list(
+            target_list=replace_targets,
+            avoid_pk_list=avoid_pk_list,
+            start_pk=private_sale_start_idx,
+        )
+
+        try:
+            self._house_repo.bulk_create_private_sale(create_list=create_list)
+        except Exception as e:
+            logger.error(f"🚀\t [bulk_update_public_sales] - Error : {e} ")
+            exit(os.EX_OK)
+
+        # bulk_update : 전환 대상 public_sales is_available = False 처리
+        update_list = self._make_disable_update_list_to_replace_target(
+            target_list=replace_targets
+        )
+        try:
+            self._house_repo.bulk_update_public_sales(update_list=update_list)
+        except Exception as e:
+            logger.error(f"🚀\t [bulk_update_public_sales] - Error : {e} ")
+            exit(os.EX_OK)
+
+        if avoid_pk_list:
+            logger.info(
+                f"🚀\t [bulk_create_private_sale] - Done! "
+                f"{len(replace_targets) - len(avoid_pk_list)} / {len(replace_targets)} created, "
+                f"records: {time() - start_time} secs"
+            )
+        else:
+            logger.info(
+                f"🚀\t [bulk_create_private_sale] - Done! "
+                f"{len(replace_targets)} created, "
+                f"records: {time() - start_time} secs"
             )
 
         exit(os.EX_OK)
