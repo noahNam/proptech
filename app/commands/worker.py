@@ -26,7 +26,7 @@ def get_worker(topic: str):
         return AddLegalCodeUseCase(topic=topic)
     elif topic == TopicEnum.PRE_CALCULATE_AVERAGE_ADMINISTRATIVE.value:
         return PreCalculateAdministrativeDivisionUseCase(topic=topic)
-    elif topic == TopicEnum.INSERT_UPLOAD_PUBLIC_SALES_AND_DETAIL_IMAGE.value:
+    elif topic == TopicEnum.UPSERT_UPLOAD_PUBLIC_SALES_AND_DETAIL_IMAGE.value:
         return InsertUploadPhotoUseCase(topic=topic)
     elif topic == TopicEnum.REPLACE_PUBLIC_TO_PRIVATE_SALES.value:
         return ReplacePublicToPrivateUseCase(topic=topic)
