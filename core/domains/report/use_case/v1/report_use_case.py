@@ -2,7 +2,7 @@ import re
 from collections import defaultdict
 from datetime import datetime
 from http import HTTPStatus
-from typing import Union, Optional, List
+from typing import Union, Optional, List, Dict
 
 import inject
 
@@ -117,18 +117,18 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         )
 
         # 타입별 경쟁률
-        # 직접 계산하는 방식에서 Jarvis 계산 방식으로 바뀜
-        # sort_competitions: List[dict] = self._sort_competition_desc(
-        #     expected_competitions=expected_competitions
-        # )
+        predicted_competition_dict: Dict = self._make_response_object_to_predicted_competitions(
+            expected_competitions=ticket_usage_results.predicted_competitions
+        )
+
         self._sort_predicted_competition(
             house_type_ranks=ticket_usage_results.house_type_ranks
         )
 
         # 타입별 총 세대수
-        self._calc_total_supply_by_house_type(
-            expected_competitions=ticket_usage_results.predicted_competitions
-        )
+        # self._calc_total_supply_by_house_type(
+        #     expected_competitions=ticket_usage_results.predicted_competitions
+        # )
 
         # 유저 닉네임 조회
         user_profile: Optional[UserProfileEntity] = self._get_user_profile(
@@ -136,15 +136,182 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         )
 
         result: GetExpectedCompetitionBaseSchema = self._make_response_schema(
-            predicted_competitions=ticket_usage_results.predicted_competitions,
+            predicted_competitions=predicted_competition_dict,
             nickname=user_profile.nickname if user_profile else None,
             house_type_ranks=ticket_usage_results.house_type_ranks,
         )
         return UseCaseSuccessOutput(value=result)
 
+    def _make_response_object_to_predicted_competitions(
+        self, expected_competitions: List[PredictedCompetitionEntity],
+    ) -> Dict:
+        (
+            domain_marry_list,
+            domain_first_life_list,
+            domain_children_list,
+            domain_old_parent_list,
+            domain_normal_list,
+        ) = (list(), list(), list(), list(), list())
+        (
+            domain_marry_dict,
+            domain_first_life_dict,
+            domain_children_dict,
+            domain_old_parent_dict,
+            domain_normal_dict,
+        ) = (dict(), dict(), dict(), dict(), dict())
+
+        for expected_competition in expected_competitions:
+            domain_common_dict = dict(
+                region=expected_competition.region,
+                region_percentage=expected_competition.region_percentage,
+            )
+            marry_dict = dict(
+                competition=expected_competition.newly_marry_competition,
+                supply=expected_competition.newly_marry_supply,
+                passing_score=None,
+            )
+            first_life_dict = dict(
+                competition=expected_competition.first_life_competition,
+                supply=expected_competition.first_life_supply,
+                passing_score=None,
+            )
+            children_dict = dict(
+                competition=expected_competition.multiple_children_competition,
+                supply=expected_competition.multiple_children_supply,
+                passing_score=None,
+            )
+            old_parent_dict = dict(
+                competition=expected_competition.old_parent_competition,
+                supply=expected_competition.old_parent_supply,
+                passing_score=None,
+            )
+            normal_dict = dict(
+                competition=expected_competition.normal_competition,
+                supply=expected_competition.normal_supply,
+                passing_score=expected_competition.normal_passing_score,
+            )
+
+            marry_dict.update(domain_common_dict)
+            first_life_dict.update(domain_common_dict)
+            children_dict.update(domain_common_dict)
+            old_parent_dict.update(domain_common_dict)
+            normal_dict.update(domain_common_dict)
+
+            if domain_marry_dict.get(expected_competition.house_structure_type):
+                domain_marry_list.append(marry_dict)
+                domain_first_life_list.append(first_life_dict)
+                domain_children_list.append(children_dict)
+                domain_old_parent_list.append(old_parent_dict)
+                domain_normal_list.append(normal_dict)
+            else:
+                domain_marry_list = [marry_dict]
+                domain_first_life_list = [first_life_dict]
+                domain_children_list = [children_dict]
+                domain_old_parent_list = [old_parent_dict]
+                domain_normal_list = [normal_dict]
+
+            # 각 타입별 마지막 지역(해당지역,기타경기,기타지역)이 들어오면 지역순서대로 정렬
+            if len(domain_marry_list) == 3:
+                self.__sort_domain_list_to_region(
+                    target_list=[
+                        domain_marry_list,
+                        domain_first_life_list,
+                        domain_children_list,
+                        domain_old_parent_list,
+                        domain_normal_list,
+                    ]
+                )
+
+            domain_marry_dict.setdefault(
+                expected_competition.house_structure_type, dict()
+            ).update(
+                house_structure_type=expected_competition.house_structure_type,
+                infos=domain_marry_list,
+            )
+            domain_first_life_dict.setdefault(
+                expected_competition.house_structure_type, dict()
+            ).update(
+                house_structure_type=expected_competition.house_structure_type,
+                infos=domain_first_life_list,
+            )
+            domain_children_dict.setdefault(
+                expected_competition.house_structure_type, dict()
+            ).update(
+                house_structure_type=expected_competition.house_structure_type,
+                infos=domain_children_list,
+            )
+            domain_old_parent_dict.setdefault(
+                expected_competition.house_structure_type, dict()
+            ).update(
+                house_structure_type=expected_competition.house_structure_type,
+                infos=domain_old_parent_list,
+            )
+            domain_normal_dict.setdefault(
+                expected_competition.house_structure_type, dict()
+            ).update(
+                house_structure_type=expected_competition.house_structure_type,
+                infos=domain_normal_list,
+            )
+
+        convert_target_dict_dict = dict(
+            marry=domain_marry_dict,
+            first_life=domain_first_life_dict,
+            children=domain_children_dict,
+            old_parent=domain_old_parent_dict,
+            normal=domain_normal_dict,
+        )
+
+        predicted_competition_dict: Dict = self.__convert_area_type_dict(
+            convert_target_dict=convert_target_dict_dict
+        )
+        return predicted_competition_dict
+
+    def __sort_domain_list_to_region(self, target_list: List):
+        sort_dict = {
+            RegionEnum.THE_AREA.value: 0,
+            RegionEnum.OTHER_GYEONGGI.value: 1,
+            RegionEnum.OTHER_REGION.value: 2,
+        }
+
+        for target_domain in target_list:
+            end = len(target_domain) - 1
+            while end > 0:
+                last_swap = 0
+                for i in range(end):
+                    if sort_dict.get(target_domain[i]["region"]) > sort_dict.get(
+                        target_domain[i + 1]["region"]
+                    ):
+                        target_domain[i], target_domain[i + 1] = (
+                            target_domain[i + 1],
+                            target_domain[i],
+                        )
+                        last_swap = i
+                end = last_swap
+
+    def __convert_area_type_dict(self, convert_target_dict: Dict) -> Dict:
+        predicted_competition_dict = dict()
+
+        domain_list = list(convert_target_dict.keys())
+        for domain in domain_list:
+            convert_dict = dict()
+            domain_target_dict = convert_target_dict.get(domain)
+            key_list = list(convert_target_dict.get(domain).keys())
+            for key in key_list:
+                if re.search("\d", key):
+                    new_key = re.sub(r"[^0-9]", "", key)
+                    convert_dict.setdefault(new_key, []).append(
+                        domain_target_dict.get(key)
+                    )
+                else:
+                    convert_dict.setdefault(key, []).append(domain_target_dict.get(key))
+
+            predicted_competition_dict.setdefault(domain, dict()).update(convert_dict)
+
+        return predicted_competition_dict
+
     def _make_response_schema(
         self,
-        predicted_competitions: List[PredictedCompetitionEntity],
+        predicted_competitions: Dict,
         nickname: Optional[str],
         house_type_ranks: List[HouseTypeRankEntity],
     ) -> GetExpectedCompetitionBaseSchema:
@@ -287,80 +454,6 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                     last_swap = i
             end = last_swap
 
-    def _sort_competition_desc(
-        self, expected_competitions: List[PredictedCompetitionEntity]
-    ) -> List[dict]:
-        sort_competitions = list()
-        sort_competition_types = list()
-        sort_house_structure_types = list()
-
-        # 각 경쟁률을 포함한 list 생성
-        sort_competition_list = ["다자녀", "신혼부부", "노부모부양", "생애최초", "일반"]
-        for c in expected_competitions:
-            sort_house_structure_types: List[str] = sort_house_structure_types + [
-                c.house_structure_type for _ in range(len(sort_competition_list))
-            ]
-            sort_competition_types: List[
-                str
-            ] = sort_competition_types + sort_competition_list
-            sort_competitions: List[int] = sort_competitions + [
-                c.multiple_children_competition,
-                c.newly_marry_competition,
-                c.old_parent_competition,
-                c.first_life_competition,
-                c.normal_competition,
-            ]
-
-        # 경쟁률 버블정렬
-        end = len(sort_competitions) - 1
-        while end > 0:
-            last_swap = 0
-            for i in range(end):
-                # 예측 경쟁률이 None일 경우, 지원 불가한 경우
-                sort_competitions[i] = (
-                    9999999 if not sort_competitions[i] else sort_competitions[i]
-                )
-                sort_competitions[i + 1] = (
-                    9999999
-                    if not sort_competitions[i + 1]
-                    else sort_competitions[i + 1]
-                )
-
-                if sort_competitions[i] > sort_competitions[i + 1]:
-                    sort_competitions[i], sort_competitions[i + 1] = (
-                        sort_competitions[i + 1],
-                        sort_competitions[i],
-                    )
-                    sort_house_structure_types[i], sort_house_structure_types[i + 1] = (
-                        sort_house_structure_types[i + 1],
-                        sort_house_structure_types[i],
-                    )
-                    sort_competition_types[i], sort_competition_types[i + 1] = (
-                        sort_competition_types[i + 1],
-                        sort_competition_types[i],
-                    )
-                    last_swap = i
-
-            end = last_swap
-
-        sorted_result = list()
-        for idx, _ in enumerate(sort_competitions):
-            if idx == 3:
-                break
-
-            # 예측 경쟁률이 None일 경우, 지원 불가한 경우
-            sort_competitions[idx] = (
-                None if sort_competitions[idx] == 9999999 else sort_competitions[idx]
-            )
-            sorted_result.append(
-                dict(
-                    competitions=sort_competitions[idx],
-                    house_structure_types=sort_house_structure_types[idx],
-                    competition_types=sort_competition_types[idx],
-                )
-            )
-        return sorted_result
-
 
 class GetSaleInfoUseCase(ReportBaseUseCase):
     def execute(
@@ -493,6 +586,16 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
             longitude=report_recently_public_sale_info.real_estates.longitude,
         )
 
+        public_sale_photos = None
+        if report_public_sale_infos.public_sale_photos:
+            report_public_sale_infos.public_sale_photos.sort(
+                key=lambda obj: obj.seq, reverse=False
+            )
+            public_sale_photos = [
+                public_sale_photo.path
+                for public_sale_photo in report_public_sale_infos.public_sale_photos
+            ]
+
         public_sale_report_schema = PublicSaleReportSchema(
             supply_household=report_public_sale_infos.supply_household,
             offer_date=report_public_sale_infos.offer_date,
@@ -506,10 +609,7 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
             second_supply_etc_date=report_public_sale_infos.second_supply_etc_date,
             second_etc_gyeonggi_date=report_public_sale_infos.second_etc_gyeonggi_date,
             notice_winner_date=report_public_sale_infos.notice_winner_date,
-            public_sale_photos=[
-                public_sale_photo.path
-                for public_sale_photo in report_public_sale_infos.public_sale_photos
-            ],
+            public_sale_photos=public_sale_photos,
             public_sale_details=public_sale_detail_dict,
             real_estates=report_public_sale_infos.real_estates,
         )
