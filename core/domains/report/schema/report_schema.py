@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 
 from pydantic import BaseModel, StrictStr, StrictInt, StrictFloat, StrictBool
 
@@ -7,7 +7,6 @@ from core.domains.house.entity.house_entity import (
     GeneralSupplyResultReportEntity,
 )
 from core.domains.report.entity.report_entity import (
-    PredictedCompetitionEntity,
     SurveyResultEntity,
     HouseTypeRankEntity,
 )
@@ -15,7 +14,7 @@ from core.domains.report.entity.report_entity import (
 
 class GetExpectedCompetitionBaseSchema(BaseModel):
     nickname: Optional[StrictStr]
-    predicted_competitions: List[PredictedCompetitionEntity]
+    predicted_competitions: Dict
     house_type_ranks: Optional[List[HouseTypeRankEntity]]
 
 
