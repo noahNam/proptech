@@ -3006,3 +3006,34 @@ class HouseRepository:
             )
 
         return result
+
+    def get_target_list_of_upsert_public_sale_avg_prices(self) -> Optional[List[int]]:
+        filters = list()
+        filters.append(
+            and_(
+                PublicSaleModel.is_available == "True",
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE,
+            )
+        )
+        query = (
+            session.query(PublicSaleModel)
+            .join(
+                PublicSaleDetailModel,
+                (PublicSaleDetailModel.public_sales_id == PublicSaleModel.id)
+                & (PublicSaleDetailModel.supply_area != 0)
+                & (PublicSaleDetailModel.area_type != None)
+            )
+            .filter(*filters)
+        )
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        target_ids = list()
+
+        for query in query_set:
+            if query.id:
+                target_ids.append(query.id)
+
+        return target_ids
