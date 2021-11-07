@@ -1933,6 +1933,8 @@ class HouseRepository:
 
         if not query_set:
             return None
+        elif query_set[0] == 0:
+            return None
 
         return dict(supply_area=query_set[0], supply_price=query_set[1])
 
@@ -3006,3 +3008,62 @@ class HouseRepository:
             )
 
         return result
+
+    def get_target_list_of_upsert_public_sale_avg_prices(self) -> Optional[List[int]]:
+        filters = list()
+        filters.append(
+            and_(
+                PublicSaleModel.is_available == "True",
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE,
+            )
+        )
+        query = (
+            session.query(PublicSaleModel)
+            .join(
+                PublicSaleDetailModel,
+                (PublicSaleDetailModel.public_sales_id == PublicSaleModel.id)
+                & (PublicSaleDetailModel.supply_area != 0)
+                & (PublicSaleDetailModel.area_type != None),
+            )
+            .filter(*filters)
+        )
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        target_ids = list()
+
+        for query in query_set:
+            if query.id:
+                target_ids.append(query.id)
+
+        return target_ids
+
+    def get_target_of_upsert_private_sale_avg_prices(self,) -> Optional[List[int]]:
+        """
+            연립다세대 제외
+        """
+        target_ids = list()
+        filters = list()
+        filters.append(
+            and_(
+                PrivateSaleModel.is_available == "True",
+                PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+                PrivateSaleModel.trade_status == 0,
+                PrivateSaleModel.deposit_status == 0,
+                PrivateSaleModel.public_ref_id == None
+            )
+        )
+        query = session.query(PrivateSaleModel).filter(*filters)
+
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        for query in query_set:
+            if query.id:
+                target_ids.append(query.id)
+
+        return target_ids
