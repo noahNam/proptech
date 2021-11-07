@@ -3021,7 +3021,7 @@ class HouseRepository:
                 PublicSaleDetailModel,
                 (PublicSaleDetailModel.public_sales_id == PublicSaleModel.id)
                 & (PublicSaleDetailModel.supply_area != 0)
-                & (PublicSaleDetailModel.area_type != None)
+                & (PublicSaleDetailModel.area_type != None),
             )
             .filter(*filters)
         )

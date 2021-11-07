@@ -87,7 +87,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     """
 
     def _calculate_house_acquisition_xax(
-            self, private_area: float, supply_price: int
+        self, private_area: float, supply_price: int
     ) -> int:
         """
             todo: 부동산 정책이 매년 변경되므로 정기적으로 세율 변경 시 업데이트 필요합니다.
@@ -117,10 +117,10 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 - acquisition_tax(취득세 본세) + local_education_tax(지방교육세) + rural_special_tax(농어촌특별세)
         """
         if (
-                not private_area
-                or private_area == 0
-                or not supply_price
-                or supply_price == 0
+            not private_area
+            or private_area == 0
+            or not supply_price
+            or supply_price == 0
         ):
             return 0
 
@@ -162,7 +162,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return total_acquisition_tax
 
     def _make_acquisition_tax_update_list(
-            self, target_list: List[PublicSaleDetailModel]
+        self, target_list: List[PublicSaleDetailModel]
     ) -> List[dict]:
         result_dict_list = list()
         for target in target_list:
@@ -179,7 +179,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _make_private_sale_status_update_list(
-            self, target_list: List[UpdateContractStatusTargetEntity]
+        self, target_list: List[UpdateContractStatusTargetEntity]
     ) -> List[dict]:
 
         result_dict_list = list()
@@ -211,7 +211,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _get_private_sales_status(
-            self, min_contract_date: Optional[str], max_contract_date: Optional[str]
+        self, min_contract_date: Optional[str], max_contract_date: Optional[str]
     ) -> int:
         today = (datetime.now()).strftime("%Y%m%d")
         three_month_from_today = (datetime.now() - timedelta(days=93)).strftime(
@@ -246,7 +246,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             final_update_list = list()
             # 매매, 전세 가격 평균 계산
             # target_ids = [idx for idx in range(1, 355105)]
-            target_ids = [idx for idx in range(1, 100000)]
+            target_ids = [idx for idx in range(1, 329127)]
 
             # contract_date 기준 가장 최근에 거래된 row 가져오기
             recent_infos: List[
@@ -296,9 +296,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             self.send_slack_message(
                 title="🚀 [PreCalculateAverageUseCase Step1] >>> 매매,전세 평균가 계산 배치",
                 message=f"Upsert_private_sale_avg_prices : Finished !! \n "
-                        f"records: {time() - start_time} secs \n "
-                        f"{create_private_sale_avg_prices_count} Created \n "
-                        f"{update_private_sale_avg_prices_count} Updated",
+                f"records: {time() - start_time} secs \n "
+                f"{create_private_sale_avg_prices_count} Created \n "
+                f"{update_private_sale_avg_prices_count} Updated",
             )
 
         except Exception as e:
@@ -311,7 +311,6 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
 
         # Batch_step_2 : Upsert_public_sale_avg_prices
         # try:
-        #     # @Harry -> fail list 에 존재하지 않는 id가 그냥 다 찍히는 것 같습니다. 에러와 구분이 어렵습니다. 수정 부탁드립니다. ex) public_sales_id =  29131, 29132, 29133, 29134 ...
         #     start_time = time()
         #     logger.info(f"🚀\tUpsert_public_sale_avg_prices : Start")
         #
@@ -320,12 +319,12 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #     public_sale_avg_prices_failed_list = list()
         #
         #     # 공급 가격 평균 계산
-        #     # for idx in range(29130, 42775):
-        #     for idx in range(42775, 42785):
+        #     target_ids = self._house_repo.get_target_list_of_upsert_public_sale_avg_prices()
+        #
+        #     for idx in target_ids:
         #         competition_and_score_info: dict = self._house_repo.get_competition_and_min_score(
         #             public_sales_id=idx
         #         )
-        #         # @Harry count(supply_area)는 의미가 없어서 세대수가 많은 수로 쿼리 바꿨습니다.
         #         default_info: dict = self._house_repo.get_default_infos(
         #             public_sales_id=idx
         #         )
@@ -551,10 +550,10 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
             self.send_slack_message(
                 title=f"{emoji} [PreCalculateAdministrativeDivisionUseCase] >>> 행정구역별 매매,전세 평균가 계산",
                 message=f"PreCalculateAdministrativeDivisionUseCase : Finished !! \n "
-                        f"records: {time() - start_time} secs \n "
-                        f"{len(update_list)} Updated"
-                        f"{len(failure_list)} Failed"
-                        f"Failed_list : {failure_list}",
+                f"records: {time() - start_time} secs \n "
+                f"{len(update_list)} Updated"
+                f"{len(failure_list)} Failed"
+                f"Failed_list : {failure_list}",
             )
 
         except Exception as e:
@@ -570,9 +569,9 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
 
 class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
     def _make_real_estates_legal_code_update_list(
-            self,
-            administrative_info: List[AdministrativeDivisionLegalCodeEntity],
-            target_list: List[RealEstateLegalCodeEntity],
+        self,
+        administrative_info: List[AdministrativeDivisionLegalCodeEntity],
+        target_list: List[RealEstateLegalCodeEntity],
     ) -> List[dict]:
         """
             real_estates.jibun_address 주소가 없을 경우 혹은 건축예정이라 불확실한 경우 직접 매뉴얼 작업 필요
@@ -595,7 +594,7 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
 
                 # 예) 안양1동 -> 안양동으로 처리하여 행정구역 안양동과 매칭되는지 확인
                 if cond_2.match(real_estate.jibun_address) and not cond_2.match(
-                        administrative.short_name
+                    administrative.short_name
                 ):
                     jibun_address_ = re.sub(r"[0-9]+", "", real_estate.jibun_address)
                     dong_myun_ = re.sub(r"[0-9]+", "", dong_myun_)
@@ -621,10 +620,10 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
                 dong_myun_ = dong_myun_.replace(".", "")
 
                 if (
-                        administrative_short_name_ == dong_myun_
-                        and si_do_ in administrative_name_
-                        and si_gun_gu_ in administrative_name_
-                        and administrative_name_ in jibun_address_
+                    administrative_short_name_ == dong_myun_
+                    and si_do_ in administrative_name_
+                    and si_gun_gu_ in administrative_name_
+                    and administrative_name_ in jibun_address_
                 ):
                     front_legal_code = administrative.front_legal_code
                     back_legal_code = administrative.back_legal_code
@@ -677,7 +676,7 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         exit(os.EX_OK)
 
 
-class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
+class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
     """
         <아래 테이블의 이미지를 업로드 합니다.>
         - public_sale_photos
@@ -696,7 +695,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         업로드 대상 폴더 내에 평면도 없음(폴더) 가 없어야 합니다 - 사전에 제거 필요
         파일명: 이름(PK) -> PK가 없는 파일 이름은 업로드 무시하고 넘어갑니다
 
-        todo: 빈 폴더 Exception (통과되도록), 지나간 폴더 목록 logger, update 로직(가능하면 s3 삭제(나중))
+        todo: update 로직(가능하면 s3 삭제(나중))
     """
 
     def collect_file_list(self, dir_name: str, file_list: List[str]) -> Optional[dict]:
@@ -708,20 +707,10 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         entry = list()
         result_dict = dict()
 
-        # try:
-        #     # roots 기준 1 depth 하위 폴더명에 (pk) 없으면 out
-        #     public_sales_id = int(dir_name.split("(")[1].rsplit(")")[0])
-        # except Exception:
-        #     raise UpdateFailErrorException
-
         for image_name in file_list:
             path = S3Helper().get_image_upload_dir() + "/" + dir_name + "/"
             full_path = Path(
-                S3Helper().get_image_upload_dir()
-                + "/"
-                + dir_name
-                + "/"
-                + image_name
+                S3Helper().get_image_upload_dir() + "/" + dir_name + "/" + image_name
             )
             if os.path.splitext(image_name)[-1] in [".JPG", ".jpg"]:
                 changed_image_name = os.path.splitext(image_name)[0] + ".jpeg"
@@ -739,7 +728,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         return result_dict
 
     def make_upload_list(
-            self, dir_name: str, file_list, photos_start_idx, detail_photos_start_idx
+        self, dir_name: str, file_list, photos_start_idx, detail_photos_start_idx
     ):
         logger.info(f"🚀\tUpload_target : {dir_name}")
 
@@ -766,7 +755,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                     public_sales_id = int(dir_name.split("(")[1].rsplit(")")[0])
 
                     if self._house_repo.is_enable_public_sale_house(
-                            house_id=public_sales_id
+                        house_id=public_sales_id
                     ):
 
                         seq = int(image_name.split("@")[0]) - 1
@@ -793,11 +782,11 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             }
                         )
                         file_name = (
-                                S3Helper().get_image_upload_dir()
-                                + r"/"
-                                + dir_name
-                                + r"/"
-                                + image_name
+                            S3Helper().get_image_upload_dir()
+                            + r"/"
+                            + dir_name
+                            + r"/"
+                            + image_name
                         )
                         # # S3 upload
                         # S3Helper().upload(
@@ -820,7 +809,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                         )
 
                         if self._house_repo.is_enable_public_sale_detail_info(
-                                public_sale_details_id
+                            public_sale_details_id
                         ):
 
                             file_name = image_name.split("(")[0]
@@ -842,21 +831,21 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             )
 
                             file_name = (
-                                    S3Helper().get_image_upload_dir()
-                                    + r"/"
-                                    + dir_name
-                                    + r"/"
-                                    + image_name
+                                S3Helper().get_image_upload_dir()
+                                + r"/"
+                                + dir_name
+                                + r"/"
+                                + image_name
                             )
-                            # # S3 upload
-                            # S3Helper().upload(
-                            #     bucket="toadhome-tanos-bucket",
-                            #     file_name=file_name,
-                            #     object_name=path,
-                            #     extension=extension,
-                            # )
+                            # S3 upload
+                            S3Helper().upload(
+                                bucket="toadhome-tanos-bucket",
+                                file_name=file_name,
+                                object_name=path,
+                                extension=extension,
+                            )
                             public_sale_detail_photos_start_idx = (
-                                    public_sale_detail_photos_start_idx + 1
+                                public_sale_detail_photos_start_idx + 1
                             )
                         else:
                             # public_sale_details_photos 실패 수집
@@ -873,7 +862,9 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                 logger.info(f"🚀\tpublic_sales_id : {pk} - {name} failed")
 
         if failed_public_sale_detail_ids and failed_public_sale_detail_image_names:
-            for pk, name in zip(failed_public_sale_detail_ids, failed_public_sale_detail_image_names):
+            for pk, name in zip(
+                failed_public_sale_detail_ids, failed_public_sale_detail_image_names
+            ):
                 logger.info(f"🚀\tpublic_sales_detail_id : {pk} - {name} failed")
 
         if passed_image_names_dict:
@@ -915,7 +906,6 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             entry = []
 
             # roots 기준 1 depth 하위 dir
-            print(roots)
             _dir = roots.split(r"/")[-1]
             if "(" in _dir and ")" in _dir:
                 if len(file_names) > 0:
@@ -930,9 +920,7 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             else:
                 passed_dirs.append(_dir)
 
-        if passed_dirs:
-            for name in passed_dirs:
-                logger.info(f"🚀\tPassed_dir_list : {name} passed")
+        logger.info(f"🚀\tFinished collect_file_list in upload_images_list")
 
         for entry in upload_list:
             key = list(entry.keys())[0]
@@ -945,39 +933,47 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                 detail_photos_start_idx=public_sale_detail_photos_start_idx,
             )
 
-            # # Bulk insert public_sale_photos
-            # try:
-            #     self._house_repo.insert_images_to_public_sale_photos(
-            #         create_list=public_sale_photos
-            #     )
-            #     total_public_sale_photos = total_public_sale_photos + len(public_sale_photos)
-            # except Exception as e:
-            #     logger.error(f"insert_images_to_public_sale_photos error : {e}")
-            #     exit(os.EX_OK)
-            #
-            # # Bulk insert public_sale_detail_photos
-            # try:
-            #     self._house_repo.insert_images_to_public_sale_detail_photos(
-            #         create_list=public_sale_detail_photos
-            #     )
-            #     total_public_sale_detail_photos = total_public_sale_detail_photos + len(public_sale_detail_photos)
-            # except Exception as e:
-            #     logger.error(f"insert_images_to_public_sale_photos error : {e}")
-            #     exit(os.EX_OK)
+            # Bulk insert public_sale_photos
+            try:
+                self._house_repo.insert_images_to_public_sale_photos(
+                    create_list=public_sale_photos
+                )
+                total_public_sale_photos = total_public_sale_photos + len(
+                    public_sale_photos
+                )
+            except Exception as e:
+                logger.error(f"insert_images_to_public_sale_photos error : {e}")
+                exit(os.EX_OK)
+
+            # Bulk insert public_sale_detail_photos
+            try:
+                self._house_repo.insert_images_to_public_sale_detail_photos(
+                    create_list=public_sale_detail_photos
+                )
+                total_public_sale_detail_photos = total_public_sale_detail_photos + len(
+                    public_sale_detail_photos
+                )
+            except Exception as e:
+                logger.error(f"insert_images_to_public_sale_photos error : {e}")
+                exit(os.EX_OK)
 
             public_sale_photos_start_idx = public_sale_photos_start_idx + len(
                 public_sale_photos
             )
             public_sale_detail_photos_start_idx = (
-                    public_sale_detail_photos_start_idx + len(public_sale_detail_photos)
+                public_sale_detail_photos_start_idx + len(public_sale_detail_photos)
             )
+
+        if passed_dirs:
+            for name in passed_dirs:
+                logger.info(f"🚀\tPassed_dir_list : {name} passed")
+
         logger.info(
             f"🚀\tInsertUploadPhotoUseCase - Done! "
             f"public_sale_photos: {total_public_sale_photos} upserted, "
             f"public_sale_detail_photos: {total_public_sale_detail_photos} upserted, "
             f"records: {time() - start_time} secs"
         )
-
         exit(os.EX_OK)
 
 
@@ -1000,7 +996,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
     """
 
     def _get_replace_target(
-            self, public_sales: List[PublicSaleEntity]
+        self, public_sales: List[PublicSaleEntity]
     ) -> List[PublicSaleEntity]:
         replace_target = list()
         for public_sale in public_sales:
@@ -1014,7 +1010,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
         return replace_target
 
     def _make_disable_update_list_to_replace_target(
-            self, target_list: List[PublicSaleEntity]
+        self, target_list: List[PublicSaleEntity]
     ) -> List[dict]:
         result_dict_list = list()
         for target in target_list:
@@ -1028,10 +1024,10 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _make_replace_private_sales_create_list(
-            self,
-            target_list: List[PublicSaleEntity],
-            avoid_pk_list: List[int],
-            start_pk: int,
+        self,
+        target_list: List[PublicSaleEntity],
+        avoid_pk_list: List[int],
+        start_pk: int,
     ) -> List[dict]:
         result_dict_list = list()
         start_idx = start_pk
@@ -1071,7 +1067,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
                         "name": target.name,
                         "building_type": BuildTypeEnum.APARTMENT,
                         "move_in_year": str(target.move_in_year)
-                                        + str(target.move_in_month),
+                        + str(target.move_in_month),
                         "construct_company": target.construct_company
                         if target.construct_company
                         else None,
@@ -1088,7 +1084,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
         return result_dict_list
 
     def _make_update_list_for_update_public_ref_id(
-            self, target_list: List[CheckIdsRealEstateEntity]
+        self, target_list: List[CheckIdsRealEstateEntity]
     ) -> List[dict]:
         result_dict_list = list()
         for target in target_list:
