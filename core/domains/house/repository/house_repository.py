@@ -2683,6 +2683,30 @@ class HouseRepository:
 
         return query_set
 
+    def get_main_recent_public_info_list_without_image(self) -> Optional[list]:
+        filters = list()
+        filters.append(
+            and_(
+                PublicSaleModel.is_available == "True",
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value,
+            )
+        )
+
+        query = (
+            session.query(PublicSaleModel)
+            .options(joinedload(PublicSaleModel.real_estates))
+            .filter(*filters)
+            .order_by(PublicSaleModel.subscription_end_date.desc())
+            .limit(12)
+        )
+
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        return query_set
+
     def get_near_houses_bounding(
         self, bounding_filter: _FunctionGenerator
     ) -> Optional[List[NearHouseEntity]]:
@@ -3052,7 +3076,7 @@ class HouseRepository:
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
                 PrivateSaleModel.trade_status == 0,
                 PrivateSaleModel.deposit_status == 0,
-                PrivateSaleModel.public_ref_id == None
+                PrivateSaleModel.public_ref_id == None,
             )
         )
         query = session.query(PrivateSaleModel).filter(*filters)
