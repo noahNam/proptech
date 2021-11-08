@@ -333,7 +333,7 @@ class MainRecentPublicInfoEntity(BaseModel):
     name: str
     si_do: str
     status: int
-    public_sale_photos: List[PublicSalePhotoEntity]
+    public_sale_photos: Optional[List[PublicSalePhotoEntity]]
 
 
 class GetHouseMainEntity(BaseModel):

@@ -788,13 +788,13 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             + r"/"
                             + image_name
                         )
-                        # # S3 upload
-                        # S3Helper().upload(
-                        #     bucket="toadhome-tanos-bucket",
-                        #     file_name=file_name,
-                        #     object_name=path,
-                        #     extension=extension,
-                        # )
+                        # S3 upload
+                        S3Helper().upload(
+                            bucket="toadhome-tanos-bucket",
+                            file_name=file_name,
+                            object_name=path,
+                            extension=extension,
+                        )
                         public_sale_photos_start_idx = public_sale_photos_start_idx + 1
                     else:
                         # public_sale_photos 실패 수집
