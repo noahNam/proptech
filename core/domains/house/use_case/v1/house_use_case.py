@@ -4,6 +4,7 @@ from typing import Union, List, Optional
 import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
+from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.banner.entity.banner_entity import (
@@ -455,6 +456,10 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                 MainRecentPublicInfoEntity(
                     id=query.id,
                     name=query.name,
+                    status=HouseHelper().public_status(
+                        offer_date=query.offer_date,
+                        subscription_end_date=query.subscription_end_date,
+                    ),
                     si_do=query.si_do,
                     public_sale_photo=S3Helper().get_cloudfront_url()
                     + "/"

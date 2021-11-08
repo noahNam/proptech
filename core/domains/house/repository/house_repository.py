@@ -2667,6 +2667,8 @@ class HouseRepository:
             .with_entities(
                 PublicSaleModel.id.label("id"),
                 PublicSaleModel.name.label("name"),
+                PublicSaleModel.offer_date.label("offer_date"),
+                PublicSaleModel.subscription_end_date.label("subscription_end_date"),
                 RealEstateModel.si_do.label("si_do"),
                 func.coalesce(PublicSalePhotoModel.path, None).label(
                     "public_sale_photo"
