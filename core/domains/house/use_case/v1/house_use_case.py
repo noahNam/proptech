@@ -4,7 +4,7 @@ from typing import Union, List, Optional
 import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
-from app.extensions.utils.house_helper import HouseHelper
+from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.banner.entity.banner_entity import (
     BannerEntity,
@@ -455,16 +455,11 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                 MainRecentPublicInfoEntity(
                     id=query.id,
                     name=query.name,
-                    si_do=query.real_estates.si_do,
-                    status=HouseHelper().public_status(
-                        offer_date=query.offer_date,
-                        subscription_end_date=query.subscription_end_date,
-                    ),
-                    public_sale_photos=[
-                        public_sale_photo.to_entity()
-                        for public_sale_photo in query.public_sale_photos
-                    ]
-                    if query.public_sale_photos
+                    si_do=query.si_do,
+                    public_sale_photo=S3Helper().get_cloudfront_url()
+                    + "/"
+                    + query.public_sale_photo
+                    if query.public_sale_photo
                     else None,
                 )
             )
@@ -483,13 +478,9 @@ class GetHouseMainUseCase(HouseBaseUseCase):
         # get house main banner list
         banner_list = self._get_banner_list(section_type=dto.section_type)
 
+        # 이미지가 없을 경우 이미지 없이 나오도록 쿼리
+        # 이 경우, 기본 이미지는 FE 쪽에서 처리
         recent_public_infos = self._house_repo.get_main_recent_public_info_list()
-
-        if not recent_public_infos:
-            # 이미지가 없어 쿼리 결과가 None 일 경우 이미지 없이 쿼리
-            recent_public_infos = (
-                self._house_repo.get_main_recent_public_info_list_without_image()
-            )
 
         if not recent_public_infos:
             return UseCaseFailureOutput(
