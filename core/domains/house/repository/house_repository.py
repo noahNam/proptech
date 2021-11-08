@@ -2664,13 +2664,26 @@ class HouseRepository:
 
         query = (
             session.query(PublicSaleModel)
+            .with_entities(
+                PublicSaleModel.id.label("id"),
+                PublicSaleModel.name.label("name"),
+                RealEstateModel.si_do.label("si_do"),
+                func.coalesce(PublicSalePhotoModel.path, None).label(
+                    "public_sale_photo"
+                ),
+            )
             .join(
                 PublicSalePhotoModel,
                 (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
-                & (PublicSalePhotoModel.is_thumbnail == "True"),
+                & (PublicSalePhotoModel.is_thumbnail == "True")
+                & (PublicSalePhotoModel.seq == 0),
+                isouter=True,
             )
-            .options(joinedload(PublicSaleModel.real_estates))
-            .options(contains_eager("public_sale_photos"))
+            .join(
+                RealEstateModel,
+                (RealEstateModel.id == PublicSaleModel.real_estate_id)
+                & (RealEstateModel.is_available == "True"),
+            )
             .filter(*filters)
             .order_by(PublicSaleModel.subscription_end_date.desc())
             .limit(12)
