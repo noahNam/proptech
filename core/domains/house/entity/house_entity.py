@@ -332,6 +332,7 @@ class MainRecentPublicInfoEntity(BaseModel):
     id: int
     name: Optional[str]
     si_do: Optional[str]
+    status: int
     public_sale_photo: Optional[str]
 
 
