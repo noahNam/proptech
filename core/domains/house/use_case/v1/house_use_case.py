@@ -484,15 +484,23 @@ class GetHouseMainUseCase(HouseBaseUseCase):
         banner_list = self._get_banner_list(section_type=dto.section_type)
 
         recent_public_infos = self._house_repo.get_main_recent_public_info_list()
-        recent_public_info_entities = self._make_recent_public_info_entity(
-            recent_public_infos=recent_public_infos
-        )
+
+        if not recent_public_infos:
+            # 이미지가 없어 쿼리 결과가 None 일 경우 이미지 없이 쿼리
+            recent_public_infos = (
+                self._house_repo.get_main_recent_public_info_list_without_image()
+            )
+
         if not recent_public_infos:
             return UseCaseFailureOutput(
                 type="recent_public_infos",
                 message=FailureType.NOT_FOUND_ERROR,
                 code=HTTPStatus.NOT_FOUND,
             )
+
+        recent_public_info_entities = self._make_recent_public_info_entity(
+            recent_public_infos=recent_public_infos
+        )
 
         # get present calendar info
         now = get_server_timestamp()

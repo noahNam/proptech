@@ -33,6 +33,7 @@ from core.domains.house.enum.house_enum import (
     BuildTypeEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
+from core.exceptions import UpdateFailErrorException
 
 logger = logger_.getLogger(__name__)
 
@@ -243,9 +244,10 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             update_private_sale_avg_prices_count = 0
             final_create_list = list()
             final_update_list = list()
+
             # 매매, 전세 가격 평균 계산
             # target_ids = [idx for idx in range(1, 355105)]
-            target_ids = [idx for idx in range(1, 100000)]
+            target_ids = self._house_repo.get_target_of_upsert_private_sale_avg_prices()
 
             # contract_date 기준 가장 최근에 거래된 row 가져오기
             recent_infos: List[
@@ -310,7 +312,6 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
 
         # Batch_step_2 : Upsert_public_sale_avg_prices
         # try:
-        #     # @Harry -> fail list 에 존재하지 않는 id가 그냥 다 찍히는 것 같습니다. 에러와 구분이 어렵습니다. 수정 부탁드립니다. ex) public_sales_id =  29131, 29132, 29133, 29134 ...
         #     start_time = time()
         #     logger.info(f"🚀\tUpsert_public_sale_avg_prices : Start")
         #
@@ -319,12 +320,12 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #     public_sale_avg_prices_failed_list = list()
         #
         #     # 공급 가격 평균 계산
-        #     # for idx in range(29130, 42775):
-        #     for idx in range(42775, 42785):
+        #     target_ids = self._house_repo.get_target_list_of_upsert_public_sale_avg_prices()
+        #
+        #     for idx in target_ids:
         #         competition_and_score_info: dict = self._house_repo.get_competition_and_min_score(
         #             public_sales_id=idx
         #         )
-        #         # @Harry count(supply_area)는 의미가 없어서 세대수가 많은 수로 쿼리 바꿨습니다.
         #         default_info: dict = self._house_repo.get_default_infos(
         #             public_sales_id=idx
         #         )
@@ -439,7 +440,6 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
 
         # Batch_step_4 : update_private_sales_status
         # (현재 날짜 기준 최근 3달 거래 여부 업데이트)
-        # @Harry 현재날짜 기준이 아니라 마지막 최종 거래일인 것 같습니다. step1과 어떤점이 다른지 잘모르겠습니다. 이부분 하실때 저한테 확인 먼저 부탁드립니다.
         # try:
         #     start_time = time()
         #     logger.info(f"🚀\tUpdate_private_sales_status : Start")
@@ -676,7 +676,7 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         exit(os.EX_OK)
 
 
-class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
+class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
     """
         <아래 테이블의 이미지를 업로드 합니다.>
         - public_sale_photos
@@ -695,10 +695,10 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         업로드 대상 폴더 내에 평면도 없음(폴더) 가 없어야 합니다 - 사전에 제거 필요
         파일명: 이름(PK) -> PK가 없는 파일 이름은 업로드 무시하고 넘어갑니다
 
-        todo: 빈 폴더 Exception (통과되도록), 지나간 폴더 목록 logger, update 로직(가능하면 s3 삭제(나중))
+        todo: update 로직(가능하면 s3 삭제(나중))
     """
 
-    def collect_file_list(self, dir_list, file_list, dir_idx) -> dict:
+    def collect_file_list(self, dir_name: str, file_list: List[str]) -> Optional[dict]:
         """
             파일 확장자 정규화 처리
             '.JPG' or '.jpg' -> '.jpeg'
@@ -706,14 +706,11 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         """
         entry = list()
         result_dict = dict()
+
         for image_name in file_list:
-            path = S3Helper().get_image_upload_dir() + "/" + dir_list[dir_idx] + "/"
+            path = S3Helper().get_image_upload_dir() + "/" + dir_name + "/"
             full_path = Path(
-                S3Helper().get_image_upload_dir()
-                + "/"
-                + dir_list[dir_idx]
-                + "/"
-                + image_name
+                S3Helper().get_image_upload_dir() + "/" + dir_name + "/" + image_name
             )
             if os.path.splitext(image_name)[-1] in [".JPG", ".jpg"]:
                 changed_image_name = os.path.splitext(image_name)[0] + ".jpeg"
@@ -727,27 +724,35 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                 before_img.save(fp=Path(path + changed_image_name), format="png")
             entry.append(image_name)
 
-        result_dict[dir_list[dir_idx]] = entry
+        result_dict[dir_name] = entry
         return result_dict
 
     def make_upload_list(
-        self, dir_name: list, file_list, photos_start_idx, detail_photos_start_idx
+        self, dir_name: str, file_list, photos_start_idx, detail_photos_start_idx
     ):
-        logger.info(f"🚀\tUpload_target : {dir_name[0]}")
+        logger.info(f"🚀\tUpload_target : {dir_name}")
 
         public_sale_photos_start_idx = photos_start_idx
         public_sale_detail_photos_start_idx = detail_photos_start_idx
         public_sale_photos = list()
         public_sale_detail_photos = list()
 
+        failed_public_sale_ids = list()
+        failed_public_sale_detail_ids = list()
+        failed_public_sale_image_names = list()
+        failed_public_sale_detail_image_names = list()
+        passed_image_names_dict = dict()
+
+        # 폴더 내 이미지 파일들 목록 Loop
         for image_list in file_list:
+            # 이미지 파일별 파일 이름 체크 Loop
             for image_name in image_list:
                 if "@" in image_name:
                     # @ 문자가 있는 파일 이름 : public_sale_photos 테이블 upload 대상
                     table_name = "public_sale_photos"
                     is_thumbnail = False
 
-                    public_sales_id = int(dir_name[0].split("(")[1].rsplit(")")[0])
+                    public_sales_id = int(dir_name.split("(")[1].rsplit(")")[0])
 
                     if self._house_repo.is_enable_public_sale_house(
                         house_id=public_sales_id
@@ -779,11 +784,11 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                         file_name = (
                             S3Helper().get_image_upload_dir()
                             + r"/"
-                            + dir_name[0]
+                            + dir_name
                             + r"/"
                             + image_name
                         )
-
+                        # S3 upload
                         S3Helper().upload(
                             bucket="toadhome-tanos-bucket",
                             file_name=file_name,
@@ -792,8 +797,11 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                         )
                         public_sale_photos_start_idx = public_sale_photos_start_idx + 1
                     else:
-                        logger.info(f"🚀\tpublic_sales_id : {public_sales_id} failed")
+                        # public_sale_photos 실패 수집
+                        failed_public_sale_ids.append(public_sales_id)
+                        failed_public_sale_image_names.append(image_name)
                 else:
+                    # public_sale_detail_photos 테이블 upload 대상
                     table_name = "public_sale_detail_photos"
                     try:
                         public_sale_details_id = int(
@@ -825,10 +833,11 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             file_name = (
                                 S3Helper().get_image_upload_dir()
                                 + r"/"
-                                + dir_name[0]
+                                + dir_name
                                 + r"/"
                                 + image_name
                             )
+                            # S3 upload
                             S3Helper().upload(
                                 bucket="toadhome-tanos-bucket",
                                 file_name=file_name,
@@ -839,23 +848,39 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                                 public_sale_detail_photos_start_idx + 1
                             )
                         else:
-                            logger.info(
-                                f"🚀\tpublic_sales_detail_id : {public_sale_details_id} failed"
-                            )
-
+                            # public_sale_details_photos 실패 수집
+                            failed_public_sale_detail_ids.append(public_sale_details_id)
+                            failed_public_sale_detail_image_names.append(image_name)
                     except Exception:
                         # FK 없는 이미지 이름은 제외
+                        passed_image_names_dict[dir_name] = image_name
                         continue
 
-            return public_sale_photos, public_sale_detail_photos
+        # 실패 리스트 로그 기록
+        if failed_public_sale_ids and failed_public_sale_image_names:
+            for pk, name in zip(failed_public_sale_ids, failed_public_sale_image_names):
+                logger.info(f"🚀\tpublic_sales_id : {pk} - {name} failed")
+
+        if failed_public_sale_detail_ids and failed_public_sale_detail_image_names:
+            for pk, name in zip(
+                failed_public_sale_detail_ids, failed_public_sale_detail_image_names
+            ):
+                logger.info(f"🚀\tpublic_sales_detail_id : {pk} - {name} failed")
+
+        if passed_image_names_dict:
+            logger.info(f"🚀\t{passed_image_names_dict} passed")
+
+        return public_sale_photos, public_sale_detail_photos
 
     def execute(self):
         logger.info(f"🚀\tInsertUploadPhotoUseCase Start - {self.client_id}")
         logger.info(f"🚀\tupload_job 위치 : {S3Helper().get_image_upload_dir()}")
         start_time = time()
 
-        _dirs = None
-        cnt = 0
+        passed_dirs = list()
+        _dir = None
+        total_public_sale_photos = 0
+        total_public_sale_detail_photos = 0
 
         recent_public_sale_photos_info = (
             self._house_repo.get_recent_public_sale_photos()
@@ -879,19 +904,26 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         upload_list: List[Dict] = list()
         for (roots, dirs, file_names) in os.walk(S3Helper().get_image_upload_dir()):
             entry = []
-            if len(dirs) > 0:
-                _dirs = dirs
-            if len(file_names) > 0:
-                for file_name in file_names:
-                    entry.append(file_name)
 
-                upload_list.append(
-                    self.collect_file_list(dir_list=_dirs, file_list=entry, dir_idx=cnt)
-                )
-                cnt = cnt + 1
+            # roots 기준 1 depth 하위 dir
+            _dir = roots.split(r"/")[-1]
+            if "(" in _dir and ")" in _dir:
+                if len(file_names) > 0:
+                    for file_name in file_names:
+                        entry.append(file_name)
+
+                    upload_list.append(
+                        self.collect_file_list(dir_name=_dir, file_list=entry)
+                    )
+            elif _dir == "upload_images_list":
+                continue
+            else:
+                passed_dirs.append(_dir)
+
+        logger.info(f"🚀\tFinished collect_file_list in upload_images_list")
 
         for entry in upload_list:
-            key = list(entry.keys())
+            key = list(entry.keys())[0]
             values = list(entry.values())
 
             (public_sale_photos, public_sale_detail_photos) = self.make_upload_list(
@@ -900,15 +932,14 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                 photos_start_idx=public_sale_photos_start_idx,
                 detail_photos_start_idx=public_sale_detail_photos_start_idx,
             )
+
             # Bulk insert public_sale_photos
             try:
                 self._house_repo.insert_images_to_public_sale_photos(
                     create_list=public_sale_photos
                 )
-                logger.info(
-                    f"🚀\t [insert_images_to_public_sale_photos] - Done! "
-                    f"{len(public_sale_photos)} finished, "
-                    f"records: {time() - start_time} secs"
+                total_public_sale_photos = total_public_sale_photos + len(
+                    public_sale_photos
                 )
             except Exception as e:
                 logger.error(f"insert_images_to_public_sale_photos error : {e}")
@@ -919,10 +950,8 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                 self._house_repo.insert_images_to_public_sale_detail_photos(
                     create_list=public_sale_detail_photos
                 )
-                logger.info(
-                    f"🚀\t [insert_images_to_public_sale_detail_photos] - Done! "
-                    f"{len(public_sale_detail_photos)} created, "
-                    f"records: {time() - start_time} secs"
+                total_public_sale_detail_photos = total_public_sale_detail_photos + len(
+                    public_sale_detail_photos
                 )
             except Exception as e:
                 logger.error(f"insert_images_to_public_sale_photos error : {e}")
@@ -935,6 +964,16 @@ class InsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                 public_sale_detail_photos_start_idx + len(public_sale_detail_photos)
             )
 
+        if passed_dirs:
+            for name in passed_dirs:
+                logger.info(f"🚀\tPassed_dir_list : {name} passed")
+
+        logger.info(
+            f"🚀\tInsertUploadPhotoUseCase - Done! "
+            f"public_sale_photos: {total_public_sale_photos} upserted, "
+            f"public_sale_detail_photos: {total_public_sale_detail_photos} upserted, "
+            f"records: {time() - start_time} secs"
+        )
         exit(os.EX_OK)
 
 
@@ -948,6 +987,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
             - 현재 년월과 비교하여 1달 이상 지났을 경우 private_sales 전환 대상
             - 주의 : 사전에 이미 전환된 private_sales가 있을 수 있다
             - -> private_sales 생성 전, 하나의 real_estates id로 public_sales와 private_sales 동시 사용중인 매물을 체크
+            - 이미 private_sales가 생성되어 있는 건에 대해서는 public_ref_id를 포함한 기타 정보 업데이트 처리
         2. private_sales 전환 대상 public_sales에 대하여 private_sales 생성
             - public_sales is_available = False 처리
             - 기존 분양 정보를 참고하여 새로운 private_sales 생성
