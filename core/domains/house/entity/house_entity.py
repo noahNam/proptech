@@ -330,10 +330,9 @@ class SimpleCalendarInfoEntity(BaseModel):
 
 class MainRecentPublicInfoEntity(BaseModel):
     id: int
-    name: str
-    si_do: str
-    status: int
-    public_sale_photos: Optional[List[PublicSalePhotoEntity]]
+    name: Optional[str]
+    si_do: Optional[str]
+    public_sale_photo: Optional[str]
 
 
 class GetHouseMainEntity(BaseModel):
