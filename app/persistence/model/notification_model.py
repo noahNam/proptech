@@ -28,6 +28,7 @@ class NotificationModel(db.Model):
     user_id = Column(BigInteger, nullable=False, index=True)
     token = Column(String(163), nullable=False)
     endpoint = Column(String(100), nullable=True, default="")
+    uuid = Column(String(36), nullable=True)
     topic = Column(String(6), nullable=False, index=True)
     badge_type = Column(String(3), nullable=False)
     message = Column(
@@ -50,6 +51,7 @@ class NotificationModel(db.Model):
             user_id=self.user_id,
             token=self.token,
             endpoint=self.endpoint,
+            uuid=self.uuid,
             topic=self.topic,
             badge_type=self.badge_type,
             message=self.message,
