@@ -126,13 +126,14 @@ class RecentlySaleReportSchema(BaseModel):
     second_supply_etc_date: Optional[StrictStr]
     second_etc_gyeonggi_date: Optional[StrictStr]
     notice_winner_date: Optional[StrictStr]
-    public_sale_photo: Optional[List[ReportPublicSalePhotoSchema]] = None
-    public_sale_details: Optional[List[RecentlySaleDetailReportSchema]] = None
+    public_sale_photos: Optional[List[str]]
+    public_sale_details: Optional[Dict]
     real_estates: RealEstateReportSchema
 
 
 class GetRecentlySaleResponseSchema(BaseModel):
     recently_sale_info: RecentlySaleReportSchema
+    house_applicants: Dict
 
 
 class GetSurveysUserReportSchema(BaseModel):
