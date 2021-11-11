@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -7,7 +8,8 @@ class NotificationEntity(BaseModel):
     id: int
     user_id: int
     token: str
-    endpoint: str
+    endpoint: Optional[str]
+    uuid: Optional[str]
     topic: str
     badge_type: str
     message: dict
