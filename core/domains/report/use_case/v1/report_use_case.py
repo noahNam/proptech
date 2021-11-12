@@ -39,6 +39,7 @@ from core.domains.report.schema.report_schema import (
     GetSurveysResultBaseSchema,
     PublicSaleReportSchema,
     PublicSaleDetailReportSchema,
+    RecentlySaleReportSchema,
 )
 from core.domains.user.dto.user_dto import AvgMonthlyIncomeWokrerDto
 from core.domains.user.entity.user_entity import UserProfileEntity, SidoCodeEntity
@@ -91,6 +92,49 @@ class ReportBaseUseCase:
             si_gun_gu=si_gun_gu,
         )
         return get_event_object(topic_name=HouseTopicEnum.GET_RECENTLY_PUBLIC_SALE_INFO)
+
+    def _sort_domain_list_to_region(self, target_list: List):
+        sort_dict = {
+            RegionEnum.THE_AREA.value: 0,
+            RegionEnum.OTHER_GYEONGGI.value: 1,
+            RegionEnum.OTHER_REGION.value: 2,
+        }
+
+        for target_domain in target_list:
+            end = len(target_domain) - 1
+            while end > 0:
+                last_swap = 0
+                for i in range(end):
+                    if sort_dict.get(target_domain[i]["region"]) > sort_dict.get(
+                        target_domain[i + 1]["region"]
+                    ):
+                        target_domain[i], target_domain[i + 1] = (
+                            target_domain[i + 1],
+                            target_domain[i],
+                        )
+                        last_swap = i
+                end = last_swap
+
+    def _convert_area_type_dict(self, convert_target_dict: Dict) -> Dict:
+        result_dict = dict()
+
+        domain_list = list(convert_target_dict.keys())
+        for domain in domain_list:
+            convert_dict = dict()
+            domain_target_dict = convert_target_dict.get(domain)
+            key_list = list(convert_target_dict.get(domain).keys())
+            for key in key_list:
+                if re.search("\d", key):
+                    new_key = re.sub(r"[^0-9]", "", key)
+                    convert_dict.setdefault(new_key, []).append(
+                        domain_target_dict.get(key)
+                    )
+                else:
+                    convert_dict.setdefault(key, []).append(domain_target_dict.get(key))
+
+            result_dict.setdefault(domain, dict()).update(convert_dict)
+
+        return result_dict
 
 
 class GetExpectedCompetitionUseCase(ReportBaseUseCase):
@@ -212,7 +256,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
 
             # 각 타입별 마지막 지역(해당지역,기타경기,기타지역)이 들어오면 지역순서대로 정렬
             if len(domain_marry_list) == 3:
-                self.__sort_domain_list_to_region(
+                self._sort_domain_list_to_region(
                     target_list=[
                         domain_marry_list,
                         domain_first_life_list,
@@ -261,52 +305,9 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             normal=domain_normal_dict,
         )
 
-        predicted_competition_dict: Dict = self.__convert_area_type_dict(
+        predicted_competition_dict: Dict = self._convert_area_type_dict(
             convert_target_dict=convert_target_dict_dict
         )
-        return predicted_competition_dict
-
-    def __sort_domain_list_to_region(self, target_list: List):
-        sort_dict = {
-            RegionEnum.THE_AREA.value: 0,
-            RegionEnum.OTHER_GYEONGGI.value: 1,
-            RegionEnum.OTHER_REGION.value: 2,
-        }
-
-        for target_domain in target_list:
-            end = len(target_domain) - 1
-            while end > 0:
-                last_swap = 0
-                for i in range(end):
-                    if sort_dict.get(target_domain[i]["region"]) > sort_dict.get(
-                        target_domain[i + 1]["region"]
-                    ):
-                        target_domain[i], target_domain[i + 1] = (
-                            target_domain[i + 1],
-                            target_domain[i],
-                        )
-                        last_swap = i
-                end = last_swap
-
-    def __convert_area_type_dict(self, convert_target_dict: Dict) -> Dict:
-        predicted_competition_dict = dict()
-
-        domain_list = list(convert_target_dict.keys())
-        for domain in domain_list:
-            convert_dict = dict()
-            domain_target_dict = convert_target_dict.get(domain)
-            key_list = list(convert_target_dict.get(domain).keys())
-            for key in key_list:
-                if re.search("\d", key):
-                    new_key = re.sub(r"[^0-9]", "", key)
-                    convert_dict.setdefault(new_key, []).append(
-                        domain_target_dict.get(key)
-                    )
-                else:
-                    convert_dict.setdefault(key, []).append(domain_target_dict.get(key))
-
-            predicted_competition_dict.setdefault(domain, dict()).update(convert_dict)
-
         return predicted_competition_dict
 
     def _make_response_schema(
@@ -635,17 +636,220 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
             house_id=dto.house_id
         )
 
+        house_applicants_dict: Dict = self._make_response_object_to_house_applicants(
+            report_recently_public_sale_info=report_recently_public_sale_info
+        )
+        public_sale_detail_dict: Dict = self._make_response_object_to_public_sale_details(
+            report_recently_public_sale_info=report_recently_public_sale_info
+        )
+
         result: GetRecentlySaleResponseSchema = self._make_response_schema(
-            report_recently_public_sale_info
+            report_recently_public_sale_info=report_recently_public_sale_info,
+            house_applicants_dict=house_applicants_dict,
+            public_sale_detail_dict=public_sale_detail_dict,
         )
 
         return UseCaseSuccessOutput(value=result)
 
-    def _make_response_schema(
+    def _make_response_object_to_public_sale_details(
         self, report_recently_public_sale_info: PublicSaleReportEntity,
+    ) -> Dict:
+        public_sale_detail_dict = dict()
+        public_sale_detail_list = list()
+
+        competitions = report_recently_public_sale_info.public_sale_details
+        for competition in competitions:
+            detail_dict = dict(
+                area_type=competition.area_type,
+                special_household=competition.special_household,
+                general_household=competition.general_household,
+                total_househlod=competition.total_household,
+                price_per_meter=competition.price_per_meter,
+                private_area=competition.private_area,
+                pyoung_number=competition.pyoung_number,
+                supply_area=competition.supply_area,
+                supply_price=competition.supply_price,
+                public_sale_detail_photo=competition.public_sale_detail_photo,
+            )
+
+            if public_sale_detail_dict.get(competition.area_type):
+                public_sale_detail_list.append(detail_dict)
+            else:
+                public_sale_detail_list = [detail_dict]
+
+            public_sale_detail_dict.setdefault(competition.area_type, dict()).update(
+                detail_dict
+            )
+
+        convert_target_dict_dict = dict(public_sale_details=public_sale_detail_dict,)
+
+        result_dict: Dict = self._convert_area_type_dict(
+            convert_target_dict=convert_target_dict_dict
+        )
+        return result_dict
+
+    def _make_response_object_to_house_applicants(
+        self, report_recently_public_sale_info: PublicSaleReportEntity,
+    ) -> Dict:
+        (
+            domain_marry_list,
+            domain_first_life_list,
+            domain_children_list,
+            domain_old_parent_list,
+            domain_normal_list,
+        ) = (list(), list(), list(), list(), list())
+        (
+            domain_marry_dict,
+            domain_first_life_dict,
+            domain_children_dict,
+            domain_old_parent_dict,
+            domain_normal_dict,
+        ) = (dict(), dict(), dict(), dict(), dict())
+
+        competitions = report_recently_public_sale_info.public_sale_details
+        for competition in competitions:
+            for special_supply_result in competition.special_supply_results:
+                domain_common_dict = dict(
+                    region=special_supply_result.region,
+                    region_percentage=special_supply_result.region_percent,
+                )
+                marry_dict = dict(
+                    competition=None,
+                    applicant=special_supply_result.newlywed_vol,
+                    score=None,
+                )
+                first_life_dict = dict(
+                    competition=None,
+                    applicant=special_supply_result.first_life_vol,
+                    score=None,
+                )
+                children_dict = dict(
+                    competition=None,
+                    applicant=special_supply_result.multi_children_vol,
+                    score=None,
+                )
+                old_parent_dict = dict(
+                    competition=None,
+                    applicant=special_supply_result.old_parent_vol,
+                    score=None,
+                )
+
+                marry_dict.update(domain_common_dict)
+                first_life_dict.update(domain_common_dict)
+                children_dict.update(domain_common_dict)
+                old_parent_dict.update(domain_common_dict)
+
+                if domain_marry_dict.get(competition.area_type):
+                    domain_marry_list.append(marry_dict)
+                    domain_first_life_list.append(first_life_dict)
+                    domain_children_list.append(children_dict)
+                    domain_old_parent_list.append(old_parent_dict)
+                else:
+                    domain_marry_list = [marry_dict]
+                    domain_first_life_list = [first_life_dict]
+                    domain_children_list = [children_dict]
+                    domain_old_parent_list = [old_parent_dict]
+
+                # 각 타입별 마지막 지역(해당지역,기타경기,기타지역)이 들어오면 지역순서대로 정렬
+                if len(domain_marry_list) == 3:
+                    self._sort_domain_list_to_region(
+                        target_list=[
+                            domain_marry_list,
+                            domain_first_life_list,
+                            domain_children_list,
+                            domain_old_parent_list,
+                            domain_normal_list,
+                        ]
+                    )
+
+                domain_marry_dict.setdefault(competition.area_type, dict()).update(
+                    house_structure_type=competition.area_type, infos=domain_marry_list,
+                )
+                domain_first_life_dict.setdefault(competition.area_type, dict()).update(
+                    house_structure_type=competition.area_type,
+                    infos=domain_first_life_list,
+                )
+                domain_children_dict.setdefault(competition.area_type, dict()).update(
+                    house_structure_type=competition.area_type,
+                    infos=domain_children_list,
+                )
+                domain_old_parent_dict.setdefault(competition.area_type, dict()).update(
+                    house_structure_type=competition.area_type,
+                    infos=domain_old_parent_list,
+                )
+
+            for general_supply_result in competition.general_supply_results:
+                domain_common_dict = dict(
+                    region=general_supply_result.region,
+                    region_percentage=general_supply_result.region_percent,
+                )
+                normal_dict = dict(
+                    competition=general_supply_result.competition_rate,
+                    applicant=general_supply_result.applicant_num,
+                    score=general_supply_result.win_point,
+                )
+
+                normal_dict.update(domain_common_dict)
+
+                if domain_normal_dict.get(competition.area_type):
+                    domain_normal_list.append(normal_dict)
+                else:
+                    domain_normal_list = [normal_dict]
+
+                domain_normal_dict.setdefault(competition.area_type, dict()).update(
+                    house_structure_type=competition.area_type,
+                    infos=domain_normal_list,
+                )
+
+        convert_target_dict_dict = dict(
+            marry=domain_marry_dict,
+            first_life=domain_first_life_dict,
+            children=domain_children_dict,
+            old_parent=domain_old_parent_dict,
+            normal=domain_normal_dict,
+        )
+
+        house_applicants_dict: Dict = self._convert_area_type_dict(
+            convert_target_dict=convert_target_dict_dict
+        )
+        return house_applicants_dict
+
+    def _make_response_schema(
+        self,
+        report_recently_public_sale_info: PublicSaleReportEntity,
+        house_applicants_dict: Dict,
+        public_sale_detail_dict: Dict,
     ) -> GetRecentlySaleResponseSchema:
+        public_sale_photos = None
+        if report_recently_public_sale_info.public_sale_photos:
+            report_recently_public_sale_info.public_sale_photos.sort(
+                key=lambda obj: obj.seq, reverse=False
+            )
+            public_sale_photos = [
+                public_sale_photo.path
+                for public_sale_photo in report_recently_public_sale_info.public_sale_photos
+            ]
+
+        recently_sale_info = RecentlySaleReportSchema(
+            supply_household=report_recently_public_sale_info.supply_household,
+            offer_date=report_recently_public_sale_info.offer_date,
+            special_supply_date=report_recently_public_sale_info.special_supply_date,
+            special_supply_etc_date=report_recently_public_sale_info.special_supply_etc_date,
+            special_etc_gyeonggi_date=report_recently_public_sale_info.special_etc_gyeonggi_date,
+            first_supply_date=report_recently_public_sale_info.first_supply_date,
+            first_supply_etc_date=report_recently_public_sale_info.first_supply_etc_date,
+            first_etc_gyeonggi_date=report_recently_public_sale_info.first_etc_gyeonggi_date,
+            second_supply_date=report_recently_public_sale_info.second_supply_date,
+            second_supply_etc_date=report_recently_public_sale_info.second_supply_etc_date,
+            second_etc_gyeonggi_date=report_recently_public_sale_info.second_etc_gyeonggi_date,
+            notice_winner_date=report_recently_public_sale_info.notice_winner_date,
+            real_estates=report_recently_public_sale_info.real_estates,
+            public_sale_photos=public_sale_photos,
+            public_sale_details=public_sale_detail_dict.get("public_sale_details"),
+        )
         return GetRecentlySaleResponseSchema(
-            recently_sale_info=report_recently_public_sale_info,
+            recently_sale_info=recently_sale_info,
+            house_applicants=house_applicants_dict,
         )
 
 
