@@ -163,6 +163,9 @@ class BannerSubTopic(Enum):
     TOP_SCREEN_BANNER = 8
     BOTTOM_SCREEN_BANNER = 9
 
+    # 대출
+    HOME_LOAN_BANNER = 11
+
 
 class CalcPyoungEnum(Enum):
     """
