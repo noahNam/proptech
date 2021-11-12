@@ -12,6 +12,7 @@ class PostCategoryEnum(Enum):
     SUBSCRIPTION_FAQ = 2
     SUBSCRIPTION_WORDS = 3
     ABOUT_SUBSCRIPTION = 4
+    ABOUT_LOAN_SECTION = 5
 
 
 class PostCategoryDetailEnum(Enum):
@@ -21,7 +22,7 @@ class PostCategoryDetailEnum(Enum):
         (FAQ - 계정/인증, 개인정보, 사용법, 환경설정)
     """
 
-    # 공지사항, 청약용어
+    # 공지사항, 청약용어, 대출은이렇게_배너(1,2,3)
     NO_DETAIL = 0
 
     # FAQ
