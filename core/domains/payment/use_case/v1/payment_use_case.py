@@ -5,6 +5,7 @@ from typing import Union, List, Optional
 
 import inject
 import requests
+import sentry_sdk
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from core.domains.house.entity.house_entity import GetPublicSaleOfTicketUsageEntity
@@ -335,9 +336,11 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
             )
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
+            msg = "error on jarvis (use_ticket_to_house_by_charged)"
+            sentry_sdk.capture_message(msg)
             return UseCaseFailureOutput(
                 type=HTTPStatus.INTERNAL_SERVER_ERROR,
-                message="error on jarvis (use_ticket_to_house_by_charged)",
+                message=msg,
                 code=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
         return None
@@ -375,9 +378,11 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
                 )
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
+            msg = "error on jarvis (use_ticket_to_house_by_promotion)"
+            sentry_sdk.capture_message(msg)
             return UseCaseFailureOutput(
                 type=HTTPStatus.INTERNAL_SERVER_ERROR,
-                message="error on jarvis (use_ticket_to_house_by_promotion)",
+                message=msg,
                 code=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
         return UseCaseSuccessOutput(
