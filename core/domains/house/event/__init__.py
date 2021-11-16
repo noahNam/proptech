@@ -27,9 +27,9 @@ def get_public_sale_info(house_id: int,):
     setattr(g, HouseTopicEnum.GET_PUBLIC_SALE_INFO, result)
 
 
-def get_recently_public_sale_info(si_gun_gu: str,):
+def get_recently_public_sale_info(report_public_sale_infos: PublicSaleReportEntity,):
     result: PublicSaleReportEntity = HouseRepository().get_recently_public_sale_info(
-        si_gun_gu=si_gun_gu
+        report_public_sale_infos=report_public_sale_infos
     )
     setattr(g, HouseTopicEnum.GET_RECENTLY_PUBLIC_SALE_INFO, result)
 
