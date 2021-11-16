@@ -1414,9 +1414,15 @@ class HouseRepository:
 
         return query_set.to_report_entity()
 
-    def get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
+    def get_recently_public_sale_info(
+        self, report_public_sale_infos: PublicSaleReportEntity
+    ) -> PublicSaleReportEntity:
         filters = list()
-        filters.append(RealEstateModel.si_gun_gu == si_gun_gu)
+        filters.append(
+            RealEstateModel.si_gun_gu == report_public_sale_infos.real_estates.si_gun_gu
+        )
+        filters.append(PublicSaleModel.is_available == True)
+        filters.append(PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value)
         filters.append(
             PublicSaleModel.subscription_end_date
             < get_server_timestamp().strftime("%Y%m%d")
@@ -1426,7 +1432,10 @@ class HouseRepository:
             .join(
                 RealEstateModel,
                 (RealEstateModel.id == PublicSaleModel.real_estate_id)
-                & (RealEstateModel.si_gun_gu == si_gun_gu),
+                & (
+                    RealEstateModel.si_gun_gu
+                    == report_public_sale_infos.real_estates.si_gun_gu
+                ),
             )
             .options(contains_eager(PublicSaleModel.real_estates))
             .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
@@ -1440,6 +1449,43 @@ class HouseRepository:
         )
 
         query_set = query.first()
+
+        if not query_set:
+            longitude = report_public_sale_infos.real_estates.longitude
+            latitude = report_public_sale_infos.real_estates.latitude
+            point = f"SRID=4326;POINT({longitude} {latitude})"
+
+            filters = list()
+            filters.append(PublicSaleModel.is_available == True)
+            filters.append(PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value)
+            filters.append(
+                PublicSaleModel.subscription_end_date
+                < get_server_timestamp().strftime("%Y%m%d")
+            )
+
+            sub_query = (
+                session.query(RealEstateModel)
+                .join(
+                    PublicSaleModel,
+                    RealEstateModel.id == PublicSaleModel.real_estate_id,
+                )
+                .filter(*filters)
+                .order_by(func.ST_Distance(RealEstateModel.coordinates, point))
+                .limit(1)
+            ).subquery()
+
+            query = (
+                session.query(PublicSaleModel)
+                .join(sub_query, (sub_query.c.id == PublicSaleModel.real_estate_id))
+                .options(
+                    joinedload(PublicSaleModel.public_sale_details, innerjoin=True)
+                )
+                .options(joinedload("public_sale_details.public_sale_detail_photos"))
+                .options(joinedload("public_sale_details.special_supply_results"))
+                .options(joinedload("public_sale_details.general_supply_results"))
+                .options(joinedload(PublicSaleModel.public_sale_photos))
+            )
+            query_set = query.first()
 
         return query_set.to_report_entity()
 
