@@ -1417,6 +1417,8 @@ class HouseRepository:
     def get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
         filters = list()
         filters.append(RealEstateModel.si_gun_gu == si_gun_gu)
+        filters.append(PublicSaleModel.is_available == True)
+        filters.append(PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value)
         filters.append(
             PublicSaleModel.subscription_end_date
             < get_server_timestamp().strftime("%Y%m%d")
