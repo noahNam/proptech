@@ -345,9 +345,19 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
             return None
 
         update_value_dict = {
-            str(CodeEnum.IS_HOUSE_OWNER.value): ["1", "2"],  # "있어요", "없어요", "과거에 있었지만 현재는 처분했어요"
-            str(CodeEnum.IS_MARRIED.value): ["3", "4"],  # "기혼(외벌이)", "기혼(맞벌이)", "미혼", "한부모"
-            str(CodeEnum.IS_CHILD.value): ["1", "2", "4"],  # "자녀 1명", "자녀 2명", "자녀 3명 이상", "없어요"
+            str(CodeEnum.IS_HOUSE_OWNER.value): [
+                "1",
+                "2",
+            ],  # "있어요", "없어요", "과거에 있었지만 현재는 처분했어요"
+            str(CodeEnum.IS_MARRIED.value): [
+                "3",
+                "4",
+            ],  # "기혼(외벌이)", "기혼(맞벌이)", "미혼", "한부모"
+            str(CodeEnum.IS_CHILD.value): [
+                "1",
+                "2",
+                "4",
+            ],  # "자녀 1명", "자녀 2명", "자녀 3명 이상", "없어요"
             str(CodeEnum.IS_SUB_ACCOUNT.value): ["2"],  # "있어요", "없어요"
             str(CodeEnum.IS_SUPPORT_PARENT.value): ["2"],  # "예", "아니요"
         }
