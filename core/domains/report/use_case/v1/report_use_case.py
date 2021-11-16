@@ -86,10 +86,12 @@ class ReportBaseUseCase:
         )
         return get_event_object(topic_name=HouseTopicEnum.GET_PUBLIC_SALE_INFO)
 
-    def _get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
+    def _get_recently_public_sale_info(
+        self, report_public_sale_infos: PublicSaleReportEntity
+    ) -> PublicSaleReportEntity:
         send_message(
             topic_name=HouseTopicEnum.GET_RECENTLY_PUBLIC_SALE_INFO,
-            si_gun_gu=si_gun_gu,
+            report_public_sale_infos=report_public_sale_infos,
         )
         return get_event_object(topic_name=HouseTopicEnum.GET_RECENTLY_PUBLIC_SALE_INFO)
 
@@ -136,9 +138,7 @@ class ReportBaseUseCase:
 
         return result_dict
 
-    def _sort_area_type_by_dict(
-            self, convert_target_dict: Dict, key_name: str
-    ) -> None:
+    def _sort_area_type_by_dict(self, convert_target_dict: Dict, key_name: str) -> None:
         key_list = convert_target_dict.keys()
         for key in key_list:
             area_type_dict = convert_target_dict.get(key)
@@ -530,7 +530,7 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
 
         # 근처 가장 최근 청약정보
         report_recently_public_sale_info: PublicSaleReportEntity = self._get_recently_public_sale_info(
-            si_gun_gu=report_public_sale_infos.real_estates.si_gun_gu
+            report_public_sale_infos=report_public_sale_infos
         )
 
         # 기획변경으로 인한 response entity 변경 -> entity object 생성
@@ -744,7 +744,9 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
             convert_target_dict=convert_target_dict
         )
 
-        self._sort_area_type_by_dict(convert_target_dict=result_dict, key_name="area_type")
+        self._sort_area_type_by_dict(
+            convert_target_dict=result_dict, key_name="area_type"
+        )
         return result_dict
 
     def _make_response_object_to_house_applicants(
@@ -878,7 +880,9 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
             convert_target_dict=convert_target_dict
         )
 
-        self._sort_area_type_by_dict(convert_target_dict=house_applicants_dict, key_name="house_structure_type")
+        self._sort_area_type_by_dict(
+            convert_target_dict=house_applicants_dict, key_name="house_structure_type"
+        )
         return house_applicants_dict
 
     def _make_response_schema(
