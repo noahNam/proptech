@@ -110,7 +110,9 @@ class UserRepository:
 
     def create_receive_push_types(self, dto: CreateUserDto) -> None:
         try:
-            receive_push_types = ReceivePushTypeModel(user_id=dto.user_id, updated_at=get_server_timestamp())
+            receive_push_types = ReceivePushTypeModel(
+                user_id=dto.user_id, updated_at=get_server_timestamp()
+            )
             session.add(receive_push_types)
             session.commit()
         except exc.IntegrityError as e:
