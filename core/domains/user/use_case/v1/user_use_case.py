@@ -345,31 +345,31 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
             return None
 
         update_value_dict = {
-            "1005": ["1", "2"],  # "있어요", "없어요", "과거에 있었지만 현재는 처분했어요"
-            "1008": ["3", "4"],  # "기혼(외벌이)", "기혼(맞벌이)", "미혼", "한부모"
-            "1011": ["4"],  # "자녀 1명", "자녀 2명", "자녀 3명 이상", "없어요"
-            "1016": ["2"],  # "있어요", "없어요"
-            "1024": ["2"],  # "예", "아니요"
+            str(CodeEnum.IS_HOUSE_OWNER.value): ["1", "2"],  # "있어요", "없어요", "과거에 있었지만 현재는 처분했어요"
+            str(CodeEnum.IS_MARRIED.value): ["3", "4"],  # "기혼(외벌이)", "기혼(맞벌이)", "미혼", "한부모"
+            str(CodeEnum.IS_CHILD.value): ["1", "2", "4"],  # "자녀 1명", "자녀 2명", "자녀 3명 이상", "없어요"
+            str(CodeEnum.IS_SUB_ACCOUNT.value): ["2"],  # "있어요", "없어요"
+            str(CodeEnum.IS_SUPPORT_PARENT.value): ["2"],  # "예", "아니요"
         }
         update_value_bind_code = update_value_dict.get(str(dto.code))
         if dto.value not in update_value_bind_code:
             return None
 
         chain_child_dict = {
-            "1005": [CodeEnum.SELL_HOUSE_DATE.value],
-            "1008": [CodeEnum.MARRIAGE_REG_DATE.value],
-            "1011": [
+            str(CodeEnum.IS_HOUSE_OWNER.value): [CodeEnum.SELL_HOUSE_DATE.value],
+            str(CodeEnum.IS_MARRIED.value): [CodeEnum.MARRIAGE_REG_DATE.value],
+            str(CodeEnum.IS_CHILD.value): [
                 CodeEnum.CHILD_AGE_SIX.value,
                 CodeEnum.CHILD_AGE_NINETEEN.value,
                 CodeEnum.CHILD_AGE_TWENTY.value,
                 CodeEnum.MOST_CHILD_YOUNG_AGE.value,
             ],
-            "1016": [
+            str(CodeEnum.IS_SUB_ACCOUNT.value): [
                 CodeEnum.SUB_ACCOUNT_DATE.value,
                 CodeEnum.SUB_ACCOUNT_TIMES.value,
                 CodeEnum.SUB_ACCOUNT_TOTAL_PRICE.value,
             ],
-            "1024": [CodeEnum.SUPPORT_PARENT_DATE.value],
+            str(CodeEnum.IS_SUPPORT_PARENT.value): [CodeEnum.SUPPORT_PARENT_DATE.value],
         }
 
         codes = chain_child_dict.get(str(dto.code))
