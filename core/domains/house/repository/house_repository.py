@@ -2090,8 +2090,13 @@ class HouseRepository:
         filters = list()
 
         filters.append(PrivateSaleDetailModel.contract_ym >= yyyymm)
-        filters.append(PrivateSaleDetailModel.trade_type != "월세")
-        filters.append(PrivateSaleDetailModel.is_available == True)
+        filters.append(
+            or_(
+                PrivateSaleDetailModel.trade_type == "매매",
+                PrivateSaleDetailModel.trade_type == "전세",
+            )
+        )
+        filters.append(PrivateSaleDetailModel.is_available == "True")
 
         pyoung_case = case(
             [
