@@ -822,18 +822,23 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
                     )
 
                 domain_marry_dict.setdefault(competition.area_type, dict()).update(
-                    house_structure_type=competition.area_type, infos=domain_marry_list,
+                    house_structure_type=competition.area_type,
+                    supply_household=competition.newlywed_household,
+                    infos=domain_marry_list,
                 )
                 domain_first_life_dict.setdefault(competition.area_type, dict()).update(
                     house_structure_type=competition.area_type,
+                    supply_household=competition.first_life_household,
                     infos=domain_first_life_list,
                 )
                 domain_children_dict.setdefault(competition.area_type, dict()).update(
                     house_structure_type=competition.area_type,
+                    supply_household=competition.multi_children_household,
                     infos=domain_children_list,
                 )
                 domain_old_parent_dict.setdefault(competition.area_type, dict()).update(
                     house_structure_type=competition.area_type,
+                    supply_household=competition.old_parent_household,
                     infos=domain_old_parent_list,
                 )
 
@@ -857,6 +862,7 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
 
                 domain_normal_dict.setdefault(competition.area_type, dict()).update(
                     house_structure_type=competition.area_type,
+                    supply_household=competition.general_household,
                     infos=domain_normal_list,
                 )
 
