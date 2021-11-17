@@ -2829,7 +2829,10 @@ class HouseRepository:
     ) -> List[UpdateContractStatusTargetEntity]:
         filters = list()
         filters.append(
-            and_(PrivateSaleDetailModel.private_sales_id.in_(private_sales_ids),)
+            and_(
+                PrivateSaleDetailModel.private_sales_id.in_(private_sales_ids),
+                PrivateSaleDetailModel.is_available == "True",
+            )
         )
 
         query_cond_1 = (
@@ -3096,7 +3099,7 @@ class HouseRepository:
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
                 PrivateSaleModel.trade_status == 0,
                 PrivateSaleModel.deposit_status == 0,
-                PrivateSaleModel.public_ref_id == None,
+
             )
         )
         query = session.query(PrivateSaleModel).filter(*filters)
