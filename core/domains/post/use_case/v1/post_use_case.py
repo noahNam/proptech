@@ -4,6 +4,7 @@ import inject
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.post.dto.post_dto import GetPostListDto, UpdatePostReadCountDto
+from core.domains.post.enum.post_enum import PostLimitEnum, PostCategoryEnum
 from core.domains.post.repository.post_repository import PostRepository
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput
 
@@ -28,7 +29,9 @@ class GetPostListUseCase(PostBaseUseCase):
         return UseCaseSuccessOutput(
             value=post_list,
             meta=self._make_cursor(
-                last_post_id=post_list[-1].id if post_list else None
+                last_post_id=post_list[-1].id
+                if post_list and dto.post_category == PostCategoryEnum.NOTICE.value
+                else None
             ),
         )
 
