@@ -1990,35 +1990,49 @@ class HouseRepository:
             session.query(PublicSaleDetailModel)
             .with_entities(
                 PublicSaleDetailModel.public_sales_id,
-                func.max(PublicSaleDetailModel.general_household).label(
-                    "max_general_household"
-                ),
-                func.sum(GeneralSupplyResultModel.applicant_num).label(
-                    "sum_applicant_num"
-                ),
-                func.min(GeneralSupplyResultModel.win_point).label("min_win_point"),
+                func.coalesce(
+                    func.max(PublicSaleDetailModel.general_household), 0
+                ).label("max_general_household"),
+                func.coalesce(
+                    func.sum(GeneralSupplyResultModel.applicant_num), 0
+                ).label("sum_applicant_num"),
             )
             .join(PublicSaleDetailModel.general_supply_results)
             .filter(PublicSaleDetailModel.public_sales_id == public_sales_id)
             .filter(PublicSaleDetailModel.general_household > 0)
-            .filter(GeneralSupplyResultModel.applicant_num > 0)
             .group_by(PublicSaleDetailModel.id,)
+        ).subquery()
+
+        min_point_query = (
+            session.query(PublicSaleDetailModel)
+            .with_entities(
+                func.coalesce(func.min(GeneralSupplyResultModel.win_point), 0).label(
+                    "min_win_point"
+                )
+            )
+            .join(PublicSaleDetailModel.general_supply_results)
+            .filter(PublicSaleDetailModel.public_sales_id == public_sales_id)
+            .filter(GeneralSupplyResultModel.win_point > 0)
         ).subquery()
 
         base_query = (
             session.query(sub_query)
             .with_entities(
-                func.round(
-                    func.sum(sub_query.c.sum_applicant_num)
-                    / func.sum(sub_query.c.max_general_household)
+                func.coalesce(
+                    func.round(
+                        func.sum(sub_query.c.sum_applicant_num)
+                        / func.sum(sub_query.c.max_general_household)
+                    ),
+                    0,
                 ).label("avg_competition"),
-                func.min(sub_query.c.min_win_point).label("min_win_point"),
+                func.coalesce(func.min(min_point_query.c.min_win_point), 0).label(
+                    "min_win_point"
+                ),
             )
             .group_by(sub_query.c.public_sales_id)
         )
 
         query_set = base_query.first()
-
         if not query_set:
             return dict(avg_competition=None, min_score=None)
 
@@ -3112,6 +3126,7 @@ class HouseRepository:
                 & (PublicSaleDetailModel.area_type != None),
             )
             .filter(*filters)
+            .group_by(PublicSaleModel.id)
         )
         query_set = query.all()
 
@@ -3119,7 +3134,6 @@ class HouseRepository:
             return None
 
         target_ids = list()
-
         for query in query_set:
             if query.id:
                 target_ids.append(query.id)
