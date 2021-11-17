@@ -23,10 +23,7 @@ class GeneralSupplyResultModel(db.Model):
         autoincrement=True,
     )
     public_sale_details_id = Column(
-        BigInteger,
-        ForeignKey(PublicSaleDetailModel.id, ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+        BigInteger, ForeignKey(PublicSaleDetailModel.id), nullable=False, index=True,
     )
 
     region = Column(String(10), nullable=True)

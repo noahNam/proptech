@@ -37,7 +37,7 @@ class PublicSaleModel(db.Model):
     )
     real_estate_id = Column(
         BigInteger,
-        ForeignKey(RealEstateModel.id, ondelete="CASCADE"),
+        ForeignKey(RealEstateModel.id),
         nullable=False,
         unique=True,
         index=True,
@@ -90,7 +90,7 @@ class PublicSaleModel(db.Model):
         "PublicSalePhotoModel", backref=backref("public_sales"), uselist=True
     )
     public_sale_details = relationship(
-        "PublicSaleDetailModel", backref=backref("public_sales", cascade="all, delete")
+        "PublicSaleDetailModel", backref=backref("public_sales")
     )
 
     public_sale_avg_prices = relationship(

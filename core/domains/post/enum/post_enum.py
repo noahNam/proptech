@@ -13,6 +13,7 @@ class PostCategoryEnum(Enum):
     SUBSCRIPTION_WORDS = 3
     ABOUT_SUBSCRIPTION = 4
     ABOUT_LOAN_SECTION = 5
+    PREDICT_COMPETITION_CONTENTS = 6
 
 
 class PostCategoryDetailEnum(Enum):
@@ -53,3 +54,12 @@ class PostLimitEnum(Enum):
     """
 
     LIMIT = 20
+
+
+class PostOnlyImageEnum(Enum):
+    """
+        용도 : post request 시, 이미지 path 만 엔티티로 받고 싶을 때 파라미터 검증시 사용
+    """
+
+    NO = 0
+    YES = 1

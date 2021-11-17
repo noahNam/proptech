@@ -231,11 +231,11 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     def execute(self):
         logger.info(f"🚀\tPreCalculateAverage Start - {self.client_id}")
 
-        # Batch_step_1 : Upsert_private_sale_avg_prices
-        """
-            타입이 다르고 평수가 같은 경우가 있는데 이 경우에 평균을 낼 경우 거래일자에 따라 오차가 커질 수 있으므로 둘다 upsert 하고 
-            front에서는 최근 거래일 기준에 가까운 것을 보여준다. -> 현재는 같은 평수가 있을 경우 거래일과는 상관없이 랜덤으로 보여주는 중
-        """
+        # # Batch_step_1 : Upsert_private_sale_avg_prices
+        # """
+        #     타입이 다르고 평수가 같은 경우가 있는데 이 경우에 평균을 낼 경우 거래일자에 따라 오차가 커질 수 있으므로 둘다 upsert 하고
+        #     front에서는 최근 거래일 기준에 가까운 것을 보여준다. -> 현재는 같은 평수가 있을 경우 거래일과는 상관없이 랜덤으로 보여주는 중
+        # """
         try:
             start_time = time()
             logger.info(f"🚀\tUpsert_private_sale_avg_prices : Start")
@@ -456,9 +456,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #         target_list=target_list
         #     )
         #
-        #     self._house_repo.bulk_update_private_sales(
-        #         update_list=update_list
-        #     )
+        #     self._house_repo.bulk_update_private_sales(update_list=update_list)
         #
         #     logger.info(
         #         f"🚀\tUpdate_private_sales_status : Finished !!, "
@@ -469,19 +467,19 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         #     self.send_slack_message(
         #         title=f"🚀 [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
         #         message=f"Update_private_sales_status : Finished !! \n "
-        #                 f"records: {time() - start_time} secs \n "
-        #                 f"{len(update_list)} Updated"
+        #         f"records: {time() - start_time} secs \n "
+        #         f"{len(update_list)} Updated",
         #     )
         #
         # except Exception as e:
         #     logger.error(f"🚀\tUpdate_private_sales_status Error - {e}")
         #     self.send_slack_message(
         #         title="☠️ [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
-        #         message=f"Update_private_sales_status Error - {e}"
+        #         message=f"Update_private_sales_status Error - {e}",
         #     )
         #     sys.exit(0)
-        #
-        # sys.exit(0)
+
+        sys.exit(0)
 
 
 class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
@@ -706,8 +704,10 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         """
         entry = list()
         result_dict = dict()
+        failed_list = list()
 
         for image_name in file_list:
+            changed_image_name = None
             path = S3Helper().get_image_upload_dir() + "/" + dir_name + "/"
             full_path = Path(
                 S3Helper().get_image_upload_dir() + "/" + dir_name + "/" + image_name
@@ -715,15 +715,26 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             if os.path.splitext(image_name)[-1] in [".JPG", ".jpg"]:
                 changed_image_name = os.path.splitext(image_name)[0] + ".jpeg"
                 before_img = Image.open(full_path)
-                before_img.save(fp=Path(path + changed_image_name), format="jpeg")
-                os.rename(src=full_path, dst=Path(path + changed_image_name))
+                convert_img = before_img.convert("RGB")
+                try:
+                    convert_img.save(fp=Path(path + changed_image_name), format="jpeg")
+                    os.rename(src=full_path, dst=Path(path + changed_image_name))
+                except Exception as e:
+                    print(f"Error - {e}, {dir_name}, {image_name}")
+                    failed_list.append(f"{dir_name} - {image_name}")
+                    continue
 
             elif os.path.splitext(image_name)[-1] in [".PNG"]:
                 changed_image_name = os.path.splitext(image_name)[0] + ".png"
                 before_img = Image.open(full_path)
                 before_img.save(fp=Path(path + changed_image_name), format="png")
-            entry.append(image_name)
+            if changed_image_name:
+                entry.append(changed_image_name)
+            else:
+                entry.append(image_name)
 
+        if failed_list:
+            print(f"{failed_list}")
         result_dict[dir_name] = entry
         return result_dict
 
