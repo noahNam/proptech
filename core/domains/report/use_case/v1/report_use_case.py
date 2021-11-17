@@ -8,11 +8,14 @@ import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from app.extensions.utils.time_helper import get_server_timestamp
+from core.domains.banner.entity.banner_entity import BannerEntity, BannerImageEntity
+from core.domains.banner.enum import BannerTopicEnum
 from core.domains.house.entity.house_entity import (
     PublicSaleReportEntity,
     PublicSaleDetailReportEntity,
 )
 from core.domains.house.enum import HouseTopicEnum
+from core.domains.house.enum.house_enum import SectionType
 from core.domains.report.dto.report_dto import (
     GetExpectedCompetitionDto,
     GetSaleInfoDto,
@@ -236,10 +239,15 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             user_id=dto.user_id
         )
 
+        # 토드홈의 경쟁률 얼마나 정확할까? 배너 조회
+        section_type = SectionType.PREDICT_COMPETITION.value
+        banner_list = self._get_banner_list(section_type=section_type)
+
         result: GetExpectedCompetitionBaseSchema = self._make_response_schema(
             predicted_competitions=predicted_competition_dict,
             nickname=user_profile.nickname if user_profile else None,
             house_type_ranks=ticket_usage_results.house_type_ranks,
+            banner_image=banner_list[0].banner_image if banner_list else None,
         )
         return UseCaseSuccessOutput(value=result)
 
@@ -372,12 +380,14 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         predicted_competitions: Dict,
         nickname: Optional[str],
         house_type_ranks: List[HouseTypeRankEntity],
+        banner_image: Optional[BannerImageEntity],
     ) -> GetExpectedCompetitionBaseSchema:
 
         return GetExpectedCompetitionBaseSchema(
             nickname=nickname,
             predicted_competitions=predicted_competitions,
             house_type_ranks=house_type_ranks,
+            banner=banner_image.path if banner_image else None,
         )
 
     def _calc_total_supply_by_house_type(
@@ -511,6 +521,12 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                     )
                     last_swap = i
             end = last_swap
+
+    def _get_banner_list(self, section_type: int) -> List[BannerEntity]:
+        send_message(
+            topic_name=BannerTopicEnum.GET_BANNER_LIST, section_type=section_type
+        )
+        return get_event_object(topic_name=BannerTopicEnum.GET_BANNER_LIST)
 
 
 class GetSaleInfoUseCase(ReportBaseUseCase):
