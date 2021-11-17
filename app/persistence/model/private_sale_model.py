@@ -27,7 +27,7 @@ class PrivateSaleModel(db.Model):
     )
     real_estate_id = Column(
         BigInteger,
-        ForeignKey(RealEstateModel.id, ondelete="CASCADE"),
+        ForeignKey(RealEstateModel.id),
         nullable=False,
         unique=True,
         index=True,
@@ -54,13 +54,10 @@ class PrivateSaleModel(db.Model):
     is_available = Column(Boolean, nullable=False, default=False)
 
     private_sale_details = relationship(
-        "PrivateSaleDetailModel",
-        backref=backref("private_sales", cascade="all, delete"),
+        "PrivateSaleDetailModel", backref=backref("private_sales"),
     )
 
-    dong_infos = relationship(
-        "DongInfoModel", backref=backref("private_sales", cascade="all, delete"),
-    )
+    dong_infos = relationship("DongInfoModel", backref=backref("private_sales"),)
 
     private_sale_avg_prices = relationship(
         "PrivateSaleAvgPriceModel",

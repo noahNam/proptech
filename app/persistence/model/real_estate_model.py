@@ -59,14 +59,10 @@ class RealEstateModel(db.Model):
     longitude = column_property(coordinates.ST_X())
 
     private_sales = relationship(
-        "PrivateSaleModel",
-        backref=backref("real_estates", cascade="all, delete"),
-        uselist=False,
+        "PrivateSaleModel", backref=backref("real_estates"), uselist=False,
     )
     public_sales = relationship(
-        "PublicSaleModel",
-        backref=backref("real_estates", cascade="all, delete"),
-        uselist=False,
+        "PublicSaleModel", backref=backref("real_estates"), uselist=False,
     )
 
     def to_house_with_public_detail_entity(
