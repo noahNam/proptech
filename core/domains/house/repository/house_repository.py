@@ -3146,7 +3146,6 @@ class HouseRepository:
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
                 PrivateSaleModel.trade_status == 0,
                 PrivateSaleModel.deposit_status == 0,
-
             )
         )
         query = session.query(PrivateSaleModel).filter(*filters)

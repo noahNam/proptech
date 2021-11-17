@@ -13,6 +13,7 @@ class PostCategoryEnum(Enum):
     SUBSCRIPTION_WORDS = 3
     ABOUT_SUBSCRIPTION = 4
     ABOUT_LOAN_SECTION = 5
+    PREDICT_COMPETITION_CONTENTS = 6
 
 
 class PostCategoryDetailEnum(Enum):
