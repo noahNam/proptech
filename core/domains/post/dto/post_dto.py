@@ -5,6 +5,7 @@ class GetPostListDto(BaseModel):
     post_category: int
     post_category_detail: int
     previous_post_id: int = None
+    only_image: int = None
 
 
 class UpdatePostReadCountDto(BaseModel):
