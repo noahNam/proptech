@@ -790,6 +790,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                                 "is_thumbnail": is_thumbnail,
                                 "seq": seq,
                                 "created_at": get_server_timestamp(),
+                                "updated_at": get_server_timestamp(),
                             }
                         )
                         file_name = (
@@ -838,6 +839,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                                     "path": path,
                                     "extension": extension,
                                     "created_at": get_server_timestamp(),
+                                    "updated_at": get_server_timestamp(),
                                 }
                             )
 
@@ -1067,6 +1069,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
                             "is_available": True,
                             "public_ref_id": target.id,
                             "created_at": get_server_timestamp(),
+                            "updated_at": get_server_timestamp(),
                         }
                     )
                     start_idx = start_idx + 1
@@ -1088,6 +1091,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
                         "is_available": True,
                         "public_ref_id": target.id,
                         "created_at": get_server_timestamp(),
+                        "updated_at": get_server_timestamp(),
                     }
                 )
                 start_idx = start_idx + 1

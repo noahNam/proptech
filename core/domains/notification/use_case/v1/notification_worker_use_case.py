@@ -123,7 +123,7 @@ class PrePrcsNotificationUseCase(BaseNotificationWorkerUseCase):
         )
         self.send_slack_message(
             title="🚀 [PrePrcsNotificationUseCase] >>> 유저가 찜한 분양정보 중에 특별한 이벤트가 있을 경우 Push 보낼 메세지 Convert",
-            message=f"PrePrcsNotification Success -  {len(target_public_sales)} / {len(notification_list)} \n "
+            message=f"PrePrcsNotification Success - 오늘 이벤트가 있는 분양건({len(target_public_sales)}) / 푸쉬받는 유저 수({len(notification_list)}) \n "
             f"records: {time() - start_time} secs",
         )
 

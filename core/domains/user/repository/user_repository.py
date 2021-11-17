@@ -61,6 +61,7 @@ class UserRepository:
                 is_active=dto.is_active,
                 is_out=dto.is_out,
                 created_at=get_server_timestamp(),
+                updated_at=get_server_timestamp(),
             )
             session.add(user)
             session.commit()
@@ -82,6 +83,7 @@ class UserRepository:
                 is_auth=dto.is_auth,
                 endpoint="",
                 created_at=get_server_timestamp(),
+                updated_at=get_server_timestamp(),
             )
             session.add(device)
             session.commit()
@@ -108,7 +110,9 @@ class UserRepository:
 
     def create_receive_push_types(self, dto: CreateUserDto) -> None:
         try:
-            receive_push_types = ReceivePushTypeModel(user_id=dto.user_id)
+            receive_push_types = ReceivePushTypeModel(
+                user_id=dto.user_id, updated_at=get_server_timestamp()
+            )
             session.add(receive_push_types)
             session.commit()
         except exc.IntegrityError as e:
@@ -143,6 +147,7 @@ class UserRepository:
                 receive_marketing_yn=dto.receive_marketing_yn,
                 receive_marketing_date=receive_marketing_date,
                 created_at=get_server_timestamp(),
+                updated_at=get_server_timestamp(),
             )
             session.add(user)
             session.commit()
@@ -196,6 +201,7 @@ class UserRepository:
                 nickname=dto.value,
                 last_update_code=dto.code,
                 created_at=get_server_timestamp(),
+                updated_at=get_server_timestamp(),
             )
 
             session.add(user_profile)
@@ -233,6 +239,7 @@ class UserRepository:
                 code=dto.code,
                 value=dto.value,
                 created_at=get_server_timestamp(),
+                updated_at=get_server_timestamp(),
             )
             session.add(user_info)
             session.commit()

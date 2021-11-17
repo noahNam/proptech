@@ -90,6 +90,7 @@ class HouseRepository:
                 type=dto.type,
                 is_like=True,
                 created_at=get_server_timestamp(),
+                updated_at=get_server_timestamp(),
             )
             session.add(interest_house)
             session.commit()
@@ -1413,9 +1414,15 @@ class HouseRepository:
 
         return query_set.to_report_entity()
 
-    def get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
+    def get_recently_public_sale_info(
+        self, report_public_sale_infos: PublicSaleReportEntity
+    ) -> PublicSaleReportEntity:
         filters = list()
-        filters.append(RealEstateModel.si_gun_gu == si_gun_gu)
+        filters.append(
+            RealEstateModel.si_gun_gu == report_public_sale_infos.real_estates.si_gun_gu
+        )
+        filters.append(PublicSaleModel.is_available == True)
+        filters.append(PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value)
         filters.append(
             PublicSaleModel.subscription_end_date
             < get_server_timestamp().strftime("%Y%m%d")
@@ -1425,7 +1432,10 @@ class HouseRepository:
             .join(
                 RealEstateModel,
                 (RealEstateModel.id == PublicSaleModel.real_estate_id)
-                & (RealEstateModel.si_gun_gu == si_gun_gu),
+                & (
+                    RealEstateModel.si_gun_gu
+                    == report_public_sale_infos.real_estates.si_gun_gu
+                ),
             )
             .options(contains_eager(PublicSaleModel.real_estates))
             .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
@@ -1439,6 +1449,43 @@ class HouseRepository:
         )
 
         query_set = query.first()
+
+        if not query_set:
+            longitude = report_public_sale_infos.real_estates.longitude
+            latitude = report_public_sale_infos.real_estates.latitude
+            point = f"SRID=4326;POINT({longitude} {latitude})"
+
+            filters = list()
+            filters.append(PublicSaleModel.is_available == True)
+            filters.append(PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value)
+            filters.append(
+                PublicSaleModel.subscription_end_date
+                < get_server_timestamp().strftime("%Y%m%d")
+            )
+
+            sub_query = (
+                session.query(RealEstateModel)
+                .join(
+                    PublicSaleModel,
+                    RealEstateModel.id == PublicSaleModel.real_estate_id,
+                )
+                .filter(*filters)
+                .order_by(func.ST_Distance(RealEstateModel.coordinates, point))
+                .limit(1)
+            ).subquery()
+
+            query = (
+                session.query(PublicSaleModel)
+                .join(sub_query, (sub_query.c.id == PublicSaleModel.real_estate_id))
+                .options(
+                    joinedload(PublicSaleModel.public_sale_details, innerjoin=True)
+                )
+                .options(joinedload("public_sale_details.public_sale_detail_photos"))
+                .options(joinedload("public_sale_details.special_supply_results"))
+                .options(joinedload("public_sale_details.general_supply_results"))
+                .options(joinedload(PublicSaleModel.public_sale_photos))
+            )
+            query_set = query.first()
 
         return query_set.to_report_entity()
 
@@ -1715,10 +1762,10 @@ class HouseRepository:
                 "max_trade_contract_date": recent_info.max_trade_contract_date,
                 "max_deposit_contract_date": recent_info.max_deposit_contract_date,
                 "id": recent_info.private_sale_avg_price_id,
+                "updated_at": get_server_timestamp(),
             }
 
             if recent_info.private_sale_avg_price_id:
-                avg_price_info.update({"updated_at": get_server_timestamp()})
                 avg_prices_update_list.append(avg_price_info)
             else:
                 avg_price_info.update({"created_at": get_server_timestamp()})
@@ -2013,6 +2060,7 @@ class HouseRepository:
             "supply_price": default_info["supply_price"],
             "avg_competition": competition_and_score_info["avg_competition"],
             "min_score": competition_and_score_info["min_score"],
+            "updated_at": get_server_timestamp(),
         }
         public_sale_avg_price_id = self._is_exists_public_sale_avg_prices(
             public_sales_id=avg_price_info["public_sales_id"],
@@ -2021,7 +2069,6 @@ class HouseRepository:
 
         if public_sale_avg_price_id:
             avg_price_info.update({"id": public_sale_avg_price_id})
-            avg_price_info.update({"updated_at": get_server_timestamp()})
             avg_prices_update_list.append(avg_price_info)
         else:
             avg_price_info.update({"created_at": get_server_timestamp()})

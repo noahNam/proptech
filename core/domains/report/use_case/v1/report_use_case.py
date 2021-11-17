@@ -86,10 +86,12 @@ class ReportBaseUseCase:
         )
         return get_event_object(topic_name=HouseTopicEnum.GET_PUBLIC_SALE_INFO)
 
-    def _get_recently_public_sale_info(self, si_gun_gu: str) -> PublicSaleReportEntity:
+    def _get_recently_public_sale_info(
+        self, report_public_sale_infos: PublicSaleReportEntity
+    ) -> PublicSaleReportEntity:
         send_message(
             topic_name=HouseTopicEnum.GET_RECENTLY_PUBLIC_SALE_INFO,
-            si_gun_gu=si_gun_gu,
+            report_public_sale_infos=report_public_sale_infos,
         )
         return get_event_object(topic_name=HouseTopicEnum.GET_RECENTLY_PUBLIC_SALE_INFO)
 
@@ -135,6 +137,61 @@ class ReportBaseUseCase:
             result_dict.setdefault(domain, dict()).update(convert_dict)
 
         return result_dict
+
+    def _sort_area_type_by_dict(self, convert_target_dict: Dict, key_name: str) -> None:
+        key_list = convert_target_dict.keys()
+        for key in key_list:
+            area_type_dict = convert_target_dict.get(key)
+            area_type_keys = area_type_dict.keys()
+
+            for area_type_key in area_type_keys:
+                area_type_list = area_type_dict.get(area_type_key)
+                end = len(area_type_list) - 1
+                while end > 0:
+                    last_swap = 0
+                    for i in range(end):
+                        # 102A, 84A str로 비교시 84A가 크기 때문에 숫자로 재비교
+                        number1 = "".join(
+                            re.findall("\d+", area_type_list[i].get(key_name))[0]
+                        )
+                        number2 = "".join(
+                            re.findall("\d+", area_type_list[i + 1].get(key_name))[0]
+                        )
+
+                        if int(number1) > int(number2):
+                            area_type_list[i], area_type_list[i + 1] = (
+                                area_type_list[i + 1],
+                                area_type_list[i],
+                            )
+                            last_swap = i
+                    end = last_swap
+
+                end = len(area_type_list) - 1
+                while end > 0:
+                    last_swap = 0
+                    for i in range(end):
+                        # 위의 숫자기반 정렬을 알파벳 순으로 다시 재정렬
+                        word1 = "".join(
+                            re.findall("[a-zA-Z]+", area_type_list[i].get(key_name))
+                        )
+                        word2 = "".join(
+                            re.findall("[a-zA-Z]+", area_type_list[i + 1].get(key_name))
+                        )
+
+                        number1 = "".join(
+                            re.findall("\d+", area_type_list[i].get(key_name))[0]
+                        )
+                        number2 = "".join(
+                            re.findall("\d+", area_type_list[i + 1].get(key_name))[0]
+                        )
+
+                        if (number1 == number2) and (word1 > word2):
+                            area_type_list[i], area_type_list[i + 1] = (
+                                area_type_list[i + 1],
+                                area_type_list[i],
+                            )
+                            last_swap = i
+                    end = last_swap
 
 
 class GetExpectedCompetitionUseCase(ReportBaseUseCase):
@@ -473,7 +530,7 @@ class GetSaleInfoUseCase(ReportBaseUseCase):
 
         # 근처 가장 최근 청약정보
         report_recently_public_sale_info: PublicSaleReportEntity = self._get_recently_public_sale_info(
-            si_gun_gu=report_public_sale_infos.real_estates.si_gun_gu
+            report_public_sale_infos=report_public_sale_infos
         )
 
         # 기획변경으로 인한 response entity 변경 -> entity object 생성
@@ -681,10 +738,14 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
                 detail_dict
             )
 
-        convert_target_dict_dict = dict(public_sale_details=public_sale_detail_dict,)
+        convert_target_dict = dict(public_sale_details=public_sale_detail_dict,)
 
         result_dict: Dict = self._convert_area_type_dict(
-            convert_target_dict=convert_target_dict_dict
+            convert_target_dict=convert_target_dict
+        )
+
+        self._sort_area_type_by_dict(
+            convert_target_dict=result_dict, key_name="area_type"
         )
         return result_dict
 
@@ -763,18 +824,23 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
                     )
 
                 domain_marry_dict.setdefault(competition.area_type, dict()).update(
-                    house_structure_type=competition.area_type, infos=domain_marry_list,
+                    house_structure_type=competition.area_type,
+                    supply_household=competition.newlywed_household,
+                    infos=domain_marry_list,
                 )
                 domain_first_life_dict.setdefault(competition.area_type, dict()).update(
                     house_structure_type=competition.area_type,
+                    supply_household=competition.first_life_household,
                     infos=domain_first_life_list,
                 )
                 domain_children_dict.setdefault(competition.area_type, dict()).update(
                     house_structure_type=competition.area_type,
+                    supply_household=competition.multi_children_household,
                     infos=domain_children_list,
                 )
                 domain_old_parent_dict.setdefault(competition.area_type, dict()).update(
                     house_structure_type=competition.area_type,
+                    supply_household=competition.old_parent_household,
                     infos=domain_old_parent_list,
                 )
 
@@ -798,10 +864,11 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
 
                 domain_normal_dict.setdefault(competition.area_type, dict()).update(
                     house_structure_type=competition.area_type,
+                    supply_household=competition.general_household,
                     infos=domain_normal_list,
                 )
 
-        convert_target_dict_dict = dict(
+        convert_target_dict = dict(
             marry=domain_marry_dict,
             first_life=domain_first_life_dict,
             children=domain_children_dict,
@@ -810,7 +877,11 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
         )
 
         house_applicants_dict: Dict = self._convert_area_type_dict(
-            convert_target_dict=convert_target_dict_dict
+            convert_target_dict=convert_target_dict
+        )
+
+        self._sort_area_type_by_dict(
+            convert_target_dict=house_applicants_dict, key_name="house_structure_type"
         )
         return house_applicants_dict
 

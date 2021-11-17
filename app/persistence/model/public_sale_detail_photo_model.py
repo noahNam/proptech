@@ -25,7 +25,7 @@ class PublicSaleDetailPhotoModel(db.Model):
     )
     public_sale_details_id = Column(
         BigInteger,
-        ForeignKey(PublicSaleDetailModel.id, ondelete="CASCADE"),
+        ForeignKey(PublicSaleDetailModel.id),
         nullable=False,
         unique=True,
         index=True,
