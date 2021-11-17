@@ -9,6 +9,7 @@ from app.http.requests.v1.post_request import (
 from app.http.responses.presenters.v1.post_presenter import (
     GetPostListPresenter,
     UpdatePostReadCountPresenter,
+    GetPostImagePathListPresenter,
 )
 from app.http.view import auth_required, api
 from core.domains.post.use_case.v1.post_use_case import (
@@ -26,8 +27,13 @@ def get_post_list_view():
         post_category=request.args.get("post_category"),
         post_category_detail=request.args.get("post_category_detail"),
         previous_post_id=request.args.get("previous_post_id"),
+        only_image=request.args.get("only_image"),
     ).validate_request_and_make_dto()
 
+    if dto.only_image:
+        return GetPostImagePathListPresenter().transform(
+            GetPostListUseCase().execute(dto=dto)
+        )
     return GetPostListPresenter().transform(GetPostListUseCase().execute(dto=dto))
 
 
