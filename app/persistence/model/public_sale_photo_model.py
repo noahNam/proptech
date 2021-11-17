@@ -26,10 +26,7 @@ class PublicSalePhotoModel(db.Model):
         autoincrement=True,
     )
     public_sales_id = Column(
-        BigInteger,
-        ForeignKey(PublicSaleModel.id, ondelete="CASCADE"),
-        nullable=False,
-        index=True,
+        BigInteger, ForeignKey(PublicSaleModel.id), nullable=False, index=True,
     )
 
     file_name = Column(String(20), nullable=False)
