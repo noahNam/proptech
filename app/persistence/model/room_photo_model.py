@@ -23,7 +23,7 @@ class RoomPhotoModel(db.Model):
     )
     room_info_id = Column(
         BigInteger,
-        ForeignKey(RoomInfoModel.id, ondelete="CASCADE"),
+        ForeignKey(RoomInfoModel.id),
         nullable=False,
         unique=True,
         index=True,
