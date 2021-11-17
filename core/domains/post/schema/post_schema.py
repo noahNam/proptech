@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel
 from pydantic.types import StrictStr
 
-from core.domains.post.entity.post_entity import PostEntity
+from core.domains.post.entity.post_entity import PostEntity, PostImagePathEntity
 
 
 class GetPostListResponseSchema(BaseModel):
@@ -12,3 +12,7 @@ class GetPostListResponseSchema(BaseModel):
 
 class UpdatePostReadCountResponseSchema(BaseModel):
     result: StrictStr
+
+
+class GetPostImagePathListResponseSchema(BaseModel):
+    posts: List[PostImagePathEntity]
