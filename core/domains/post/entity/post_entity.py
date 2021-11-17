@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictStr
 
 
 class PostAttachmentEntity(BaseModel):
@@ -32,3 +32,7 @@ class PostEntity(BaseModel):
     post_attachments: List[PostAttachmentEntity] = None
     created_at: str
     updated_at: str
+
+
+class PostImagePathEntity(BaseModel):
+    path: Optional[StrictStr]
