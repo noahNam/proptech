@@ -16,6 +16,7 @@ class GetExpectedCompetitionBaseSchema(BaseModel):
     nickname: Optional[StrictStr]
     predicted_competitions: Dict
     house_type_ranks: Optional[List[HouseTypeRankEntity]]
+    banner: Optional[StrictStr]
 
 
 class GetExpectedCompetitionResponseSchema(BaseModel):
