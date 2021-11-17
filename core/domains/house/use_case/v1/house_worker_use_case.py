@@ -321,7 +321,6 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
 
             # 공급 가격 평균 계산
             target_ids = self._house_repo.get_target_list_of_upsert_public_sale_avg_prices()
-            target_ids = [8530]
 
             for idx in target_ids:
                 competition_and_score_info: dict = self._house_repo.get_competition_and_min_score(
