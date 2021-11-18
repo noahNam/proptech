@@ -19,9 +19,8 @@ from core.domains.house.entity.house_entity import (
     SimpleCalendarInfoEntity,
     RealEstateReportEntity,
     RealEstateLegalCodeEntity,
-    CheckIdsRealEstateEntity,
 )
-from core.domains.report.entity.report_entity import TicketUsageResultEntity
+from core.domains.report.entity.report_entity import HouseTypeRankEntity
 
 
 class RealEstateModel(db.Model):
@@ -79,7 +78,7 @@ class RealEstateModel(db.Model):
         min_supply_price: Optional[int],
         max_supply_price: Optional[int],
         button_links: List[ButtonLinkEntity],
-        ticket_usage_results: List[TicketUsageResultEntity],
+        house_type_ranks: List[HouseTypeRankEntity],
     ) -> HousePublicDetailEntity:
         return HousePublicDetailEntity(
             id=self.id,
@@ -109,7 +108,7 @@ class RealEstateModel(db.Model):
             max_supply_price=max_supply_price,
             public_sales=self.public_sales.to_entity() if self.public_sales else None,
             button_links=button_links if button_links else None,
-            ticket_usage_results=ticket_usage_results if ticket_usage_results else None,
+            house_type_ranks=house_type_ranks if house_type_ranks else None,
         )
 
     def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:
