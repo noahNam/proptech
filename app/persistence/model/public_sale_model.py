@@ -44,10 +44,7 @@ class PublicSaleModel(db.Model):
     )
     name = Column(String(150), nullable=False)
     region = Column(String(20), nullable=False)
-    housing_category = Column(
-        String(2),
-        nullable=False,
-    )
+    housing_category = Column(String(2), nullable=False,)
     rent_type = Column(
         Enum(RentTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
         nullable=False,
