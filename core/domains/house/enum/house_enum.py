@@ -44,7 +44,7 @@ class HousingCategoryEnum(Enum):
         사용 모델 : 분양 테이블
     """
 
-    PUBLIC = "국민"
+    PUBLIC = "공공"
     PRIVATE = "민영"
 
 
@@ -238,9 +238,9 @@ class BoundingPublicTypeEnum(Enum):
     사용 모델 : PublicSaleModel
     사용 목적 : 지도 바운딩시 받는 파라미터 표시
             NOTHING: 아무것도 표시 안함
-            PUBLIC_ONLY: 국민분양만 필터
+            PUBLIC_ONLY: 공공분양만 필터
             PRIVATE_ONLY: 민영분양만 필터
-            ALL_PRE_SALE: 국민 민영 분양 모두 필터
+            ALL_PRE_SALE: 공공 민영 분양 모두 필터
     """
 
     NOTHING = 0

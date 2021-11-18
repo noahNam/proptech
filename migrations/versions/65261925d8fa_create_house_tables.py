@@ -185,7 +185,7 @@ def upgrade():
         sa.Column("region", sa.String(length=20), nullable=False),
         sa.Column(
             "housing_category",
-            sa.Enum("국민", "민영", name="housingcategoryenum"),
+            sa.String(length=2),
             nullable=False,
         ),
         sa.Column(
