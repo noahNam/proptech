@@ -262,11 +262,16 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
                 user_id=dto.user_id, type_=TicketUsageTypeEnum.HOUSE.value
             )
 
+        house_type_ranks = list()
+        if ticket_usage_results:
+            house_type_ranks = ticket_usage_results[0].house_type_ranks
+            HouseHelper().sort_predicted_competition(house_type_ranks=house_type_ranks)
+
         entities: HousePublicDetailEntity = self._house_repo.make_house_public_detail_entity(
             house_with_public_sales=house_with_public_sales,
             is_like=is_like,
             button_link_list=button_link_list,
-            ticket_usage_results=ticket_usage_results,
+            house_type_ranks=house_type_ranks,
         )
 
         self._sort_public_sale_photos(photos=entities.public_sales.public_sale_photos)
