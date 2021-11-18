@@ -183,11 +183,7 @@ def upgrade():
             nullable=True,
         ),
         sa.Column("region", sa.String(length=20), nullable=False),
-        sa.Column(
-            "housing_category",
-            sa.Enum("국민", "민영", name="housingcategoryenum"),
-            nullable=False,
-        ),
+        sa.Column("housing_category", sa.String(length=2), nullable=False,),
         sa.Column(
             "rent_type", sa.Enum("분양", "임대", name="renttypeenum"), nullable=False
         ),
