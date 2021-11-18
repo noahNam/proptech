@@ -12,8 +12,14 @@ class PostCategoryEnum(Enum):
     SUBSCRIPTION_FAQ = 2
     SUBSCRIPTION_WORDS = 3
     ABOUT_SUBSCRIPTION = 4
-    ABOUT_LOAN_SECTION = 5
+    # 전세 계약시 주의사항
+    ABOUT_LOAN_SECTION_PAGE_1 = 5
+    # 경쟁률 예측 페이지
     PREDICT_COMPETITION_CONTENTS = 6
+    # 청년 대출 비교
+    ABOUT_LOAN_SECTION_PAGE_2 = 7
+    # 전세자금대출 비교
+    ABOUT_LOAN_SECTION_PAGE_3 = 8
 
 
 class PostCategoryDetailEnum(Enum):
