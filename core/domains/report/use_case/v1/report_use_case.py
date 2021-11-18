@@ -7,6 +7,7 @@ from typing import Union, Optional, List, Dict
 import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
+from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.banner.entity.banner_entity import BannerEntity, BannerImageEntity
 from core.domains.banner.enum import BannerTopicEnum
@@ -225,7 +226,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             expected_competitions=ticket_usage_results.predicted_competitions
         )
 
-        self._sort_predicted_competition(
+        HouseHelper().sort_predicted_competition(
             house_type_ranks=ticket_usage_results.house_type_ranks
         )
 
@@ -423,21 +424,6 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                 c.house_structure_type
             )
             c.total_normal_supply = calc_normal_total_supply.get(c.house_structure_type)
-
-    def _sort_predicted_competition(
-        self, house_type_ranks: List[HouseTypeRankEntity]
-    ) -> None:
-        end = len(house_type_ranks) - 1
-        while end > 0:
-            last_swap = 0
-            for i in range(end):
-                if house_type_ranks[i].rank > house_type_ranks[i + 1].rank:
-                    house_type_ranks[i], house_type_ranks[i + 1] = (
-                        house_type_ranks[i + 1],
-                        house_type_ranks[i],
-                    )
-                    last_swap = i
-            end = last_swap
 
     def _sort_expected_competitions_by_type_and_region(
         self, expected_competitions: List[PredictedCompetitionEntity]
