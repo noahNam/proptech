@@ -13,7 +13,6 @@ from app.extensions.database import session
 from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
-from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
@@ -67,14 +66,13 @@ from core.domains.house.enum.house_enum import (
     RentTypeEnum,
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
-    HousingCategoryEnum,
     PrivateSaleContractStatusEnum,
     HousingCategoryEnum,
     CalcPyoungEnum,
     BoundingIncludePrivateEnum,
     RealTradeTypeEnum,
 )
-from core.domains.report.entity.report_entity import TicketUsageResultEntity
+from core.domains.report.entity.report_entity import HouseTypeRankEntity
 from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import NotUniqueErrorException, UpdateFailErrorException
 
@@ -811,7 +809,7 @@ class HouseRepository:
         house_with_public_sales: list,
         is_like: bool,
         button_link_list: List[ButtonLinkEntity],
-        ticket_usage_results: List[TicketUsageResultEntity],
+        house_type_ranks: List[HouseTypeRankEntity],
     ) -> HousePublicDetailEntity:
         # (<RealEstateModel>, [0]
         # min_supply_area, [1]
@@ -842,7 +840,7 @@ class HouseRepository:
             min_acquisition_tax=house_with_public_sales[5],
             max_acquisition_tax=house_with_public_sales[6],
             button_links=button_link_list,
-            ticket_usage_results=ticket_usage_results,
+            house_type_ranks=house_type_ranks,
             min_supply_price=house_with_public_sales[7],
             max_supply_price=house_with_public_sales[8],
         )
