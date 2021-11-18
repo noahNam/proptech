@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from app.extensions.utils.math_helper import MathHelper
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -8,6 +8,7 @@ from core.domains.house.enum.house_enum import (
     ReplacePublicToPrivateSalesEnum,
     CalendarYearThreshHold,
 )
+from core.domains.report.entity.report_entity import HouseTypeRankEntity
 
 
 class HouseHelper:
@@ -122,3 +123,19 @@ class HouseHelper:
         year_to_str = str(move_in_year)
 
         return year_to_str + month_to_str
+
+    @classmethod
+    def sort_predicted_competition(
+        cls, house_type_ranks: List[HouseTypeRankEntity]
+    ) -> None:
+        end = len(house_type_ranks) - 1
+        while end > 0:
+            last_swap = 0
+            for i in range(end):
+                if house_type_ranks[i].rank > house_type_ranks[i + 1].rank:
+                    house_type_ranks[i], house_type_ranks[i + 1] = (
+                        house_type_ranks[i + 1],
+                        house_type_ranks[i],
+                    )
+                    last_swap = i
+            end = last_swap
