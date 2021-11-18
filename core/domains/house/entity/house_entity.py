@@ -5,7 +5,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from core.domains.banner.entity.banner_entity import BannerEntity, ButtonLinkEntity
-from core.domains.report.entity.report_entity import TicketUsageResultEntity
+from core.domains.report.entity.report_entity import HouseTypeRankEntity
 
 
 class InterestHouseEntity(BaseModel):
@@ -207,7 +207,7 @@ class HousePublicDetailEntity(BaseModel):
     max_acquisition_tax: int
     public_sales: PublicSaleEntity = None
     button_links: List[ButtonLinkEntity] = None
-    ticket_usage_results: List[TicketUsageResultEntity] = None
+    house_type_ranks: List[HouseTypeRankEntity] = None
 
     class Config:
         use_enum_values = True
