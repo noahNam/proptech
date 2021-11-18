@@ -905,14 +905,14 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         if not recent_public_sale_photos_info:
             public_sale_photos_start_idx = 1
         else:
-            public_sale_photos_start_idx = recent_public_sale_photos_info.id
+            public_sale_photos_start_idx = recent_public_sale_photos_info.id + 1
 
         if not recent_public_sale_detail_photos_info:
             public_sale_detail_photos_start_idx = 1
         else:
             public_sale_detail_photos_start_idx = (
                 recent_public_sale_detail_photos_info.id
-            )
+            ) + 1
 
         upload_list: List[Dict] = list()
         for (roots, dirs, file_names) in os.walk(S3Helper().get_image_upload_dir()):
