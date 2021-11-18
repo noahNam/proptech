@@ -95,7 +95,7 @@ house_public_detail:
                   example: "20210715"
                 housing_category:
                   type: string
-                  example: "국민 or 민영"
+                  example: "공공 or 민영"
                 rent_type:
                   type: string
                   example: "분양 or 임대"
