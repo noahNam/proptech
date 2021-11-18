@@ -120,7 +120,7 @@ class ReportBaseUseCase:
                         last_swap = i
                 end = last_swap
 
-    def _convert_area_type_dict(self, convert_target_dict: Dict) -> Dict:
+    def _convert_area_type_dict(self, convert_target_dict: Dict, key_name: str) -> Dict:
         result_dict = dict()
 
         domain_list = list(convert_target_dict.keys())
@@ -129,8 +129,10 @@ class ReportBaseUseCase:
             domain_target_dict = convert_target_dict.get(domain)
             key_list = list(convert_target_dict.get(domain).keys())
             for key in key_list:
-                if re.search("\d", key):
-                    new_key = re.sub(r"[^0-9]", "", key)
+                domain_target = domain_target_dict.get(key)
+                area_type = domain_target.get(key_name)
+                if re.search("\d", area_type):
+                    new_key = re.sub(r"[^0-9]", "", area_type)
                     convert_dict.setdefault(new_key, []).append(
                         domain_target_dict.get(key)
                     )
@@ -371,7 +373,8 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         )
 
         predicted_competition_dict: Dict = self._convert_area_type_dict(
-            convert_target_dict=convert_target_dict_dict
+            convert_target_dict=convert_target_dict_dict,
+            key_name="house_structure_type",
         )
         return predicted_competition_dict
 
@@ -745,19 +748,19 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
                 public_sale_detail_photo=competition.public_sale_detail_photo,
             )
 
-            if public_sale_detail_dict.get(competition.area_type):
+            if public_sale_detail_dict.get(competition.private_area):
                 public_sale_detail_list.append(detail_dict)
             else:
                 public_sale_detail_list = [detail_dict]
 
-            public_sale_detail_dict.setdefault(competition.area_type, dict()).update(
+            public_sale_detail_dict.setdefault(competition.private_area, dict()).update(
                 detail_dict
             )
 
         convert_target_dict = dict(public_sale_details=public_sale_detail_dict,)
 
         result_dict: Dict = self._convert_area_type_dict(
-            convert_target_dict=convert_target_dict
+            convert_target_dict=convert_target_dict, key_name="area_type"
         )
 
         self._sort_area_type_by_dict(
@@ -816,7 +819,7 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
                 children_dict.update(domain_common_dict)
                 old_parent_dict.update(domain_common_dict)
 
-                if domain_marry_dict.get(competition.area_type):
+                if domain_marry_dict.get(competition.private_area):
                     domain_marry_list.append(marry_dict)
                     domain_first_life_list.append(first_life_dict)
                     domain_children_list.append(children_dict)
@@ -839,22 +842,28 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
                         ]
                     )
 
-                domain_marry_dict.setdefault(competition.area_type, dict()).update(
+                domain_marry_dict.setdefault(competition.private_area, dict()).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.newlywed_household,
                     infos=domain_marry_list,
                 )
-                domain_first_life_dict.setdefault(competition.area_type, dict()).update(
+                domain_first_life_dict.setdefault(
+                    competition.private_area, dict()
+                ).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.first_life_household,
                     infos=domain_first_life_list,
                 )
-                domain_children_dict.setdefault(competition.area_type, dict()).update(
+                domain_children_dict.setdefault(
+                    competition.private_area, dict()
+                ).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.multi_children_household,
                     infos=domain_children_list,
                 )
-                domain_old_parent_dict.setdefault(competition.area_type, dict()).update(
+                domain_old_parent_dict.setdefault(
+                    competition.private_area, dict()
+                ).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.old_parent_household,
                     infos=domain_old_parent_list,
@@ -873,12 +882,12 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
 
                 normal_dict.update(domain_common_dict)
 
-                if domain_normal_dict.get(competition.area_type):
+                if domain_normal_dict.get(competition.private_area):
                     domain_normal_list.append(normal_dict)
                 else:
                     domain_normal_list = [normal_dict]
 
-                domain_normal_dict.setdefault(competition.area_type, dict()).update(
+                domain_normal_dict.setdefault(competition.private_area, dict()).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.general_household,
                     infos=domain_normal_list,
@@ -893,7 +902,7 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
         )
 
         house_applicants_dict: Dict = self._convert_area_type_dict(
-            convert_target_dict=convert_target_dict
+            convert_target_dict=convert_target_dict, key_name="house_structure_type"
         )
 
         self._sort_area_type_by_dict(
