@@ -320,7 +320,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             public_sale_avg_prices_failed_list = list()
 
             # 공급 가격 평균 계산
-            target_ids = self._house_repo.get_target_list_of_upsert_public_sale_avg_prices()
+            target_ids = (
+                self._house_repo.get_target_list_of_upsert_public_sale_avg_prices()
+            )
 
             for idx in target_ids:
                 competition_and_score_info: dict = self._house_repo.get_competition_and_min_score(
@@ -380,18 +382,18 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             self.send_slack_message(
                 title=f"{emoji} [PreCalculateAverageUseCase Step2] >>> 분양 평균가 계산 배치",
                 message=f"Upsert_public_sale_avg_prices : Finished !! \n "
-                        f"records: {time() - start_time} secs \n "
-                        f"{create_public_sale_avg_prices_count} Created \n "
-                        f"{update_public_sale_avg_prices_count} Updated \n "
-                        f"{len(public_sale_avg_prices_failed_list)} Failed \n "
-                        f"Failed_list : {public_sale_avg_prices_failed_list}"
+                f"records: {time() - start_time} secs \n "
+                f"{create_public_sale_avg_prices_count} Created \n "
+                f"{update_public_sale_avg_prices_count} Updated \n "
+                f"{len(public_sale_avg_prices_failed_list)} Failed \n "
+                f"Failed_list : {public_sale_avg_prices_failed_list}",
             )
 
         except Exception as e:
             logger.error(f"🚀\tUpsert_public_sale_avg_prices Error - {e}")
             self.send_slack_message(
                 title="☠️ [PreCalculateAverageUseCase Step2] >>> 분양 평균가 계산 배치",
-                message=f"Upsert_public_sale_avg_prices Error - {e}"
+                message=f"Upsert_public_sale_avg_prices Error - {e}",
             )
             sys.exit(0)
 
