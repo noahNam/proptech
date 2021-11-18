@@ -19,9 +19,6 @@ depends_on = None
 name = "realtradetypeenum"
 tmp_name = "tmp_" + name
 
-# new_type = sa.Enum("매매", "전세", "월세", "분양권매매", "입주권매매", name='realtradetypeenum')
-# old_type = sa.Enum("매매", "전세", "월세", name='realtradetypeenum')
-
 old_options = ("매매", "전세", "월세")
 new_options = ("매매", "전세", "월세", "분양권매매", "입주권매매")
 

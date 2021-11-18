@@ -61,7 +61,7 @@ class PublicSaleEntity(BaseModel):
     real_estate_id: int
     name: str
     region: str
-    housing_category: Enum
+    housing_category: str
     rent_type: Enum
     trade_type: Enum
     construct_company: Optional[str]
@@ -464,7 +464,7 @@ class PublicSaleBoundingEntity(BaseModel):
     latitude: float
     longitude: float
     public_sales_id: int
-    housing_category: Enum
+    housing_category: str
     name: Optional[str]
     status: int
     pyoung: Optional[int]
