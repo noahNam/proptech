@@ -17,6 +17,7 @@ from core.domains.user.schema.user_schema import (
     UpdateUserProfileResponseSchema,
     GetUserProviderResponseSchema,
     GetMonthlyIncomesResponseSchema,
+    UpdateFcmTokenResponseSchema,
 )
 from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput, FailureType
 
@@ -292,6 +293,29 @@ class GetUserProviderPresenter:
                 )
             result = {
                 "data": schema.result.dict(),
+                "meta": output.meta,
+            }
+            return success_response(result=result)
+        elif isinstance(output, UseCaseFailureOutput):
+            return failure_response(output=output, status_code=output.code)
+
+
+class UpdateFcmTokenPresenter:
+    def transform(self, output: Union[UseCaseSuccessOutput, UseCaseFailureOutput]):
+        if isinstance(output, UseCaseSuccessOutput):
+            try:
+                schema = UpdateFcmTokenResponseSchema(result=output.type)
+            except ValidationError:
+                return failure_response(
+                    UseCaseFailureOutput(
+                        type="response schema validation error",
+                        message=FailureType.INTERNAL_ERROR,
+                        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    ),
+                    status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            result = {
+                "data": schema.dict(),
                 "meta": output.meta,
             }
             return success_response(result=result)
