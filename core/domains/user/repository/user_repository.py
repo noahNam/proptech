@@ -230,7 +230,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_user_nickname] user_id : {dto.user_id} error : {e}"
             )
-            raise Exception
+            raise Exception(e)
 
     def create_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
@@ -261,7 +261,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_user_info] user_id : {dto.user_id} error : {e}"
             )
-            raise Exception
+            raise Exception(e)
 
     def update_chain_user_info(self, user_profile_id: int, codes: list) -> None:
         try:
@@ -275,7 +275,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_chain_user_info] user_profile_id : {user_profile_id} error : {e}"
             )
-            raise Exception
+            raise Exception(e)
 
     def update_last_code_to_user_info(
         self, dto: UpsertUserInfoDetailDto, survey_step: Optional[int]
@@ -296,7 +296,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_last_code_to_user_info] user_id : {dto.user_id} error : {e}"
             )
-            raise Exception
+            raise Exception(e)
 
     def get_user_multi_data_info(self, dto: GetUserInfoDto) -> List[UserInfoEntity]:
         filters = list()
@@ -397,6 +397,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_user_status_to_out] user_id : {user_id} error : {e}"
             )
+            raise Exception(e)
 
     def update_app_agree_terms_to_receive_marketing(
         self, dto: UpdateReceiveNotificationSettingDto
@@ -442,6 +443,7 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][create_recently_view] user_id : {dto.user_id} house_id: {dto.house_id} error : {e}"
             )
+            raise Exception(e)
 
     def update_user_nickname_of_profile_setting(
         self, dto: UpsertUserInfoDetailDto
@@ -464,9 +466,22 @@ class UserRepository:
             logger.error(
                 f"[UserRepository][update_user_nickname_of_profile_setting] user_id : {dto.user_id} error : {e}"
             )
-            raise Exception
+            raise Exception(e)
 
     def is_duplicate_nickname(self, nickname: str) -> bool:
         return session.query(
             session.query(UserProfileModel).filter_by(nickname=nickname).exists()
         ).scalar()
+
+    def update_device_token(self, device_token_id: int, fcm_token: str) -> None:
+        try:
+            session.query(DeviceTokenModel).filter_by(id=device_token_id).update(
+                {"token": fcm_token}
+            )
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_device_token] user_id : {device_token_id} error : {e}"
+            )
+            raise Exception(e)

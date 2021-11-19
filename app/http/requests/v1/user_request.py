@@ -1,6 +1,13 @@
 from typing import Optional
 
-from pydantic import BaseModel, StrictInt, ValidationError, validator, StrictStr
+from pydantic import (
+    BaseModel,
+    StrictInt,
+    ValidationError,
+    validator,
+    StrictStr,
+    StrictBool,
+)
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.user.dto.user_dto import (
@@ -12,6 +19,7 @@ from core.domains.user.dto.user_dto import (
     UpdateUserProfileDto,
     GetUserProviderDto,
     GetMonthlyIncomesDto,
+    UpdateFcmTokenDto,
 )
 from core.exceptions import InvalidRequestException
 
@@ -24,16 +32,16 @@ class GetUserSchema(BaseModel):
 
 class CreateUserSchema(BaseModel):
     user_id: StrictInt
-    email: Optional[str]
-    phone_number: Optional[str]
-    is_required_agree_terms: bool
-    is_active: bool
-    is_out: bool
-    uuid: str
-    os: str
-    is_active_device: bool
-    is_auth: bool
-    token: str
+    email: Optional[StrictStr]
+    phone_number: Optional[StrictStr]
+    is_required_agree_terms: StrictBool
+    is_active: StrictBool
+    is_out: StrictBool
+    uuid: StrictStr
+    os: StrictStr
+    is_active_device: StrictBool
+    is_auth: StrictBool
+    token: StrictStr
 
     @validator("phone_number")
     def check_phone_number(cls, phone_number) -> Optional[str]:
@@ -48,9 +56,9 @@ class CreateUserSchema(BaseModel):
 
 class CreateAppAgreeTermsSchema(BaseModel):
     user_id: StrictInt
-    private_user_info_yn: bool
-    required_terms_yn: bool
-    receive_marketing_yn: bool
+    private_user_info_yn: StrictBool
+    required_terms_yn: StrictBool
+    receive_marketing_yn: StrictBool
 
 
 class UpsertUserInfoSchema(BaseModel):
@@ -80,12 +88,17 @@ class GetSurveysSchema(BaseModel):
 
 class UpdateUserProfileSchema(BaseModel):
     user_id: StrictInt
-    nickname: str
+    nickname: StrictStr
 
 
 class GetUserProviderSchema(BaseModel):
     user_id: StrictInt
-    auth_header: str
+    auth_header: StrictStr
+
+
+class UpdateFcmTokenSchema(BaseModel):
+    user_id: StrictInt
+    fcm_token: StrictStr
 
 
 class GetUserRequestSchema:
@@ -289,5 +302,23 @@ class GetUserProviderRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetUserProviderRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class UpdateFcmTokenRequestSchema:
+    def __init__(self, user_id, fcm_token):
+        self.user_id = int(user_id) if user_id else None
+        self.fcm_token = fcm_token
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = UpdateFcmTokenSchema(
+                user_id=self.user_id, fcm_token=self.fcm_token
+            ).dict()
+            return UpdateFcmTokenDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[UpdateFcmTokenRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
