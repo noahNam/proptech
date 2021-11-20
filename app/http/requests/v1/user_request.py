@@ -6,7 +6,6 @@ from pydantic import (
     ValidationError,
     validator,
     StrictStr,
-    StrictBool,
 )
 
 from app.extensions.utils.log_helper import logger_
@@ -34,13 +33,13 @@ class CreateUserSchema(BaseModel):
     user_id: StrictInt
     email: Optional[StrictStr]
     phone_number: Optional[StrictStr]
-    is_required_agree_terms: StrictBool
-    is_active: StrictBool
-    is_out: StrictBool
+    is_required_agree_terms: bool
+    is_active: bool
+    is_out: bool
     uuid: StrictStr
     os: StrictStr
-    is_active_device: StrictBool
-    is_auth: StrictBool
+    is_active_device: bool
+    is_auth: bool
     token: StrictStr
 
     @validator("phone_number")
@@ -56,9 +55,9 @@ class CreateUserSchema(BaseModel):
 
 class CreateAppAgreeTermsSchema(BaseModel):
     user_id: StrictInt
-    private_user_info_yn: StrictBool
-    required_terms_yn: StrictBool
-    receive_marketing_yn: StrictBool
+    private_user_info_yn: bool
+    required_terms_yn: bool
+    receive_marketing_yn: bool
 
 
 class UpsertUserInfoSchema(BaseModel):
