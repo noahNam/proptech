@@ -23,4 +23,4 @@ class ReceivePushTypeHistoryModel(db.Model):
     user_id = Column(BigInteger, nullable=False)
     push_type = Column(String(9), nullable=False)
     is_active = Column(Boolean, nullable=False)
-    created_at = Column(DateTime, default=get_server_timestamp())
+    created_at = Column(DateTime(timezone=True), default=get_server_timestamp())

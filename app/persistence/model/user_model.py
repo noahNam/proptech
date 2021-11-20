@@ -25,8 +25,8 @@ class UserModel(db.Model):
     is_active = Column(Boolean, nullable=False, default=True)
     is_out = Column(Boolean, nullable=False, default=False)
     number_ticket = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime, default=get_server_timestamp())
-    updated_at = Column(DateTime, default=get_server_timestamp())
+    created_at = Column(DateTime(timezone=True), default=get_server_timestamp())
+    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp())
 
     device = relationship("DeviceModel", backref=backref("users"), uselist=False)
     user_profile = relationship(
