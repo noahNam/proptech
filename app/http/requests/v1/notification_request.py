@@ -1,4 +1,4 @@
-from pydantic import BaseModel, StrictInt, ValidationError, StrictStr
+from pydantic import BaseModel, StrictInt, ValidationError, StrictStr, StrictBool
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.notification.dto.notification_dto import (
@@ -34,7 +34,7 @@ class GetReceiveNotificationSettingSchema(BaseModel):
 class UpdateReceiveNotificationSettingSchema(BaseModel):
     user_id: StrictInt
     push_type: StrictStr
-    is_active: bool
+    is_active: StrictBool
 
 
 class GetNotificationRequestSchema:
