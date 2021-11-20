@@ -27,8 +27,8 @@ class UserProfileModel(db.Model):
     nickname = Column(String(12), nullable=True)
     last_update_code = Column(SmallInteger, nullable=True)
     survey_step = Column(SmallInteger, nullable=True)
-    created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
 
     user_infos = relationship(
         "UserInfoModel", backref=backref("user_profiles"), uselist=True

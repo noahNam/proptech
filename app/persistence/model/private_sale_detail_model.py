@@ -44,8 +44,8 @@ class PrivateSaleDetailModel(db.Model):
         index=True,
     )
     is_available = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
 
     def to_entity(self) -> PrivateSaleDetailEntity:
         return PrivateSaleDetailEntity(

@@ -30,8 +30,8 @@ class UserInfoModel(db.Model):
     )
     code = Column(SmallInteger, nullable=True)
     value = Column(String(12), nullable=True)
-    created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
 
     def to_entity(self) -> UserInfoEntity:
         return UserInfoEntity(
