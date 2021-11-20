@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class GetUserDto(BaseModel):
-    user_id: int = None
+    user_id: int
 
 
 class CreateUserDto(BaseModel):
@@ -109,3 +109,8 @@ class RecentlyViewDto(BaseModel):
 class GetUserProviderDto(BaseModel):
     user_id: int
     auth_header: str
+
+
+class UpdateFcmTokenDto(BaseModel):
+    user_id: int
+    fcm_token: str

@@ -1,6 +1,12 @@
 from typing import Optional
 
-from pydantic import BaseModel, StrictInt, ValidationError, validator, StrictStr
+from pydantic import (
+    BaseModel,
+    StrictInt,
+    ValidationError,
+    validator,
+    StrictStr,
+)
 
 from app.extensions.utils.log_helper import logger_
 from core.domains.user.dto.user_dto import (
@@ -12,6 +18,7 @@ from core.domains.user.dto.user_dto import (
     UpdateUserProfileDto,
     GetUserProviderDto,
     GetMonthlyIncomesDto,
+    UpdateFcmTokenDto,
 )
 from core.exceptions import InvalidRequestException
 
@@ -24,16 +31,16 @@ class GetUserSchema(BaseModel):
 
 class CreateUserSchema(BaseModel):
     user_id: StrictInt
-    email: Optional[str]
-    phone_number: Optional[str]
+    email: Optional[StrictStr]
+    phone_number: Optional[StrictStr]
     is_required_agree_terms: bool
     is_active: bool
     is_out: bool
-    uuid: str
-    os: str
+    uuid: StrictStr
+    os: StrictStr
     is_active_device: bool
     is_auth: bool
-    token: str
+    token: StrictStr
 
     @validator("phone_number")
     def check_phone_number(cls, phone_number) -> Optional[str]:
@@ -80,12 +87,17 @@ class GetSurveysSchema(BaseModel):
 
 class UpdateUserProfileSchema(BaseModel):
     user_id: StrictInt
-    nickname: str
+    nickname: StrictStr
 
 
 class GetUserProviderSchema(BaseModel):
     user_id: StrictInt
-    auth_header: str
+    auth_header: StrictStr
+
+
+class UpdateFcmTokenSchema(BaseModel):
+    user_id: StrictInt
+    fcm_token: StrictStr
 
 
 class GetUserRequestSchema:
@@ -289,5 +301,23 @@ class GetUserProviderRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetUserProviderRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class UpdateFcmTokenRequestSchema:
+    def __init__(self, user_id, fcm_token):
+        self.user_id = int(user_id) if user_id else None
+        self.fcm_token = fcm_token
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = UpdateFcmTokenSchema(
+                user_id=self.user_id, fcm_token=self.fcm_token
+            ).dict()
+            return UpdateFcmTokenDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[UpdateFcmTokenRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())

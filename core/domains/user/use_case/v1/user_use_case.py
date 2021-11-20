@@ -29,6 +29,7 @@ from core.domains.user.dto.user_dto import (
     UpdateUserProfileDto,
     GetUserProviderDto,
     GetMonthlyIncomesDto,
+    UpdateFcmTokenDto,
 )
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
@@ -993,3 +994,22 @@ class GetUserProviderUseCase(UserBaseUseCase):
                 provider=data["data"]["provider"], email=user.email if user else None
             )
         )
+
+
+class UpdateFcmTokenUseCase(UserBaseUseCase):
+    def execute(
+        self, dto: UpdateFcmTokenDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        user: UserEntity = self._user_repo.get_user(user_id=dto.user_id)
+
+        if not user:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        self._user_repo.update_device_token(
+            device_token_id=user.device.device_token.id, fcm_token=dto.fcm_token
+        )
+        return UseCaseSuccessOutput()

@@ -21,8 +21,8 @@ class NoticeTemplateModel(db.Model):
     title = Column(String(100), nullable=False)
     content = Column(String(200), nullable=False)
     is_active = Column(Boolean, nullable=False)
-    created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
 
     def to_entity(self) -> NoticeTemplateEntity:
         return NoticeTemplateEntity(
