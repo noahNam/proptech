@@ -72,7 +72,10 @@ from core.domains.house.enum.house_enum import (
     BoundingIncludePrivateEnum,
     RealTradeTypeEnum,
 )
-from core.domains.report.entity.report_entity import HouseTypeRankEntity
+from core.domains.report.entity.report_entity import (
+    HouseTypeRankEntity,
+    TicketUsageResultForHousePublicDetailEntity,
+)
 from core.domains.user.dto.user_dto import GetUserDto
 from core.exceptions import NotUniqueErrorException, UpdateFailErrorException
 
@@ -809,7 +812,7 @@ class HouseRepository:
         house_with_public_sales: list,
         is_like: bool,
         button_link_list: List[ButtonLinkEntity],
-        house_type_ranks: List[HouseTypeRankEntity],
+        ticket_usage_results: Optional[TicketUsageResultForHousePublicDetailEntity],
     ) -> HousePublicDetailEntity:
         # (<RealEstateModel>, [0]
         # min_supply_area, [1]
@@ -840,7 +843,7 @@ class HouseRepository:
             min_acquisition_tax=house_with_public_sales[5],
             max_acquisition_tax=house_with_public_sales[6],
             button_links=button_link_list,
-            house_type_ranks=house_type_ranks,
+            ticket_usage_results=ticket_usage_results,
             min_supply_price=house_with_public_sales[7],
             max_supply_price=house_with_public_sales[8],
         )

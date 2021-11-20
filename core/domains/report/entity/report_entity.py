@@ -125,3 +125,7 @@ class UserAnalysisCategoryEntity(BaseModel):
     seq: int
     type: str
     is_active: bool
+
+
+class TicketUsageResultForHousePublicDetailEntity(BaseModel):
+    house_type_ranks: List[HouseTypeRankEntity]

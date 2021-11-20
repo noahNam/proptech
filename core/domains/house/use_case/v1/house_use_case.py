@@ -47,7 +47,10 @@ from core.domains.house.enum.house_enum import (
     BoundingPublicTypeEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
-from core.domains.report.entity.report_entity import TicketUsageResultEntity
+from core.domains.report.entity.report_entity import (
+    TicketUsageResultEntity,
+    TicketUsageResultForHousePublicDetailEntity,
+)
 from core.domains.report.enum import ReportTopicEnum
 from core.domains.report.enum.report_enum import TicketUsageTypeEnum
 from core.domains.user.dto.user_dto import RecentlyViewDto, GetUserDto
@@ -262,16 +265,18 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
                 user_id=dto.user_id, type_=TicketUsageTypeEnum.HOUSE.value
             )
 
-        house_type_ranks = list()
         if ticket_usage_results:
-            house_type_ranks = ticket_usage_results[0].house_type_ranks
-            HouseHelper().sort_predicted_competition(house_type_ranks=house_type_ranks)
-
+            HouseHelper().sort_predicted_competition(
+                house_type_ranks=ticket_usage_results[0].house_type_ranks
+            )
+            ticket_usage_results = TicketUsageResultForHousePublicDetailEntity(
+                house_type_ranks=ticket_usage_results[0].house_type_ranks
+            )
         entities: HousePublicDetailEntity = self._house_repo.make_house_public_detail_entity(
             house_with_public_sales=house_with_public_sales,
             is_like=is_like,
             button_link_list=button_link_list,
-            house_type_ranks=house_type_ranks,
+            ticket_usage_results=ticket_usage_results,
         )
 
         self._sort_public_sale_photos(photos=entities.public_sales.public_sale_photos)
