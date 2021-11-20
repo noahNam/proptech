@@ -28,7 +28,7 @@ class TicketModel(db.Model):
     sign = Column(String(5), nullable=False)
     is_active = Column(Boolean, nullable=False)
     created_by = Column(String(6), nullable=False)
-    created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
 
     ticket_targets = relationship(
         "TicketTargetModel", backref=backref("tickets"), uselist=True

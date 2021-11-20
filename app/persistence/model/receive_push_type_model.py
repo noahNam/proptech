@@ -28,7 +28,7 @@ class ReceivePushTypeModel(db.Model):
     is_official = Column(Boolean, nullable=False, default=True)
     is_private = Column(Boolean, nullable=False, default=True)
     is_marketing = Column(Boolean, nullable=False, default=True)
-    updated_at = Column(DateTime, default=get_server_timestamp())
+    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp())
 
     def to_entity(self) -> ReceivePushTypeEntity:
         return ReceivePushTypeEntity(
