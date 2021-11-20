@@ -90,8 +90,6 @@ class HouseRepository:
                 house_id=dto.house_id,
                 type=dto.type,
                 is_like=True,
-                created_at=get_server_timestamp(),
-                updated_at=get_server_timestamp(),
             )
             session.add(interest_house)
             session.commit()
@@ -1769,7 +1767,6 @@ class HouseRepository:
             if recent_info.private_sale_avg_price_id:
                 avg_prices_update_list.append(avg_price_info)
             else:
-                avg_price_info.update({"created_at": get_server_timestamp()})
                 avg_prices_create_list.append(avg_price_info)
 
         return avg_prices_update_list, avg_prices_create_list
@@ -2086,7 +2083,6 @@ class HouseRepository:
             avg_price_info.update({"id": public_sale_avg_price_id})
             avg_prices_update_list.append(avg_price_info)
         else:
-            avg_price_info.update({"created_at": get_server_timestamp()})
             avg_prices_create_list.append(avg_price_info)
 
         return avg_prices_update_list, avg_prices_create_list
