@@ -83,7 +83,6 @@ class PaymentRepository:
                 sign=dto.sign,
                 is_active=True,
                 created_by=dto.created_by,
-                created_at=get_server_timestamp(),
             )
 
             session.add(ticket)
@@ -240,7 +239,6 @@ class PaymentRepository:
                 sign=TicketSignEnum.PLUS.value,
                 is_active=True,
                 created_by="system",
-                created_at=get_server_timestamp(),
             )
 
             session.add(ticket)
