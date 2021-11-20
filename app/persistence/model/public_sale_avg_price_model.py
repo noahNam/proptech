@@ -23,8 +23,8 @@ class PublicSaleAvgPriceModel(db.Model):
     supply_price = Column(Integer, nullable=True)
     avg_competition = Column(SmallInteger, nullable=True)
     min_score = Column(SmallInteger, nullable=True)
-    created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
 
     def to_entity(self) -> PublicSaleAvgPriceEntity:
         return PublicSaleAvgPriceEntity(

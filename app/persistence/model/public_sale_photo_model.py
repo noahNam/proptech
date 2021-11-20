@@ -34,8 +34,8 @@ class PublicSalePhotoModel(db.Model):
     extension = Column(String(4), nullable=False)
     is_thumbnail = Column(Boolean, nullable=False, default=False)
     seq = Column(SmallInteger, nullable=False, autoincrement=True, default=0)
-    created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
 
     def to_entity(self) -> PublicSalePhotoEntity:
         return PublicSalePhotoEntity(

@@ -81,3 +81,7 @@ class UpdateUserProfileResponseSchema(BaseModel):
 
 class GetUserProviderResponseSchema(BaseModel):
     result: GetUserProviderBaseSchema
+
+
+class UpdateFcmTokenResponseSchema(BaseModel):
+    result: StrictStr

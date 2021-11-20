@@ -13,6 +13,7 @@ from app.http.requests.v1.user_request import (
     UpdateUserProfileRequestSchema,
     GetUserProviderRequestSchema,
     GetMonthlyIncomesRequestSchema,
+    UpdateFcmTokenRequestSchema,
 )
 from app.http.responses.presenters.v1.user_presenter import (
     CreateUserPresenter,
@@ -27,6 +28,7 @@ from app.http.responses.presenters.v1.user_presenter import (
     UpdateUserProfilePresenter,
     GetUserProviderPresenter,
     GetMonthlyIncomesPresenter,
+    UpdateFcmTokenPresenter,
 )
 from app.http.view import auth_required, api, current_user
 from core.domains.user.use_case.v1.user_use_case import (
@@ -42,6 +44,7 @@ from core.domains.user.use_case.v1.user_use_case import (
     UpdateUserProfileUseCase,
     GetUserProviderUseCase,
     GetMonthlyIncomesUseCase,
+    UpdateFcmTokenUseCase,
 )
 
 
@@ -193,3 +196,15 @@ def update_user_profile_view():
     return UpdateUserProfilePresenter().transform(
         UpdateUserProfileUseCase().execute(dto=dto)
     )
+
+
+@api.route("/v1/users/fcm-token", methods=["PATCH"])
+@jwt_required
+@auth_required
+@swag_from("update-fcm-token.yml", methods=["PATCH"])
+def update_fcm_token_view():
+    dto = UpdateFcmTokenRequestSchema(
+        **request.get_json(), user_id=current_user.id,
+    ).validate_request_and_make_dto()
+
+    return UpdateFcmTokenPresenter().transform(UpdateFcmTokenUseCase().execute(dto=dto))
