@@ -7,7 +7,7 @@ from pydantic import (
     validator,
     ValidationError,
     StrictInt,
-    StrictStr,
+    StrictStr, StrictBool,
 )
 
 from app.extensions.utils.log_helper import logger_
@@ -41,7 +41,7 @@ class UpsertInterestHouseSchema(BaseModel):
     user_id: StrictInt
     house_id: StrictInt
     type: StrictInt
-    is_like: bool
+    is_like: StrictBool
 
 
 class GetInterestHouseListSchema(BaseModel):
