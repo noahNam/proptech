@@ -23,7 +23,9 @@ class RecentlyViewModel(db.Model):
     user_id = Column(BigInteger, ForeignKey(UserModel.id), nullable=False, index=True,)
     house_id = Column(BigInteger, nullable=False)
     type = Column(SmallInteger, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     users = relationship("UserModel", back_populates="recently_views")
 

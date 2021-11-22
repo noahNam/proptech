@@ -53,8 +53,12 @@ class SurveyResultModel(db.Model):
     hope_two_household_point = Column(SmallInteger, nullable=True)
     hope_two_address_point = Column(SmallInteger, nullable=True)
     hope_two_bank_point = Column(SmallInteger, nullable=True)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     def to_entity(self) -> SurveyResultEntity:
         return SurveyResultEntity(

@@ -86,10 +86,7 @@ class HouseRepository:
     def create_interest_house(self, dto: UpsertInterestHouseDto) -> None:
         try:
             interest_house = InterestHouseModel(
-                user_id=dto.user_id,
-                house_id=dto.house_id,
-                type=dto.type,
-                is_like=True,
+                user_id=dto.user_id, house_id=dto.house_id, type=dto.type, is_like=True,
             )
             session.add(interest_house)
             session.commit()

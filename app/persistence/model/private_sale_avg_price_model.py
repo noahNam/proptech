@@ -31,8 +31,12 @@ class PrivateSaleAvgPriceModel(db.Model):
     deposit_price = Column(Integer, nullable=True)
     max_trade_contract_date = Column(String(8), nullable=True)
     max_deposit_contract_date = Column(String(8), nullable=True)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     def to_entity(self) -> PrivateSaleAvgPriceEntity:
         return PrivateSaleAvgPriceEntity(

@@ -27,8 +27,12 @@ class InterestHouseModel(db.Model):
     house_id = Column(BigInteger, nullable=False, index=True)
     type = Column(SmallInteger, nullable=False)
     is_like = Column(Boolean, nullable=False, default=True)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     users = relationship("UserModel", back_populates="interest_houses")
 
