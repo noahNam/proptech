@@ -191,9 +191,7 @@ class UserRepository:
     def create_user_nickname(self, dto: UpsertUserInfoDetailDto) -> int:
         try:
             user_profile = UserProfileModel(
-                user_id=dto.user_id,
-                nickname=dto.value,
-                last_update_code=dto.code,
+                user_id=dto.user_id, nickname=dto.value, last_update_code=dto.code,
             )
 
             session.add(user_profile)
@@ -227,9 +225,7 @@ class UserRepository:
     def create_user_info(self, dto: UpsertUserInfoDetailDto) -> None:
         try:
             user_info = UserInfoModel(
-                user_profile_id=dto.user_profile_id,
-                code=dto.code,
-                value=dto.value,
+                user_profile_id=dto.user_profile_id, code=dto.code, value=dto.value,
             )
             session.add(user_info)
             session.commit()
@@ -420,9 +416,7 @@ class UserRepository:
     def create_recently_view(self, dto: RecentlyViewDto) -> None:
         try:
             view_info = RecentlyViewModel(
-                user_id=dto.user_id,
-                house_id=dto.house_id,
-                type=dto.type,
+                user_id=dto.user_id, house_id=dto.house_id, type=dto.type,
             )
             session.add(view_info)
             session.commit()
