@@ -21,7 +21,6 @@ from core.domains.house.entity.house_entity import (
     RealEstateLegalCodeEntity,
 )
 from core.domains.report.entity.report_entity import (
-    HouseTypeRankEntity,
     TicketUsageResultForHousePublicDetailEntity,
 )
 
@@ -142,6 +141,7 @@ class RealEstateModel(db.Model):
         return RealEstateReportEntity(
             id=self.id,
             jibun_address=self.jibun_address,
+            si_do=self.si_do,
             si_gun_gu=self.si_gun_gu,
             latitude=self.latitude,
             longitude=self.longitude,

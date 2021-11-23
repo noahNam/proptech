@@ -1409,7 +1409,11 @@ class HouseRepository:
     ) -> PublicSaleReportEntity:
         filters = list()
         filters.append(
-            RealEstateModel.si_gun_gu == report_public_sale_infos.real_estates.si_gun_gu
+            and_(
+                RealEstateModel.si_do == report_public_sale_infos.real_estates.si_do,
+                RealEstateModel.si_gun_gu
+                == report_public_sale_infos.real_estates.si_gun_gu,
+            )
         )
         filters.append(PublicSaleModel.is_available == True)
         filters.append(PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value)
@@ -1439,7 +1443,6 @@ class HouseRepository:
         )
 
         query_set = query.first()
-
         if not query_set:
             longitude = report_public_sale_infos.real_estates.longitude
             latitude = report_public_sale_infos.real_estates.latitude
