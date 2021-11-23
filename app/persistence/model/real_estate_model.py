@@ -120,7 +120,7 @@ class RealEstateModel(db.Model):
             id=self.id,
             name=self.name,
             road_address=self.road_address,
-            jibun_address=self.jibun_address,
+            jibun_address=self.calender_address,
             public_sale=self.public_sales.to_calendar_entity()
             if self.public_sales
             else None,
