@@ -34,6 +34,9 @@ class PredictedCompetitionEntity(BaseModel):
     total_special_supply: Optional[int]
     total_normal_supply: Optional[int]
 
+    def __lt__(self, other):
+        return self.private_area < other.private_area
+
 
 class UserAnalysisEntity(BaseModel):
     id: int
