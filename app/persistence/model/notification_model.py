@@ -42,8 +42,12 @@ class NotificationModel(db.Model):
         default=NotificationStatusEnum.WAIT.value,
         index=True,
     )
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     def to_entity(self) -> NotificationEntity:
         return NotificationEntity(

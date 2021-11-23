@@ -18,7 +18,9 @@ class UserAnalysisModel(db.Model):
     ticket_usage_result_id = Column(BigInteger, nullable=False, index=True)
     div = Column(String(1), nullable=False)
     category = Column(SmallInteger, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     def to_entity(self) -> UserAnalysisEntity:
         return UserAnalysisEntity(
