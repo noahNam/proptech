@@ -275,3 +275,13 @@ class ReplacePublicToPrivateSalesEnum(Enum):
     NO = 0
     YES = 1
     UNKNOWN = 2
+
+
+class CapitalAreaEnum(Enum):
+    """
+        사용 목적 : house_use_case -> 홈 메인화면 최근청약 수도권 소팅
+    """
+
+    SEOUL = "서울특별시"
+    GYEONGGI = "경기도"
+    INCHEON = "인천광역시"

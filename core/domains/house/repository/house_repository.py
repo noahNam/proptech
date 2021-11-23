@@ -86,10 +86,7 @@ class HouseRepository:
     def create_interest_house(self, dto: UpsertInterestHouseDto) -> None:
         try:
             interest_house = InterestHouseModel(
-                user_id=dto.user_id,
-                house_id=dto.house_id,
-                type=dto.type,
-                is_like=True,
+                user_id=dto.user_id, house_id=dto.house_id, type=dto.type, is_like=True,
             )
             session.add(interest_house)
             session.commit()
@@ -879,12 +876,6 @@ class HouseRepository:
 
         if queryset:
             for query in queryset:
-                # dto = GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
-
-                # 사용자가 해당 분양 매물에 대해 찜하기 했는지 여부
-                # is_like = self.is_user_liked_house(
-                #     self.get_public_interest_house(dto=dto)
-                # )
                 result.append(query.to_simple_calendar_info_entity(is_like=False))
         return result
 
