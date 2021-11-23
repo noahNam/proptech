@@ -45,8 +45,10 @@ from core.domains.house.enum.house_enum import (
     BoundingDegreeEnum,
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
+    CapitalAreaEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
+from core.domains.post.enum.post_enum import PostCategoryDetailEnum
 from core.domains.report.entity.report_entity import (
     TicketUsageResultEntity,
     TicketUsageResultForHousePublicDetailEntity,
@@ -515,6 +517,29 @@ class GetHouseMainUseCase(HouseBaseUseCase):
 
         return entity_list
 
+    def _sort_recent_public_infos_about_capital_area(
+        self, recent_public_info_entities: List[MainRecentPublicInfoEntity]
+    ):
+        """
+            최근 분양정보 수도권 우선 소팅(서울, 경기, 인천)
+        """
+        capital_area = tuple([elm.value for elm in list(CapitalAreaEnum)])
+        length = len(recent_public_info_entities)
+
+        if not length:
+            return None
+
+        for i in range(length - 1):
+            for j in range(i+1, length):
+                if (
+                    recent_public_info_entities[j].si_do in capital_area
+                    and recent_public_info_entities[i].si_do not in capital_area
+                ):
+                    recent_public_info_entities[i], recent_public_info_entities[j] = (
+                        recent_public_info_entities[j],
+                        recent_public_info_entities[i],
+                    )
+
     def execute(
         self, dto: GetHouseMainDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
@@ -540,6 +565,11 @@ class GetHouseMainUseCase(HouseBaseUseCase):
 
         recent_public_info_entities = self._make_recent_public_info_entity(
             recent_public_infos=recent_public_infos
+        )
+
+        # 수도권 우선 정렬
+        self._sort_recent_public_infos_about_capital_area(
+            recent_public_info_entities=recent_public_info_entities
         )
 
         # get present calendar info
