@@ -348,6 +348,7 @@ class GetHouseMainEntity(BaseModel):
 class RealEstateReportEntity(BaseModel):
     id: int
     jibun_address: Optional[str]
+    si_do: Optional[str]
     si_gun_gu: Optional[str]
     latitude: float
     longitude: float

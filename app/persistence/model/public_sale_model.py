@@ -23,7 +23,6 @@ from core.domains.house.entity.house_entity import (
     PublicSaleReportEntity,
 )
 from core.domains.house.enum.house_enum import (
-    HousingCategoryEnum,
     RentTypeEnum,
     PreSaleTypeEnum,
 )
