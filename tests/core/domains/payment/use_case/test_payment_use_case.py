@@ -117,15 +117,15 @@ def test_use_house_ticket_when_no_prom_no_available_ticket_then_return_failure_o
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
-    return_value=HTTPStatus.OK,
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._use_ticket_to_house_by_charged",
+    return_value=None,
 )
 @patch(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
 def test_use_house_ticket_when_no_prom_available_ticket_then_return_success_output(
-    _call_jarvis_house_analytics_api,
+    _use_ticket_to_house_by_charged,
     _is_ticket_usage_for_house,
     user_profile_factory,
     session,
@@ -159,44 +159,26 @@ def test_use_house_ticket_when_no_prom_available_ticket_then_return_success_outp
         )
         .all()
     )
-
-    ticket_target_models = (
-        session.query(TicketTargetModel)
-        .filter(
-            TicketTargetModel.ticket_id == ticket.id + 1,
-            TicketTargetModel.public_house_id == use_ticket_dto.house_id,
-        )
-        .all()
-    )
-
-    ticket_usage_result_model = (
-        session.query(TicketUsageResultModel)
-        .filter(
-            TicketUsageResultModel.user_id == use_ticket_dto.user_id,
-            TicketUsageResultModel.public_house_id == use_ticket_dto.house_id,
-        )
-        .first()
-    )
     ########################################################################
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value["message"] == "ticket used"
 
-    assert len(ticket_models) == 2
-    assert len(ticket_target_models) == 1
-    assert ticket_usage_result_model.ticket_id == ticket.id + 1
+    assert len(ticket_models) == 1
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
-    return_value=HTTPStatus.OK,
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._use_ticket_to_house_by_promotion",
+    return_value=UseCaseSuccessOutput(
+        value=dict(type="success", message="promotion used")
+    ),
 )
 @patch(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
 def test_use_house_ticket_when_exist_all_type_prom_available_count_available_ticket_then_return_success_output(
-    _call_jarvis_house_analytics_api,
+    _use_ticket_to_house_by_promotion,
     _is_ticket_usage_for_house,
     user_profile_factory,
     session,
@@ -231,62 +213,20 @@ def test_use_house_ticket_when_exist_all_type_prom_available_count_available_tic
 
     result = UseHouseTicketUseCase().execute(dto=use_ticket_dto)
 
-    # data 검증 #############################################################
-    ticket_models = (
-        session.query(TicketModel)
-        .filter(
-            TicketModel.user_id == use_ticket_dto.user_id, TicketModel.is_active == True
-        )
-        .all()
-    )
-
-    ticket_target_models = (
-        session.query(TicketTargetModel)
-        .filter(
-            TicketTargetModel.ticket_id == ticket.id + 1,
-            TicketTargetModel.public_house_id == use_ticket_dto.house_id,
-        )
-        .all()
-    )
-
-    ticket_usage_result_model = (
-        session.query(TicketUsageResultModel)
-        .filter(
-            TicketUsageResultModel.user_id == use_ticket_dto.user_id,
-            TicketUsageResultModel.public_house_id == use_ticket_dto.house_id,
-        )
-        .first()
-    )
-
-    promotion_usage_count_model = (
-        session.query(PromotionUsageCountModel)
-        .filter(
-            PromotionUsageCountModel.promotion_id == promotion.id,
-            PromotionUsageCountModel.user_id == use_ticket_dto.user_id,
-        )
-        .first()
-    )
-    ########################################################################
-
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value["message"] == "promotion used"
 
-    assert len(ticket_models) == 2
-    assert len(ticket_target_models) == 1
-    assert ticket_usage_result_model.ticket_id == ticket.id + 1
-    assert promotion_usage_count_model.usage_count == 1
-
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
-    return_value=HTTPStatus.OK,
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._use_ticket_to_house_by_charged",
+    return_value=None,
 )
 @patch(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
 def test_use_house_ticket_when_exist_all_type_prom_no_count_available_ticket_then_return_success_output(
-    _call_jarvis_house_analytics_api,
+    _use_ticket_to_house_by_charged,
     _is_ticket_usage_for_house,
     user_profile_factory,
     session,
@@ -321,40 +261,8 @@ def test_use_house_ticket_when_exist_all_type_prom_no_count_available_ticket_the
 
     result = UseHouseTicketUseCase().execute(dto=use_ticket_dto)
 
-    # data 검증 #############################################################
-    ticket_models = (
-        session.query(TicketModel)
-        .filter(
-            TicketModel.user_id == use_ticket_dto.user_id, TicketModel.is_active == True
-        )
-        .all()
-    )
-
-    ticket_target_models = (
-        session.query(TicketTargetModel)
-        .filter(
-            TicketTargetModel.ticket_id == ticket.id + 1,
-            TicketTargetModel.public_house_id == use_ticket_dto.house_id,
-        )
-        .all()
-    )
-
-    ticket_usage_result_model = (
-        session.query(TicketUsageResultModel)
-        .filter(
-            TicketUsageResultModel.user_id == use_ticket_dto.user_id,
-            TicketUsageResultModel.public_house_id == use_ticket_dto.house_id,
-        )
-        .first()
-    )
-    ########################################################################
-
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value["message"] == "ticket used"
-
-    assert len(ticket_models) == 2
-    assert len(ticket_target_models) == 1
-    assert ticket_usage_result_model.ticket_id == ticket.id + 1
 
 
 @patch(
@@ -401,15 +309,15 @@ def test_use_house_ticket_when_exist_all_type_prom_no_count_no_ticket_then_retur
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
-    return_value=HTTPStatus.OK,
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._use_ticket_to_house_by_charged",
+    return_value=None,
 )
 @patch(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
 def test_use_house_ticket_when_exist_house_exist_some_type_prom_no_count_available_ticket_then_return_success_output(
-    _call_jarvis_house_analytics_api,
+    _use_ticket_to_house_by_charged,
     _is_ticket_usage_for_house,
     user_profile_factory,
     session,
@@ -448,40 +356,8 @@ def test_use_house_ticket_when_exist_house_exist_some_type_prom_no_count_availab
 
     result = UseHouseTicketUseCase().execute(dto=use_ticket_dto)
 
-    # data 검증 #############################################################
-    ticket_models = (
-        session.query(TicketModel)
-        .filter(
-            TicketModel.user_id == use_ticket_dto.user_id, TicketModel.is_active == True
-        )
-        .all()
-    )
-
-    ticket_target_models = (
-        session.query(TicketTargetModel)
-        .filter(
-            TicketTargetModel.ticket_id == ticket.id + 1,
-            TicketTargetModel.public_house_id == use_ticket_dto.house_id,
-        )
-        .all()
-    )
-
-    ticket_usage_result_model = (
-        session.query(TicketUsageResultModel)
-        .filter(
-            TicketUsageResultModel.user_id == use_ticket_dto.user_id,
-            TicketUsageResultModel.public_house_id == use_ticket_dto.house_id,
-        )
-        .first()
-    )
-    ########################################################################
-
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value["message"] == "ticket used"
-
-    assert len(ticket_models) == 2
-    assert len(ticket_target_models) == 1
-    assert ticket_usage_result_model.ticket_id == ticket.id + 1
 
 
 @pytest.mark.skip(reason="유닛테스트는 통과하나 전체 테스트시에 생기는 문제로 skip")
@@ -609,15 +485,15 @@ def test_use_house_ticket_when_exist_house_exist_some_type_prom_available_count_
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
-    return_value=HTTPStatus.OK,
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._use_ticket_to_house_by_charged",
+    return_value=None,
 )
 @patch(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
 def test_use_house_ticket_when_not_exist_house_exist_some_type_prom_available_ticket_then_return_success_output(
-    _call_jarvis_house_analytics_api,
+    _use_ticket_to_house_by_charged,
     _is_ticket_usage_for_house,
     user_profile_factory,
     session,
@@ -656,41 +532,8 @@ def test_use_house_ticket_when_not_exist_house_exist_some_type_prom_available_ti
     use_ticket_dto.house_id = 99
     result = UseHouseTicketUseCase().execute(dto=use_ticket_dto)
 
-    # data 검증 #############################################################
-    ticket_models = (
-        session.query(TicketModel)
-        .filter(
-            TicketModel.user_id == use_ticket_dto.user_id, TicketModel.is_active == True
-        )
-        .all()
-    )
-
-    ticket_target_models = (
-        session.query(TicketTargetModel)
-        .filter(
-            TicketTargetModel.ticket_id == ticket.id + 1,
-            TicketTargetModel.public_house_id == 99,
-        )
-        .all()
-    )
-
-    ticket_usage_result_model = (
-        session.query(TicketUsageResultModel)
-        .filter(
-            TicketUsageResultModel.user_id == use_ticket_dto.user_id,
-            TicketUsageResultModel.public_house_id == use_ticket_dto.house_id,
-        )
-        .first()
-    )
-    ########################################################################
-
     assert isinstance(result, UseCaseSuccessOutput)
     assert result.value["message"] == "ticket used"
-
-    assert len(ticket_models) == 2
-    assert ticket_models[1].type == TicketTypeDivisionEnum.USED_TICKET_TO_HOUSE.value
-    assert len(ticket_target_models) == 1
-    assert ticket_usage_result_model.ticket_id == ticket.id + 1
 
 
 @patch(
