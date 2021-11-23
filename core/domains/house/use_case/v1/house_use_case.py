@@ -268,12 +268,23 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             )
 
         if ticket_usage_results:
-            HouseHelper().sort_predicted_competition(
-                house_type_ranks=ticket_usage_results[0].house_type_ranks
-            )
-            ticket_usage_results = TicketUsageResultForHousePublicDetailEntity(
-                house_type_ranks=ticket_usage_results[0].house_type_ranks
-            )
+            index = None
+            # filter house_id, is_active
+            for idx, ticket_usage_result in enumerate(ticket_usage_results):
+                if (
+                    ticket_usage_result.public_house_id == dto.house_id
+                    and ticket_usage_result.is_active is True
+                ):
+                    index = idx
+                    break
+            if index:
+                HouseHelper().sort_predicted_competition(
+                    house_type_ranks=ticket_usage_results[index].house_type_ranks
+                )
+                ticket_usage_results = TicketUsageResultForHousePublicDetailEntity(
+                    house_type_ranks=ticket_usage_results[index].house_type_ranks
+                )
+
         entities: HousePublicDetailEntity = self._house_repo.make_house_public_detail_entity(
             house_with_public_sales=house_with_public_sales,
             is_like=is_like,
