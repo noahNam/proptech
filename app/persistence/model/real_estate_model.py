@@ -132,7 +132,7 @@ class RealEstateModel(db.Model):
             id=self.id,
             name=self.name,
             road_address=self.road_address,
-            jibun_address=self.jibun_address,
+            jibun_address=self.calender_address,
             public_sale=self.public_sales.to_calendar_entity()
             if self.public_sales
             else None,
@@ -155,3 +155,17 @@ class RealEstateModel(db.Model):
             si_gun_gu=self.si_gun_gu,
             dong_myun=self.dong_myun,
         )
+
+    @property
+    def calender_address(self) -> Optional[str]:
+        if not self.si_do:
+            return ""
+        elif self.si_do == "세종특별자치시":
+            # 세종시는 시군구가 무조건 없음
+            return f"{self.si_do} {self.dong_myun} {self.land_number}"
+        else:
+            return (
+                f"{self.si_do} {self.si_gun_gu} {self.dong_myun} {self.land_number}"
+                if self.dong_myun != ""
+                else f"{self.si_do} {self.si_gun_gu}"
+            )

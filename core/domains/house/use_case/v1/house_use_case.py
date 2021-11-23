@@ -530,7 +530,7 @@ class GetHouseMainUseCase(HouseBaseUseCase):
             return None
 
         for i in range(length - 1):
-            for j in range(i+1, length):
+            for j in range(i + 1, length):
                 if (
                     recent_public_info_entities[j].si_do in capital_area
                     and recent_public_info_entities[i].si_do not in capital_area
