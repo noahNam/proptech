@@ -272,6 +272,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             domain_normal_dict,
         ) = (dict(), dict(), dict(), dict(), dict())
 
+        expected_competitions = sorted(expected_competitions)
         for expected_competition in expected_competitions:
             domain_common_dict = dict(
                 region=expected_competition.region,
