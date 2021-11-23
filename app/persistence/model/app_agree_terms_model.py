@@ -18,5 +18,9 @@ class AppAgreeTermsModel(db.Model):
     required_terms_yn = Column(Boolean, nullable=False)
     receive_marketing_yn = Column(Boolean, nullable=False)
     receive_marketing_date = Column(DateTime, nullable=True)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )

@@ -24,8 +24,12 @@ class PostAttachmentModel(db.Model):
     file_name = Column(String(50), nullable=False)
     path = Column(String(150), nullable=False)
     extension = Column(String(4), nullable=False)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     def to_entity(self) -> PostAttachmentEntity:
         return PostAttachmentEntity(

@@ -5,7 +5,8 @@ from pydantic import (
     StrictInt,
     ValidationError,
     validator,
-    StrictStr, StrictBool,
+    StrictStr,
+    StrictBool,
 )
 
 from app.extensions.utils.log_helper import logger_

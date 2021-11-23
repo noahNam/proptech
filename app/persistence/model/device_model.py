@@ -28,8 +28,12 @@ class DeviceModel(db.Model):
     is_auth = Column(Boolean, nullable=False, default=False)
     phone_number = Column(String(11), nullable=True)
     endpoint = Column(String(100), nullable=True, default="")
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     device_token = relationship(
         "DeviceTokenModel", backref=backref("devices"), uselist=False
