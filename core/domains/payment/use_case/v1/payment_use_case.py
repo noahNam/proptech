@@ -337,14 +337,28 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
             )
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
-            # msg = "APT that cannot be applied" if response.msg == "APT that cannot be applied" else "error on jarvis (use_ticket_to_house_by_promotion)"
-            msg = "error on jarvis (use_ticket_to_house_by_charged)"
-            sentry_sdk.capture_message(msg)
-            return UseCaseFailureOutput(
-                type=HTTPStatus.INTERNAL_SERVER_ERROR,
-                message=msg,
-                code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
+            try:
+                response_msg = json.loads(response.text)["error_message"]
+                msg = (
+                    response_msg
+                    if response_msg == "APT that cannot be applied"
+                    else "error on jarvis (use_ticket_to_house_by_promotion)"
+                )
+                sentry_sdk.capture_message(msg)
+                return UseCaseFailureOutput(
+                    type=HTTPStatus.BAD_REQUEST,
+                    message=msg,
+                    code=HTTPStatus.BAD_REQUEST,
+                )
+            except Exception:
+                msg = "error on jarvis (use_ticket_to_house_by_promotion)"
+                sentry_sdk.capture_message(msg)
+                return UseCaseFailureOutput(
+                    type=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    message=msg,
+                    code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+
         return None
 
     def _use_ticket_to_house_by_promotion(
@@ -380,14 +394,28 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
                 )
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
-            # msg = "APT that cannot be applied" if response.msg == "APT that cannot be applied" else "error on jarvis (use_ticket_to_house_by_promotion)"
-            msg = "error on jarvis (use_ticket_to_house_by_promotion)"
-            sentry_sdk.capture_message(msg)
-            return UseCaseFailureOutput(
-                type=HTTPStatus.INTERNAL_SERVER_ERROR,
-                message=msg,
-                code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
+            try:
+                response_msg = json.loads(response.text)["error_message"]
+                msg = (
+                    response_msg
+                    if response_msg == "APT that cannot be applied"
+                    else "error on jarvis (use_ticket_to_house_by_promotion)"
+                )
+                sentry_sdk.capture_message(msg)
+                return UseCaseFailureOutput(
+                    type=HTTPStatus.BAD_REQUEST,
+                    message=msg,
+                    code=HTTPStatus.BAD_REQUEST,
+                )
+            except Exception:
+                msg = "error on jarvis (use_ticket_to_house_by_promotion)"
+                sentry_sdk.capture_message(msg)
+                return UseCaseFailureOutput(
+                    type=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    message=msg,
+                    code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+
         return UseCaseSuccessOutput(
             value=dict(type="success", message="promotion used")
         )

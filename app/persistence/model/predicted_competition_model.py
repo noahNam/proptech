@@ -3,7 +3,8 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     SmallInteger,
-    String, Float,
+    String,
+    Float,
 )
 from app import db
 from core.domains.report.entity.report_entity import PredictedCompetitionEntity
