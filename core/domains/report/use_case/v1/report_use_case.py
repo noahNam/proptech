@@ -309,7 +309,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             old_parent_dict.update(domain_common_dict)
             normal_dict.update(domain_common_dict)
 
-            if domain_marry_dict.get(expected_competition.house_structure_type):
+            if domain_marry_dict.get(expected_competition.private_area):
                 domain_marry_list.append(marry_dict)
                 domain_first_life_list.append(first_life_dict)
                 domain_children_list.append(children_dict)
@@ -335,31 +335,31 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                 )
 
             domain_marry_dict.setdefault(
-                expected_competition.house_structure_type, dict()
+                expected_competition.private_area, dict()
             ).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_marry_list,
             )
             domain_first_life_dict.setdefault(
-                expected_competition.house_structure_type, dict()
+                expected_competition.private_area, dict()
             ).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_first_life_list,
             )
             domain_children_dict.setdefault(
-                expected_competition.house_structure_type, dict()
+                expected_competition.private_area, dict()
             ).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_children_list,
             )
             domain_old_parent_dict.setdefault(
-                expected_competition.house_structure_type, dict()
+                expected_competition.private_area, dict()
             ).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_old_parent_list,
             )
             domain_normal_dict.setdefault(
-                expected_competition.house_structure_type, dict()
+                expected_competition.private_area, dict()
             ).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_normal_list,
