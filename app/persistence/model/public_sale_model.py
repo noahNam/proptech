@@ -23,7 +23,6 @@ from core.domains.house.entity.house_entity import (
     PublicSaleReportEntity,
 )
 from core.domains.house.enum.house_enum import (
-    HousingCategoryEnum,
     RentTypeEnum,
     PreSaleTypeEnum,
 )
@@ -78,8 +77,12 @@ class PublicSaleModel(db.Model):
     down_payment_ratio = Column(Integer, nullable=False)
     reference_url = Column(String(50), nullable=True)
     offer_notice_url = Column(String(100), nullable=True)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
     name_ts = Column(TSVECTOR().with_variant(String(150), "sqlite"), nullable=True)
 
     # 1:M relationship

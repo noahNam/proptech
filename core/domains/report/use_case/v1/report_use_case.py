@@ -309,7 +309,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
             old_parent_dict.update(domain_common_dict)
             normal_dict.update(domain_common_dict)
 
-            if domain_marry_dict.get(expected_competition.house_structure_type):
+            if domain_marry_dict.get(expected_competition.private_area):
                 domain_marry_list.append(marry_dict)
                 domain_first_life_list.append(first_life_dict)
                 domain_children_list.append(children_dict)
@@ -335,37 +335,37 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                 )
 
             domain_marry_dict.setdefault(
-                expected_competition.house_structure_type, dict()
+                expected_competition.private_area, dict()
             ).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_marry_list,
             )
             domain_first_life_dict.setdefault(
-                expected_competition.house_structure_type, dict()
+                expected_competition.private_area, dict()
             ).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_first_life_list,
             )
             domain_children_dict.setdefault(
-                expected_competition.house_structure_type, dict()
+                expected_competition.private_area, dict()
             ).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_children_list,
             )
             domain_old_parent_dict.setdefault(
-                expected_competition.house_structure_type, dict()
+                expected_competition.private_area, dict()
             ).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_old_parent_list,
             )
             domain_normal_dict.setdefault(
-                expected_competition.house_structure_type, dict()
+                expected_competition.private_area, dict()
             ).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_normal_list,
             )
 
-        convert_target_dict_dict = dict(
+        convert_target_dict = dict(
             marry=domain_marry_dict,
             first_life=domain_first_life_dict,
             children=domain_children_dict,
@@ -374,7 +374,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         )
 
         predicted_competition_dict: Dict = self._convert_area_type_dict(
-            convert_target_dict=convert_target_dict_dict,
+            convert_target_dict=convert_target_dict,
             key_name="house_structure_type",
         )
         return predicted_competition_dict
@@ -440,15 +440,9 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         while end > 0:
             last_swap = 0
             for i in range(end):
-                # 102A, 84A str로 비교시 84A가 크기 때문에 숫자로 재비교
-                number1 = "".join(
-                    re.findall("\d+", expected_competitions[i].house_structure_type)[0]
-                )
-                number2 = "".join(
-                    re.findall(
-                        "\d+", expected_competitions[i + 1].house_structure_type
-                    )[0]
-                )
+                # private_area로 최초 정렬
+                number1 = expected_competitions[i].private_area
+                number2 = expected_competitions[i + 1].private_area
 
                 if int(number1) > int(number2):
                     expected_competitions[i], expected_competitions[i + 1] = (
@@ -462,7 +456,6 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         while end > 0:
             last_swap = 0
             for i in range(end):
-                # 위의 숫자기반 정렬을 알파벳 순으로 다시 재정렬
                 word1 = "".join(
                     re.findall(
                         "[a-zA-Z]+", expected_competitions[i].house_structure_type
@@ -491,25 +484,6 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                     last_swap = i
             end = last_swap
 
-        end = len(expected_competitions) - 1
-        while end > 0:
-            last_swap = 0
-            for i in range(end):
-                if expected_competitions[
-                    i
-                ].house_structure_type == expected_competitions[
-                    i + 1
-                ].house_structure_type and sort_dict.get(
-                    expected_competitions[i].region
-                ) > sort_dict.get(
-                    expected_competitions[i + 1].region
-                ):
-                    expected_competitions[i], expected_competitions[i + 1] = (
-                        expected_competitions[i + 1],
-                        expected_competitions[i],
-                    )
-                    last_swap = i
-            end = last_swap
 
     def _get_banner_list(self, section_type: int) -> List[BannerEntity]:
         send_message(

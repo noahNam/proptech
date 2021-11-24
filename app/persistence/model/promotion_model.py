@@ -23,8 +23,12 @@ class PromotionModel(db.Model):
     div = Column(String(5), nullable=False)
     max_count = Column(SmallInteger, nullable=False)
     is_active = Column(Boolean, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     promotion_houses = relationship(
         "PromotionHouseModel", backref=backref("promotions"), uselist=True

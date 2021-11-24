@@ -86,10 +86,7 @@ class HouseRepository:
     def create_interest_house(self, dto: UpsertInterestHouseDto) -> None:
         try:
             interest_house = InterestHouseModel(
-                user_id=dto.user_id,
-                house_id=dto.house_id,
-                type=dto.type,
-                is_like=True,
+                user_id=dto.user_id, house_id=dto.house_id, type=dto.type, is_like=True,
             )
             session.add(interest_house)
             session.commit()
@@ -879,12 +876,6 @@ class HouseRepository:
 
         if queryset:
             for query in queryset:
-                # dto = GetHousePublicDetailDto(user_id=user_id, house_id=query.id)
-
-                # 사용자가 해당 분양 매물에 대해 찜하기 했는지 여부
-                # is_like = self.is_user_liked_house(
-                #     self.get_public_interest_house(dto=dto)
-                # )
                 result.append(query.to_simple_calendar_info_entity(is_like=False))
         return result
 
@@ -1418,7 +1409,11 @@ class HouseRepository:
     ) -> PublicSaleReportEntity:
         filters = list()
         filters.append(
-            RealEstateModel.si_gun_gu == report_public_sale_infos.real_estates.si_gun_gu
+            and_(
+                RealEstateModel.si_do == report_public_sale_infos.real_estates.si_do,
+                RealEstateModel.si_gun_gu
+                == report_public_sale_infos.real_estates.si_gun_gu,
+            )
         )
         filters.append(PublicSaleModel.is_available == True)
         filters.append(PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE.value)
@@ -1448,7 +1443,6 @@ class HouseRepository:
         )
 
         query_set = query.first()
-
         if not query_set:
             longitude = report_public_sale_infos.real_estates.longitude
             latitude = report_public_sale_infos.real_estates.latitude

@@ -24,7 +24,9 @@ class TicketUsageResultModel(db.Model):
     public_house_id = Column(BigInteger, nullable=True)
     ticket_id = Column(BigInteger, nullable=True)
     is_active = Column(Boolean, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     house_type_ranks = relationship(
         "HouseTypeRankModel",
