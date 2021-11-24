@@ -277,7 +277,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
                 ):
                     index = idx
                     break
-            if index:
+            if index >= 0:
                 HouseHelper().sort_predicted_competition(
                     house_type_ranks=ticket_usage_results[index].house_type_ranks
                 )
