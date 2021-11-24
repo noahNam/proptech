@@ -22,8 +22,12 @@ class ArticleModel(db.Model):
         BigInteger, ForeignKey(PostModel.id), nullable=False, unique=True, index=True,
     )
     body = Column(Unicode, nullable=True)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     def to_entity(self) -> ArticleEntity:
         return ArticleEntity(body=self.body,)

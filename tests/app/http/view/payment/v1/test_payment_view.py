@@ -14,6 +14,7 @@ from core.domains.payment.enum.payment_enum import (
 from core.domains.payment.use_case.v1.payment_use_case import CreateRecommendCodeUseCase
 from core.domains.report.enum.report_enum import TicketUsageTypeEnum
 from core.domains.user.enum.user_enum import UserSurveyStepEnum
+from core.use_case_output import UseCaseSuccessOutput, UseCaseFailureOutput
 
 
 def test_get_ticket_usage_result_view_then_return_usage_ticket_list(
@@ -82,15 +83,15 @@ def test_get_ticket_usage_result_view_then_return_no_list(
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
-    return_value=HTTPStatus.OK,
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._use_ticket_to_house_by_charged",
+    return_value=None,
 )
 @patch(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
 def test_use_house_ticket_when_used_ticket_then_success(
-    _call_jarvis_house_analytics_api,
+    _use_ticket_to_house_by_charged,
     _is_ticket_usage_for_house,
     client,
     session,
@@ -138,15 +139,17 @@ def test_use_house_ticket_when_used_ticket_then_success(
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
-    return_value=HTTPStatus.OK,
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._use_ticket_to_house_by_promotion",
+    return_value=UseCaseSuccessOutput(
+        value=dict(type="success", message="promotion used")
+    ),
 )
 @patch(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
 def test_use_house_ticket_when_used_promotion_then_success(
-    _call_jarvis_house_analytics_api,
+    _use_ticket_to_house_by_promotion,
     _is_ticket_usage_for_house,
     client,
     session,
@@ -203,15 +206,19 @@ def test_use_house_ticket_when_used_promotion_then_success(
 
 
 @patch(
-    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._call_jarvis_house_analytics_api",
-    return_value=HTTPStatus.INTERNAL_SERVER_ERROR,
+    "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._use_ticket_to_house_by_charged",
+    return_value=UseCaseFailureOutput(
+        type=HTTPStatus.INTERNAL_SERVER_ERROR,
+        message="error on jarvis (use_ticket_to_house_by_charged)",
+        code=HTTPStatus.INTERNAL_SERVER_ERROR,
+    ),
 )
 @patch(
     "core.domains.payment.use_case.v1.payment_use_case.UseHouseTicketUseCase._is_ticket_usage_for_house",
     return_value=False,
 )
 def test_use_house_ticket_when_error_on_jarvis_then_failure(
-    _call_jarvis_house_analytics_api,
+    _use_ticket_to_house_by_charged,
     _is_ticket_usage_for_house,
     user_profile_factory,
     client,

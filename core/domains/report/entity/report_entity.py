@@ -17,6 +17,7 @@ class PredictedCompetitionEntity(BaseModel):
     id: int
     ticket_usage_result_id: int
     house_structure_type: str
+    private_area: Optional[float]
     region: str
     region_percentage: int
     multiple_children_competition: Optional[int]
@@ -32,6 +33,9 @@ class PredictedCompetitionEntity(BaseModel):
     normal_passing_score: Optional[int]
     total_special_supply: Optional[int]
     total_normal_supply: Optional[int]
+
+    def __lt__(self, other):
+        return self.private_area < other.private_area
 
 
 class UserAnalysisEntity(BaseModel):

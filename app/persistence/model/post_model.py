@@ -11,7 +11,7 @@ from sqlalchemy.orm import relationship
 
 from app import db
 from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.post.entity.post_entity import PostEntity, ArticleEntity
+from core.domains.post.entity.post_entity import PostEntity
 
 
 class PostModel(db.Model):
@@ -25,8 +25,12 @@ class PostModel(db.Model):
     contents_num = Column(SmallInteger, nullable=False)
     is_deleted = Column(Boolean, nullable=False, default=False)
     read_count = Column(Integer, default=0, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+    )
 
     article = relationship("ArticleModel", backref="post", uselist=False)
     post_attachments = relationship("PostAttachmentModel", backref="post", uselist=True)

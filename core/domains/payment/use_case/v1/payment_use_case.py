@@ -6,6 +6,7 @@ from typing import Union, List, Optional
 import inject
 import requests
 import sentry_sdk
+from flask import Response
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from core.domains.house.entity.house_entity import GetPublicSaleOfTicketUsageEntity
@@ -299,7 +300,7 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
     def _make_failure_dict(self, message: str) -> dict:
         return dict(type="failure", message=message)
 
-    def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> int:
+    def _call_jarvis_house_analytics_api(self, dto: UseHouseTicketDto) -> Response:
         data = dict(user_id=dto.user_id, house_id=dto.house_id,)
         response = requests.post(
             url=CallJarvisEnum.JARVIS_BASE_URL.value
@@ -311,13 +312,13 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
             },
             data=json.dumps(data),
         )
-        return response.status_code
+        return response
 
     def _use_ticket_to_house_by_charged(
         self, dto: UseHouseTicketDto
     ) -> Optional[UseCaseFailureOutput]:
-        response: int = self._call_jarvis_house_analytics_api(dto=dto)
-        if response == HTTPStatus.OK:
+        response: Response = self._call_jarvis_house_analytics_api(dto=dto)
+        if response.status_code == HTTPStatus.OK:
             # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
                 user_id=dto.user_id,
@@ -336,20 +337,35 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
             )
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
-            msg = "error on jarvis (use_ticket_to_house_by_charged)"
-            sentry_sdk.capture_message(msg)
-            return UseCaseFailureOutput(
-                type=HTTPStatus.INTERNAL_SERVER_ERROR,
-                message=msg,
-                code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
+            try:
+                response_msg = json.loads(response.text)["error_message"]
+                msg = (
+                    response_msg
+                    if response_msg == "APT that cannot be applied"
+                    else "error on jarvis (use_ticket_to_house_by_promotion)"
+                )
+                sentry_sdk.capture_message(msg)
+                return UseCaseFailureOutput(
+                    type=HTTPStatus.BAD_REQUEST,
+                    message=msg,
+                    code=HTTPStatus.BAD_REQUEST,
+                )
+            except Exception:
+                msg = "error on jarvis (use_ticket_to_house_by_promotion)"
+                sentry_sdk.capture_message(msg)
+                return UseCaseFailureOutput(
+                    type=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    message=msg,
+                    code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+
         return None
 
     def _use_ticket_to_house_by_promotion(
         self, dto: UseHouseTicketDto, promotion: PromotionEntity
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
-        response: int = self._call_jarvis_house_analytics_api(dto=dto)
-        if response == HTTPStatus.OK:
+        response: Response = self._call_jarvis_house_analytics_api(dto=dto)
+        if response.status_code == HTTPStatus.OK:
             # 티켓 사용 히스토리 생성 (tickets 스키마)
             create_use_ticket_dto: CreateTicketDto = self._make_create_use_ticket_dto(
                 user_id=dto.user_id,
@@ -378,13 +394,28 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
                 )
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
-            msg = "error on jarvis (use_ticket_to_house_by_promotion)"
-            sentry_sdk.capture_message(msg)
-            return UseCaseFailureOutput(
-                type=HTTPStatus.INTERNAL_SERVER_ERROR,
-                message=msg,
-                code=HTTPStatus.INTERNAL_SERVER_ERROR,
-            )
+            try:
+                response_msg = json.loads(response.text)["error_message"]
+                msg = (
+                    response_msg
+                    if response_msg == "APT that cannot be applied"
+                    else "error on jarvis (use_ticket_to_house_by_promotion)"
+                )
+                sentry_sdk.capture_message(msg)
+                return UseCaseFailureOutput(
+                    type=HTTPStatus.BAD_REQUEST,
+                    message=msg,
+                    code=HTTPStatus.BAD_REQUEST,
+                )
+            except Exception:
+                msg = "error on jarvis (use_ticket_to_house_by_promotion)"
+                sentry_sdk.capture_message(msg)
+                return UseCaseFailureOutput(
+                    type=HTTPStatus.INTERNAL_SERVER_ERROR,
+                    message=msg,
+                    code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+
         return UseCaseSuccessOutput(
             value=dict(type="success", message="promotion used")
         )

@@ -218,6 +218,7 @@ class PredictedCompetitionFactory(BaseFactory):
 
     ticket_usage_result_id = 1
     house_structure_type = "084A"
+    private_area = 84.1
     region = "해당지역"
     region_percentage = "30"
     multiple_children_competition = random.randint(1, 1000)
