@@ -46,6 +46,8 @@ from core.domains.house.enum.house_enum import (
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
     CapitalAreaEnum,
+    HousingCategoryEnum,
+    ButtonSectionType,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.post.enum.post_enum import PostCategoryDetailEnum
@@ -256,9 +258,22 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             )
 
         # get button link list
-        button_link_list = self._get_button_link_list(
-            section_type=SectionType.PUBLIC_SALE_DETAIL.value
-        )
+        # 민영 url
+        if (
+            house_with_public_sales[0].public_sales.housing_category
+            == HousingCategoryEnum.PRIVATE.value
+        ):
+            button_link_list = self._get_button_link_list(
+                section_type=ButtonSectionType.PUBLIC_SALE_DETAIL_PRIVATE_REGISTRATION.value
+            )
+        # 공공 url
+        elif (
+            house_with_public_sales[0].public_sales.housing_category
+            == HousingCategoryEnum.PUBLIC.value
+        ):
+            button_link_list = self._get_button_link_list(
+                section_type=ButtonSectionType.PUBLIC_SALE_DETAIL_PUBLIC_REGISTRATION.value
+            )
 
         # get house ticket usage results
         ticket_usage_results = None

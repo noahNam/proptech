@@ -374,8 +374,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         )
 
         predicted_competition_dict: Dict = self._convert_area_type_dict(
-            convert_target_dict=convert_target_dict,
-            key_name="house_structure_type",
+            convert_target_dict=convert_target_dict, key_name="house_structure_type",
         )
         return predicted_competition_dict
 
@@ -483,7 +482,6 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                     )
                     last_swap = i
             end = last_swap
-
 
     def _get_banner_list(self, section_type: int) -> List[BannerEntity]:
         send_message(
