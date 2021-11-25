@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 from unittest.mock import patch
 
 from flask import url_for
@@ -364,7 +365,7 @@ def test_house_public_detail_view_when_valid_request_id(
     test_request_context,
     make_header,
     make_authorization,
-    create_real_estate_with_public_sale,
+    real_estate_factory,
     public_sale_photo_factory,
     public_sale_factory,
 ):
@@ -376,6 +377,7 @@ def test_house_public_detail_view_when_valid_request_id(
         content_type="application/json",
         accept="application/json",
     )
+    real_estate = real_estate_factory.build(public_sales=True, private_sales=False)
     public_sales = public_sale_factory.build(public_sale_details=True)
     public_sale_photo_1 = public_sale_photo_factory.build(id=1, public_sales_id=1)
     public_sale_photo_2 = public_sale_photo_factory.build(id=2, public_sales_id=1)
@@ -443,6 +445,21 @@ def test_house_public_detail_view_when_valid_request_id(
         public_sale_details=[detail_entity],
     )
 
+    real_estate.public_sales = public_sales
+    mock_query_result = [
+        (
+            real_estate,
+            100.123,
+            100.123,
+            Decimal("30000.00000"),
+            100.123,
+            200,
+            200,
+            30000,
+            30000,
+        )
+    ]
+
     mock_entity = HousePublicDetailEntity(
         id=1,
         name="분양아파트",
@@ -477,7 +494,10 @@ def test_house_public_detail_view_when_valid_request_id(
         with patch(
             "core.domains.house.repository.house_repository.HouseRepository.get_house_with_public_sales"
         ) as mock_house_public_detail:
-            mock_house_public_detail.return_value = create_real_estate_with_public_sale
+            mock_house_public_detail.return_value = (
+                mock_query_result,
+                public_sales_entity.housing_category,
+            )
             with patch(
                 "core.domains.house.repository.house_repository.HouseRepository.make_house_public_detail_entity"
             ) as mock_result:

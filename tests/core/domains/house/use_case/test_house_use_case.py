@@ -1,3 +1,4 @@
+from decimal import Decimal
 from unittest.mock import patch
 
 from app.extensions.utils.house_helper import HouseHelper
@@ -210,9 +211,10 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
 def test_get_house_public_detail_use_case_when_enable_public_sale_house(
     session,
     create_interest_house,
-    create_real_estate_with_public_sale,
+    real_estate_factory,
     public_sale_photo_factory,
     public_sale_factory,
+    db,
 ):
     """
         사용 가능한 분양 매물이면
@@ -220,7 +222,7 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         성공시, RecentlyViewModel이 pypubsub에 의해 생성되어야 한다
     """
     get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)
-
+    real_estate = real_estate_factory.build(public_sales=True, private_sales=False)
     public_sales = public_sale_factory.build(public_sale_details=True)
     public_sale_photo_1 = public_sale_photo_factory.build(id=1, public_sales_id=1)
     public_sale_photo_2 = public_sale_photo_factory.build(id=2, public_sales_id=1)
@@ -287,6 +289,20 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         ],
         public_sale_details=[detail_entity],
     )
+    real_estate.public_sales = public_sales
+    mock_query_result = [
+        (
+            real_estate,
+            100.123,
+            100.123,
+            Decimal("30000.00000"),
+            100.123,
+            200,
+            200,
+            30000,
+            30000,
+        )
+    ]
 
     mock_entity = HousePublicDetailEntity(
         id=1,
@@ -322,7 +338,10 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         with patch(
             "core.domains.house.repository.house_repository.HouseRepository.get_house_with_public_sales"
         ) as mock_house_public_detail:
-            mock_house_public_detail.return_value = create_real_estate_with_public_sale
+            mock_house_public_detail.return_value = (
+                mock_query_result,
+                public_sales_entity.housing_category,
+            )
             with patch(
                 "core.domains.house.repository.house_repository.HouseRepository.make_house_public_detail_entity"
             ) as mock_result:
@@ -330,7 +349,19 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
                 result = GetHousePublicDetailUseCase().execute(
                     dto=get_house_public_detail_dto
                 )
-    view_info = session.query(RecentlyViewModel).first()
+    # create new session
+    connection = db.engine.connect()
+    options = dict(bind=connection, binds={})
+
+    session_2 = db.create_scoped_session(options=options)
+    view_info = (
+        session_2.query(RecentlyViewModel)
+        .filter_by(
+            user_id=get_house_public_detail_dto.user_id,
+            house_id=get_house_public_detail_dto.house_id,
+        )
+        .first()
+    )
 
     assert isinstance(result, UseCaseSuccessOutput)
     assert mock_house_public_detail.called is True
@@ -338,6 +369,8 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
     assert result.value == mock_result.return_value
     assert view_info.user_id == get_house_public_detail_dto.user_id
     assert view_info.house_id == get_house_public_detail_dto.house_id
+
+    session_2.remove()
 
 
 def test_get_house_public_detail_use_case_when_disable_public_sale_house(
