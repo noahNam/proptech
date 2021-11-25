@@ -762,7 +762,7 @@ class HouseRepository:
             return None
         return interest_house
 
-    def get_house_with_public_sales(self, house_id: int) -> list:
+    def get_house_with_public_sales(self, house_id: int) -> Tuple[Any, Any]:
         filters = list()
         filters.append(
             and_(
@@ -793,7 +793,9 @@ class HouseRepository:
             .filter(*filters)
             .group_by(RealEstateModel.id)
         )
-        return query.first()
+        query_set = query.first()
+
+        return query_set, query_set[0].public_sales.housing_category
 
     def _get_supply_price_per_pyoung(
         self, supply_price: Optional[float], avg_pyoung_number: Optional[float]
