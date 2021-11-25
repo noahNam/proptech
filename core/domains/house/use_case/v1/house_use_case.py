@@ -232,6 +232,15 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
                     last_swap = i
             end = last_swap
 
+    def _is_private_category(self, housing_category: str) -> bool:
+        """
+            민영분양 -> return true
+            공공분양 -> return false
+        """
+        if housing_category == HousingCategoryEnum.PRIVATE.value:
+            return True
+        return False
+
     def execute(
         self, dto: GetHousePublicDetailDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
@@ -247,9 +256,11 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         )
 
         # 분양 매물 상세 query -> house_with_public_sales
-        house_with_public_sales = self._house_repo.get_house_with_public_sales(
-            house_id=dto.house_id
-        )
+
+        (
+            house_with_public_sales,
+            housing_category,
+        ) = self._house_repo.get_house_with_public_sales(house_id=dto.house_id)
         if not house_with_public_sales:
             return UseCaseFailureOutput(
                 type="house_id",
@@ -259,18 +270,12 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
 
         # get button link list
         # 민영 url
-        if (
-            house_with_public_sales[0].public_sales.housing_category
-            == HousingCategoryEnum.PRIVATE.value
-        ):
+        if self._is_private_category(housing_category=housing_category):
             button_link_list = self._get_button_link_list(
                 section_type=ButtonSectionType.PUBLIC_SALE_DETAIL_PRIVATE_REGISTRATION.value
             )
         # 공공 url
-        elif (
-            house_with_public_sales[0].public_sales.housing_category
-            == HousingCategoryEnum.PUBLIC.value
-        ):
+        else:
             button_link_list = self._get_button_link_list(
                 section_type=ButtonSectionType.PUBLIC_SALE_DETAIL_PUBLIC_REGISTRATION.value
             )
