@@ -3054,7 +3054,7 @@ class HouseRepository:
             session.rollback()
             logger.error(f"[HouseRepository][bulk_create_private_sale] error : {e}")
             for entry in create_list:
-                failed_pk_list.append(entry.id)
+                failed_pk_list.append(entry["id"])
             logger.info(
                 f"[HouseRepository][bulk_create_private_sale]-failed_list: {failed_pk_list})"
             )
@@ -3147,12 +3147,17 @@ class HouseRepository:
         """
         target_ids = list()
         filters = list()
+        today = get_server_timestamp().strftime("%Y-%m-%d")
         filters.append(
             and_(
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-                PrivateSaleModel.trade_status == 0,
-                PrivateSaleModel.deposit_status == 0,
+                PrivateSaleModel.created_at == today,
+            )
+            | and_(
+                PrivateSaleModel.is_available == "True",
+                PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+                PrivateSaleModel.updated_at == today,
             )
         )
         query = session.query(PrivateSaleModel).filter(*filters)

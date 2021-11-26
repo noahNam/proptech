@@ -23,7 +23,6 @@ from core.domains.house.entity.house_entity import (
     PublicSaleEntity,
     UpdateContractStatusTargetEntity,
     RecentlyContractedEntity,
-    PrivateSaleEntity,
     CheckIdsRealEstateEntity,
 )
 from core.domains.house.enum.house_enum import (
@@ -33,7 +32,6 @@ from core.domains.house.enum.house_enum import (
     BuildTypeEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
-from core.exceptions import UpdateFailErrorException
 
 logger = logger_.getLogger(__name__)
 
@@ -231,11 +229,11 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
     def execute(self):
         logger.info(f"🚀\tPreCalculateAverage Start - {self.client_id}")
 
-        # # Batch_step_1 : Upsert_private_sale_avg_prices
-        # """
-        #     타입이 다르고 평수가 같은 경우가 있는데 이 경우에 평균을 낼 경우 거래일자에 따라 오차가 커질 수 있으므로 둘다 upsert 하고
-        #     front에서는 최근 거래일 기준에 가까운 것을 보여준다. -> 현재는 같은 평수가 있을 경우 거래일과는 상관없이 랜덤으로 보여주는 중
-        # """
+        # Batch_step_1 : Upsert_private_sale_avg_prices
+        """
+            타입이 다르고 평수가 같은 경우가 있는데 이 경우에 평균을 낼 경우 거래일자에 따라 오차가 커질 수 있으므로 둘다 upsert 하고
+            front에서는 최근 거래일 기준에 가까운 것을 보여준다. -> 현재는 같은 평수가 있을 경우 거래일과는 상관없이 랜덤으로 보여주는 중
+        """
         try:
             start_time = time()
             logger.info(f"🚀\tUpsert_private_sale_avg_prices : Start")
@@ -248,6 +246,10 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             # 매매, 전세 가격 평균 계산
             # target_ids = [idx for idx in range(1, 355105)]
             target_ids = self._house_repo.get_target_of_upsert_private_sale_avg_prices()
+
+            if not target_ids:
+                logger.info(f"🚀\tUpsert_private_sale_avg_prices : Nothing target_ids")
+                sys.exit(0)
 
             # contract_date 기준 가장 최근에 거래된 row 가져오기
             recent_infos: List[
@@ -311,175 +313,175 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             sys.exit(0)
 
         # Batch_step_2 : Upsert_public_sale_avg_prices
-        # try:
-        #     start_time = time()
-        #     logger.info(f"🚀\tUpsert_public_sale_avg_prices : Start")
-        #
-        #     create_public_sale_avg_prices_count = 0
-        #     update_public_sale_avg_prices_count = 0
-        #     public_sale_avg_prices_failed_list = list()
-        #
-        #     # 공급 가격 평균 계산
-        #     target_ids = (
-        #         self._house_repo.get_target_list_of_upsert_public_sale_avg_prices()
-        #     )
-        #
-        #     for idx in target_ids:
-        #         competition_and_score_info: dict = self._house_repo.get_competition_and_min_score(
-        #             public_sales_id=idx
-        #         )
-        #         default_info: dict = self._house_repo.get_default_infos(
-        #             public_sales_id=idx
-        #         )
-        #
-        #         if default_info:
-        #             (
-        #                 avg_price_update_list,
-        #                 avg_price_create_list,
-        #             ) = self._house_repo.make_pre_calc_target_public_sale_avg_prices_list(
-        #                 public_sales_id=idx,
-        #                 default_info=default_info,
-        #                 competition_and_score_info=competition_and_score_info,
-        #             )
-        #             if avg_price_create_list:
-        #                 self._house_repo.create_public_sale_avg_prices(
-        #                     create_list=avg_price_create_list
-        #                 )
-        #                 create_public_sale_avg_prices_count += len(
-        #                     avg_price_create_list
-        #                 )
-        #             else:
-        #                 logger.info(
-        #                     f"🚀\tUpsert_public_sale_avg_prices : Nothing avg_price_create_list"
-        #                 )
-        #             if avg_price_update_list:
-        #                 self._house_repo.update_public_sale_avg_prices(
-        #                     update_list=avg_price_update_list
-        #                 )
-        #                 update_public_sale_avg_prices_count += len(
-        #                     avg_price_update_list
-        #                 )
-        #             else:
-        #                 logger.info(
-        #                     f"🚀\tUpsert_public_sale_avg_prices : Nothing avg_price_update_list"
-        #                 )
-        #         else:
-        #             public_sale_avg_prices_failed_list.append(idx)
-        #
-        #     logger.info(
-        #         f"🚀\tUpsert_public_sale_avg_prices : Finished !!, "
-        #         f"records: {time() - start_time} secs, "
-        #         f"{create_public_sale_avg_prices_count} Created, "
-        #         f"{update_public_sale_avg_prices_count} Updated, "
-        #         f"{len(public_sale_avg_prices_failed_list)} Failed, "
-        #         f"Failed_list : {public_sale_avg_prices_failed_list}, "
-        #     )
-        #
-        #     emoji = "🚀"
-        #     if public_sale_avg_prices_failed_list:
-        #         emoji = "☠️"
-        #
-        #     self.send_slack_message(
-        #         title=f"{emoji} [PreCalculateAverageUseCase Step2] >>> 분양 평균가 계산 배치",
-        #         message=f"Upsert_public_sale_avg_prices : Finished !! \n "
-        #         f"records: {time() - start_time} secs \n "
-        #         f"{create_public_sale_avg_prices_count} Created \n "
-        #         f"{update_public_sale_avg_prices_count} Updated \n "
-        #         f"{len(public_sale_avg_prices_failed_list)} Failed \n "
-        #         f"Failed_list : {public_sale_avg_prices_failed_list}",
-        #     )
-        #
-        # except Exception as e:
-        #     logger.error(f"🚀\tUpsert_public_sale_avg_prices Error - {e}")
-        #     self.send_slack_message(
-        #         title="☠️ [PreCalculateAverageUseCase Step2] >>> 분양 평균가 계산 배치",
-        #         message=f"Upsert_public_sale_avg_prices Error - {e}",
-        #     )
-        #     sys.exit(0)
+        try:
+            start_time = time()
+            logger.info(f"🚀\tUpsert_public_sale_avg_prices : Start")
+
+            create_public_sale_avg_prices_count = 0
+            update_public_sale_avg_prices_count = 0
+            public_sale_avg_prices_failed_list = list()
+
+            # 공급 가격 평균 계산
+            target_ids = (
+                self._house_repo.get_target_list_of_upsert_public_sale_avg_prices()
+            )
+
+            for idx in target_ids:
+                competition_and_score_info: dict = self._house_repo.get_competition_and_min_score(
+                    public_sales_id=idx
+                )
+                default_info: dict = self._house_repo.get_default_infos(
+                    public_sales_id=idx
+                )
+
+                if default_info:
+                    (
+                        avg_price_update_list,
+                        avg_price_create_list,
+                    ) = self._house_repo.make_pre_calc_target_public_sale_avg_prices_list(
+                        public_sales_id=idx,
+                        default_info=default_info,
+                        competition_and_score_info=competition_and_score_info,
+                    )
+                    if avg_price_create_list:
+                        self._house_repo.create_public_sale_avg_prices(
+                            create_list=avg_price_create_list
+                        )
+                        create_public_sale_avg_prices_count += len(
+                            avg_price_create_list
+                        )
+                    else:
+                        logger.info(
+                            f"🚀\tUpsert_public_sale_avg_prices : Nothing avg_price_create_list"
+                        )
+                    if avg_price_update_list:
+                        self._house_repo.update_public_sale_avg_prices(
+                            update_list=avg_price_update_list
+                        )
+                        update_public_sale_avg_prices_count += len(
+                            avg_price_update_list
+                        )
+                    else:
+                        logger.info(
+                            f"🚀\tUpsert_public_sale_avg_prices : Nothing avg_price_update_list"
+                        )
+                else:
+                    public_sale_avg_prices_failed_list.append(idx)
+
+            logger.info(
+                f"🚀\tUpsert_public_sale_avg_prices : Finished !!, "
+                f"records: {time() - start_time} secs, "
+                f"{create_public_sale_avg_prices_count} Created, "
+                f"{update_public_sale_avg_prices_count} Updated, "
+                f"{len(public_sale_avg_prices_failed_list)} Failed, "
+                f"Failed_list : {public_sale_avg_prices_failed_list}, "
+            )
+
+            emoji = "🚀"
+            if public_sale_avg_prices_failed_list:
+                emoji = "☠️"
+
+            self.send_slack_message(
+                title=f"{emoji} [PreCalculateAverageUseCase Step2] >>> 분양 평균가 계산 배치",
+                message=f"Upsert_public_sale_avg_prices : Finished !! \n "
+                f"records: {time() - start_time} secs \n "
+                f"{create_public_sale_avg_prices_count} Created \n "
+                f"{update_public_sale_avg_prices_count} Updated \n "
+                f"{len(public_sale_avg_prices_failed_list)} Failed \n "
+                f"Failed_list : {public_sale_avg_prices_failed_list}",
+            )
+
+        except Exception as e:
+            logger.error(f"🚀\tUpsert_public_sale_avg_prices Error - {e}")
+            self.send_slack_message(
+                title="☠️ [PreCalculateAverageUseCase Step2] >>> 분양 평균가 계산 배치",
+                message=f"Upsert_public_sale_avg_prices Error - {e}",
+            )
+            sys.exit(0)
 
         # Batch_step_3 : Update_public_sale_acquisition_tax
-        # try:
-        #     start_time = time()
-        #     logger.info(f"🚀\tUpdate_public_sale_acquisition_tax : Start")
-        #
-        #     # PublicSaleDetails.acquisition_tax == 0 건에 대하여 취득세 계산 후 업데이트
-        #     target_list = self._house_repo.get_acquisition_tax_calc_target_list()
-        #     update_list = list()
-        #     if target_list:
-        #         update_list = self._make_acquisition_tax_update_list(
-        #             target_list=target_list
-        #         )
-        #     else:
-        #         logger.info(
-        #             f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_target_list"
-        #         )
-        #     if update_list:
-        #         self._house_repo.update_acquisition_taxes(update_list=update_list)
-        #     else:
-        #         logger.info(
-        #             f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_update_list"
-        #         )
-        #
-        #     logger.info(
-        #         f"🚀\tUpdate_public_sale_acquisition_tax : Finished !!, "
-        #         f"records: {time() - start_time} secs, "
-        #         f"{len(update_list)} Updated, "
-        #     )
-        #     self.send_slack_message(
-        #         title=f"🚀 [PreCalculateAverageUseCase Step3] >>> 취득세 계산 배치",
-        #         message=f"Update_public_sale_acquisition_tax : Finished !! \n "
-        #                 f"records: {time() - start_time} secs \n "
-        #                 f"{len(update_list)} Updated"
-        #     )
-        #
-        # except Exception as e:
-        #     logger.error(f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}")
-        #     self.send_slack_message(
-        #         title="☠️ [PreCalculateAverageUseCase Step3] >>> 취득세 계산 배치",
-        #         message=f"Update_public_sale_acquisition_tax Error - {e}"
-        #     )
-        #     sys.exit(0)
+        try:
+            start_time = time()
+            logger.info(f"🚀\tUpdate_public_sale_acquisition_tax : Start")
+
+            # PublicSaleDetails.acquisition_tax == 0 건에 대하여 취득세 계산 후 업데이트
+            target_list = self._house_repo.get_acquisition_tax_calc_target_list()
+            update_list = list()
+            if target_list:
+                update_list = self._make_acquisition_tax_update_list(
+                    target_list=target_list
+                )
+            else:
+                logger.info(
+                    f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_target_list"
+                )
+            if update_list:
+                self._house_repo.update_acquisition_taxes(update_list=update_list)
+            else:
+                logger.info(
+                    f"🚀\tUpdate_public_sale_acquisition_tax : Nothing acquisition_tax_update_list"
+                )
+
+            logger.info(
+                f"🚀\tUpdate_public_sale_acquisition_tax : Finished !!, "
+                f"records: {time() - start_time} secs, "
+                f"{len(update_list)} Updated, "
+            )
+            self.send_slack_message(
+                title=f"🚀 [PreCalculateAverageUseCase Step3] >>> 취득세 계산 배치",
+                message=f"Update_public_sale_acquisition_tax : Finished !! \n "
+                f"records: {time() - start_time} secs \n "
+                f"{len(update_list)} Updated",
+            )
+
+        except Exception as e:
+            logger.error(f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}")
+            self.send_slack_message(
+                title="☠️ [PreCalculateAverageUseCase Step3] >>> 취득세 계산 배치",
+                message=f"Update_public_sale_acquisition_tax Error - {e}",
+            )
+            sys.exit(0)
 
         # Batch_step_4 : update_private_sales_status
         # (현재 날짜 기준 최근 3달 거래 여부 업데이트)
-        # try:
-        #     start_time = time()
-        #     logger.info(f"🚀\tUpdate_private_sales_status : Start")
-        #
-        #     target_ids = self._house_repo.get_private_sales_all_id_list()
-        #
-        #     target_list: List[
-        #         UpdateContractStatusTargetEntity
-        #     ] = self._house_repo.get_update_status_target_of_private_sale_details(
-        #         private_sales_ids=target_ids
-        #     )
-        #
-        #     update_list = self._make_private_sale_status_update_list(
-        #         target_list=target_list
-        #     )
-        #
-        #     self._house_repo.bulk_update_private_sales(update_list=update_list)
-        #
-        #     logger.info(
-        #         f"🚀\tUpdate_private_sales_status : Finished !!, "
-        #         f"records: {time() - start_time} secs, "
-        #         f"{len(update_list)} Updated, "
-        #     )
-        #
-        #     self.send_slack_message(
-        #         title=f"🚀 [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
-        #         message=f"Update_private_sales_status : Finished !! \n "
-        #         f"records: {time() - start_time} secs \n "
-        #         f"{len(update_list)} Updated",
-        #     )
-        #
-        # except Exception as e:
-        #     logger.error(f"🚀\tUpdate_private_sales_status Error - {e}")
-        #     self.send_slack_message(
-        #         title="☠️ [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
-        #         message=f"Update_private_sales_status Error - {e}",
-        #     )
-        #     sys.exit(0)
+        try:
+            start_time = time()
+            logger.info(f"🚀\tUpdate_private_sales_status : Start")
+
+            target_ids = self._house_repo.get_private_sales_all_id_list()
+
+            target_list: List[
+                UpdateContractStatusTargetEntity
+            ] = self._house_repo.get_update_status_target_of_private_sale_details(
+                private_sales_ids=target_ids
+            )
+
+            update_list = self._make_private_sale_status_update_list(
+                target_list=target_list
+            )
+
+            self._house_repo.bulk_update_private_sales(update_list=update_list)
+
+            logger.info(
+                f"🚀\tUpdate_private_sales_status : Finished !!, "
+                f"records: {time() - start_time} secs, "
+                f"{len(update_list)} Updated, "
+            )
+
+            self.send_slack_message(
+                title=f"🚀 [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
+                message=f"Update_private_sales_status : Finished !! \n "
+                f"records: {time() - start_time} secs \n "
+                f"{len(update_list)} Updated",
+            )
+
+        except Exception as e:
+            logger.error(f"🚀\tUpdate_private_sales_status Error - {e}")
+            self.send_slack_message(
+                title="☠️ [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
+                message=f"Update_private_sales_status Error - {e}",
+            )
+            sys.exit(0)
 
         sys.exit(0)
 
@@ -1149,6 +1151,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
             target_ids
         )
 
+        # avoid_pk_list : public, private 양쪽 모두 가지고 있는 real_estate_id_list
         avoid_pk_list = [
             target.real_estate_id for target in already_created_private_sales
         ]
