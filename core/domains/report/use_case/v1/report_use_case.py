@@ -802,23 +802,17 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
                     supply_household=competition.newlywed_household,
                     infos=domain_marry_list,
                 )
-                domain_first_life_dict.setdefault(
-                    key, dict()
-                ).update(
+                domain_first_life_dict.setdefault(key, dict()).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.first_life_household,
                     infos=domain_first_life_list,
                 )
-                domain_children_dict.setdefault(
-                    key, dict()
-                ).update(
+                domain_children_dict.setdefault(key, dict()).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.multi_children_household,
                     infos=domain_children_list,
                 )
-                domain_old_parent_dict.setdefault(
-                    key, dict()
-                ).update(
+                domain_old_parent_dict.setdefault(key, dict()).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.old_parent_household,
                     infos=domain_old_parent_list,
