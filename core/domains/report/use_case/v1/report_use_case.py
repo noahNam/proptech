@@ -688,6 +688,8 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
 
         competitions = report_recently_public_sale_info.public_sale_details
         for competition in competitions:
+            key = "{}_{}".format(competition.private_area, competition.supply_area)
+
             detail_dict = dict(
                 area_type=competition.area_type,
                 special_household=competition.special_household,
@@ -701,12 +703,12 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
                 public_sale_detail_photo=competition.public_sale_detail_photo,
             )
 
-            if public_sale_detail_dict.get(competition.private_area):
+            if public_sale_detail_dict.get(key):
                 public_sale_detail_list.append(detail_dict)
             else:
                 public_sale_detail_list = [detail_dict]
 
-            public_sale_detail_dict.setdefault(competition.private_area, dict()).update(
+            public_sale_detail_dict.setdefault(key, dict()).update(
                 detail_dict
             )
 
