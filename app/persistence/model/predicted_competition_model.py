@@ -17,17 +17,18 @@ class PredictedCompetitionModel(db.Model):
     ticket_usage_result_id = Column(BigInteger, nullable=False, index=True)
     house_structure_type = Column(String(10), nullable=False)
     private_area = Column(Float, nullable=True)
+    supply_area = Column(Float, nullable=True)
     region = Column(String(5), nullable=False)
     region_percentage = Column(SmallInteger, nullable=False)
-    multiple_children_competition = Column(SmallInteger, nullable=True)
-    newly_marry_competition = Column(SmallInteger, nullable=True)
-    old_parent_competition = Column(SmallInteger, nullable=True)
-    first_life_competition = Column(SmallInteger, nullable=True)
-    multiple_children_supply = Column(SmallInteger, nullable=True)
+    multiple_children_competition = Column(Integer, nullable=True)
+    newly_marry_competition = Column(Integer, nullable=True)
+    old_parent_competition = Column(Integer, nullable=True)
+    first_life_competition = Column(Integer, nullable=True)
+    multiple_children_supply = Column(Integer, nullable=True)
     newly_marry_supply = Column(SmallInteger, nullable=True)
     old_parent_supply = Column(SmallInteger, nullable=True)
     first_life_supply = Column(SmallInteger, nullable=True)
-    normal_competition = Column(SmallInteger, nullable=True)
+    normal_competition = Column(Integer, nullable=True)
     normal_supply = Column(SmallInteger, nullable=True)
     normal_passing_score = Column(SmallInteger, nullable=True)
 
@@ -37,6 +38,7 @@ class PredictedCompetitionModel(db.Model):
             ticket_usage_result_id=self.ticket_usage_result_id,
             house_structure_type=self.house_structure_type,
             private_area=self.private_area,
+            supply_area=self.supply_area,
             region=self.region,
             region_percentage=self.region_percentage,
             multiple_children_competition=self.multiple_children_competition,
