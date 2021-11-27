@@ -3152,18 +3152,17 @@ class HouseRepository:
             and_(
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-                PrivateSaleModel.created_at == today,
+                func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
             )
             | and_(
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-                PrivateSaleModel.updated_at == today,
+                func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
             )
         )
         query = session.query(PrivateSaleModel).filter(*filters)
 
         query_set = query.all()
-
         if not query_set:
             return None
 
