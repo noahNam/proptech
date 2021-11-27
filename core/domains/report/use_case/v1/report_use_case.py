@@ -741,6 +741,8 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
 
         competitions = report_recently_public_sale_info.public_sale_details
         for competition in competitions:
+            key = "{}_{}".format(competition.private_area, competition.supply_area)
+
             for special_supply_result in competition.special_supply_results:
                 domain_common_dict = dict(
                     region=special_supply_result.region,
@@ -772,7 +774,7 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
                 children_dict.update(domain_common_dict)
                 old_parent_dict.update(domain_common_dict)
 
-                if domain_marry_dict.get(competition.private_area):
+                if domain_marry_dict.get(key):
                     domain_marry_list.append(marry_dict)
                     domain_first_life_list.append(first_life_dict)
                     domain_children_list.append(children_dict)
@@ -795,27 +797,27 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
                         ]
                     )
 
-                domain_marry_dict.setdefault(competition.private_area, dict()).update(
+                domain_marry_dict.setdefault(key, dict()).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.newlywed_household,
                     infos=domain_marry_list,
                 )
                 domain_first_life_dict.setdefault(
-                    competition.private_area, dict()
+                    key, dict()
                 ).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.first_life_household,
                     infos=domain_first_life_list,
                 )
                 domain_children_dict.setdefault(
-                    competition.private_area, dict()
+                    key, dict()
                 ).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.multi_children_household,
                     infos=domain_children_list,
                 )
                 domain_old_parent_dict.setdefault(
-                    competition.private_area, dict()
+                    key, dict()
                 ).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.old_parent_household,
@@ -835,12 +837,12 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
 
                 normal_dict.update(domain_common_dict)
 
-                if domain_normal_dict.get(competition.private_area):
+                if domain_normal_dict.get(key):
                     domain_normal_list.append(normal_dict)
                 else:
                     domain_normal_list = [normal_dict]
 
-                domain_normal_dict.setdefault(competition.private_area, dict()).update(
+                domain_normal_dict.setdefault(key, dict()).update(
                     house_structure_type=competition.area_type,
                     supply_household=competition.general_household,
                     infos=domain_normal_list,
