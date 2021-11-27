@@ -323,7 +323,7 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                 domain_normal_list = [normal_dict]
 
             # 각 타입별 마지막 지역(해당지역,기타경기,기타지역)이 들어오면 지역순서대로 정렬
-            if len(domain_marry_list) == 3:
+            if len(domain_marry_list) >= 2:
                 self._sort_domain_list_to_region(
                     target_list=[
                         domain_marry_list,
@@ -430,11 +430,6 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
     def _sort_expected_competitions_by_type_and_region(
         self, expected_competitions: List[PredictedCompetitionEntity]
     ) -> None:
-        sort_dict = {
-            RegionEnum.THE_AREA.value: 0,
-            RegionEnum.OTHER_GYEONGGI.value: 1,
-            RegionEnum.OTHER_REGION.value: 2,
-        }
         end = len(expected_competitions) - 1
         while end > 0:
             last_swap = 0
