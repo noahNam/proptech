@@ -6,3 +6,4 @@ class UserTopicEnum:
     GET_USER_PROFILE = "get_user_profile"
     GET_SIDO_NAME = "get_sido_name"
     GET_AVG_MONTHLY_INCOME_WORKERS = "get_avg_monthly_income_workers"
+    UPDATE_NUMBER_OF_TICKET = "update_number_of_ticket"

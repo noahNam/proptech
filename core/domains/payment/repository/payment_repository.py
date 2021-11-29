@@ -6,7 +6,6 @@ from strgen import StringGenerator
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
-from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     PromotionModel,
     PromotionUsageCountModel,
@@ -25,6 +24,7 @@ from core.domains.payment.entity.payment_entity import (
 from core.domains.payment.enum.payment_enum import (
     TicketSignEnum,
     TicketTypeDivisionEnum,
+    TicketAmountEnum,
 )
 from core.exceptions import NotUniqueErrorException
 
@@ -231,7 +231,8 @@ class PaymentRepository:
 
     def create_join_ticket(self, user_id: int) -> None:
         try:
-            join_amount = 1
+            # ticket 추가
+            join_amount = TicketAmountEnum.JOIN.value
             ticket = TicketModel(
                 user_id=user_id,
                 type=TicketTypeDivisionEnum.SURVEY_PROMOTION.value,

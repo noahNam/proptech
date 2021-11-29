@@ -12,4 +12,11 @@ def create_join_ticket(user_id: int,):
     setattr(g, PaymentTopicEnum.CREATE_JOIN_TICKET, None)
 
 
+def get_number_of_ticket(user_id: int,):
+    number_of_ticket = PaymentRepository().get_number_of_ticket(user_id=user_id)
+
+    setattr(g, PaymentTopicEnum.GET_NUMBER_OF_TICKET, number_of_ticket)
+
+
 pub.subscribe(create_join_ticket, PaymentTopicEnum.CREATE_JOIN_TICKET)
+pub.subscribe(get_number_of_ticket, PaymentTopicEnum.GET_NUMBER_OF_TICKET)

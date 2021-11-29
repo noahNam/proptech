@@ -43,6 +43,13 @@ def get_avg_monthly_income_workers():
     setattr(g, UserTopicEnum.GET_AVG_MONTHLY_INCOME_WORKERS, result)
 
 
+def update_number_of_ticket(user_id: int, number_of_ticket: int):
+    UserRepository().update_number_of_ticket(
+        user_id=user_id, number_of_ticket=number_of_ticket
+    )
+    setattr(g, UserTopicEnum.UPDATE_NUMBER_OF_TICKET, None)
+
+
 pub.subscribe(
     update_app_agree_terms_to_receive_marketing,
     UserTopicEnum.UPDATE_APP_AGREE_TERMS_TO_RECEIVE_MARKETING,
@@ -53,3 +60,4 @@ pub.subscribe(get_sido_name, UserTopicEnum.GET_SIDO_NAME)
 pub.subscribe(
     get_avg_monthly_income_workers, UserTopicEnum.GET_AVG_MONTHLY_INCOME_WORKERS
 )
+pub.subscribe(update_number_of_ticket, UserTopicEnum.UPDATE_NUMBER_OF_TICKET)
