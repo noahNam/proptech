@@ -79,6 +79,15 @@ class PaymentBaseUseCase:
             else False
         )
 
+    def _update_number_of_ticket(self, user_id: int) -> None:
+        number_of_ticket = self._payment_repo.get_number_of_ticket(user_id=user_id)
+        send_message(
+            topic_name=UserTopicEnum.UPDATE_NUMBER_OF_TICKET,
+            user_id=user_id,
+            number_of_ticket=number_of_ticket,
+        )
+        return get_event_object(topic_name=UserTopicEnum.UPDATE_NUMBER_OF_TICKET)
+
 
 class GetTicketUsageResultUseCase(PaymentBaseUseCase):
     def execute(
@@ -335,6 +344,9 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
             self._update_ticket_usage_result(
                 user_id=dto.user_id, house_id=dto.house_id, ticket_id=ticket_id
             )
+
+            # 티켓 사용수 업데이트 (users.number_ticket update)
+            self._update_number_of_ticket(user_id=dto.user_id)
         else:
             # jarvis response 로 200 이외의 값을 받았을 때
             try:
@@ -382,6 +394,9 @@ class UseHouseTicketUseCase(PaymentBaseUseCase):
             self._update_ticket_usage_result(
                 user_id=dto.user_id, house_id=dto.house_id, ticket_id=ticket_id
             )
+
+            # 티켓 사용수 업데이트 (users.number_ticket update)
+            self._update_number_of_ticket(user_id=dto.user_id)
 
             #  프로모션 사용횟수 생성 (promotion_usage_counts 스키마)
             if promotion.promotion_usage_count:

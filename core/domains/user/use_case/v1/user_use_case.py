@@ -263,7 +263,14 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
             # 설문 완료 시 무료 티켓 추가 (이미 무료 티켓을 받았으면 추가 발급 X)
             if survey_step == UserSurveyStepEnum.STEP_COMPLETE.value:
-                self._create_join_ticket(dto=detail_dto)
+                self._create_join_ticket(user_id=detail_dto.user_id)
+
+                number_of_ticket = self._get_number_of_ticket(
+                    user_id=detail_dto.user_id
+                )
+                self._user_repo.update_number_of_ticket(
+                    user_id=detail_dto.user_id, number_of_ticket=number_of_ticket
+                )
 
             # SQS Data 전송 -> Data Lake
             # 닉네임일 때는 제외
@@ -290,11 +297,13 @@ class UpsertUserInfoUseCase(UserBaseUseCase):
 
         return UseCaseSuccessOutput()
 
-    def _create_join_ticket(self, dto: UpsertUserInfoDetailDto) -> None:
-        send_message(
-            topic_name=PaymentTopicEnum.CREATE_JOIN_TICKET, user_id=dto.user_id
-        )
+    def _create_join_ticket(self, user_id: int) -> None:
+        send_message(topic_name=PaymentTopicEnum.CREATE_JOIN_TICKET, user_id=user_id)
         return get_event_object(topic_name=PaymentTopicEnum.CREATE_JOIN_TICKET)
+
+    def _get_number_of_ticket(self, user_id: int) -> int:
+        send_message(topic_name=PaymentTopicEnum.GET_NUMBER_OF_TICKET, user_id=user_id)
+        return get_event_object(topic_name=PaymentTopicEnum.GET_NUMBER_OF_TICKET)
 
     def _get_survey_step(
         self, dto: UpsertUserInfoDetailDto, user_profile: Optional[UserProfileEntity]

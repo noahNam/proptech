@@ -29,6 +29,14 @@ class TicketSignEnum(Enum):
     MINUS = "minus"
 
 
+class TicketAmountEnum(Enum):
+    """
+        사용모델 : UsersModel, TicketModel
+    """
+
+    JOIN = 1
+
+
 class TicketTypeDivisionEnum(Enum):
     """
         사용모델 : TicketModel
