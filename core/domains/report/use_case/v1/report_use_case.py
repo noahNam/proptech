@@ -708,9 +708,7 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
             else:
                 public_sale_detail_list = [detail_dict]
 
-            public_sale_detail_dict.setdefault(key, dict()).update(
-                detail_dict
-            )
+            public_sale_detail_dict.setdefault(key, dict()).update(detail_dict)
 
         convert_target_dict = dict(public_sale_details=public_sale_detail_dict,)
 
