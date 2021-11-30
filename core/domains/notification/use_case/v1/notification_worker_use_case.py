@@ -37,15 +37,14 @@ class BaseNotificationWorkerUseCase:
         return f"{self.topic}-{os.getpid()}"
 
     def send_slack_message(self, title: str, message: str):
-        channel = "#batch-log"
-
         text = title + "\n" + message
         slack_token = os.environ.get("SLACK_TOKEN")
+        slack_channel = os.environ.get("SLACK_CHANNEL")
         if slack_token:
             requests.post(
                 "https://slack.com/api/chat.postMessage",
                 headers={"Authorization": "Bearer " + slack_token},
-                data={"channel": channel, "text": text},
+                data={"channel": slack_channel, "text": text},
             )
 
 
