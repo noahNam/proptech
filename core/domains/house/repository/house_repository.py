@@ -2380,7 +2380,12 @@ class HouseRepository:
                     "op_avg_deposit_price"
                 ),
             )
-            .filter(final_sub_q.c.front_legal_code != "00000")
+            .filter(
+                and_(
+                    final_sub_q.c.front_legal_code != "00000",
+                    final_sub_q.c.si_do != "세종특별자치시",
+                )
+            )
             .group_by(
                 final_sub_q.c.si_do,
                 final_sub_q.c.si_gun_gu,
