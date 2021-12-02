@@ -2142,15 +2142,31 @@ class HouseRepository:
 
     def get_common_query_object(self, yyyymm: int) -> Query:
         filters = list()
-
+        today = get_server_timestamp().strftime("%Y-%m-%d")
         filters.append(PrivateSaleDetailModel.contract_ym >= yyyymm)
+
         filters.append(
-            or_(
+            and_(
+                PrivateSaleDetailModel.is_available == "True",
+                func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "매매",
+            )
+            | and_(
+                PrivateSaleDetailModel.is_available == "True",
+                func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
+                PrivateSaleDetailModel.trade_type == "매매",
+            )
+            | and_(
+                PrivateSaleDetailModel.is_available == "True",
+                func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
+                PrivateSaleDetailModel.trade_type == "전세",
+            )
+            | and_(
+                PrivateSaleDetailModel.is_available == "True",
+                func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "전세",
             )
         )
-        filters.append(PrivateSaleDetailModel.is_available == "True")
 
         pyoung_case = case(
             [
