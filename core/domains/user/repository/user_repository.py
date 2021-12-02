@@ -472,7 +472,10 @@ class UserRepository:
     def update_number_of_ticket(self, user_id: int, number_of_ticket: int) -> None:
         try:
             session.query(UserModel).filter_by(id=user_id).update(
-                {"number_ticket": number_of_ticket, "updated_at": get_server_timestamp()}
+                {
+                    "number_ticket": number_of_ticket,
+                    "updated_at": get_server_timestamp(),
+                }
             )
             session.commit()
         except Exception as e:
