@@ -2142,15 +2142,31 @@ class HouseRepository:
 
     def get_common_query_object(self, yyyymm: int) -> Query:
         filters = list()
-
+        today = get_server_timestamp().strftime("%Y-%m-%d")
         filters.append(PrivateSaleDetailModel.contract_ym >= yyyymm)
+
         filters.append(
-            or_(
+            and_(
+                PrivateSaleDetailModel.is_available == "True",
+                func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "매매",
+            )
+            | and_(
+                PrivateSaleDetailModel.is_available == "True",
+                func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
+                PrivateSaleDetailModel.trade_type == "매매",
+            )
+            | and_(
+                PrivateSaleDetailModel.is_available == "True",
+                func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
+                PrivateSaleDetailModel.trade_type == "전세",
+            )
+            | and_(
+                PrivateSaleDetailModel.is_available == "True",
+                func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "전세",
             )
         )
-        filters.append(PrivateSaleDetailModel.is_available == "True")
 
         pyoung_case = case(
             [
@@ -2380,7 +2396,12 @@ class HouseRepository:
                     "op_avg_deposit_price"
                 ),
             )
-            .filter(final_sub_q.c.front_legal_code != "00000")
+            .filter(
+                and_(
+                    final_sub_q.c.front_legal_code != "00000",
+                    final_sub_q.c.si_do != "세종특별자치시",
+                )
+            )
             .group_by(
                 final_sub_q.c.si_do,
                 final_sub_q.c.si_gun_gu,
@@ -2982,10 +3003,17 @@ class HouseRepository:
         """
         target_ids = list()
         filters = list()
+        today = get_server_timestamp().strftime("%Y-%m-%d")
         filters.append(
             and_(
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+                func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+            )
+            | and_(
+                PrivateSaleModel.is_available == "True",
+                PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+                func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
             )
         )
         query = session.query(PrivateSaleModel).filter(*filters)
@@ -3112,10 +3140,17 @@ class HouseRepository:
 
     def get_target_list_of_upsert_public_sale_avg_prices(self) -> Optional[List[int]]:
         filters = list()
+        today = get_server_timestamp().strftime("%Y-%m-%d")
         filters.append(
             and_(
                 PublicSaleModel.is_available == "True",
                 PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE,
+                func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+            )
+            | and_(
+                PublicSaleModel.is_available == "True",
+                PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE,
+                func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
             )
         )
         query = (
