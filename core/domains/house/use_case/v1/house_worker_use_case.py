@@ -304,7 +304,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 emoji = "☠️"
 
             self.send_slack_message(
-                title=f"{emoji} [PreCalculateAverageUseCase Step2] >>> 분양 평균가 계산 배치",
+                title=f"{emoji} [PreCalculateAverageUseCase Step1] >>> 분양 평균가 계산 배치",
                 message=f"Upsert_public_sale_avg_prices : Finished !! \n "
                 f"records: {time() - start_time} secs \n "
                 f"{create_public_sale_avg_prices_count} Created \n "
@@ -316,7 +316,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         except Exception as e:
             logger.error(f"🚀\tUpsert_public_sale_avg_prices Error - {e}")
             self.send_slack_message(
-                title="☠️ [PreCalculateAverageUseCase Step2] >>> 분양 평균가 계산 배치",
+                title="☠️ [PreCalculateAverageUseCase Step1] >>> 분양 평균가 계산 배치",
                 message=f"Upsert_public_sale_avg_prices Error - {e}",
             )
             public_batch_flag = False
@@ -350,7 +350,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                         )
 
                 self.send_slack_message(
-                    title=f"🚀 [PreCalculateAverageUseCase Step3] >>> 취득세 계산 배치",
+                    title=f"🚀 [PreCalculateAverageUseCase Step2] >>> 취득세 계산 배치",
                     message=f"Update_public_sale_acquisition_tax : Finished !! \n "
                     f"records: {time() - start_time} secs \n "
                     f"{len(update_list)} Updated",
@@ -359,7 +359,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             except Exception as e:
                 logger.error(f"🚀\tUpdate_public_sale_acquisition_tax Error - {e}")
                 self.send_slack_message(
-                    title="☠️ [PreCalculateAverageUseCase Step3] >>> 취득세 계산 배치",
+                    title="☠️ [PreCalculateAverageUseCase Step2] >>> 취득세 계산 배치",
                     message=f"Update_public_sale_acquisition_tax Error - {e}",
                 )
         else:
@@ -437,7 +437,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 )
 
             self.send_slack_message(
-                title="🚀 [PreCalculateAverageUseCase Step1] >>> 매매,전세 평균가 계산 배치",
+                title="🚀 [PreCalculateAverageUseCase Step3] >>> 매매,전세 평균가 계산 배치",
                 message=f"Upsert_private_sale_avg_prices : Finished !! \n "
                 f"records: {time() - start_time} secs \n "
                 f"{create_private_sale_avg_prices_count} Created \n "
@@ -447,7 +447,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         except Exception as e:
             logger.error(f"\tUpsert_private_sale_avg_prices Error - {e}")
             self.send_slack_message(
-                title="☠️ [PreCalculateAverageUseCase Step1] >>> 매매,전세 평균가 계산 배치",
+                title="☠️ [PreCalculateAverageUseCase Step3] >>> 매매,전세 평균가 계산 배치",
                 message=f"Upsert_private_sale_avg_prices Error - {e}",
             )
             private_batch_flag = False
@@ -455,7 +455,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         # Batch_step_4 : update_private_sales_status
         # (현재 날짜 기준 최근 3달 거래 여부 업데이트)
         if private_batch_flag:
-            update_list = 0
+            update_list = list()
             try:
                 start_time = time()
                 logger.info(f"🚀\tUpdate_private_sales_status : Start")
@@ -666,7 +666,7 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         administrative_info = (
             self._house_repo.get_administrative_divisions_legal_code_info_all_list()
         )
-        real_estate_info = self._house_repo.get_real_estates_legal_code_info_all_list()
+        real_estate_info = self._house_repo.get_real_estates_legal_code_info_should_update_list()
 
         if not administrative_info:
             logger.info(
@@ -687,10 +687,31 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
                 f"🚀\tAddLegalCodeUseCase - update_legal_code_to_real_estates "
                 f"error : {e}"
             )
+            self.send_slack_message(
+                title="☠️ [AddLegalCodeUseCase] >>> New real_estates - 법정코드 부여 배치",
+                message=f"update_legal_code_to_real_estates Error - {e}",
+            )
+        failure_list = self._house_repo.get_real_estates_legal_code_info_should_update_list()
+
         logger.info(
             f"🚀\tAddLegalCodeUseCase : Finished !!, "
             f"records: {time() - start_time} secs, "
             f"{len(update_list)} Updated, "
+            f"{len(failure_list)} Failed"
+        )
+
+        emoji = "🚀"
+
+        if failure_list:
+            emoji = "☠️"
+
+        self.send_slack_message(
+            title=f"{emoji} [AddLegalCodeUseCase] >>> New real_estates - 법정코드 부여 배치",
+            message=f"AddLegalCodeUseCase : Finished !! \n "
+                    f"records: {time() - start_time} secs \n "
+                    f"{len(update_list)} Updated"
+                    f"{len(failure_list)} Failed"
+                    f"Failed_list : {failure_list}",
         )
 
         exit(os.EX_OK)
