@@ -2605,7 +2605,7 @@ class HouseRepository:
             [query.to_legal_code_entity() for query in query_set] if query_set else None
         )
 
-    def get_real_estates_legal_code_info_all_list(
+    def get_real_estates_legal_code_info_should_update_list(
         self,
     ) -> List[RealEstateLegalCodeEntity]:
         filters = list()
