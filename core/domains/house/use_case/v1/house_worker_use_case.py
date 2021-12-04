@@ -455,7 +455,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         # Batch_step_4 : update_private_sales_status
         # (현재 날짜 기준 최근 3달 거래 여부 업데이트)
         if private_batch_flag:
-            update_list = 0
+            update_list = list()
             try:
                 start_time = time()
                 logger.info(f"🚀\tUpdate_private_sales_status : Start")
