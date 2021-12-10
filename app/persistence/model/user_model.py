@@ -4,12 +4,11 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     Integer,
-    String,
+    String, func,
 )
 from sqlalchemy.orm import relationship, backref
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.user.entity.user_entity import UserEntity, PushTargetEntity
 
 
@@ -25,8 +24,10 @@ class UserModel(db.Model):
     is_active = Column(Boolean, nullable=False, default=True)
     is_out = Column(Boolean, nullable=False, default=False)
     number_ticket = Column(Integer, nullable=False, default=0)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp())
-    updated_at = Column(DateTime(timezone=True), default=get_server_timestamp())
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
     device = relationship("DeviceModel", backref=backref("users"), uselist=False)
     user_profile = relationship(

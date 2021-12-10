@@ -3145,12 +3145,12 @@ class HouseRepository:
             and_(
                 PublicSaleModel.is_available == "True",
                 PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE,
-                func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+                func.to_char(PublicSaleModel.created_at, "YYYY-mm-dd") == today,
             )
             | and_(
                 PublicSaleModel.is_available == "True",
                 PublicSaleModel.rent_type == RentTypeEnum.PRE_SALE,
-                func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
+                func.to_char(PublicSaleModel.updated_at, "YYYY-mm-dd") == today,
             )
         )
         query = (

@@ -4,11 +4,10 @@ from sqlalchemy import (
     Integer,
     DateTime,
     String,
-    Float,
+    Float, func,
 )
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.house.entity.house_entity import (
     PrivateSaleAvgPriceEntity,
     PrivateSaleAvgPriceTradeEntity,
@@ -31,11 +30,9 @@ class PrivateSaleAvgPriceModel(db.Model):
     deposit_price = Column(Integer, nullable=True)
     max_trade_contract_date = Column(String(8), nullable=True)
     max_deposit_contract_date = Column(String(8), nullable=True)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     def to_entity(self) -> PrivateSaleAvgPriceEntity:
