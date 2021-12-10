@@ -5,12 +5,11 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    SmallInteger,
+    SmallInteger, func,
 )
 from sqlalchemy.orm import relationship, backref
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import UserModel
 from core.domains.user.entity.user_entity import UserProfileEntity
 
@@ -27,11 +26,9 @@ class UserProfileModel(db.Model):
     nickname = Column(String(12), nullable=True)
     last_update_code = Column(SmallInteger, nullable=True)
     survey_step = Column(SmallInteger, nullable=True)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     user_infos = relationship(
