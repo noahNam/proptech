@@ -5,12 +5,11 @@ from sqlalchemy import (
     String,
     Boolean,
     ForeignKey,
-    DateTime,
+    DateTime, func,
 )
 from sqlalchemy.orm import relationship, backref
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import UserModel
 from core.domains.user.entity.user_entity import DeviceEntity
 
@@ -28,11 +27,9 @@ class DeviceModel(db.Model):
     is_auth = Column(Boolean, nullable=False, default=False)
     phone_number = Column(String(11), nullable=True)
     endpoint = Column(String(100), nullable=True, default="")
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     device_token = relationship(
