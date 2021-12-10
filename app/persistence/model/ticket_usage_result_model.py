@@ -4,12 +4,11 @@ from sqlalchemy import (
     Integer,
     DateTime,
     Boolean,
-    String,
+    String, func,
 )
 from sqlalchemy.orm import relationship, backref
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.report.entity.report_entity import TicketUsageResultEntity
 
 
@@ -24,9 +23,7 @@ class TicketUsageResultModel(db.Model):
     public_house_id = Column(BigInteger, nullable=True)
     ticket_id = Column(BigInteger, nullable=True)
     is_active = Column(Boolean, nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
 
     house_type_ranks = relationship(
         "HouseTypeRankModel",

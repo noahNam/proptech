@@ -1,7 +1,6 @@
-from sqlalchemy import Column, BigInteger, Integer, Boolean, DateTime
+from sqlalchemy import Column, BigInteger, Integer, Boolean, DateTime, func
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 
 
 class AppAgreeTermsModel(db.Model):
@@ -18,9 +17,7 @@ class AppAgreeTermsModel(db.Model):
     required_terms_yn = Column(Boolean, nullable=False)
     receive_marketing_yn = Column(Boolean, nullable=False)
     receive_marketing_date = Column(DateTime, nullable=True)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )

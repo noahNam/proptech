@@ -4,10 +4,10 @@ from sqlalchemy import (
     Integer,
     SmallInteger,
     DateTime,
-    String,
+    String, func,
 )
+
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.report.entity.report_entity import UserAnalysisEntity
 
 
@@ -18,9 +18,7 @@ class UserAnalysisModel(db.Model):
     ticket_usage_result_id = Column(BigInteger, nullable=False, index=True)
     div = Column(String(1), nullable=False)
     category = Column(SmallInteger, nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
 
     def to_entity(self) -> UserAnalysisEntity:
         return UserAnalysisEntity(

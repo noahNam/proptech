@@ -5,10 +5,10 @@ from sqlalchemy import (
     DateTime,
     SmallInteger,
     String,
-    Boolean,
+    Boolean, func,
 )
+
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.report.entity.report_entity import SurveyResultEntity
 
 
@@ -53,11 +53,9 @@ class SurveyResultModel(db.Model):
     hope_two_household_point = Column(SmallInteger, nullable=True)
     hope_two_address_point = Column(SmallInteger, nullable=True)
     hope_two_bank_point = Column(SmallInteger, nullable=True)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     def to_entity(self) -> SurveyResultEntity:

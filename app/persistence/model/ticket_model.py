@@ -6,12 +6,11 @@ from sqlalchemy import (
     ForeignKey,
     DateTime,
     SmallInteger,
-    Boolean,
+    Boolean, func,
 )
 from sqlalchemy.orm import relationship, backref
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import UserModel
 from core.domains.user.entity.user_entity import TicketEntity
 
@@ -28,9 +27,7 @@ class TicketModel(db.Model):
     sign = Column(String(5), nullable=False)
     is_active = Column(Boolean, nullable=False)
     created_by = Column(String(6), nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
 
     ticket_targets = relationship(
         "TicketTargetModel", backref=backref("tickets"), uselist=True

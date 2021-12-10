@@ -6,12 +6,11 @@ from sqlalchemy import (
     DateTime,
     SmallInteger,
     UniqueConstraint,
-    ForeignKey,
+    ForeignKey, func,
 )
 from sqlalchemy.orm import relationship
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import UserModel
 from core.domains.house.entity.house_entity import InterestHouseEntity
 
@@ -27,11 +26,9 @@ class InterestHouseModel(db.Model):
     house_id = Column(BigInteger, nullable=False, index=True)
     type = Column(SmallInteger, nullable=False)
     is_like = Column(Boolean, nullable=False, default=True)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     users = relationship("UserModel", back_populates="interest_houses")

@@ -6,11 +6,10 @@ from sqlalchemy import (
     ForeignKey,
     String,
     SmallInteger,
-    UniqueConstraint,
+    UniqueConstraint, func,
 )
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.user_profile_model import UserProfileModel
 from core.domains.user.entity.user_entity import (
     UserInfoEntity,
@@ -30,11 +29,9 @@ class UserInfoModel(db.Model):
     )
     code = Column(SmallInteger, nullable=True)
     value = Column(String(12), nullable=True)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     def to_entity(self) -> UserInfoEntity:

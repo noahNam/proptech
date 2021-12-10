@@ -7,12 +7,12 @@ from sqlalchemy import (
     DateTime,
     Enum,
     Boolean,
+    func,
 )
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import column_property
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.house.entity.house_entity import (
     AdministrativeDivisionEntity,
     AdministrativeDivisionLegalCodeEntity,
@@ -44,8 +44,10 @@ class AdministrativeDivisionModel(db.Model):
         Geometry(geometry_type="POINT", srid=4326).with_variant(String, "sqlite"),
         nullable=True,
     )
-    created_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
-    updated_at = Column(DateTime, default=get_server_timestamp(), nullable=False)
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
     name_ts = Column(TSVECTOR().with_variant(String(100), "sqlite"), nullable=True)
 

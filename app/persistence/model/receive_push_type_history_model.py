@@ -4,11 +4,10 @@ from sqlalchemy import (
     Integer,
     DateTime,
     Boolean,
-    String,
+    String, func,
 )
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 
 
 class ReceivePushTypeHistoryModel(db.Model):
@@ -23,4 +22,4 @@ class ReceivePushTypeHistoryModel(db.Model):
     user_id = Column(BigInteger, nullable=False)
     push_type = Column(String(9), nullable=False)
     is_active = Column(Boolean, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=get_server_timestamp())
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
