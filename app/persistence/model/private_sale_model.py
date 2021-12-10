@@ -8,12 +8,11 @@ from sqlalchemy import (
     String,
     SmallInteger,
     Float,
-    Boolean,
+    Boolean, func,
 )
 from sqlalchemy.orm import relationship, backref
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
 from core.domains.house.entity.house_entity import PrivateSaleEntity
 from core.domains.house.enum.house_enum import BuildTypeEnum
@@ -49,11 +48,9 @@ class PrivateSaleModel(db.Model):
     trade_status = Column(SmallInteger, nullable=False, default=0)
     deposit_status = Column(SmallInteger, nullable=False, default=0)
     public_ref_id = Column(BigInteger().with_variant(Integer, "sqlite"), nullable=True)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
     is_available = Column(Boolean, nullable=False, default=False)
 

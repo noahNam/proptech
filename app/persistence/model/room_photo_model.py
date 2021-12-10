@@ -4,11 +4,10 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    DateTime,
+    DateTime, func,
 )
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.room_info_model import RoomInfoModel
 
 
@@ -33,9 +32,7 @@ class RoomPhotoModel(db.Model):
     file_name = Column(String(20), nullable=False)
     path = Column(String(150), nullable=False)
     extension = Column(String(4), nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
