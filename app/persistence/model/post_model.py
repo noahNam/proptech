@@ -5,12 +5,11 @@ from sqlalchemy import (
     String,
     DateTime,
     Boolean,
-    SmallInteger,
+    SmallInteger, func,
 )
 from sqlalchemy.orm import relationship
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.post.entity.post_entity import PostEntity
 
 
@@ -25,11 +24,9 @@ class PostModel(db.Model):
     contents_num = Column(SmallInteger, nullable=False)
     is_deleted = Column(Boolean, nullable=False, default=False)
     read_count = Column(Integer, default=0, nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     article = relationship("ArticleModel", backref="post", uselist=False)

@@ -4,12 +4,11 @@ from sqlalchemy import (
     DateTime,
     SmallInteger,
     Boolean,
-    String,
+    String, func,
 )
 from sqlalchemy.orm import relationship, backref
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.payment.entity.payment_entity import PromotionEntity
 
 
@@ -23,11 +22,9 @@ class PromotionModel(db.Model):
     div = Column(String(5), nullable=False)
     max_count = Column(SmallInteger, nullable=False)
     is_active = Column(Boolean, nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     promotion_houses = relationship(

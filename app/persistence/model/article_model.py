@@ -5,11 +5,10 @@ from sqlalchemy import (
     SmallInteger,
     BigInteger,
     ForeignKey,
-    Unicode,
+    Unicode, func,
 )
 
 from app import db
-from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.post_model import PostModel
 from core.domains.post.entity.post_entity import ArticleEntity
 
@@ -22,11 +21,9 @@ class ArticleModel(db.Model):
         BigInteger, ForeignKey(PostModel.id), nullable=False, unique=True, index=True,
     )
     body = Column(Unicode, nullable=True)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     def to_entity(self) -> ArticleEntity:

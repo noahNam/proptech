@@ -4,14 +4,13 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    DateTime,
+    DateTime, func,
 )
 
 from app import db
 from app.extensions.utils.image_helper import S3Helper
-from app.extensions.utils.time_helper import get_server_timestamp
-from core.domains.house.entity.house_entity import PublicSaleDetailPhotoEntity
 from app.persistence.model.public_sale_detail_model import PublicSaleDetailModel
+from core.domains.house.entity.house_entity import PublicSaleDetailPhotoEntity
 
 
 class PublicSaleDetailPhotoModel(db.Model):
@@ -34,11 +33,9 @@ class PublicSaleDetailPhotoModel(db.Model):
     file_name = Column(String(20), nullable=False)
     path = Column(String(150), nullable=False)
     extension = Column(String(4), nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
-    )
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
-        DateTime(timezone=True), default=get_server_timestamp(), nullable=False
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     def to_entity(self) -> PublicSaleDetailPhotoEntity:
