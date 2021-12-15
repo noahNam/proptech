@@ -7,7 +7,9 @@ from sqlalchemy import (
     Boolean,
     Enum,
     String,
-    SmallInteger, func, Float,
+    SmallInteger,
+    func,
+    Float,
 )
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, backref

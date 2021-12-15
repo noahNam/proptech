@@ -8,7 +8,8 @@ from sqlalchemy import (
     String,
     SmallInteger,
     Float,
-    Boolean, func,
+    Boolean,
+    func,
 )
 from sqlalchemy.orm import relationship, backref
 
