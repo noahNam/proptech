@@ -7,7 +7,9 @@ from sqlalchemy import (
     Boolean,
     Enum,
     String,
-    SmallInteger, func,
+    SmallInteger,
+    func,
+    Float,
 )
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, backref
@@ -76,6 +78,20 @@ class PublicSaleModel(db.Model):
     down_payment_ratio = Column(Integer, nullable=False)
     reference_url = Column(String(50), nullable=True)
     offer_notice_url = Column(String(100), nullable=True)
+
+    heating_type = Column(String(100), nullable=True)
+    floor_area_ratio = Column(Float(), nullable=True)
+    building_cover_ratio = Column(Float(), nullable=True)
+    total_household = Column(Integer, nullable=True)
+    total_park_number = Column(Integer, nullable=True)
+    top_floor = Column(SmallInteger, nullable=True)
+    dong_number = Column(Integer, nullable=True)
+    contract_amount = Column(Float(), nullable=True)
+    middle_amount = Column(Float(), nullable=True)
+    remain_amount = Column(Float(), nullable=True)
+    sale_limit = Column(String(100), nullable=True)
+    compulsory_residence = Column(String(100), nullable=True)
+
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False

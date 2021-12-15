@@ -6,7 +6,8 @@ from sqlalchemy import (
     String,
     DateTime,
     Boolean,
-    SmallInteger, func,
+    SmallInteger,
+    func,
 )
 
 from app import db

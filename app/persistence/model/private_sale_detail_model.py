@@ -8,7 +8,8 @@ from sqlalchemy import (
     SmallInteger,
     Boolean,
     Enum,
-    String, func,
+    String,
+    func,
 )
 
 from app import db

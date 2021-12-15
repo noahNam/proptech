@@ -666,7 +666,9 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         administrative_info = (
             self._house_repo.get_administrative_divisions_legal_code_info_all_list()
         )
-        real_estate_info = self._house_repo.get_real_estates_legal_code_info_should_update_list()
+        real_estate_info = (
+            self._house_repo.get_real_estates_legal_code_info_should_update_list()
+        )
 
         if not administrative_info:
             logger.info(
@@ -691,7 +693,9 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
                 title="☠️ [AddLegalCodeUseCase] >>> New real_estates - 법정코드 부여 배치",
                 message=f"update_legal_code_to_real_estates Error - {e}",
             )
-        failure_list = self._house_repo.get_real_estates_legal_code_info_should_update_list()
+        failure_list = (
+            self._house_repo.get_real_estates_legal_code_info_should_update_list()
+        )
 
         logger.info(
             f"🚀\tAddLegalCodeUseCase : Finished !!, "
@@ -708,10 +712,10 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         self.send_slack_message(
             title=f"{emoji} [AddLegalCodeUseCase] >>> New real_estates - 법정코드 부여 배치",
             message=f"AddLegalCodeUseCase : Finished !! \n "
-                    f"records: {time() - start_time} secs \n "
-                    f"{len(update_list)} Updated"
-                    f"{len(failure_list)} Failed"
-                    f"Failed_list : {failure_list}",
+            f"records: {time() - start_time} secs \n "
+            f"{len(update_list)} Updated"
+            f"{len(failure_list)} Failed"
+            f"Failed_list : {failure_list}",
         )
 
         exit(os.EX_OK)
