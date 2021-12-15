@@ -45,6 +45,14 @@ class PublicSaleDetailModel(db.Model):
     first_life_household = Column(SmallInteger, nullable=True)
     general_household = Column(SmallInteger, nullable=True)
 
+    hallway_type = Column(String(3), nullable=True)
+    bay = Column(SmallInteger, nullable=True)
+    plate_tower_duplex = Column(String(2), nullable=True)
+    kitchen_window = Column(String(1), nullable=True)
+    cross_ventilation = Column(String(1), nullable=True)
+    alpha_room = Column(String(1), nullable=True)
+    cyber_house_link = Column(String(200), nullable=True)
+
     # 1:1 relationship
     public_sale_detail_photos = relationship(
         "PublicSaleDetailPhotoModel",
