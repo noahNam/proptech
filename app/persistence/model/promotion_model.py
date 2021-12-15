@@ -4,7 +4,8 @@ from sqlalchemy import (
     DateTime,
     SmallInteger,
     Boolean,
-    String, func,
+    String,
+    func,
 )
 from sqlalchemy.orm import relationship, backref
 
