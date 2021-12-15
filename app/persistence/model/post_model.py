@@ -5,7 +5,8 @@ from sqlalchemy import (
     String,
     DateTime,
     Boolean,
-    SmallInteger, func,
+    SmallInteger,
+    func,
 )
 from sqlalchemy.orm import relationship
 

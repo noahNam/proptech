@@ -6,7 +6,8 @@ from sqlalchemy import (
     ForeignKey,
     String,
     SmallInteger,
-    UniqueConstraint, func,
+    UniqueConstraint,
+    func,
 )
 
 from app import db

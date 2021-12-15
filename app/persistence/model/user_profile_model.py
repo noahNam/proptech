@@ -5,7 +5,8 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     String,
-    SmallInteger, func,
+    SmallInteger,
+    func,
 )
 from sqlalchemy.orm import relationship, backref
 
