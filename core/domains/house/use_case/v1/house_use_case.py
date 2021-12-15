@@ -21,7 +21,7 @@ from core.domains.house.dto.house_dto import (
     BoundingWithinRadiusDto,
     SectionTypeDto,
     GetHouseMainDto,
-    GetHousePublicNearPrivateSalesDto,
+    GetHousePublicNearPrivateSalesDto, UpdateRecentViewListDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
@@ -434,6 +434,22 @@ class GetRecentViewListUseCase(HouseBaseUseCase):
         )
 
         return UseCaseSuccessOutput(value=result)
+
+
+class UpdateRecentViewListUseCase(HouseBaseUseCase):
+    def execute(
+        self, dto: UpdateRecentViewListDto
+    ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
+        if not dto.user_id:
+            return UseCaseFailureOutput(
+                type="user_id",
+                message=FailureType.NOT_FOUND_ERROR,
+                code=HTTPStatus.NOT_FOUND,
+            )
+
+        self._house_repo.update_recent_view_list(dto=dto)
+
+        return UseCaseSuccessOutput()
 
 
 class GetSearchHouseListUseCase(HouseBaseUseCase):

@@ -13,6 +13,7 @@ from app.http.requests.v1.house_request import (
     GetMainPreSubscriptionRequestSchema,
     GetHouseMainRequestSchema,
     GetHousePublicNearPrivateSalesRequestSchema,
+    UpdateRecentViewListRequestSchema,
 )
 from app.http.requests.v1.house_request import UpsertInterestHouseRequestSchema
 from app.http.responses import failure_response
@@ -27,7 +28,7 @@ from app.http.responses.presenters.v1.house_presenter import (
     GetSearchHouseListPresenter,
     GetHouseMainPresenter,
     GetMainPreSubscriptionPresenter,
-    GetHousePublicNearPrivateSalesPresenter,
+    GetHousePublicNearPrivateSalesPresenter, UpdateRecentViewListPresenter,
 )
 from app.http.view import auth_required, api, current_user
 from core.domains.house.enum.house_enum import (
@@ -45,7 +46,7 @@ from core.domains.house.use_case.v1.house_use_case import (
     GetRecentViewListUseCase,
     GetHouseMainUseCase,
     GetMainPreSubscriptionUseCase,
-    GetHousePublicNearPrivateSalesUseCase,
+    GetHousePublicNearPrivateSalesUseCase, UpdateRecentViewListUseCase,
 )
 from core.domains.house.use_case.v1.house_use_case import UpsertInterestHouseUseCase
 from core.exceptions import InvalidRequestException
@@ -169,16 +170,28 @@ def get_interest_house_list_view():
 
 
 @api.route("/v1/houses/recent", methods=["GET"])
-@jwt_required
-@auth_required
+# @jwt_required
+# @auth_required
 @swag_from("get_recent_view_list.yml", methods=["GET"])
 def get_recent_view_list_view():
-    dto = GetRecentViewListRequestSchema(
-        user_id=current_user.id,
-    ).validate_request_and_make_dto()
+    dto = GetRecentViewListRequestSchema(user_id=1,).validate_request_and_make_dto()
 
     return GetRecentViewListPresenter().transform(
         GetRecentViewListUseCase().execute(dto=dto)
+    )
+
+
+@api.route("/v1/houses/recent", methods=["PATCH"])
+# @jwt_required
+# @auth_required
+@swag_from("update_recent_view_list.yml", methods=["PATCH"])
+def update_recent_view_list_view():
+    dto = UpdateRecentViewListRequestSchema(
+        user_id=1, **request.get_json()
+    ).validate_request_and_make_dto()
+
+    return UpdateRecentViewListPresenter().transform(
+        UpdateRecentViewListUseCase().execute(dto=dto)
     )
 
 
