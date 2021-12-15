@@ -6,14 +6,13 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     JSON,
-    SmallInteger, func,
+    SmallInteger,
+    func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
 from app import db
-from core.domains.notification.entity.notification_entity import (
-    NotificationEntity,
-)
+from core.domains.notification.entity.notification_entity import NotificationEntity
 from core.domains.notification.enum.notification_enum import NotificationStatusEnum
 
 
