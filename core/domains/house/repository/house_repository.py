@@ -1041,7 +1041,12 @@ class HouseRepository:
                 & (InterestHouseModel.house_id == house_id),
             )
             .join(PublicSaleModel.real_estates)
-            .join(PublicSaleModel.public_sale_photos, isouter=True)
+            .join(
+                PublicSalePhotoModel,
+                (PublicSalePhotoModel.public_sales_id == InterestHouseModel.house_id)
+                & (PublicSalePhotoModel.is_thumbnail == True),
+                isouter=True,
+            )
         )
 
         queryset = query.first()
@@ -1061,6 +1066,7 @@ class HouseRepository:
             jibun_address=queryset.jibun_address,
             subscription_start_date=queryset.subscription_start_date,
             subscription_end_date=queryset.subscription_end_date,
+            image_path=S3Helper().get_cloudfront_url() + "/" + queryset.image_path,
         )
 
     def get_recent_view_list(self, dto: GetUserDto) -> List[GetRecentViewListEntity]:
