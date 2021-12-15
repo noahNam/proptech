@@ -1,6 +1,6 @@
 from typing import List, Union, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictStr
 
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
@@ -26,6 +26,7 @@ class GetInterestHouseListBaseSchema(BaseModel):
 
 
 class GetRecentViewListBaseSchema(BaseModel):
+    id: int
     house_id: int
     type: int
     name: str
@@ -74,3 +75,7 @@ class GetMainPreSubscriptionResponseSchema(BaseModel):
 
 class GetHousePublicPrivateSalesResponseSchema(BaseModel):
     near_houses: Optional[List[NearHouseEntity]]
+
+
+class UpdateRecentViewListResponseSchema(BaseModel):
+    result: StrictStr

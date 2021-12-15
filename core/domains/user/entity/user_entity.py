@@ -100,7 +100,9 @@ class RecentlyViewEntity(BaseModel):
     user_id: int
     house_id: int
     type: int
+    is_available: bool
     created_at: datetime
+    updated_at: datetime
 
 
 class SidoCodeEntity(BaseModel):

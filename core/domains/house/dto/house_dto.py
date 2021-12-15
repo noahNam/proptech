@@ -62,3 +62,8 @@ class GetHouseMainDto(BaseModel):
 
 class GetHousePublicNearPrivateSalesDto(BaseModel):
     house_id: int
+
+
+class UpdateRecentViewListDto(BaseModel):
+    user_id: int
+    id: int
