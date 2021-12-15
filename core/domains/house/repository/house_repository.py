@@ -946,7 +946,9 @@ class HouseRepository:
                 PublicSaleModel.name.label("name"),
                 RealEstateModel.jibun_address,
                 RealEstateModel.road_address,
-                PublicSaleModel.subscription_start_date.label("subscription_start_date"),
+                PublicSaleModel.subscription_start_date.label(
+                    "subscription_start_date"
+                ),
                 PublicSaleModel.subscription_end_date.label("subscription_end_date"),
                 PublicSalePhotoModel.path.label("image_path"),
             )
@@ -991,7 +993,9 @@ class HouseRepository:
 
         union_query = public_sales_query.union_all(private_sales_query).subquery()
 
-        query = session.query(union_query).order_by(union_query.c.interest_houses_updated_at.desc())
+        query = session.query(union_query).order_by(
+            union_query.c.interest_houses_updated_at.desc()
+        )
         query_set = query.all()
 
         return self._make_interest_house_list_entity(queryset=query_set)
