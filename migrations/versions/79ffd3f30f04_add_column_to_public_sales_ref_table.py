@@ -7,7 +7,6 @@ Create Date: 2021-12-13 01:06:43.411733
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '79ffd3f30f04'
@@ -18,15 +17,15 @@ depends_on = None
 
 def upgrade():
     op.add_column('public_sales', sa.Column('heating_type', sa.String(length=100), nullable=True))
-    op.add_column('public_sales', sa.Column('floor_area_ratio', postgresql.DOUBLE_PRECISION, nullable=True))
-    op.add_column('public_sales', sa.Column('building_cover_ratio', postgresql.DOUBLE_PRECISION, nullable=True))
+    op.add_column('public_sales', sa.Column('floor_area_ratio', sa.Float(), nullable=True))
+    op.add_column('public_sales', sa.Column('building_cover_ratio', sa.Float(), nullable=True))
     op.add_column('public_sales', sa.Column('total_household', sa.Integer(), nullable=True))
     op.add_column('public_sales', sa.Column('total_park_number', sa.Integer(), nullable=True))
     op.add_column('public_sales', sa.Column('top_floor', sa.SmallInteger(), nullable=True))
     op.add_column('public_sales', sa.Column('dong_number', sa.Integer(), nullable=True))
-    op.add_column('public_sales', sa.Column('contract_amount', postgresql.DOUBLE_PRECISION, nullable=True))
-    op.add_column('public_sales', sa.Column('middle_amount', postgresql.DOUBLE_PRECISION, nullable=True))
-    op.add_column('public_sales', sa.Column('remain_amount', postgresql.DOUBLE_PRECISION, nullable=True))
+    op.add_column('public_sales', sa.Column('contract_amount', sa.Float(), nullable=True))
+    op.add_column('public_sales', sa.Column('middle_amount', sa.Float(), nullable=True))
+    op.add_column('public_sales', sa.Column('remain_amount', sa.Float(), nullable=True))
     op.add_column('public_sales', sa.Column('sale_limit', sa.String(length=100), nullable=True))
     op.add_column('public_sales', sa.Column('compulsory_residence', sa.String(length=100), nullable=True))
 
