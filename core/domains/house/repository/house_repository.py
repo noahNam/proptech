@@ -33,7 +33,8 @@ from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    UpsertInterestHouseDto, UpdateRecentViewListDto,
+    UpsertInterestHouseDto,
+    UpdateRecentViewListDto,
 )
 from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
@@ -1134,7 +1135,9 @@ class HouseRepository:
         filters.append(RecentlyViewModel.id == dto.id)
 
         try:
-            session.query(RecentlyViewModel).filter(*filters).update({"is_available": False})
+            session.query(RecentlyViewModel).filter(*filters).update(
+                {"is_available": False}
+            )
             session.commit()
         except Exception as e:
             session.rollback()
