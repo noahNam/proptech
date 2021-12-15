@@ -170,11 +170,11 @@ def get_interest_house_list_view():
 
 
 @api.route("/v1/houses/recent", methods=["GET"])
-# @jwt_required
-# @auth_required
+@jwt_required
+@auth_required
 @swag_from("get_recent_view_list.yml", methods=["GET"])
 def get_recent_view_list_view():
-    dto = GetRecentViewListRequestSchema(user_id=1,).validate_request_and_make_dto()
+    dto = GetRecentViewListRequestSchema(user_id=current_user.id,).validate_request_and_make_dto()
 
     return GetRecentViewListPresenter().transform(
         GetRecentViewListUseCase().execute(dto=dto)
@@ -182,12 +182,12 @@ def get_recent_view_list_view():
 
 
 @api.route("/v1/houses/recent", methods=["PATCH"])
-# @jwt_required
-# @auth_required
+@jwt_required
+@auth_required
 @swag_from("update_recent_view_list.yml", methods=["PATCH"])
 def update_recent_view_list_view():
     dto = UpdateRecentViewListRequestSchema(
-        user_id=1, **request.get_json()
+        user_id=current_user.id, **request.get_json()
     ).validate_request_and_make_dto()
 
     return UpdateRecentViewListPresenter().transform(
