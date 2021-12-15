@@ -289,6 +289,7 @@ class InterestHouseListEntity(BaseModel):
 
 
 class GetRecentViewListEntity(BaseModel):
+    id: int
     house_id: int
     type: int
     name: str

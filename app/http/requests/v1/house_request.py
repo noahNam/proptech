@@ -20,7 +20,7 @@ from core.domains.house.dto.house_dto import (
     BoundingWithinRadiusDto,
     SectionTypeDto,
     GetHouseMainDto,
-    GetHousePublicNearPrivateSalesDto,
+    GetHousePublicNearPrivateSalesDto, UpdateRecentViewListDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.enum.house_enum import (
@@ -51,6 +51,11 @@ class GetInterestHouseListSchema(BaseModel):
 
 class GetRecentViewListSchema(BaseModel):
     user_id: StrictInt
+
+
+class UpdateRecentViewListSchema(BaseModel):
+    user_id: StrictInt
+    id: StrictInt
 
 
 class UpsertInterestHouseRequestSchema:
@@ -102,6 +107,24 @@ class GetRecentViewListRequestSchema:
         except ValidationError as e:
             logger.error(
                 f"[GetRecentViewListRequestSchema][validate_request_and_make_dto] error : {e}"
+            )
+            raise InvalidRequestException(message=e.errors())
+
+
+class UpdateRecentViewListRequestSchema:
+    def __init__(self, user_id, id):
+        self.user_id = int(user_id) if user_id else None
+        self.id = id
+
+    def validate_request_and_make_dto(self):
+        try:
+            schema = UpdateRecentViewListSchema(
+                user_id=self.user_id, id=self.id
+            ).dict()
+            return UpdateRecentViewListDto(**schema)
+        except ValidationError as e:
+            logger.error(
+                f"[UpdateRecentViewListRequestSchema][validate_request_and_make_dto] error : {e}"
             )
             raise InvalidRequestException(message=e.errors())
 

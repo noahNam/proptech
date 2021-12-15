@@ -33,7 +33,7 @@ from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    UpsertInterestHouseDto,
+    UpsertInterestHouseDto, UpdateRecentViewListDto,
 )
 from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
@@ -1079,14 +1079,16 @@ class HouseRepository:
                 func.max(RecentlyViewModel.id).label("id"),
                 RecentlyViewModel.house_id,
                 RecentlyViewModel.type,
-                PublicSaleModel.name,
-                PublicSalePhotoModel.path.label("path"),
+                func.max(RecentlyViewModel.updated_at).label("updated_at"),
+                func.max(PublicSaleModel.name).label("name"),
+                func.max(PublicSalePhotoModel.path).label("path"),
             )
             .join(
                 PublicSaleModel,
                 (RecentlyViewModel.house_id == PublicSaleModel.id)
                 & (RecentlyViewModel.type == HouseTypeEnum.PUBLIC_SALES.value)
-                & (RecentlyViewModel.user_id == dto.user_id),
+                & (RecentlyViewModel.user_id == dto.user_id)
+                & (RecentlyViewModel.is_available == True),
             )
             .join(
                 PublicSalePhotoModel,
@@ -1094,18 +1096,13 @@ class HouseRepository:
                 & (PublicSalePhotoModel.is_thumbnail == True),
                 isouter=True,
             )
-            .group_by(
-                RecentlyViewModel.house_id,
-                RecentlyViewModel.type,
-                PublicSaleModel.name,
-                PublicSalePhotoModel.path,
-            )
+            .group_by(RecentlyViewModel.house_id, RecentlyViewModel.type,)
         )
 
         sub_query = query.subquery()
         sub_q = aliased(sub_query)
 
-        query = session.query(sub_q).order_by(sub_q.c.id.desc())
+        query = session.query(sub_q).order_by(sub_q.c.updated_at.desc())
 
         queryset = query.all()
 
@@ -1120,6 +1117,7 @@ class HouseRepository:
             for query in queryset:
                 result.append(
                     GetRecentViewListEntity(
+                        id=query.id,
                         house_id=query.house_id,
                         type=query.type,
                         name=query.name,
@@ -1130,6 +1128,20 @@ class HouseRepository:
                 )
 
         return result
+
+    def update_recent_view_list(self, dto: UpdateRecentViewListDto) -> None:
+        filters = list()
+        filters.append(RecentlyViewModel.id == dto.id)
+
+        try:
+            session.query(RecentlyViewModel).filter(*filters).update({"is_available": False})
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][update_recent_view_list] user_id : {dto.user_id} error : {e}"
+            )
+            raise Exception(e)
 
     def _make_get_search_house_list_entity(
         self, queryset: Optional[List], user_id: int
