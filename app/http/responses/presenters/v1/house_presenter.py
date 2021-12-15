@@ -12,7 +12,8 @@ from core.domains.house.schema.house_schema import (
     GetRecentViewListResponseSchema,
     GetMainPreSubscriptionResponseSchema,
     GetHouseMainResponseSchema,
-    GetHousePublicPrivateSalesResponseSchema, UpdateRecentViewListResponseSchema,
+    GetHousePublicPrivateSalesResponseSchema,
+    UpdateRecentViewListResponseSchema,
 )
 from pydantic import ValidationError
 from app.http.responses import failure_response, success_response
