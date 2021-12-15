@@ -4,7 +4,8 @@ from sqlalchemy import (
     Integer,
     ForeignKey,
     DateTime,
-    Boolean, func,
+    Boolean,
+    func,
 )
 
 from app import db

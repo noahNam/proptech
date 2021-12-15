@@ -273,7 +273,11 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
         ) = (dict(), dict(), dict(), dict(), dict())
 
         for expected_competition in expected_competitions:
-            key = "{}_{}_{}".format(expected_competition.house_structure_type, expected_competition.private_area, expected_competition.supply_area)
+            key = "{}_{}_{}".format(
+                expected_competition.house_structure_type,
+                expected_competition.private_area,
+                expected_competition.supply_area,
+            )
 
             domain_common_dict = dict(
                 region=expected_competition.region,
@@ -336,33 +340,23 @@ class GetExpectedCompetitionUseCase(ReportBaseUseCase):
                     ]
                 )
 
-            domain_marry_dict.setdefault(
-                key, dict()
-            ).update(
+            domain_marry_dict.setdefault(key, dict()).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_marry_list,
             )
-            domain_first_life_dict.setdefault(
-                key, dict()
-            ).update(
+            domain_first_life_dict.setdefault(key, dict()).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_first_life_list,
             )
-            domain_children_dict.setdefault(
-                key, dict()
-            ).update(
+            domain_children_dict.setdefault(key, dict()).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_children_list,
             )
-            domain_old_parent_dict.setdefault(
-                key, dict()
-            ).update(
+            domain_old_parent_dict.setdefault(key, dict()).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_old_parent_list,
             )
-            domain_normal_dict.setdefault(
-                key, dict()
-            ).update(
+            domain_normal_dict.setdefault(key, dict()).update(
                 house_structure_type=expected_competition.house_structure_type,
                 infos=domain_normal_list,
             )
@@ -690,7 +684,11 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
 
         competitions = report_recently_public_sale_info.public_sale_details
         for competition in competitions:
-            key = "{}_{}_{}".format(competition.supply_area, competition.private_area, competition.supply_area)
+            key = "{}_{}_{}".format(
+                competition.supply_area,
+                competition.private_area,
+                competition.supply_area,
+            )
 
             detail_dict = dict(
                 area_type=competition.area_type,
@@ -743,7 +741,9 @@ class GetRecentlySaleUseCase(ReportBaseUseCase):
 
         competitions = report_recently_public_sale_info.public_sale_details
         for competition in competitions:
-            key = "{}_{}_{}".format(competition.area_type, competition.private_area, competition.supply_area)
+            key = "{}_{}_{}".format(
+                competition.area_type, competition.private_area, competition.supply_area
+            )
 
             for special_supply_result in competition.special_supply_results:
                 domain_common_dict = dict(

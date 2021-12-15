@@ -5,7 +5,8 @@ from sqlalchemy import (
     String,
     Boolean,
     ForeignKey,
-    DateTime, func,
+    DateTime,
+    func,
 )
 from sqlalchemy.orm import relationship, backref
 

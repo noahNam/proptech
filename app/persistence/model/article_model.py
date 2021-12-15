@@ -5,7 +5,8 @@ from sqlalchemy import (
     SmallInteger,
     BigInteger,
     ForeignKey,
-    Unicode, func,
+    Unicode,
+    func,
 )
 
 from app import db
