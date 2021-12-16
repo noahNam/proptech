@@ -20,7 +20,8 @@ from core.domains.house.dto.house_dto import (
     BoundingWithinRadiusDto,
     SectionTypeDto,
     GetHouseMainDto,
-    GetHousePublicNearPrivateSalesDto, UpdateRecentViewListDto,
+    GetHousePublicNearPrivateSalesDto,
+    UpdateRecentViewListDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.enum.house_enum import (
@@ -118,9 +119,7 @@ class UpdateRecentViewListRequestSchema:
 
     def validate_request_and_make_dto(self):
         try:
-            schema = UpdateRecentViewListSchema(
-                user_id=self.user_id, id=self.id
-            ).dict()
+            schema = UpdateRecentViewListSchema(user_id=self.user_id, id=self.id).dict()
             return UpdateRecentViewListDto(**schema)
         except ValidationError as e:
             logger.error(
