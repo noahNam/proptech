@@ -33,7 +33,8 @@ from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
     GetHousePublicDetailDto,
-    UpsertInterestHouseDto, UpdateRecentViewListDto,
+    UpsertInterestHouseDto,
+    UpdateRecentViewListDto,
 )
 from core.domains.house.entity.house_entity import (
     InterestHouseListEntity,
@@ -73,7 +74,6 @@ from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
 )
 from core.domains.report.entity.report_entity import (
-    HouseTypeRankEntity,
     TicketUsageResultForHousePublicDetailEntity,
 )
 from core.domains.user.dto.user_dto import GetUserDto
@@ -942,11 +942,14 @@ class HouseRepository:
             .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
-                PublicSaleModel.name,
+                InterestHouseModel.updated_at,
+                PublicSaleModel.name.label("name"),
                 RealEstateModel.jibun_address,
                 RealEstateModel.road_address,
-                PublicSaleModel.subscription_start_date,
-                PublicSaleModel.subscription_end_date,
+                PublicSaleModel.subscription_start_date.label(
+                    "subscription_start_date"
+                ),
+                PublicSaleModel.subscription_end_date.label("subscription_end_date"),
                 PublicSalePhotoModel.path.label("image_path"),
             )
             .join(
@@ -970,7 +973,8 @@ class HouseRepository:
             .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
-                PrivateSaleModel.name,
+                InterestHouseModel.updated_at,
+                PrivateSaleModel.name.label("name"),
                 RealEstateModel.jibun_address,
                 RealEstateModel.road_address,
                 literal("", String).label("subscription_start_date"),
@@ -987,10 +991,14 @@ class HouseRepository:
             .join(PrivateSaleModel.real_estates)
         )
 
-        query = public_sales_query.union_all(private_sales_query)
-        queryset = query.all()
+        union_query = public_sales_query.union_all(private_sales_query).subquery()
 
-        return self._make_interest_house_list_entity(queryset=queryset)
+        query = session.query(union_query).order_by(
+            union_query.c.interest_houses_updated_at.desc()
+        )
+        query_set = query.all()
+
+        return self._make_interest_house_list_entity(queryset=query_set)
 
     def _make_interest_house_list_entity(
         self, queryset: Optional[List]
@@ -1002,11 +1010,11 @@ class HouseRepository:
             for query in queryset:
                 result.append(
                     InterestHouseListEntity(
-                        house_id=query.house_id,
-                        type=query.type,
+                        house_id=query.interest_houses_house_id,
+                        type=query.interest_houses_type,
                         name=query.name,
-                        jibun_address=query.jibun_address,
-                        road_address=query.road_address,
+                        jibun_address=query.real_estates_jibun_address,
+                        road_address=query.real_estates_road_address,
                         subscription_start_date=query.subscription_start_date,
                         subscription_end_date=query.subscription_end_date,
                         image_path=S3Helper.get_cloudfront_url()
@@ -1103,7 +1111,6 @@ class HouseRepository:
         sub_q = aliased(sub_query)
 
         query = session.query(sub_q).order_by(sub_q.c.updated_at.desc())
-
         queryset = query.all()
 
         return self._make_get_recent_view_list_entity(queryset=queryset)
@@ -1134,7 +1141,9 @@ class HouseRepository:
         filters.append(RecentlyViewModel.id == dto.id)
 
         try:
-            session.query(RecentlyViewModel).filter(*filters).update({"is_available": False})
+            session.query(RecentlyViewModel).filter(*filters).update(
+                {"is_available": False}
+            )
             session.commit()
         except Exception as e:
             session.rollback()

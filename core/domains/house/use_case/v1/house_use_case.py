@@ -21,7 +21,8 @@ from core.domains.house.dto.house_dto import (
     BoundingWithinRadiusDto,
     SectionTypeDto,
     GetHouseMainDto,
-    GetHousePublicNearPrivateSalesDto, UpdateRecentViewListDto,
+    GetHousePublicNearPrivateSalesDto,
+    UpdateRecentViewListDto,
 )
 from core.domains.house.dto.house_dto import UpsertInterestHouseDto
 from core.domains.house.entity.house_entity import (
