@@ -1,6 +1,6 @@
 from typing import Optional, List
 
-from sqlalchemy import exc, exists
+from sqlalchemy import exc, exists, and_
 from sqlalchemy.orm import joinedload
 
 from app.extensions.database import session
@@ -414,13 +414,31 @@ class UserRepository:
         return user.to_entity()
 
     def create_recently_view(self, dto: RecentlyViewDto) -> None:
-        try:
-            view_info = RecentlyViewModel(
-                user_id=dto.user_id, house_id=dto.house_id, type=dto.type,
+        filters = list()
+        filters.append(
+            and_(
+                RecentlyViewModel.user_id == dto.user_id,
+                RecentlyViewModel.house_id == dto.house_id,
+                RecentlyViewModel.type == dto.type,
             )
-            session.add(view_info)
-            session.commit()
+        )
+        try:
+            recently_view = session.query(RecentlyViewModel).filter(*filters).first()
 
+            if recently_view:
+                session.query(RecentlyViewModel).filter_by(id=recently_view.id).update(
+                    {"is_available": True, "updated_at": get_server_timestamp()}
+                )
+            else:
+                view_info = RecentlyViewModel(
+                    user_id=dto.user_id,
+                    house_id=dto.house_id,
+                    type=dto.type,
+                    is_available=True,
+                )
+                session.add(view_info)
+
+            session.commit()
         except Exception as e:
             session.rollback()
             logger.error(

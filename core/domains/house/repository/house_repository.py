@@ -1111,7 +1111,6 @@ class HouseRepository:
         sub_q = aliased(sub_query)
 
         query = session.query(sub_q).order_by(sub_q.c.updated_at.desc())
-
         queryset = query.all()
 
         return self._make_get_recent_view_list_entity(queryset=queryset)
