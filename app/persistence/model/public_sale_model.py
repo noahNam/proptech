@@ -152,16 +152,16 @@ class PublicSaleModel(db.Model):
             down_payment_ratio=self.down_payment_ratio,
             reference_url=self.reference_url,
             offer_notice_url=self.offer_notice_url,
-
             total_household=self.total_household,
             total_park_number=self.total_park_number,
             top_floor=self.top_floor,
             dong_number=self.dong_number,
-            contract_amount=HouseHelper.convert_contract_amount_to_integer(self.contract_amount),
+            contract_amount=HouseHelper.convert_contract_amount_to_integer(
+                self.contract_amount
+            ),
             middle_amount=self.middle_amount,
             remain_amount=self.remain_amount,
             sale_limit=self.sale_limit,
-
             created_at=self.created_at,
             updated_at=self.updated_at,
             public_sale_photos=[
