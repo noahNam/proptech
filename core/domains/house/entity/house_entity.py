@@ -93,6 +93,16 @@ class PublicSaleEntity(BaseModel):
     max_down_payment: int
     down_payment_ratio: int
     reference_url: Optional[str]
+
+    total_household: Optional[int]
+    total_park_number: Optional[int]
+    top_floor: Optional[int]
+    dong_number: Optional[int]
+    contract_amount: Optional[int]
+    middle_amount: Optional[float]
+    remain_amount: Optional[float]
+    sale_limit: Optional[str]
+
     created_at: datetime
     updated_at: datetime
     public_sale_photos: List[PublicSalePhotoEntity] = None
