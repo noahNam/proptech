@@ -8,6 +8,7 @@ from core.domains.house.use_case.v1.house_worker_use_case import (
     PreCalculateAdministrativeDivisionUseCase,
     UpsertUploadPhotoUseCase,
     ReplacePublicToPrivateUseCase,
+    CheckNotUploadedPhotoUseCase,
 )
 from core.domains.notification.use_case.v1.notification_worker_use_case import (
     PrePrcsNotificationUseCase,
@@ -30,6 +31,8 @@ def get_worker(topic: str):
         return UpsertUploadPhotoUseCase(topic=topic)
     elif topic == TopicEnum.REPLACE_PUBLIC_TO_PRIVATE_SALES.value:
         return ReplacePublicToPrivateUseCase(topic=topic)
+    elif topic == TopicEnum.CHECK_NOT_UPLOADED_PHOTOS.value:
+        return CheckNotUploadedPhotoUseCase(topic=topic)
 
 
 @current_app.cli.command("start-worker")
