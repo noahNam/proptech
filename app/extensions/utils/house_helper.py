@@ -139,3 +139,9 @@ class HouseHelper:
                     )
                     last_swap = i
             end = last_swap
+
+    @classmethod
+    def convert_contract_amount_to_integer(
+        cls, contract_amount: Optional[float]
+    ) -> Optional[int]:
+        return int(contract_amount * 100) if contract_amount else None
