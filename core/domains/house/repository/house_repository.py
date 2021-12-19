@@ -3235,3 +3235,11 @@ class HouseRepository:
                 target_ids.append(query.id)
 
         return target_ids
+
+    def is_exists_public_sale_photos(self, public_sales_id: int) -> bool:
+        query = session.query(
+            exists().where(PublicSalePhotoModel.public_sales_id == public_sales_id)
+        )
+        if query.scalar():
+            return True
+        return False
