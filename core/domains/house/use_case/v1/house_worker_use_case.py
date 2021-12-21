@@ -12,7 +12,7 @@ from PIL import Image
 from sqlalchemy.orm import Query
 
 from app.extensions.utils.house_helper import HouseHelper
-from app.extensions.utils.image_helper import S3Helper
+from app.extensions.utils.image_helper import ImageHelper, ImageNameCollector, S3Helper
 from app.extensions.utils.log_helper import logger_
 from app.extensions.utils.math_helper import MathHelper
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -755,9 +755,9 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
 
         for image_name in file_list:
             changed_image_name = None
-            path = S3Helper().get_image_upload_dir() + "/" + dir_name + "/"
+            path = ImageHelper().get_image_upload_dir() + "/" + dir_name + "/"
             full_path = Path(
-                S3Helper().get_image_upload_dir() + "/" + dir_name + "/" + image_name
+                ImageHelper().get_image_upload_dir() + "/" + dir_name + "/" + image_name
             )
             if os.path.splitext(image_name)[-1] in [".JPG", ".jpg"]:
                 changed_image_name = os.path.splitext(image_name)[0] + ".jpeg"
@@ -841,7 +841,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             }
                         )
                         file_name = (
-                            S3Helper().get_image_upload_dir()
+                            ImageHelper().get_image_upload_dir()
                             + r"/"
                             + dir_name
                             + r"/"
@@ -891,7 +891,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             )
 
                             file_name = (
-                                S3Helper().get_image_upload_dir()
+                                ImageHelper().get_image_upload_dir()
                                 + r"/"
                                 + dir_name
                                 + r"/"
@@ -934,7 +934,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
 
     def execute(self):
         logger.info(f"🚀\tInsertUploadPhotoUseCase Start - {self.client_id}")
-        logger.info(f"🚀\tupload_job 위치 : {S3Helper().get_image_upload_dir()}")
+        logger.info(f"🚀\tupload_job 위치 : {ImageHelper().get_image_upload_dir()}")
         start_time = time()
 
         passed_dirs = list()
@@ -962,7 +962,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
             ) + 1
 
         upload_list: List[Dict] = list()
-        for (roots, dirs, file_names) in os.walk(S3Helper().get_image_upload_dir()):
+        for (roots, dirs, file_names) in os.walk(ImageHelper().get_image_upload_dir()):
             entry = []
 
             # roots 기준 1 depth 하위 dir
@@ -1251,5 +1251,53 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
                 f"{len(replace_targets)} created, "
                 f"records: {time() - start_time} secs"
             )
+
+        exit(os.EX_OK)
+
+
+class CheckNotUploadedPhotoUseCase(BaseHouseWorkerUseCase):
+    def execute(self):
+        target_dir = ImageHelper().get_image_upload_dir()
+        logger.info(f"🚀\tCheckNotUploadedPhotoUseCase Start - {self.client_id}")
+        logger.info(f"🚀\tCheck_photos 위치 : {target_dir}")
+        start_time = time()
+
+        collector = ImageNameCollector(target_dir=target_dir)
+
+        collector.get_file_list()
+
+        dir_name_list = list()
+
+        for elm in collector.collect_dict_list:
+            keys = elm.keys()
+            dir_name_list.append(*keys)
+
+        public_sales_ids, passed_dirs = collector.get_public_sale_photos_ids(
+            dir_name_list=dir_name_list
+        )
+
+        not_uploaded_public_sales_ids = list()
+
+        for id_ in public_sales_ids:
+            if not self._house_repo.is_exists_public_sale_photos(id_):
+                not_uploaded_public_sales_ids.append(id_)
+
+        logger.info(
+            f"🚀\tCheckNotUploadedPhotoUseCase - Done! \n"
+            f"public_sales_id: {not_uploaded_public_sales_ids} not uploaded photos, "
+            f"({len(not_uploaded_public_sales_ids)}/ {len(public_sales_ids)})\n"
+            f"passed_dirs: {passed_dirs}\n"
+            f"records: {time() - start_time} secs"
+        )
+
+        emoji = "🚀"
+
+        self.send_slack_message(
+            title=f"{emoji} [CheckNotUploadedPhotoUseCase] >>> 업로드 누락 이미지 체크",
+            message=f"CheckNotUploadedPhotoUseCase : Finished !! \n "
+            f"records: {time() - start_time} secs \n "
+            f"public_sales_id: {not_uploaded_public_sales_ids} not uploaded photos, "
+            f"({len(not_uploaded_public_sales_ids)}/ {len(public_sales_ids)}) \n",
+        )
 
         exit(os.EX_OK)
