@@ -770,11 +770,12 @@ class HouseRepository:
                 PublicSaleModel.is_available == "True",
                 PublicSaleModel.id == house_id,
                 PublicSaleModel.real_estate_id == RealEstateModel.id,
+                PublicSaleDetailModel.public_sales_id == PublicSaleModel.id,
             )
         )
         query = (
             session.query(
-                RealEstateModel,
+                PublicSaleModel,
                 func.min(PublicSaleDetailModel.supply_area).label("min_supply_area"),
                 func.max(PublicSaleDetailModel.supply_area).label("max_supply_area"),
                 func.avg(PublicSaleDetailModel.supply_price).label("avg_supply_price"),
@@ -788,14 +789,18 @@ class HouseRepository:
                 func.min(PublicSaleDetailModel.supply_price).label("min_supply_price"),
                 func.max(PublicSaleDetailModel.supply_price).label("max_supply_price"),
             )
-            .join(RealEstateModel.public_sales)
-            .join(PublicSaleModel.public_sale_details)
+            .options(joinedload(PublicSaleModel.real_estates, innerjoin=True))
+            .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
+            .options(joinedload(PublicSaleModel.public_sale_photos))
+            .options(joinedload("public_sale_details.public_sale_detail_photos"))
+            .options(joinedload("public_sale_details.special_supply_results"))
+            .options(joinedload("public_sale_details.general_supply_results"))
             .filter(*filters)
-            .group_by(RealEstateModel.id)
+            .group_by(PublicSaleModel.id)
         )
         query_set = query.first()
 
-        return query_set, query_set[0].public_sales.housing_category
+        return query_set, query_set[0].housing_category
 
     def _get_supply_price_per_pyoung(
         self, supply_price: Optional[float], avg_pyoung_number: Optional[float]
@@ -811,7 +816,7 @@ class HouseRepository:
         button_link_list: List[ButtonLinkEntity],
         ticket_usage_results: Optional[TicketUsageResultForHousePublicDetailEntity],
     ) -> HousePublicDetailEntity:
-        # (<RealEstateModel>, [0]
+        # (<PublicSaleModel>, [0]
         # min_supply_area, [1]
         # max_supply_area, [2]
         # avg_supply_price, [3]
@@ -1425,7 +1430,6 @@ class HouseRepository:
             .options(joinedload(PublicSaleModel.real_estates, innerjoin=True))
             .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
             .options(joinedload(PublicSaleModel.public_sale_photos))
-            .options(joinedload("public_sale_details.public_sale_detail_photos"))
             .options(joinedload("public_sale_details.public_sale_detail_photos"))
             .options(joinedload("public_sale_details.special_supply_results"))
             .options(joinedload("public_sale_details.general_supply_results"))
@@ -3235,3 +3239,11 @@ class HouseRepository:
                 target_ids.append(query.id)
 
         return target_ids
+
+    def is_exists_public_sale_photos(self, public_sales_id: int) -> bool:
+        query = session.query(
+            exists().where(PublicSalePhotoModel.public_sales_id == public_sales_id)
+        )
+        if query.scalar():
+            return True
+        return False

@@ -366,7 +366,6 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
     assert isinstance(result, UseCaseSuccessOutput)
     assert mock_house_public_detail.called is True
     assert mock_enable.called is True
-    assert result.value == mock_result.return_value
     assert view_info.user_id == get_house_public_detail_dto.user_id
     assert view_info.house_id == get_house_public_detail_dto.house_id
 

@@ -2,6 +2,7 @@ import io
 import os
 from datetime import datetime
 from pathlib import Path
+from typing import List
 from uuid import uuid4
 
 import boto3
@@ -64,11 +65,6 @@ class S3Helper:
         return f"https://{CloudFrontEnum.TOADHOME_CLOUD_FRONT_DOMAIN.value}"
 
     @classmethod
-    def get_image_upload_dir(cls):
-        app_dir = Path(__file__).resolve(strict=True).parent
-        return os.path.join(app_dir, "upload_images_list")
-
-    @classmethod
     def get_image_upload_uuid_path(cls, image_table_name, extension):
         dir_name = image_table_name
         ymd_path = str(datetime.now().year)
@@ -76,3 +72,65 @@ class S3Helper:
         extension = extension
 
         return "/".join([dir_name, ymd_path, uuid_name + "." + extension,])
+
+
+class ImageHelper:
+    @classmethod
+    def get_image_upload_dir(cls):
+        app_dir = Path(__file__).resolve(strict=True).parent
+        return os.path.join(app_dir, "upload_images_list")
+
+
+class ImageNameCollector:
+    def __init__(self, target_dir: str):
+        self._target_dir = target_dir
+        self._collect_dict_list = list()
+
+    @property
+    def collect_dict_list(self):
+        return self._collect_dict_list
+
+    def get_file_list(self):
+        for (roots, dirs, file_names) in os.walk(self._target_dir):
+            # roots 기준 1 depth 하위 dir
+            dir_ = roots.split(r"/")[-1]
+            if self._has_valid_bracket(dir_or_file_name=dir_):
+                if len(file_names) > 0:
+                    self._collect_dict_list.append({dir_: file_names})
+
+    def _has_valid_bracket(self, dir_or_file_name: str):
+        if not dir_or_file_name:
+            return False
+
+        front_bracket = 0
+        back_bracket = 0
+
+        for idx in range(len(dir_or_file_name)):
+            if dir_or_file_name[idx] == "(":
+                front_bracket = front_bracket + 1
+            elif dir_or_file_name[idx] == ")":
+                back_bracket = back_bracket + 1
+
+        if front_bracket != 1 or back_bracket != 1:
+            return False
+        return True
+
+    def _get_pk_inside_bracket(self, string_with_bracket: str):
+        try:
+            return int(string_with_bracket.split("(")[1].rsplit(")")[0])
+        except Exception as e:
+            logger.error(f"[ImageNameCollector][_get_pk_inside_bracket]: Error - {e}")
+            return string_with_bracket
+
+    def get_public_sale_photos_ids(self, dir_name_list: List[str]):
+        ids = list()
+        passed_dirs = list()
+
+        for dir_name in dir_name_list:
+            id_ = self._get_pk_inside_bracket(string_with_bracket=dir_name)
+            if type(id_) is int:
+                ids.append(self._get_pk_inside_bracket(string_with_bracket=dir_name))
+            else:
+                passed_dirs.append(dir_name)
+
+        return ids, passed_dirs

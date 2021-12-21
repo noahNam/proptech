@@ -13,3 +13,4 @@ class TopicEnum(Enum):
         "tanos.upsert_upload_public_sales_and_detail_image.v1"
     )
     REPLACE_PUBLIC_TO_PRIVATE_SALES = "tanos.replace_public_to_private_sales.v1"
+    CHECK_NOT_UPLOADED_PHOTOS = "tanos.check_not_uploaded_photos.v1"
