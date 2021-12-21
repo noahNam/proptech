@@ -86,7 +86,9 @@ class PublicSaleDetailModel(db.Model):
             area_type=self.area_type,
             special_household=self.special_household,
             general_household=self.general_household,
-            public_sale_detail_photos=self.public_sale_detail_photos.to_entity()
+            public_sale_detail_photos=S3Helper.get_cloudfront_url()
+            + "/"
+            + self.public_sale_detail_photos.path
             if self.public_sale_detail_photos
             else None,
         )

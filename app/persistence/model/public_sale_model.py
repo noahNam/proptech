@@ -1,3 +1,5 @@
+from typing import Optional, List
+
 from sqlalchemy import (
     Column,
     BigInteger,
@@ -16,16 +18,22 @@ from sqlalchemy.orm import relationship, backref
 
 from app import db
 from app.extensions.utils.house_helper import HouseHelper
+from app.extensions.utils.image_helper import S3Helper
 from app.persistence.model.real_estate_model import RealEstateModel
+from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.entity.house_entity import (
     PublicSaleEntity,
     PublicSalePushEntity,
     PublicSaleDetailCalendarEntity,
     PublicSaleReportEntity,
+    HousePublicDetailEntity,
 )
 from core.domains.house.enum.house_enum import (
     RentTypeEnum,
     PreSaleTypeEnum,
+)
+from core.domains.report.entity.report_entity import (
+    TicketUsageResultForHousePublicDetailEntity,
 )
 
 
@@ -238,4 +246,52 @@ class PublicSaleModel(db.Model):
             if self.public_sale_details
             else None,
             real_estates=self.real_estates.to_report_entity(),
+        )
+
+    def to_house_with_public_detail_entity(
+        self,
+        is_like: bool,
+        min_pyoung_number: Optional[float],
+        max_pyoung_number: Optional[float],
+        min_supply_area: Optional[float],
+        max_supply_area: Optional[float],
+        avg_supply_price: Optional[float],
+        supply_price_per_pyoung: Optional[float],
+        min_acquisition_tax: int,
+        max_acquisition_tax: int,
+        min_supply_price: Optional[int],
+        max_supply_price: Optional[int],
+        button_links: List[ButtonLinkEntity],
+        ticket_usage_results: Optional[TicketUsageResultForHousePublicDetailEntity],
+    ) -> HousePublicDetailEntity:
+        return HousePublicDetailEntity(
+            id=self.real_estate_id,
+            name=self.real_estates.name,
+            road_address=self.real_estates.road_address,
+            jibun_address=self.real_estates.jibun_address,
+            si_do=self.real_estates.si_do,
+            si_gun_gu=self.real_estates.si_gun_gu,
+            dong_myun=self.real_estates.dong_myun,
+            ri=self.real_estates.ri,
+            road_name=self.real_estates.road_name,
+            road_number=self.real_estates.road_number,
+            land_number=self.real_estates.land_number,
+            latitude=self.real_estates.latitude,
+            longitude=self.real_estates.longitude,
+            is_available=self.real_estates.is_available,
+            is_like=is_like,
+            min_pyoung_number=min_pyoung_number,
+            max_pyoung_number=max_pyoung_number,
+            min_supply_area=min_supply_area,
+            max_supply_area=max_supply_area,
+            avg_supply_price=avg_supply_price,
+            supply_price_per_pyoung=supply_price_per_pyoung,
+            min_acquisition_tax=min_acquisition_tax,
+            max_acquisition_tax=max_acquisition_tax,
+            min_supply_price=min_supply_price,
+            max_supply_price=max_supply_price,
+            public_sales=self.to_entity(),
+            button_links=button_links if button_links else None,
+            ticket_usage_results=ticket_usage_results if ticket_usage_results else None,
+            report_recently_public_sale_info=self.to_report_entity(),
         )
