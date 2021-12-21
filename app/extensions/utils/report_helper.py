@@ -132,17 +132,14 @@ class ReportHelper:
                 area_type=competition.area_type,
                 special_household=competition.special_household,
                 general_household=competition.general_household,
-                total_househlod=competition.total_household,
+                total_household=competition.total_household,
                 price_per_meter=competition.price_per_meter,
                 private_area=competition.private_area,
                 private_pyoung_number=HouseHelper().convert_area_to_pyoung(
                     competition.private_area
                 ),
-                supply_pyoung_number=HouseHelper().convert_area_to_pyoung(
-                    competition.supply_area
-                ),
-                acquisition_tax=competition.acquisition_tax,
                 pyoung_number=competition.pyoung_number,
+                acquisition_tax=competition.acquisition_tax,
                 supply_area=competition.supply_area,
                 supply_price=competition.supply_price,
                 public_sale_detail_photo=competition.public_sale_detail_photo,
