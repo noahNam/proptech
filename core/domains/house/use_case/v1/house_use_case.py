@@ -1,12 +1,13 @@
 import re
 from http import HTTPStatus
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Dict
 
 import inject
 
 from app.extensions.utils.event_observer import send_message, get_event_object
 from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.image_helper import S3Helper
+from app.extensions.utils.report_helper import ReportHelper
 from app.extensions.utils.time_helper import get_server_timestamp
 from core.domains.banner.entity.banner_entity import (
     BannerEntity,
@@ -51,7 +52,10 @@ from core.domains.house.enum.house_enum import (
     ButtonSectionType,
 )
 from core.domains.house.repository.house_repository import HouseRepository
-from core.domains.post.enum.post_enum import PostCategoryDetailEnum
+from core.domains.house.schema.house_schema import (
+    PublicSaleDetailBaseSchema,
+    HousePublicDetailSchema,
+)
 from core.domains.report.entity.report_entity import (
     TicketUsageResultEntity,
     TicketUsageResultForHousePublicDetailEntity,
@@ -242,6 +246,105 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             return True
         return False
 
+    def _make_response_schema(
+        self,
+        house_public_detail_entity: HousePublicDetailEntity,
+        house_applicants_dict: Dict,
+        public_sale_detail_dict: Dict,
+    ):
+        """
+            For_client - 원하는 형태로 Response 형태 변형
+        """
+        public_sale_photos = None
+        if house_public_detail_entity.public_sales.public_sale_photos:
+            house_public_detail_entity.public_sales.public_sale_photos.sort(
+                key=lambda obj: obj.seq, reverse=False
+            )
+            public_sale_photos = [
+                public_sale_photo.path
+                for public_sale_photo in house_public_detail_entity.public_sales.public_sale_photos
+            ]
+
+        public_sales = PublicSaleDetailBaseSchema(
+            id=house_public_detail_entity.public_sales.id,
+            real_estate_id=house_public_detail_entity.public_sales.real_estate_id,
+            name=house_public_detail_entity.public_sales.name,
+            region=house_public_detail_entity.public_sales.region,
+            housing_category=house_public_detail_entity.public_sales.housing_category,
+            rent_type=house_public_detail_entity.public_sales.rent_type,
+            trade_type=house_public_detail_entity.public_sales.trade_type,
+            construct_company=house_public_detail_entity.public_sales.construct_company,
+            supply_household=house_public_detail_entity.public_sales.supply_household,
+            is_available=house_public_detail_entity.public_sales.is_available,
+            offer_date=house_public_detail_entity.public_sales.offer_date,
+            offer_notice_url=house_public_detail_entity.public_sales.offer_notice_url,
+            subscription_start_date=house_public_detail_entity.public_sales.subscription_start_date,
+            subscription_end_date=house_public_detail_entity.public_sales.subscription_end_date,
+            status=house_public_detail_entity.public_sales.status,
+            special_supply_date=house_public_detail_entity.public_sales.special_supply_date,
+            special_supply_etc_date=house_public_detail_entity.public_sales.special_supply_etc_date,
+            special_etc_gyeonggi_date=house_public_detail_entity.public_sales.special_etc_gyeonggi_date,
+            first_supply_date=house_public_detail_entity.public_sales.first_supply_date,
+            first_supply_etc_date=house_public_detail_entity.public_sales.first_supply_etc_date,
+            first_etc_gyeonggi_date=house_public_detail_entity.public_sales.first_etc_gyeonggi_date,
+            second_supply_date=house_public_detail_entity.public_sales.second_supply_date,
+            second_supply_etc_date=house_public_detail_entity.public_sales.second_supply_etc_date,
+            second_etc_gyeonggi_date=house_public_detail_entity.public_sales.second_etc_gyeonggi_date,
+            notice_winner_date=house_public_detail_entity.public_sales.notice_winner_date,
+            contract_start_date=house_public_detail_entity.public_sales.contract_start_date,
+            contract_end_date=house_public_detail_entity.public_sales.contract_end_date,
+            move_in_year=house_public_detail_entity.public_sales.move_in_year,
+            move_in_month=house_public_detail_entity.public_sales.move_in_month,
+            min_down_payment=house_public_detail_entity.public_sales.min_down_payment,
+            max_down_payment=house_public_detail_entity.public_sales.max_down_payment,
+            down_payment_ratio=house_public_detail_entity.public_sales.down_payment_ratio,
+            reference_url=house_public_detail_entity.public_sales.reference_url,
+            total_household=house_public_detail_entity.public_sales.total_household,
+            total_park_number=house_public_detail_entity.public_sales.total_park_number,
+            top_floor=house_public_detail_entity.public_sales.top_floor,
+            dong_number=house_public_detail_entity.public_sales.dong_number,
+            contract_amount=house_public_detail_entity.public_sales.contract_amount,
+            middle_amount=house_public_detail_entity.public_sales.middle_amount,
+            remain_amount=house_public_detail_entity.public_sales.remain_amount,
+            sale_limit=house_public_detail_entity.public_sales.sale_limit,
+            public_sale_details=public_sale_detail_dict.get("public_sale_details")
+            if public_sale_detail_dict
+            else None,
+        )
+
+        return HousePublicDetailSchema(
+            id=house_public_detail_entity.id,
+            name=house_public_detail_entity.name,
+            road_address=house_public_detail_entity.road_address,
+            jibun_address=house_public_detail_entity.jibun_address,
+            si_do=house_public_detail_entity.si_do,
+            si_gun_gu=house_public_detail_entity.si_gun_gu,
+            dong_myun=house_public_detail_entity.dong_myun,
+            ri=house_public_detail_entity.ri,
+            road_name=house_public_detail_entity.road_name,
+            road_number=house_public_detail_entity.road_number,
+            land_number=house_public_detail_entity.land_number,
+            is_available=house_public_detail_entity.is_available,
+            latitude=house_public_detail_entity.latitude,
+            longitude=house_public_detail_entity.longitude,
+            is_like=house_public_detail_entity.is_like,
+            min_pyoung_number=house_public_detail_entity.min_pyoung_number,
+            max_pyoung_number=house_public_detail_entity.max_pyoung_number,
+            min_supply_area=house_public_detail_entity.min_supply_area,
+            max_supply_area=house_public_detail_entity.max_supply_area,
+            avg_supply_price=house_public_detail_entity.avg_supply_price,
+            min_supply_price=house_public_detail_entity.min_supply_price,
+            max_supply_price=house_public_detail_entity.max_supply_price,
+            supply_price_per_pyoung=house_public_detail_entity.supply_price_per_pyoung,
+            min_acquisition_tax=house_public_detail_entity.min_acquisition_tax,
+            max_acquisition_tax=house_public_detail_entity.max_acquisition_tax,
+            public_sales=public_sales,
+            public_sale_photos=public_sale_photos,
+            button_links=house_public_detail_entity.button_links,
+            ticket_usage_results=house_public_detail_entity.ticket_usage_results,
+            house_applicants=house_applicants_dict,
+        )
+
     def execute(
         self, dto: GetHousePublicDetailDto
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
@@ -257,7 +360,6 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         )
 
         # 분양 매물 상세 query -> house_with_public_sales
-
         (
             house_with_public_sales,
             housing_category,
@@ -298,6 +400,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
                 ):
                     index = idx
                     break
+
             if index >= 0:
                 HouseHelper().sort_predicted_competition(
                     house_type_ranks=ticket_usage_results[index].house_type_ranks
@@ -306,6 +409,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
                     house_type_ranks=ticket_usage_results[index].house_type_ranks
                 )
 
+        # real_estates, public_sales, details, photos, button, ticket
         entities: HousePublicDetailEntity = self._house_repo.make_house_public_detail_entity(
             house_with_public_sales=house_with_public_sales,
             is_like=is_like,
@@ -313,9 +417,18 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             ticket_usage_results=ticket_usage_results,
         )
 
-        self._sort_public_sale_photos(photos=entities.public_sales.public_sale_photos)
-        self._sort_public_sale_detail_photos(
-            details=entities.public_sales.public_sale_details
+        house_applicants_dict: Dict = ReportHelper().make_response_object_to_house_applicants(
+            report_recently_public_sale_info=entities.report_recently_public_sale_info
+        )
+
+        public_sale_detail_dict: Dict = ReportHelper().make_response_object_to_public_sale_details(
+            report_recently_public_sale_info=entities.report_recently_public_sale_info
+        )
+
+        response_schema: HousePublicDetailSchema = self._make_response_schema(
+            house_public_detail_entity=entities,
+            house_applicants_dict=house_applicants_dict,
+            public_sale_detail_dict=public_sale_detail_dict,
         )
 
         recently_view_dto = RecentlyViewDto(
@@ -327,7 +440,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
         # User domain -> 최근 목록 리스트 생성 pypubsub 요청
         self.__create_recently_view(dto=recently_view_dto)
 
-        return UseCaseSuccessOutput(value=entities)
+        return UseCaseSuccessOutput(value=response_schema)
 
     def __create_recently_view(self, dto: RecentlyViewDto) -> None:
         send_message(topic_name=UserTopicEnum.CREATE_RECENTLY_VIEW, dto=dto)
@@ -523,6 +636,8 @@ class BoundingWithinRadiusUseCase(HouseBaseUseCase):
             bounding_filter=bounding_filter,
             private_filters=private_filter,
             public_filters=public_filter,
+            min_area=None,
+            max_area=None,
         )
 
         return UseCaseSuccessOutput(value=bounding_entities)

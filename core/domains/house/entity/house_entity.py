@@ -44,7 +44,7 @@ class PublicSaleDetailEntity(BaseModel):
     special_household: Optional[int]
     general_household: Optional[int]
     total_household: Optional[int]
-    public_sale_detail_photos: PublicSaleDetailPhotoEntity = None
+    public_sale_detail_photos: Optional[str]
 
 
 class PublicSalePhotoEntity(BaseModel):
@@ -105,8 +105,8 @@ class PublicSaleEntity(BaseModel):
 
     created_at: datetime
     updated_at: datetime
-    public_sale_photos: List[PublicSalePhotoEntity] = None
-    public_sale_details: List[PublicSaleDetailEntity] = None
+    public_sale_photos: Optional[List[PublicSalePhotoEntity]]
+    public_sale_details: Optional[List[PublicSaleDetailEntity]]
 
     class Config:
         use_enum_values = True
@@ -192,18 +192,88 @@ class AdministrativeDivisionEntity(BaseModel):
         use_enum_values = True
 
 
+class SpecialSupplyResultReportEntity(BaseModel):
+    region: Optional[str]
+    region_percent: Optional[int]
+    multi_children_vol: Optional[int] = 0
+    newlywed_vol: Optional[int] = 0
+    old_parent_vol: Optional[int] = 0
+    first_life_vol: Optional[int] = 0
+    total_vol: Optional[int] = 0
+
+
+class GeneralSupplyResultReportEntity(BaseModel):
+    region: Optional[str]
+    region_percent: Optional[int]
+    applicant_num: Optional[int] = 0
+    competition_rate: Optional[int] = 0
+    win_point: Optional[int] = 0
+
+
+class PublicSaleDetailReportEntity(BaseModel):
+    id: int
+    public_sales_id: int
+    area_type: str
+    private_area: float
+    supply_area: float
+    supply_price: int
+    acquisition_tax: int
+    special_household: Optional[int]
+    multi_children_household: Optional[int]
+    newlywed_household: Optional[int]
+    old_parent_household: Optional[int]
+    first_life_household: Optional[int]
+    general_household: Optional[int]
+    total_household: Optional[int]
+    pyoung_number: Optional[int] = 0
+    price_per_meter: Optional[int] = 0
+    public_sale_detail_photo: Optional[str]
+    special_supply_results: List[SpecialSupplyResultReportEntity] = None
+    general_supply_results: List[GeneralSupplyResultReportEntity] = None
+
+
+class RealEstateReportEntity(BaseModel):
+    id: int
+    jibun_address: Optional[str]
+    si_do: Optional[str]
+    si_gun_gu: Optional[str]
+    latitude: float
+    longitude: float
+
+
+class PublicSaleReportEntity(BaseModel):
+    id: int
+    name: Optional[str]
+    real_estate_id: int
+    supply_household: int
+    offer_date: Optional[str]
+    special_supply_date: Optional[str]
+    special_supply_etc_date: Optional[str]
+    special_etc_gyeonggi_date: Optional[str]
+    first_supply_date: Optional[str]
+    first_supply_etc_date: Optional[str]
+    first_etc_gyeonggi_date: Optional[str]
+    second_supply_date: Optional[str]
+    second_supply_etc_date: Optional[str]
+    second_etc_gyeonggi_date: Optional[str]
+    notice_winner_date: Optional[str]
+    public_sale_photos: Optional[List[PublicSalePhotoEntity]]
+    public_sale_details: List[PublicSaleDetailReportEntity] = None
+    real_estates: RealEstateReportEntity
+
+
 class HousePublicDetailEntity(BaseModel):
     id: int
     name: Optional[str]
     road_address: Optional[str]
-    jibun_address: str
-    si_do: str
-    si_gun_gu: str
-    dong_myun: str
+    jibun_address: Optional[str]
+    si_do: Optional[str]
+    si_gun_gu: Optional[str]
+    dong_myun: Optional[str]
     ri: Optional[str]
     road_name: Optional[str]
     road_number: Optional[str]
-    land_number: str
+    land_number: Optional[str]
     is_available: bool
     latitude: float
     longitude: float
@@ -216,11 +286,12 @@ class HousePublicDetailEntity(BaseModel):
     min_supply_price: Optional[int]
     max_supply_price: Optional[int]
     supply_price_per_pyoung: Optional[float]
-    min_acquisition_tax: int
-    max_acquisition_tax: int
-    public_sales: PublicSaleEntity = None
-    button_links: List[ButtonLinkEntity] = None
+    min_acquisition_tax: Optional[int]
+    max_acquisition_tax: Optional[int]
+    public_sales: Optional[PublicSaleEntity] = None
+    button_links: Optional[List[ButtonLinkEntity]] = None
     ticket_usage_results: Optional[TicketUsageResultForHousePublicDetailEntity] = None
+    report_recently_public_sale_info: Optional[PublicSaleReportEntity] = None
 
     class Config:
         use_enum_values = True
@@ -354,76 +425,6 @@ class GetHouseMainEntity(BaseModel):
     banner_list: List[BannerEntity] = None
     calendar_infos: List[SimpleCalendarInfoEntity] = None
     recent_public_infos: List[MainRecentPublicInfoEntity] = None
-
-
-class RealEstateReportEntity(BaseModel):
-    id: int
-    jibun_address: Optional[str]
-    si_do: Optional[str]
-    si_gun_gu: Optional[str]
-    latitude: float
-    longitude: float
-
-
-class SpecialSupplyResultReportEntity(BaseModel):
-    region: Optional[str]
-    region_percent: Optional[int]
-    multi_children_vol: Optional[int] = 0
-    newlywed_vol: Optional[int] = 0
-    old_parent_vol: Optional[int] = 0
-    first_life_vol: Optional[int] = 0
-    total_vol: Optional[int] = 0
-
-
-class GeneralSupplyResultReportEntity(BaseModel):
-    region: Optional[str]
-    region_percent: Optional[int]
-    applicant_num: Optional[int] = 0
-    competition_rate: Optional[int] = 0
-    win_point: Optional[int] = 0
-
-
-class PublicSaleDetailReportEntity(BaseModel):
-    id: int
-    public_sales_id: int
-    area_type: str
-    private_area: float
-    supply_area: float
-    supply_price: int
-    acquisition_tax: int
-    special_household: Optional[int]
-    multi_children_household: Optional[int]
-    newlywed_household: Optional[int]
-    old_parent_household: Optional[int]
-    first_life_household: Optional[int]
-    general_household: Optional[int]
-    total_household: Optional[int]
-    pyoung_number: Optional[int] = 0
-    price_per_meter: Optional[int] = 0
-    public_sale_detail_photo: Optional[str]
-    special_supply_results: List[SpecialSupplyResultReportEntity] = None
-    general_supply_results: List[GeneralSupplyResultReportEntity] = None
-
-
-class PublicSaleReportEntity(BaseModel):
-    id: int
-    name: Optional[str]
-    real_estate_id: int
-    supply_household: int
-    offer_date: Optional[str]
-    special_supply_date: Optional[str]
-    special_supply_etc_date: Optional[str]
-    special_etc_gyeonggi_date: Optional[str]
-    first_supply_date: Optional[str]
-    first_supply_etc_date: Optional[str]
-    first_etc_gyeonggi_date: Optional[str]
-    second_supply_date: Optional[str]
-    second_supply_etc_date: Optional[str]
-    second_etc_gyeonggi_date: Optional[str]
-    notice_winner_date: Optional[str]
-    public_sale_photos: Optional[List[PublicSalePhotoEntity]]
-    public_sale_details: List[PublicSaleDetailReportEntity] = None
-    real_estates: RealEstateReportEntity
 
 
 class PrivateSaleAvgPriceTradeEntity(BaseModel):

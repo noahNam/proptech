@@ -66,53 +66,6 @@ class RealEstateModel(db.Model):
         "PublicSaleModel", backref=backref("real_estates"), uselist=False,
     )
 
-    def to_house_with_public_detail_entity(
-        self,
-        is_like: bool,
-        min_pyoung_number: Optional[float],
-        max_pyoung_number: Optional[float],
-        min_supply_area: Optional[float],
-        max_supply_area: Optional[float],
-        avg_supply_price: Optional[float],
-        supply_price_per_pyoung: Optional[float],
-        min_acquisition_tax: int,
-        max_acquisition_tax: int,
-        min_supply_price: Optional[int],
-        max_supply_price: Optional[int],
-        button_links: List[ButtonLinkEntity],
-        ticket_usage_results: Optional[TicketUsageResultForHousePublicDetailEntity],
-    ) -> HousePublicDetailEntity:
-        return HousePublicDetailEntity(
-            id=self.id,
-            name=self.name,
-            road_address=self.road_address,
-            jibun_address=self.jibun_address,
-            si_do=self.si_do,
-            si_gun_gu=self.si_gun_gu,
-            dong_myun=self.dong_myun,
-            ri=self.ri,
-            road_name=self.road_name,
-            road_number=self.road_number,
-            land_number=self.land_number,
-            is_available=self.is_available,
-            latitude=self.latitude,
-            longitude=self.longitude,
-            is_like=is_like,
-            min_pyoung_number=min_pyoung_number,
-            max_pyoung_number=max_pyoung_number,
-            min_supply_area=min_supply_area,
-            max_supply_area=max_supply_area,
-            avg_supply_price=avg_supply_price,
-            supply_price_per_pyoung=supply_price_per_pyoung,
-            min_acquisition_tax=min_acquisition_tax,
-            max_acquisition_tax=max_acquisition_tax,
-            min_supply_price=min_supply_price,
-            max_supply_price=max_supply_price,
-            public_sales=self.public_sales.to_entity() if self.public_sales else None,
-            button_links=button_links if button_links else None,
-            ticket_usage_results=ticket_usage_results if ticket_usage_results else None,
-        )
-
     def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:
         return DetailCalendarInfoEntity(
             is_like=is_like,
