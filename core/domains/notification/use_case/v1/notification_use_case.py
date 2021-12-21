@@ -89,7 +89,11 @@ class GetNotificationUseCase(NotificationBaseUseCase):
                 get_server_timestamp()
                 - notification.created_at.replace(tzinfo=timezone("Asia/Seoul"))
             ).days
-            make_diff_days = "{}일전".format(diff_day) if diff_day <= 7 else "일주일전"
+
+            if diff_day <= 0:
+                make_diff_days = None
+            else:
+                make_diff_days = "{}일전".format(diff_day) if diff_day <= 7 else "일주일전"
 
             message = MessageConverter.get_notification_content(notification.message)
 
