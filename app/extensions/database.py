@@ -25,7 +25,7 @@ class CustomSQLAlchemy(SQLAlchemy):
 
 
 class CustomSession(Session):
-    def __init__(self, db_: CustomSQLAlchemy, autocommit=False, autoflush=True, **kwargs):
+    def __init__(self, db_: CustomSQLAlchemy, autocommit=False, autoflush=True, bind=None, binds=None, **kwargs):
         self.app = db.get_app()
         self.db = db
         self._bind_name = None
