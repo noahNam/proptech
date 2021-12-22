@@ -774,7 +774,7 @@ class HouseRepository:
             )
         )
         query = (
-            session.query(
+            session.using_bind("read_only").query(
                 PublicSaleModel,
                 func.min(PublicSaleDetailModel.supply_area).label("min_supply_area"),
                 func.max(PublicSaleDetailModel.supply_area).label("max_supply_area"),
