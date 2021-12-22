@@ -45,12 +45,13 @@ class NotificationRepository:
         )
         notification_filters.append(NotificationModel.topic.in_(dto.topics))
 
-        notifications = (
+        query = (
             session.query(NotificationModel)
             .filter(*notification_filters)
             .order_by(NotificationModel.created_at.desc())
-            .all()
         )
+
+        notifications = query.all()
         if not notifications:
             return []
 

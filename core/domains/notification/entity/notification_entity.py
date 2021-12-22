@@ -23,6 +23,7 @@ class NotificationHistoryEntity(BaseModel):
     category: str
     created_date: str
     diff_min: str
+    diff_day: Optional[str]
     is_read: bool
     title: str
     content: str
