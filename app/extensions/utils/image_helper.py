@@ -21,10 +21,11 @@ logger = logger_.getLogger(__name__)
 
 class S3Helper:
     @classmethod
-    def upload(cls, bucket, file_name, object_name, extension):
+    def upload(cls, bucket, dir_name, file_name, object_name, extension):
         """
         :param bucket: s3 bucket
         :param file_name: 파일
+        :param dir_name: 폴더 이름
         :param object_name: 저장할 경로 + 파일
         :param object_name: 확장자
         :return:
@@ -65,13 +66,14 @@ class S3Helper:
         return f"https://{CloudFrontEnum.TOADHOME_CLOUD_FRONT_DOMAIN.value}"
 
     @classmethod
-    def get_image_upload_uuid_path(cls, image_table_name, extension):
-        dir_name = image_table_name
+    def get_image_upload_uuid_path(cls, image_table_name, dir_name, extension):
+        image_table_name = image_table_name
+        dir_name = dir_name
         ymd_path = str(datetime.now().year)
         uuid_name = str(uuid4())
         extension = extension
 
-        return "/".join([dir_name, ymd_path, uuid_name + "." + extension,])
+        return "/".join([image_table_name, dir_name, ymd_path, uuid_name + "." + extension,])
 
 
 class ImageHelper:
