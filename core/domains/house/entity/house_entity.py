@@ -404,9 +404,9 @@ class GetMainPreSubscriptionEntity(BaseModel):
 class SimpleCalendarInfoEntity(BaseModel):
     is_like: bool
     id: int
-    name: str
-    road_address: str
-    jibun_address: str
+    name: Optional[str]
+    road_address: Optional[str]
+    jibun_address: Optional[str]
     public_sale: PublicSaleSimpleCalendarEntity = None
 
     class Config:

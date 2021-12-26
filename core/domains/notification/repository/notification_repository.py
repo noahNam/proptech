@@ -46,7 +46,8 @@ class NotificationRepository:
         notification_filters.append(NotificationModel.topic.in_(dto.topics))
 
         query = (
-            session.query(NotificationModel)
+            session.using_bind("read_only")
+            .query(NotificationModel)
             .filter(*notification_filters)
             .order_by(NotificationModel.created_at.desc())
         )
@@ -66,7 +67,10 @@ class NotificationRepository:
         # notification_filters.append(NotificationModel.badge_type == dto.badge_type)
 
         notifications = (
-            session.query(NotificationModel).filter(*notification_filters).all()
+            session.using_bind("read_only")
+            .query(NotificationModel)
+            .filter(*notification_filters)
+            .all()
         )
 
         # 읽지 않은 notification 이 있기 때문에 True 반환
@@ -139,30 +143,51 @@ class NotificationRepository:
         default_filters.append(PublicSaleModel.is_available == True)
 
         # 모집공고일
-        query_cond1 = session.query(
-            PublicSaleModel, literal("offer_date", String).label("message_type")
-        ).filter(*default_filters, PublicSaleModel.offer_date == today)
+        query_cond1 = (
+            session.using_bind("read_only")
+            .query(PublicSaleModel, literal("offer_date", String).label("message_type"))
+            .filter(*default_filters, PublicSaleModel.offer_date == today)
+        )
 
         # 특별공급일
-        query_cond2 = session.query(
-            PublicSaleModel,
-            literal("special_supply_date", String).label("message_type"),
-        ).filter(*default_filters, PublicSaleModel.special_supply_date == today)
+        query_cond2 = (
+            session.using_bind("read_only")
+            .query(
+                PublicSaleModel,
+                literal("special_supply_date", String).label("message_type"),
+            )
+            .filter(*default_filters, PublicSaleModel.special_supply_date == today)
+        )
 
         # 1순위
-        query_cond3 = session.query(
-            PublicSaleModel, literal("first_supply_date", String).label("message_type")
-        ).filter(*default_filters, PublicSaleModel.first_supply_date == today)
+        query_cond3 = (
+            session.using_bind("read_only")
+            .query(
+                PublicSaleModel,
+                literal("first_supply_date", String).label("message_type"),
+            )
+            .filter(*default_filters, PublicSaleModel.first_supply_date == today)
+        )
 
         # 2순위
-        query_cond4 = session.query(
-            PublicSaleModel, literal("second_supply_date", String).label("message_type")
-        ).filter(*default_filters, PublicSaleModel.second_supply_date == today)
+        query_cond4 = (
+            session.using_bind("read_only")
+            .query(
+                PublicSaleModel,
+                literal("second_supply_date", String).label("message_type"),
+            )
+            .filter(*default_filters, PublicSaleModel.second_supply_date == today)
+        )
 
         # 당첨자발표일
-        query_cond5 = session.query(
-            PublicSaleModel, literal("notice_winner_date", String).label("message_type")
-        ).filter(*default_filters, PublicSaleModel.notice_winner_date == today)
+        query_cond5 = (
+            session.using_bind("read_only")
+            .query(
+                PublicSaleModel,
+                literal("notice_winner_date", String).label("message_type"),
+            )
+            .filter(*default_filters, PublicSaleModel.notice_winner_date == today)
+        )
 
         query = query_cond1.union_all(
             query_cond2, query_cond3, query_cond4, query_cond5
@@ -185,7 +210,8 @@ class NotificationRepository:
         filters.append(InterestHouseModel.is_like == True)
 
         query = (
-            session.query(InterestHouseModel)
+            session.using_bind("read_only")
+            .query(InterestHouseModel)
             .options(joinedload(InterestHouseModel.users, innerjoin=True))
             .options(joinedload("users.device", innerjoin=True))
             .options(joinedload("users.receive_push_type", innerjoin=True))
@@ -215,7 +241,11 @@ class NotificationRepository:
             logger.error(f"[NotificationRepository][create_notifications] error : {e}")
 
     def get_notice_push_message(self) -> Optional[NoticeTemplateEntity]:
-        query = session.query(NoticeTemplateModel).filter_by(is_active=True)
+        query = (
+            session.using_bind("read_only")
+            .query(NoticeTemplateModel)
+            .filter_by(is_active=True)
+        )
 
         query_set = query.first()
         if not query_set:
@@ -228,7 +258,8 @@ class NotificationRepository:
         filters.append(UserModel.is_active == True)
 
         query = (
-            session.query(UserModel)
+            session.using_bind("read_only")
+            .query(UserModel)
             .options(joinedload(UserModel.receive_push_type, innerjoin=True))
             .options(joinedload(UserModel.device, innerjoin=True))
             .options(joinedload("device.device_token", innerjoin=True))

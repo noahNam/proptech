@@ -824,7 +824,9 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             os.path.splitext(image_name)[-1].split(".")[1].lower()
                         )
                         path = S3Helper().get_image_upload_uuid_path(
-                            image_table_name=table_name, extension=extension
+                            image_table_name=table_name,
+                            dir_name=dir_name,
+                            extension=extension,
                         )
 
                         public_sale_photos.append(
@@ -850,6 +852,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                         # S3 upload
                         S3Helper().upload(
                             bucket="toadhome-tanos-bucket",
+                            dir_name=dir_name,
                             file_name=file_name,
                             object_name=path,
                             extension=extension,
@@ -876,7 +879,9 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                                 os.path.splitext(image_name)[-1].split(".")[1].lower()
                             )
                             path = S3Helper().get_image_upload_uuid_path(
-                                image_table_name=table_name, extension=extension
+                                image_table_name=table_name,
+                                dir_name=dir_name,
+                                extension=extension,
                             )
                             public_sale_detail_photos.append(
                                 {
@@ -901,6 +906,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             S3Helper().upload(
                                 bucket="toadhome-tanos-bucket",
                                 file_name=file_name,
+                                dir_name=dir_name,
                                 object_name=path,
                                 extension=extension,
                             )
