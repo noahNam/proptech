@@ -6,9 +6,7 @@ from urllib.parse import quote as urlquote
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY") or "auckland"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
-    SQLALCHEMY_BINDS = {
-        "read_only": "sqlite:///:memory:"
-    }
+    SQLALCHEMY_BINDS = {"read_only": "sqlite:///:memory:"}
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_ECHO = False
@@ -64,7 +62,8 @@ class TestConfig(Config):
         os.environ.get("TEST_DATABASE_URL") or "sqlite:///:memory:"
     )
     SQLALCHEMY_BINDS = {
-        "read_only": os.environ.get("TEST_DATABASE_READONLY_PROXY_URL") or "sqlite:///:memory:"
+        "read_only": os.environ.get("TEST_DATABASE_READONLY_PROXY_URL")
+        or "sqlite:///:memory:"
     }
 
     WTF_CSRF_ENABLED = False
@@ -77,7 +76,8 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get("DEV_DATABASE_URL") or "sqlite:///:memory:"
     SENTRY_KEY = os.environ.get("SENTRY_KEY")
     SQLALCHEMY_BINDS = {
-        "read_only": os.environ.get("DEV_DATABASE_READONLY_PROXY_URL") or "sqlite:///:memory:"
+        "read_only": os.environ.get("DEV_DATABASE_READONLY_PROXY_URL")
+        or "sqlite:///:memory:"
     }
 
 
@@ -86,9 +86,7 @@ class ProductionConfig(Config):
     SENTRY_ENVIRONMENT = "production"
     SENTRY_KEY = os.environ.get("SENTRY_KEY")
     SQLALCHEMY_DATABASE_URI = os.environ.get("PROD_DATABASE_URL")
-    SQLALCHEMY_BINDS = {
-        "read_only": os.environ.get("PROD_DATABASE_READONLY_PROXY_URL")
-    }
+    SQLALCHEMY_BINDS = {"read_only": os.environ.get("PROD_DATABASE_READONLY_PROXY_URL")}
 
 
 config = dict(

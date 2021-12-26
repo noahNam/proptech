@@ -38,7 +38,8 @@ class PaymentRepository:
         filters.append(PromotionModel.div == div)
 
         query = (
-            session.query(PromotionModel)
+            session.using_bind("read_only")
+            .query(PromotionModel)
             .join(
                 PromotionUsageCountModel,
                 (PromotionModel.id == PromotionUsageCountModel.promotion_id)
@@ -56,7 +57,11 @@ class PaymentRepository:
         return promotion.to_entity()
 
     def get_number_of_ticket(self, user_id: int) -> int:
-        query = session.query(TicketModel).filter_by(user_id=user_id)
+        query = (
+            session.using_bind("read_only")
+            .query(TicketModel)
+            .filter_by(user_id=user_id)
+        )
         tickets = query.all()
         return self._calc_total_amount(tickets=tickets)
 
@@ -172,7 +177,10 @@ class PaymentRepository:
         self, user_id: int
     ) -> Optional[RecommendCodeEntity]:
         recommend_code = (
-            session.query(RecommendCodeModel).filter_by(user_id=user_id).first()
+            session.using_bind("read_only")
+            .query(RecommendCodeModel)
+            .filter_by(user_id=user_id)
+            .first()
         )
         if not recommend_code:
             return None
@@ -183,7 +191,8 @@ class PaymentRepository:
         self, code: str, code_group: int
     ) -> Optional[RecommendCodeEntity]:
         recommend_code = (
-            session.query(RecommendCodeModel)
+            session.using_bind("read_only")
+            .query(RecommendCodeModel)
             .filter_by(code=code, code_group=code_group)
             .first()
         )
@@ -223,11 +232,17 @@ class PaymentRepository:
             raise Exception
 
     def is_join_ticket(self, user_id: int) -> bool:
-        return session.query(
-            exists()
-            .where(TicketModel.user_id == user_id)
-            .where(TicketModel.type == TicketTypeDivisionEnum.SURVEY_PROMOTION.value)
-        ).scalar()
+        return (
+            session.using_bind("read_only")
+            .query(
+                exists()
+                .where(TicketModel.user_id == user_id)
+                .where(
+                    TicketModel.type == TicketTypeDivisionEnum.SURVEY_PROMOTION.value
+                )
+            )
+            .scalar()
+        )
 
     def create_join_ticket(self, user_id: int) -> None:
         try:

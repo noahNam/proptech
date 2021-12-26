@@ -73,7 +73,9 @@ class S3Helper:
         uuid_name = str(uuid4())
         extension = extension
 
-        return "/".join([image_table_name, dir_name, ymd_path, uuid_name + "." + extension,])
+        return "/".join(
+            [image_table_name, dir_name, ymd_path, uuid_name + "." + extension,]
+        )
 
 
 class ImageHelper:

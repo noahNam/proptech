@@ -15,17 +15,27 @@ class CustomSQLAlchemy(SQLAlchemy):
         if options is None:
             options = {}
 
-        scopefunc = options.pop('scopefunc', None)
-        options.setdefault('query_cls', self.Query)
+        scopefunc = options.pop("scopefunc", None)
+        options.setdefault("query_cls", self.Query)
         return scoped_session(
             # session_factory -> CustomSession 클래스 생성
             # (Lambda 대신 함수 생성시 평가 되는 partial 사용)
-            partial(CustomSession, self, **options), scopefunc=scopefunc
+            partial(CustomSession, self, **options),
+            scopefunc=scopefunc,
         )
 
 
 class CustomSession(Session):
-    def __init__(self, db_: CustomSQLAlchemy, autocommit=False, autoflush=True, bind=None, binds=None, **kwargs):
+    def __init__(
+        self,
+        db_: CustomSQLAlchemy,
+        autocommit=False,
+        autoflush=True,
+        bind=None,
+        binds=None,
+        **kwargs
+    ):
+        # parameter : bind, binds = None -> 사용 하지 않지만 명시적 표시 필요
         self.app = db.get_app()
         self.db = db
         self._bind_name = None
@@ -44,11 +54,12 @@ class CustomSession(Session):
             state = get_state(self.app)
         except (AssertionError, AttributeError, TypeError) as err:
             current_app.logger.info(
-                'Cannot get configuration. default bind. Error:' + err)
+                "Cannot get configuration. default bind. Error:" + err
+            )
             return Session.get_bind(self, mapper, clause)
 
             # SQLALCHEMY_BINDS 설정이 없다면, 기본 SQLALCHEMY_DATABASE_URI 사용
-        if not state or not self.app.config['SQLALCHEMY_BINDS']:
+        if not state or not self.app.config["SQLALCHEMY_BINDS"]:
             return Session.get_bind(self, mapper, clause)
 
             # 명시적 bind 설정
