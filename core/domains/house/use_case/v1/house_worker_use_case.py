@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import sys
@@ -8,6 +9,7 @@ from typing import List, Optional, Dict
 
 import inject
 import requests
+import xmltodict
 from PIL import Image
 from sqlalchemy.orm import Query
 
@@ -24,6 +26,7 @@ from core.domains.house.entity.house_entity import (
     UpdateContractStatusTargetEntity,
     RecentlyContractedEntity,
     CheckIdsRealEstateEntity,
+    AddSupplyAreaEntity,
 )
 from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
@@ -1299,5 +1302,216 @@ class CheckNotUploadedPhotoUseCase(BaseHouseWorkerUseCase):
             f"public_sales_id: {not_uploaded_public_sales_ids} not uploaded photos, "
             f"({len(not_uploaded_public_sales_ids)}/ {len(public_sales_ids)}) \n",
         )
+
+        exit(os.EX_OK)
+
+
+class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
+    """
+        - What : 현재 실거래가에 공급면적이 존재하지 않기 때문에 건축물대장 API를 통해서 추가한다.
+                 원래는 Core DB에 추가해야 하지만 현재 Sam의 리소스가 없기 때문에 Tanos에 먼저 추가하고
+                 MVP 이후에 Core 쪽에 추가한 후 해당 Topic은 삭제한다.
+        - When : 데일리 실거래가가 들어온 직후 Tanos 배치가 돌기전에 돌려야 한다.
+        - API Param
+            1. ServiceKey : dbNxRdjZCqBvSjcfDHnxPgUm0CXIjGhNHSAlbvBxI0BvOu3dpL8t%2FFQ%2BDRE%2FoKPw61Nm0gHxqYTlYEgDxz37aw%3D%3D
+            2. sigunguCd : front_legal_code
+            3. bjdongCd : back_legal_code
+            4. bun : land_number
+            5. ji : land_number
+            6. numOfRows : 10
+
+        - 삭제필요 코드는 전부 옆에와 같이 todo를 달아놈 -> todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    """
+
+    def execute(self):
+        logger.info(f"🚀\tAddSupplyAreaUseCase Start - {self.client_id}")
+        start_time = time()
+
+        # private_sales 중 아파트 건만 데이터를 조회한다.
+        target_list: List[
+            AddSupplyAreaEntity
+        ] = self._house_repo.get_target_of_add_to_supply_area()
+        last_target_id = None  # 실패로그를 위한 변수
+        create_list = list()
+        summary_failure_list = list()
+
+        url = "http://apis.data.go.kr/1613000/BldRgstService_v2/getBrExposPubuseAreaInfo?ServiceKey=dbNxRdjZCqBvSjcfDHnxPgUm0CXIjGhNHSAlbvBxI0BvOu3dpL8t%2FFQ%2BDRE%2FoKPw61Nm0gHxqYTlYEgDxz37aw%3D%3D"
+        try:
+            for target in target_list:
+                last_target_id = target.req_real_estate_id
+                req_land_number = target.req_land_number
+                land_number = req_land_number.split("-")
+                ji = None
+
+                if len(land_number) > 1:
+                    bun = land_number[0].zfill(4)
+                    ji = land_number[1].zfill(4)
+                else:
+                    bun = land_number[0].zfill(4)
+
+                num_of_rows = 10000
+                page_no = 1
+                r_num = None
+
+                while True:
+                    start_call_time = time()
+
+                    request_param = "&numOfRows={}&pageNo={}&sigunguCd={}&bjdongCd={}&bun={}".format(
+                        num_of_rows,
+                        page_no,
+                        target.req_front_legal_code,
+                        target.req_back_legal_code,
+                        bun,
+                    )
+                    if ji:
+                        request_param += "&ji={}".format(ji)
+
+                    response = requests.get(
+                        url=url + request_param,
+                        headers={
+                            "Content-Type": "application/json; charset=utf8",
+                            "Cache-Control": "no-cache",
+                        },
+                    )
+
+                    logger.info(
+                        f"🚀\tcall API! \n"
+                        f"real_estate_id: {target.req_real_estate_id} \n"
+                        f"page_no: {page_no} / front_legal_code: {target.req_front_legal_code} / back_legal_code: {target.req_back_legal_code} \n"
+                        f"bun: {bun} / ji: {ji} \n"
+                        f"records: {time() - start_call_time} secs"
+                    )
+
+                    if response.status_code == 200:
+                        xpars = xmltodict.parse(response.text)
+                        json_data = json.dumps(xpars["response"]["body"])
+                        data = json.loads(json_data)
+
+                        if not data["items"]:
+                            summary_failure_list.append(
+                                dict(
+                                    real_estate_id=target.req_real_estate_id,
+                                    real_estate_name=target.req_real_estate_name,
+                                    private_sales_id=target.req_private_sales_id,
+                                    private_sale_name=target.req_private_sale_name,
+                                    success_yn=False,
+                                )
+                            )
+                            break
+
+                        total_count = data["totalCount"]
+
+                        for item in data["items"]["item"]:
+                            resp_dong_nm = item["dongNm"]
+                            resp_ho_nm = item["hoNm"]
+                            resp_bld_nm = item["bldNm"]  # 아파트 이름
+                            resp_flr_no_nm = item["flrNoNm"]  # 층 이름
+                            resp_area = item["area"]  # 공급면적
+                            resp_jibun_address = item["newPlatPlc"]  # 지번 주소
+                            resp_road_address = item["platPlc"]  # 도로명 주소
+                            resp_etc_purps = item[
+                                "etcPurps"
+                            ]  # 아파트/ 오피스텔 / 펌프실 / 관리 / 주차장 ...
+                            resp_expos_pubuse_gb_cd_nm = item[
+                                "exposPubuseGbCdNm"
+                            ]  # 전유 / 공용
+                            resp_main_atch_gb_cd = item["mainAtchGbCd"]  # 0 / 1
+                            resp_main_atch_gb_cd_nm = item[
+                                "mainAtchGbCdNm"
+                            ]  # 주건축물 / 부속건출물, ....
+                            resp_main_purps_cd = item[
+                                "mainPurpsCd"
+                            ]  # 02001 / 02002~02006 (부속건축물)
+
+                            # 1부터 시작
+                            r_num = item["rnum"]
+
+                            # if not (resp_main_atch_gb_cd == "0" and resp_main_purps_cd == "02001"):
+                            #     continue
+
+                            if resp_main_atch_gb_cd != "0":
+                                continue
+
+                            create_dict = dict(
+                                req_front_legal_code=target.req_front_legal_code,
+                                req_back_legal_code=target.req_back_legal_code,
+                                req_land_number=target.req_land_number,
+                                req_real_estate_id=target.req_real_estate_id,
+                                req_real_estate_name=target.req_real_estate_name,
+                                req_private_sales_id=target.req_private_sales_id,
+                                req_private_sale_name=target.req_private_sale_name,
+                                req_jibun_address=target.req_jibun_address,
+                                req_road_address=target.req_road_address,
+                                resp_rnum=r_num,
+                                resp_total_count=total_count,
+                                resp_name=resp_bld_nm,
+                                resp_dong_nm=resp_dong_nm,
+                                resp_ho_nm=resp_ho_nm,
+                                resp_flr_no_nm=resp_flr_no_nm,
+                                resp_area=resp_area,
+                                resp_jibun_address=resp_jibun_address,
+                                resp_road_address=resp_road_address,
+                                resp_etc_purps=resp_etc_purps,
+                                resp_expos_pubuse_gb_cd_nm=resp_expos_pubuse_gb_cd_nm,
+                                resp_main_atch_gb_cd=resp_main_atch_gb_cd,
+                                resp_main_atch_gb_cd_nm=resp_main_atch_gb_cd_nm,
+                                resp_main_purps_cd=resp_main_purps_cd,
+                            )
+
+                            create_list.append(create_dict)
+
+                        print("real_estate_id -------> ", target.req_real_estate_id)
+                        print("pageNo -------> ", page_no)
+                        print("r_num -------> ", r_num)
+                        print("total_count -------> ", total_count)
+                        print("url -------> ", url + request_param)
+
+                        if int(r_num) < int(total_count):
+                            page_no += 1
+                            continue
+
+                        break
+
+                # bulk insert to temp_supply_area_api
+                if create_list:
+                    self._house_repo.create_temp_supply_area_api(
+                        create_list=create_list
+                    )
+
+                # bulk insert summary_failure_list to temp_summary_supply_area_api
+                if summary_failure_list:
+                    self._house_repo.create_summary_failure_list_to_temp_summary(
+                        create_list=summary_failure_list
+                    )
+
+                create_list = list()
+                summary_failure_list = list()
+
+            # bulk insert summary_create_list to temp_summary_supply_area_api
+            self._house_repo.create_summary_success_list_to_temp_summary()
+
+            logger.info(
+                f"🚀\tAddSupplyAreaUseCase - Done! \n"
+                f"last_target_id: {last_target_id} \n"
+                # f"({len(not_uploaded_public_sales_ids)}/ {len(public_sales_ids)})\n"
+                # f"passed_dirs: {passed_dirs}\n"
+                f"records: {time() - start_time} secs"
+            )
+
+            emoji = "🚀"
+            # self.send_slack_message(
+            #     title=f"{emoji} [CheckNotUploadedPhotoUseCase] >>> 업로드 누락 이미지 체크",
+            #     message=f"CheckNotUploadedPhotoUseCase : Finished !! \n "
+            #     f"records: {time() - start_time} secs \n "
+            #     f"public_sales_id: {not_uploaded_public_sales_ids} not uploaded photos, "
+            #     f"({len(not_uploaded_public_sales_ids)}/ {len(public_sales_ids)}) \n",
+            # )
+
+        except Exception as e:
+            logger.info(
+                f"☠️\tAddSupplyAreaUseCase - Failure! \n"
+                f"last_target_id: {last_target_id} \n"
+                f"records: {time() - start_time} secs"
+            )
 
         exit(os.EX_OK)
