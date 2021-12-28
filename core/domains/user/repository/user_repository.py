@@ -474,6 +474,17 @@ class UserRepository:
             session.query(UserProfileModel).filter_by(nickname=nickname).exists()
         ).scalar()
 
+    def update_device_endpoint(self, device_id: int) -> None:
+        try:
+            session.query(DeviceModel).filter_by(id=device_id).update({"endpoint": ""})
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[UserRepository][update_device_endpoint] device_id : {device_id} error : {e}"
+            )
+            raise Exception(e)
+
     def update_device_token(self, device_token_id: int, fcm_token: str) -> None:
         try:
             session.query(DeviceTokenModel).filter_by(id=device_token_id).update(
@@ -483,7 +494,7 @@ class UserRepository:
         except Exception as e:
             session.rollback()
             logger.error(
-                f"[UserRepository][update_device_token] user_id : {device_token_id} error : {e}"
+                f"[UserRepository][update_device_token] device_token_id : {device_token_id} error : {e}"
             )
             raise Exception(e)
 

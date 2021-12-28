@@ -1018,6 +1018,8 @@ class UpdateFcmTokenUseCase(UserBaseUseCase):
                 code=HTTPStatus.NOT_FOUND,
             )
 
+        self._user_repo.update_device_endpoint(device_id=user.device.id)
+
         self._user_repo.update_device_token(
             device_token_id=user.device.device_token.id, fcm_token=dto.fcm_token
         )
