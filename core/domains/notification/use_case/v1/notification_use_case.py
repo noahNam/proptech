@@ -79,27 +79,23 @@ class GetNotificationUseCase(NotificationBaseUseCase):
         result = list()
 
         for notification in notifications:
-            created_date = notification.created_at.date().strftime("%Y%m%d 09:00:00")
-            make_date = datetime.datetime.strptime(
-                created_date, "%Y%m%d %H:%M:%S"
-            ).replace(tzinfo=timezone("Asia/Seoul"))
+            created_date = notification.created_at
 
-            diff_min = str(round((get_server_timestamp() - make_date).seconds / 60))
-            diff_day = (
-                get_server_timestamp()
-                - notification.created_at.replace(tzinfo=timezone("Asia/Seoul"))
-            ).days
+            diff_min = str(round((get_server_timestamp() - created_date).seconds / 60))
+            diff_day = str(round((get_server_timestamp() - created_date).days))
 
-            if diff_day <= 0:
+            if int(diff_day) <= 0:
                 make_diff_days = None
             else:
-                make_diff_days = "{}일전".format(diff_day) if diff_day <= 7 else "일주일전"
+                make_diff_days = (
+                    "{}일전".format(diff_day) if int(diff_day) <= 7 else "일주일전"
+                )
 
             message = MessageConverter.get_notification_content(notification.message)
 
             notification_history_entity = NotificationHistoryEntity(
                 category=dto.category,
-                created_date=created_date,
+                created_date=notification.created_at.date().strftime("%Y%m%d"),
                 diff_min=diff_min,
                 diff_day=make_diff_days,
                 is_read=notification.is_read,
