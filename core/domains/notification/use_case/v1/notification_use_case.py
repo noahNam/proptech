@@ -53,7 +53,7 @@ class GetNotificationUseCase(NotificationBaseUseCase):
             NotificationEntity
         ] = self._notification_repo.get_notifications(dto=dto)
 
-        result: List[NotificationHistoryEntity] = self._make_history_entitiy(
+        result: List[NotificationHistoryEntity] = self._make_history_entity(
             notifications=notifications, dto=dto
         )
 
@@ -73,29 +73,33 @@ class GetNotificationUseCase(NotificationBaseUseCase):
         topics = topic_dict.get(dto.category)
         dto.topics = topics
 
-    def _make_history_entitiy(
+    def _make_history_entity(
         self, notifications: List[NotificationEntity], dto: GetNotificationDto
     ) -> List[NotificationHistoryEntity]:
         result = list()
 
         for notification in notifications:
-            created_date = notification.created_at
+            created_date = notification.created_at.date().strftime("%Y%m%d 09:00:00")
+            make_date = datetime.datetime.strptime(
+                created_date, "%Y%m%d %H:%M:%S"
+            ).replace(tzinfo=timezone("Asia/Seoul"))
 
-            diff_min = str(round((get_server_timestamp() - created_date).seconds / 60))
-            diff_day = str(round((get_server_timestamp() - created_date).days))
+            diff_min = str(round((get_server_timestamp() - make_date).seconds / 60))
+            diff_day = (
+                get_server_timestamp()
+                - notification.created_at.replace(tzinfo=timezone("Asia/Seoul"))
+            ).days
 
-            if int(diff_day) <= 0:
+            if diff_day <= 0:
                 make_diff_days = None
             else:
-                make_diff_days = (
-                    "{}일전".format(diff_day) if int(diff_day) <= 7 else "일주일전"
-                )
+                make_diff_days = "{}일전".format(diff_day) if diff_day <= 7 else "일주일전"
 
             message = MessageConverter.get_notification_content(notification.message)
 
             notification_history_entity = NotificationHistoryEntity(
                 category=dto.category,
-                created_date=notification.created_at.date().strftime("%Y%m%d"),
+                created_date=created_date,
                 diff_min=diff_min,
                 diff_day=make_diff_days,
                 is_read=notification.is_read,
