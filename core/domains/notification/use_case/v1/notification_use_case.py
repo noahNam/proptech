@@ -53,7 +53,7 @@ class GetNotificationUseCase(NotificationBaseUseCase):
             NotificationEntity
         ] = self._notification_repo.get_notifications(dto=dto)
 
-        result: List[NotificationHistoryEntity] = self._make_history_entitiy(
+        result: List[NotificationHistoryEntity] = self._make_history_entity(
             notifications=notifications, dto=dto
         )
 
@@ -73,7 +73,7 @@ class GetNotificationUseCase(NotificationBaseUseCase):
         topics = topic_dict.get(dto.category)
         dto.topics = topics
 
-    def _make_history_entitiy(
+    def _make_history_entity(
         self, notifications: List[NotificationEntity], dto: GetNotificationDto
     ) -> List[NotificationHistoryEntity]:
         result = list()
