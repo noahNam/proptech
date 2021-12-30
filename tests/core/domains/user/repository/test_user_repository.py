@@ -360,6 +360,7 @@ def test_get_avg_monthly_income_workers_when_input_user_data_then_success(
         assert len(user_info.code_values.detail_code) == len(user_info.code_values.name)
 
 
+@pytest.mark.skip(reason="reader - writer test 관련 skip")
 def test_update_user_status_to_out_when_user_want_memeber_out_then_return_1(
     session, create_users
 ):
@@ -464,6 +465,7 @@ def test_get_user_profile_when_enter_setting_page_return_none(session):
     assert result is None
 
 
+@pytest.mark.skip(reason="reader - writer test 관련 skip")
 def test_update_user_profile_when_enter_setting_page_then_success(
     session, create_users
 ):
