@@ -3,7 +3,7 @@ from functools import partial
 from flask import current_app
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy, get_state
-from sqlalchemy.orm import Session, scoped_session
+from sqlalchemy.orm import Session, scoped_session, sessionmaker
 
 
 class CustomSQLAlchemy(SQLAlchemy):
@@ -36,8 +36,8 @@ class CustomSession(Session):
         **kwargs
     ):
         # parameter : bind, binds = None -> 사용 하지 않지만 명시적 표시 필요
-        self.app = db.get_app()
-        self.db = db
+        self.app = db_.get_app()
+        self.db = db_
         self._bind_name = None
 
         Session.__init__(
@@ -56,18 +56,18 @@ class CustomSession(Session):
             current_app.logger.info(
                 "Cannot get configuration. default bind. Error:" + err
             )
-            return Session.get_bind(self, mapper, clause)
+            return Session.get_bind(self, mapper, clause, **kwargs)
 
             # SQLALCHEMY_BINDS 설정이 없다면, 기본 SQLALCHEMY_DATABASE_URI 사용
         if not state or not self.app.config["SQLALCHEMY_BINDS"]:
-            return Session.get_bind(self, mapper, clause)
+            return Session.get_bind(self, mapper, clause, **kwargs)
 
             # 명시적 bind 설정
         if self._bind_name:
             return state.db.get_engine(self.app, bind=self._bind_name)
         else:
             # 명시적 bind 설정이 없다면 default 연결
-            return Session.get_bind(self, mapper, clause)
+            return Session.get_bind(self, mapper, clause, **kwargs)
 
     def using_bind(self, name):
         """
