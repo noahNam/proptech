@@ -13,6 +13,8 @@ from app.extensions.database import session
 from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.math_helper import MathHelper
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
@@ -29,6 +31,10 @@ from app.persistence.model import (
     GeneralSupplyResultModel,
     PublicSaleDetailPhotoModel,
 )
+from app.persistence.model.temp_summary_supply_area_api_model import (
+    TempSummarySupplyAreaApiModel,
+)
+from app.persistence.model.temp_supply_area_api_model import TempSupplyAreaApiModel
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.dto.house_dto import (
     CoordinatesRangeDto,
@@ -57,6 +63,7 @@ from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     NearHouseEntity,
     CheckIdsRealEstateEntity,
+    AddSupplyAreaEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -3305,3 +3312,184 @@ class HouseRepository:
         if query.scalar():
             return True
         return False
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def get_target_of_add_to_supply_area(self,) -> Optional[List[AddSupplyAreaEntity]]:
+        """
+            연립다세대 제외
+        """
+        target_list = list()
+        filters = list()
+        today = get_server_timestamp().strftime("%Y-%m-%d")
+        filters.append(
+            and_(
+                RealEstateModel.is_available == "True",
+                PrivateSaleModel.is_available == "True",
+                PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+                # func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+            )
+            # | and_(
+            #     PrivateSaleModel.is_available == "True",
+            #     PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+            #     func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
+            # )
+        )
+        query = (
+            session.query(RealEstateModel)
+            .with_entities(
+                RealEstateModel.front_legal_code,
+                RealEstateModel.back_legal_code,
+                RealEstateModel.land_number,
+                RealEstateModel.id,
+                RealEstateModel.name,
+                PrivateSaleModel.id.label("private_sales_id"),
+                PrivateSaleModel.name.label("private_sale_name"),
+                RealEstateModel.jibun_address,
+                RealEstateModel.road_address,
+            )
+            .join(
+                PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
+            )
+            .filter(*filters)
+            .order_by(RealEstateModel.id)
+            .limit(5000)
+        )
+
+        print("-----------------------")
+        RawQueryHelper.print_raw_query(query)
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        for query in query_set:
+            target_list.append(
+                AddSupplyAreaEntity(
+                    req_front_legal_code=query.front_legal_code,
+                    req_back_legal_code=query.back_legal_code,
+                    req_land_number=query.land_number,
+                    req_real_estate_id=query.id,
+                    req_real_estate_name=query.name,
+                    req_private_sales_id=query.private_sales_id,
+                    req_private_sale_name=query.private_sale_name,
+                    req_jibun_address=query.jibun_address,
+                    req_road_address=query.road_address,
+                )
+            )
+
+        return target_list
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def create_temp_supply_area_api(self, create_list: List[dict]) -> None:
+        try:
+            session.bulk_insert_mappings(
+                TempSupplyAreaApiModel, [create_info for create_info in create_list]
+            )
+
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(f"[HouseRepository][create_temp_supply_area_api] error : {e}")
+            raise NotUniqueErrorException
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def create_summary_failure_list_to_temp_summary(
+        self, create_list: List[dict]
+    ) -> None:
+        try:
+            session.bulk_insert_mappings(
+                TempSummarySupplyAreaApiModel,
+                [create_info for create_info in create_list],
+            )
+
+            session.commit()
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][create_temp_summary_supply_area_api] error : {e}"
+            )
+            raise NotUniqueErrorException
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def create_summary_success_list_to_temp_summary(self) -> None:
+        create_list = list()
+
+        try:
+            sub_query = (
+                session.query(TempSupplyAreaApiModel)
+                .with_entities(
+                    TempSupplyAreaApiModel.req_real_estate_id,
+                    TempSupplyAreaApiModel.req_real_estate_name,
+                    TempSupplyAreaApiModel.req_private_sales_id,
+                    TempSupplyAreaApiModel.req_private_sale_name,
+                    func.coalesce(func.sum(TempSupplyAreaApiModel.resp_area), 0).label(
+                        "supply_area"
+                    ),
+                    func.max(TempSupplyAreaApiModel.resp_area).label("private_area"),
+                )
+                .group_by(
+                    TempSupplyAreaApiModel.req_real_estate_id,
+                    TempSupplyAreaApiModel.req_real_estate_name,
+                    TempSupplyAreaApiModel.req_private_sales_id,
+                    TempSupplyAreaApiModel.req_private_sale_name,
+                    TempSupplyAreaApiModel.resp_name,
+                    TempSupplyAreaApiModel.resp_dong_nm,
+                    TempSupplyAreaApiModel.resp_ho_nm,
+                )
+            ).subquery()
+
+            query = (
+                session.query(sub_query)
+                .with_entities(
+                    sub_query.c.req_real_estate_id,
+                    func.max(sub_query.c.req_real_estate_name).label(
+                        "req_real_estate_name"
+                    ),
+                    sub_query.c.req_private_sales_id,
+                    func.max(sub_query.c.req_private_sale_name).label(
+                        "req_private_sale_name"
+                    ),
+                    sub_query.c.private_area,
+                    sub_query.c.supply_area,
+                )
+                .group_by(
+                    sub_query.c.req_real_estate_id,
+                    sub_query.c.req_private_sales_id,
+                    sub_query.c.private_area,
+                    sub_query.c.supply_area,
+                )
+                .order_by(
+                    sub_query.c.req_real_estate_id,
+                    sub_query.c.req_private_sales_id,
+                    sub_query.c.private_area,
+                )
+            )
+
+            query_set = query.all()
+
+            for query in query_set:
+                create_list.append(
+                    dict(
+                        real_estate_id=query.req_real_estate_id,
+                        real_estate_name=query.req_real_estate_name,
+                        private_sales_id=query.req_private_sales_id,
+                        private_sale_name=query.req_private_sale_name,
+                        private_area=query.private_area,
+                        supply_area=MathHelper.round(query.supply_area, 2),
+                        success_yn=True,
+                    )
+                )
+
+            session.bulk_insert_mappings(
+                TempSummarySupplyAreaApiModel,
+                [create_info for create_info in create_list],
+            )
+
+            session.commit()
+
+        except exc.IntegrityError as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][create_temp_summary_supply_area_api] error : {e}"
+            )
+            raise NotUniqueErrorException

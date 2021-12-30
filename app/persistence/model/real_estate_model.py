@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
@@ -12,16 +12,12 @@ from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, backref, column_property
 
 from app import db
-from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.entity.house_entity import (
-    HousePublicDetailEntity,
     DetailCalendarInfoEntity,
     SimpleCalendarInfoEntity,
     RealEstateReportEntity,
     RealEstateLegalCodeEntity,
-)
-from core.domains.report.entity.report_entity import (
-    TicketUsageResultForHousePublicDetailEntity,
+    AddSupplyAreaEntity,
 )
 
 
@@ -122,3 +118,32 @@ class RealEstateModel(db.Model):
                 if self.dong_myun != ""
                 else f"{self.si_do} {self.si_gun_gu}"
             )
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def to_add_supply_area_entity(self) -> Optional[AddSupplyAreaEntity]:
+        return AddSupplyAreaEntity(
+            req_front_legal_code=self.req_front_legal_code,
+            req_back_legal_code=self.req_back_legal_code,
+            req_land_number=self.req_land_number,
+            req_real_estate_id=self.req_real_estate_id,
+            req_real_estate_name=self.req_real_estate_name,
+            req_private_sales_id=self.req_private_sales_id,
+            req_private_sale_name=self.req_private_sale_name,
+            req_jibun_address=self.req_jibun_address,
+            req_road_address=self.req_road_address,
+            resp_rnum=self.resp_rnum,
+            resp_total_count=self.resp_total_count,
+            resp_name=self.resp_name,
+            resp_dong_nm=self.resp_dong_nm,
+            resp_ho_nm=self.resp_ho_nm,
+            resp_flr_no_nm=self.resp_flr_no_nm,
+            resp_area=self.resp_area,
+            resp_jibun_address=self.resp_jibun_address,
+            resp_road_address=self.resp_road_address,
+            resp_expos_pubuse_gb_cd_nm=self.resp_expos_pubuse_gb_cd_nm,
+            resp_main_atch_gb_cd=self.resp_main_atch_gb_cd,
+            resp_main_atch_gb_cd_nm=self.resp_main_atch_gb_cd_nm,
+            resp_main_purps_cd=self.resp_main_purps_cd,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
+        )
