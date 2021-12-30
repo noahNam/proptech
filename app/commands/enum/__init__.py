@@ -14,3 +14,6 @@ class TopicEnum(Enum):
     )
     REPLACE_PUBLIC_TO_PRIVATE_SALES = "tanos.replace_public_to_private_sales.v1"
     CHECK_NOT_UPLOADED_PHOTOS = "tanos.check_not_uploaded_photos.v1"
+    ADD_SUPPLY_AREA_TO_PRIVATE_SALE_DETAILS = (
+        "tanos.add_supply_area_to_private_sale_details.v1"
+    )
