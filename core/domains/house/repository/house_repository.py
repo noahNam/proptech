@@ -1850,7 +1850,6 @@ class HouseRepository:
                 "max_trade_contract_date": recent_info.max_trade_contract_date,
                 "max_deposit_contract_date": recent_info.max_deposit_contract_date,
                 "id": recent_info.private_sale_avg_price_id,
-                "updated_at": get_server_timestamp(),
             }
 
             if recent_info.private_sale_avg_price_id:
@@ -2161,7 +2160,6 @@ class HouseRepository:
             "supply_price": default_info["supply_price"],
             "avg_competition": competition_and_score_info["avg_competition"],
             "min_score": competition_and_score_info["min_score"],
-            "updated_at": get_server_timestamp(),
         }
         public_sale_avg_price_id = self._is_exists_public_sale_avg_prices(
             public_sales_id=avg_price_info["public_sales_id"],
