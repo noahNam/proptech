@@ -75,7 +75,6 @@ def test_get_post_list_include_contents_view_when_watch_notice_then_return_pagin
     assert meta["cursor"]["last_post_id"] == 1
 
 
-@pytest.mark.skip(reason="reader - writer test 관련 skip")
 def test_update_post_read_count_view_when_watch_notice_and_faq_then_return_success(
     client,
     session,

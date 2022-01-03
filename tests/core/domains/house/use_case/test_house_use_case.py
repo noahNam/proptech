@@ -210,7 +210,6 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
     assert result.value == mock_get_bounding.return_value
 
 
-@pytest.mark.skip(reason="reader - writer test 관련 skip")
 def test_get_house_public_detail_use_case_when_enable_public_sale_house(
     session,
     create_interest_house,

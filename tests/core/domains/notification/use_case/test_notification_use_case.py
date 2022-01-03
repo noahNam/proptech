@@ -54,7 +54,6 @@ def test_get_notification_use_case_when_my_category_then_return_two_result(
     assert result.value[1].data["topic"] == NotificationTopicEnum.SUB_SCHEDULE.value
 
 
-@pytest.mark.skip(reason="reader - writer test 관련 skip")
 def test_update_notification_use_case_when_read_push_then_success(
     session, create_users, create_notifications
 ):
