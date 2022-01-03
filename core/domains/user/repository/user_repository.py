@@ -471,15 +471,11 @@ class UserRepository:
     ) -> None:
         try:
             session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
-                {
-                    "nickname": dto.value,
-                    "last_update_code": dto.code,
-                    "updated_at": get_server_timestamp(),
-                }
+                {"nickname": dto.value, "last_update_code": dto.code,}
             )
             session.query(UserInfoModel).filter_by(
                 user_profile_id=dto.user_profile_id, code=dto.code
-            ).update({"value": dto.value, "updated_at": get_server_timestamp()})
+            ).update({"value": dto.value})
 
             session.commit()
         except Exception as e:

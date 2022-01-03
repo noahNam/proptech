@@ -1,3 +1,4 @@
+import datetime
 import re
 from datetime import timedelta
 from enum import Enum
@@ -730,10 +731,7 @@ class HouseRepository:
 
     def _is_enable_real_estate(self, real_estate_id: int) -> bool:
         real_estate = (
-            session.using_bind("read_only")
-            .query(RealEstateModel)
-            .filter_by(id=real_estate_id)
-            .first()
+            session.query(RealEstateModel).filter_by(id=real_estate_id).first()
         )
 
         if not real_estate or real_estate.is_available == "False":
@@ -742,12 +740,7 @@ class HouseRepository:
 
     def is_enable_public_sale_house(self, house_id: int) -> bool:
         try:
-            house = (
-                session.using_bind("read_only")
-                .query(PublicSaleModel)
-                .filter_by(id=house_id)
-                .first()
-            )
+            house = session.query(PublicSaleModel).filter_by(id=house_id).first()
         except Exception:
             house = None
 
@@ -760,8 +753,7 @@ class HouseRepository:
     def is_enable_public_sale_detail_info(self, public_sale_details_id: int) -> bool:
         try:
             detail_info = (
-                session.using_bind("read_only")
-                .query(PublicSaleDetailModel)
+                session.query(PublicSaleDetailModel)
                 .filter_by(id=public_sale_details_id)
                 .first()
             )

@@ -3,7 +3,7 @@ from functools import partial
 from flask import current_app
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy, get_state
-from sqlalchemy.orm import Session, scoped_session, sessionmaker
+from sqlalchemy.orm import Session, scoped_session
 
 
 class CustomSQLAlchemy(SQLAlchemy):
@@ -19,7 +19,6 @@ class CustomSQLAlchemy(SQLAlchemy):
         options.setdefault("query_cls", self.Query)
         return scoped_session(
             # session_factory -> CustomSession 클래스 생성
-            # (Lambda 대신 함수 생성시 평가 되는 partial 사용)
             partial(CustomSession, self, **options),
             scopefunc=scopefunc,
         )
@@ -73,14 +72,16 @@ class CustomSession(Session):
         """
             새로운 session 객체 생성 후 bind 정보 업데이트
         """
+        if self.app.config.get("TESTING"):
+            # 테스트 중에는 using_bind("read_only")를 통해 reader bind 호출시, 동일한 기존 세션 반환
+            # session: app.extensions.database.session, Not self
+            return session
         bind_session = CustomSession(self.db)
         vars(bind_session).update(vars(self))
         bind_session._bind_name = name
         return bind_session
 
 
-# db = SQLAlchemy()
 db = CustomSQLAlchemy()
 migrate = Migrate()
-# session: Session = db.session
 session: CustomSession = db.session

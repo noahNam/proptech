@@ -1,12 +1,12 @@
 import os
-from unittest.mock import patch
 
 from flask import Flask
 from pytest_factoryboy import register
-from sqlalchemy.orm import scoped_session, Session
+from sqlalchemy.orm import scoped_session
+
 from app import create_app
 from app.extensions import SmsClient, RedisClient
-from app.extensions.database import db as _db, CustomSQLAlchemy, CustomSession
+from app.extensions.database import db as _db, CustomSQLAlchemy
 from .seeder.conftest import *
 
 
@@ -69,9 +69,7 @@ def session(db: CustomSQLAlchemy) -> scoped_session:
 
     set_factories_session(session)
 
-    with patch("app.extensions.database.CustomSession.using_bind") as mock_using_bind:
-        mock_using_bind.return_value = session
-        yield db.session
+    yield db.session
 
     transaction.rollback()
     connection.close()
