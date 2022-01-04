@@ -58,13 +58,8 @@ class LocalConfig(Config):
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = (
-        os.environ.get("TEST_DATABASE_URL") or "sqlite:///:memory:"
-    )
-    SQLALCHEMY_BINDS = {
-        "read_only": os.environ.get("TEST_DATABASE_READONLY_PROXY_URL")
-        or "sqlite:///:memory:"
-    }
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_BINDS = {"read_only": "sqlite:///:memory:"}
 
     WTF_CSRF_ENABLED = False
 
@@ -76,8 +71,7 @@ class DevelopmentConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get("DEV_DATABASE_URL") or "sqlite:///:memory:"
     SENTRY_KEY = os.environ.get("SENTRY_KEY")
     SQLALCHEMY_BINDS = {
-        "read_only": os.environ.get("DEV_DATABASE_READONLY_PROXY_URL")
-        or "sqlite:///:memory:"
+        "read_only": SQLALCHEMY_DATABASE_URI
     }
 
 
