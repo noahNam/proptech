@@ -667,7 +667,7 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                     name=query.name,
                     status=HouseHelper().public_status(
                         offer_date=query.offer_date,
-                        subscription_end_date=query.subscription_end_date,
+                        end_date=query.subscription_end_date,
                     ),
                     si_do=query.si_do,
                     public_sale_photo=S3Helper().get_cloudfront_url()
