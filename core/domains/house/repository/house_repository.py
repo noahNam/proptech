@@ -634,8 +634,7 @@ class HouseRepository:
         if query_set:
             for query in query_set:
                 status = HouseHelper.public_status(
-                    offer_date=query.offer_date,
-                    subscription_end_date=query.subscription_end_date,
+                    offer_date=query.offer_date, end_date=query.subscription_end_date,
                 )
 
                 avg_competition, min_score = None, None
@@ -1226,7 +1225,7 @@ class HouseRepository:
                         subscription_end_date=query.subscription_end_date,
                         status=HouseHelper().public_status(
                             offer_date=query.offer_date,
-                            subscription_end_date=query.subscription_end_date,
+                            end_date=query.subscription_end_date,
                         ),
                         avg_down_payment=avg_down_payment,
                         avg_supply_price=query.avg_supply_price

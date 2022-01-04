@@ -415,7 +415,7 @@ def test_house_public_detail_view_when_valid_request_id(
         subscription_end_date=public_sales.subscription_end_date,
         status=HouseHelper().public_status(
             offer_date=public_sales.offer_date,
-            subscription_end_date=public_sales.subscription_end_date,
+            end_date=public_sales.subscription_end_date,
         ),
         special_supply_date=public_sales.special_supply_date,
         special_supply_etc_date=public_sales.special_supply_etc_date,

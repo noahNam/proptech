@@ -65,6 +65,9 @@ create_app_agree_term_dto = CreateAppAgreeTermsDto(
     receive_marketing_yn=False,
 )
 
+upsert_user_info_detail_dto = UpsertUserInfoDto(
+    user_id=1, user_profile_id=1, codes=[1005], values=["1"]
+)
 
 upsert_user_info_detail_dto = UpsertUserInfoDetailDto(
     user_id=1, user_profile_id=1, code=1005, value="1"
