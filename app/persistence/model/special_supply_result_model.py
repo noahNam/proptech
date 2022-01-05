@@ -5,6 +5,7 @@ from sqlalchemy import (
     ForeignKey,
     String,
     SmallInteger,
+    UniqueConstraint,
 )
 
 from app import db
@@ -14,6 +15,7 @@ from core.domains.house.entity.house_entity import SpecialSupplyResultReportEnti
 
 class SpecialSupplyResultModel(db.Model):
     __tablename__ = "special_supply_results"
+    __table_args__ = (UniqueConstraint("public_sale_details_id", "region"),)
 
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"),

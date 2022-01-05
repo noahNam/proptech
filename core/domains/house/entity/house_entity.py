@@ -599,3 +599,57 @@ class AddSupplyAreaEntity(BaseModel):
     resp_main_purps_cd: Optional[str]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
+
+
+# todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+class BindTargetSupplyAreaEntity(BaseModel):
+    real_estate_name: Optional[str]
+    private_sale_name: Optional[str]
+    real_estate_id: Optional[int]
+    private_sales_id: Optional[int]
+    private_area: Optional[float]
+    supply_area: Optional[float]
+    front_legal_code: Optional[str]
+    back_legal_code: Optional[str]
+    jibun_address: Optional[str]
+    road_address: Optional[str]
+    land_number: Optional[str]
+    ref_summary_id: Optional[int]
+
+
+# todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+class BindSuccessSupplyAreaEntity(BaseModel):
+    real_estate_name: Optional[str]
+    private_sale_name: Optional[str]
+    real_estate_id: Optional[int]
+    private_sales_id: Optional[int]
+    private_area: Optional[float]
+    supply_area: Optional[float]
+    front_legal_code: Optional[str]
+    back_legal_code: Optional[str]
+    jibun_address: Optional[str]
+    road_address: Optional[str]
+    land_number: Optional[str]
+    ref_summary_id: Optional[int]
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+
+
+# todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+class BindFailureSupplyAreaEntity(BaseModel):
+    real_estate_name: Optional[str]
+    private_sale_name: Optional[str]
+    real_estate_id: Optional[int]
+    private_sales_id: Optional[int]
+    private_area: Optional[float]
+    supply_area: Optional[float]
+    front_legal_code: Optional[str]
+    back_legal_code: Optional[str]
+    jibun_address: Optional[str]
+    road_address: Optional[str]
+    land_number: Optional[str]
+    failure_reason: Optional[str]
+    is_done: Optional[bool]
+    ref_summary_id: Optional[int]
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
