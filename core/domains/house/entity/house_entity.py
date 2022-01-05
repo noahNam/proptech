@@ -278,6 +278,7 @@ class HousePublicDetailEntity(BaseModel):
     latitude: float
     longitude: float
     is_like: bool
+    is_special_supply_finished: bool
     min_pyoung_number: Optional[float]
     max_pyoung_number: Optional[float]
     min_supply_area: Optional[float]
