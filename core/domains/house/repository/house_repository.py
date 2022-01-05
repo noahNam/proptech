@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Optional, List, Any, Tuple, Union
 
 from geoalchemy2 import Geometry
-from sqlalchemy import and_, func, or_, literal, String, exists, Integer, case
+from sqlalchemy import and_, func, or_, literal, String, exists, Integer, case, Numeric
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased, Query
 from sqlalchemy.sql.functions import _FunctionGenerator
@@ -31,6 +31,12 @@ from app.persistence.model import (
     PrivateSaleAvgPriceModel,
     GeneralSupplyResultModel,
     PublicSaleDetailPhotoModel,
+)
+from app.persistence.model.temp_failure_supply_area_model import (
+    TempFailureSupplyAreaModel,
+)
+from app.persistence.model.temp_success_supply_area_model import (
+    TempSuccessSupplyAreaModel,
 )
 from app.persistence.model.temp_summary_supply_area_api_model import (
     TempSummarySupplyAreaApiModel,
@@ -65,6 +71,9 @@ from core.domains.house.entity.house_entity import (
     NearHouseEntity,
     CheckIdsRealEstateEntity,
     AddSupplyAreaEntity,
+    BindSuccessSupplyAreaEntity,
+    BindTargetSupplyAreaEntity,
+    BindFailureSupplyAreaEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -3315,12 +3324,13 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-                # func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
             )
-            # | and_(
-            #     PrivateSaleModel.is_available == "True",
-            #     PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-            #     func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
+            # &
+            # and_(
+            #     or_(
+            #         func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+            #         func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
+            #     )
             # )
         )
         query = (
@@ -3340,8 +3350,9 @@ class HouseRepository:
                 PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
             )
             .filter(*filters)
+            .filter(RealEstateModel.id > 305289)
             .order_by(RealEstateModel.id)
-            .limit(5000)
+            .limit(10000)
         )
 
         print("-----------------------")
@@ -3439,13 +3450,14 @@ class HouseRepository:
                         "req_private_sale_name"
                     ),
                     sub_query.c.private_area,
-                    sub_query.c.supply_area,
+                    func.cast(func.min(sub_query.c.supply_area), Numeric).label(
+                        "supply_area"
+                    ),
                 )
                 .group_by(
                     sub_query.c.req_real_estate_id,
                     sub_query.c.req_private_sales_id,
                     sub_query.c.private_area,
-                    sub_query.c.supply_area,
                 )
                 .order_by(
                     sub_query.c.req_real_estate_id,
@@ -3455,6 +3467,8 @@ class HouseRepository:
             )
 
             query_set = query.all()
+            print("------")
+            RawQueryHelper.print_raw_query(query)
 
             for query in query_set:
                 create_list.append(
@@ -3464,7 +3478,7 @@ class HouseRepository:
                         private_sales_id=query.req_private_sales_id,
                         private_sale_name=query.req_private_sale_name,
                         private_area=query.private_area,
-                        supply_area=MathHelper.round(query.supply_area, 2),
+                        supply_area=query.supply_area,
                         success_yn=True,
                     )
                 )
@@ -3480,5 +3494,173 @@ class HouseRepository:
             session.rollback()
             logger.error(
                 f"[HouseRepository][create_temp_summary_supply_area_api] error : {e}"
+            )
+            raise NotUniqueErrorException
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def get_private_sales_target_ids_for_supply_area(
+        self,
+    ) -> Optional[List[BindTargetSupplyAreaEntity]]:
+        """
+             연립다세대 제외
+         """
+        target_list = list()
+        filters = list()
+        today = get_server_timestamp().strftime("%Y-%m-%d")
+        filters.append(
+            and_(
+                RealEstateModel.is_available == "True",
+                PrivateSaleModel.is_available == "True",
+                PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+            )
+            # &
+            # and_(
+            #     or_(
+            #         func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+            #         func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
+            #     )
+            # )
+        )
+        query = (
+            session.query(RealEstateModel)
+            .with_entities(
+                RealEstateModel.front_legal_code,
+                RealEstateModel.back_legal_code,
+                RealEstateModel.land_number,
+                RealEstateModel.id,
+                RealEstateModel.name,
+                PrivateSaleModel.id.label("private_sales_id"),
+                PrivateSaleModel.name.label("private_sale_name"),
+                RealEstateModel.jibun_address,
+                RealEstateModel.road_address,
+                TempSummarySupplyAreaApiModel.private_area,
+                TempSummarySupplyAreaApiModel.supply_area,
+                TempSummarySupplyAreaApiModel.id.label("ref_summary_id"),
+            )
+            .join(
+                PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
+            )
+            .join(
+                TempSummarySupplyAreaApiModel,
+                RealEstateModel.id == TempSummarySupplyAreaApiModel.real_estate_id,
+                isouter=True,
+            )
+            .filter(*filters)
+            .filter(RealEstateModel.id.in_(365081, 331714))
+            .order_by(RealEstateModel.id)
+            .limit(5000)
+        )
+
+        print("-----------------------")
+        RawQueryHelper.print_raw_query(query)
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        for query in query_set:
+            target_list.append(
+                BindTargetSupplyAreaEntity(
+                    real_estate_name=query.name,
+                    private_sale_name=query.private_sale_name,
+                    real_estate_id=query.id,
+                    private_sales_id=query.private_sales_id,
+                    private_area=query.private_area,
+                    supply_area=query.supply_area,
+                    front_legal_code=query.front_legal_code,
+                    back_legal_code=query.back_legal_code,
+                    jibun_address=query.jibun_address,
+                    road_address=query.road_address,
+                    land_number=query.land_number,
+                    ref_summary_id=query.ref_summary_id,
+                )
+            )
+
+        return target_list
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def create_temp_success_supply_area(
+        self,
+        create_list: List[BindSuccessSupplyAreaEntity],
+        failure_list: List[BindFailureSupplyAreaEntity],
+    ) -> None:
+        for obj in create_list:
+            try:
+                session.query(PrivateSaleDetailModel).filter(
+                    PrivateSaleDetailModel.private_sales_id == obj.private_sales_id,
+                    PrivateSaleDetailModel.private_area == obj.private_area,
+                    PrivateSaleDetailModel.supply_area == 0,
+                ).update({"supply_area": obj.supply_area})
+
+                temp_success_supply_area = TempSuccessSupplyAreaModel(
+                    real_estate_name=obj.real_estate_name,
+                    private_sale_name=obj.private_sale_name,
+                    real_estate_id=obj.real_estate_id,
+                    private_sales_id=obj.private_sales_id,
+                    private_area=obj.private_area,
+                    supply_area=obj.supply_area,
+                    front_legal_code=obj.front_legal_code,
+                    back_legal_code=obj.back_legal_code,
+                    jibun_address=obj.jibun_address,
+                    road_address=obj.road_address,
+                    land_number=obj.land_number,
+                    ref_summary_id=obj.ref_summary_id,
+                )
+                session.add(temp_success_supply_area)
+                session.commit()
+
+            except Exception as e:
+                session.rollback()
+                logger.error(
+                    f"[HouseRepository][create_temp_success_supply_area] error : {e}"
+                )
+                failure_list.append(
+                    BindFailureSupplyAreaEntity(
+                        real_estate_name=obj.real_estate_name,
+                        private_sale_name=obj.private_sale_name,
+                        real_estate_id=obj.real_estate_id,
+                        private_sales_id=obj.private_sales_id,
+                        private_area=obj.private_area,
+                        supply_area=obj.supply_area,
+                        front_legal_code=obj.front_legal_code,
+                        back_legal_code=obj.back_legal_code,
+                        jibun_address=obj.jibun_address,
+                        road_address=obj.road_address,
+                        land_number=obj.land_number,
+                        failure_reason=str(e),
+                        is_done=False,
+                        ref_summary_id=obj.ref_summary_id,
+                    )
+                )
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def create_temp_failure_supply_area(
+        self, failure_list: List[BindFailureSupplyAreaEntity]
+    ) -> None:
+        try:
+            for obj in failure_list:
+                temp_failure_supply_area = TempFailureSupplyAreaModel(
+                    real_estate_name=obj.real_estate_name,
+                    private_sale_name=obj.private_sale_name,
+                    real_estate_id=obj.real_estate_id,
+                    private_sales_id=obj.private_sales_id,
+                    private_area=obj.private_area,
+                    supply_area=obj.supply_area,
+                    front_legal_code=obj.front_legal_code,
+                    back_legal_code=obj.back_legal_code,
+                    jibun_address=obj.jibun_address,
+                    road_address=obj.road_address,
+                    land_number=obj.land_number,
+                    failure_reason=obj.failure_reason,
+                    is_done=obj.is_done,
+                    ref_summary_id=obj.ref_summary_id,
+                )
+                session.add(temp_failure_supply_area)
+                session.commit()
+
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][create_temp_failure_supply_area] error : {e}"
             )
             raise NotUniqueErrorException
