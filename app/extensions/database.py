@@ -2,7 +2,10 @@ from functools import partial
 
 from flask import current_app
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy, get_state
+from flask_sqlalchemy import (
+    SQLAlchemy,
+    get_state,
+)
 from sqlalchemy.orm import Session, scoped_session
 
 
@@ -72,7 +75,10 @@ class CustomSession(Session):
         """
             새로운 session 객체 생성 후 bind 정보 업데이트
         """
-        if self.app.config.get("TESTING") or self.app.config.get("ENV") == "development":
+        if (
+            self.app.config.get("TESTING")
+            or self.app.config.get("ENV") == "development"
+        ):
             # 테스트 중 혹은 개발 서버일 때 using_bind("read_only")를 통해 reader bind 호출시, 동일한 기존 세션 반환
             # session: app.extensions.database.session, Not self
             return session

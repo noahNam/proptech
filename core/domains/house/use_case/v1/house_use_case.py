@@ -281,6 +281,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             subscription_start_date=house_public_detail_entity.public_sales.subscription_start_date,
             subscription_end_date=house_public_detail_entity.public_sales.subscription_end_date,
             status=house_public_detail_entity.public_sales.status,
+            is_special_supply_finished=house_public_detail_entity.is_special_supply_finished,
             special_supply_date=house_public_detail_entity.public_sales.special_supply_date,
             special_supply_etc_date=house_public_detail_entity.public_sales.special_supply_etc_date,
             special_etc_gyeonggi_date=house_public_detail_entity.public_sales.special_etc_gyeonggi_date,
