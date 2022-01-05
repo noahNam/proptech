@@ -10,6 +10,7 @@ from core.domains.house.use_case.v1.house_worker_use_case import (
     ReplacePublicToPrivateUseCase,
     CheckNotUploadedPhotoUseCase,
     AddSupplyAreaUseCase,
+    BindSupplyAreaUseCase,
 )
 from core.domains.notification.use_case.v1.notification_worker_use_case import (
     PrePrcsNotificationUseCase,
@@ -36,6 +37,8 @@ def get_worker(topic: str):
         return CheckNotUploadedPhotoUseCase(topic=topic)
     elif topic == TopicEnum.ADD_SUPPLY_AREA_TO_PRIVATE_SALE_DETAILS.value:
         return AddSupplyAreaUseCase(topic=topic)
+    elif topic == TopicEnum.BIND_SUPPLY_AREA_TO_PRIVATE_SALE_DETAILS.value:
+        return BindSupplyAreaUseCase(topic=topic)
 
 
 @current_app.cli.command("start-worker")
