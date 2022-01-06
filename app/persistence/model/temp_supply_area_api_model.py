@@ -6,7 +6,7 @@ from sqlalchemy import (
     Float,
     DateTime,
     func,
-    SmallInteger,
+    SmallInteger, Boolean,
 )
 from app import db
 
@@ -45,6 +45,7 @@ class TempSupplyAreaApiModel(db.Model):
     resp_main_atch_gb_cd = Column(SmallInteger(), nullable=True)
     resp_main_atch_gb_cd_nm = Column(String(10), nullable=True)
     resp_main_purps_cd = Column(String(5), nullable=True)
+    update_need = Column(Boolean(), nullable=True, default=True, index=True)
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False

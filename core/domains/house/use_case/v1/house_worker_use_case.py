@@ -1329,6 +1329,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
     def execute(self):
         logger.info(f"🚀\tAddSupplyAreaUseCase Start - {self.client_id}")
         start_time = time()
+        emoji = "🚀"
 
         # # bulk insert summary_create_list to temp_summary_supply_area_api
         # self._house_repo.create_summary_success_list_to_temp_summary()
@@ -1337,11 +1338,9 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
         #     f"🚀\tAddSupplyAreaUseCase - Done! \n"
         #     f"records: {time() - start_time} secs \n"
         # )
-        #
         # exit(os.EX_OK)
 
         # private_sales 중 아파트,오피스텔 건만 데이터를 조회한다.
-        # todo. 이미 API를 통해 데이터가 있는 경우 제외하는 로직 추가 필요
         target_list: List[
             AddSupplyAreaEntity
         ] = self._house_repo.get_target_of_add_to_supply_area()
@@ -1351,7 +1350,24 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
         summary_failure_log_list = list()
         count = 0  # 로그 확인용 변수
 
+        if not target_list:
+            logger.info(
+                f"🚀\tAddSupplyAreaUseCase - Done! \n"
+                f"last_real_estate_id: {last_target_id} \n"
+                f"records: {time() - start_time} secs \n"
+                f"(총 타겟: 0 / 실패: 0)"
+            )
+
+            self.send_slack_message(
+                title=f"{emoji} [AddSupplyAreaUseCase] >>> 공급면적 추가 배치",
+                message=f"AddSupplyAreaUseCase : Finished !! \n "
+                        f"records: {time() - start_time} secs \n "
+                        f"(총 타겟: 0 / 실패: 0)"
+            )
+            exit(os.EX_OK)
+
         url = "http://apis.data.go.kr/1613000/BldRgstService_v2/getBrExposPubuseAreaInfo?ServiceKey=dbNxRdjZCqBvSjcfDHnxPgUm0CXIjGhNHSAlbvBxI0BvOu3dpL8t%2FFQ%2BDRE%2FoKPw61Nm0gHxqYTlYEgDxz37aw%3D%3D"
+
         try:
             for target in target_list:
                 count += 1
@@ -1495,7 +1511,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                 # bulk insert to temp_supply_area_api
                 if create_list:
                     self._house_repo.create_temp_supply_area_api(
-                        create_list=create_list
+                        create_list=create_list, summary_failure_list=summary_failure_list
                     )
 
                 # bulk insert summary_failure_list to temp_summary_supply_area_api
@@ -1511,9 +1527,6 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
             self._house_repo.create_summary_success_list_to_temp_summary()
 
         except Exception as e:
-            # 에러 난 곳까지 : bulk insert summary_create_list to temp_summary_supply_area_api
-            self._house_repo.create_summary_success_list_to_temp_summary()
-
             logger.info(
                 f"☠️\tAddSupplyAreaUseCase - Failure! \n"
                 f"exception : {str(e)} \n"
@@ -1529,7 +1542,6 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
             f"summary_failure_log_list(real_estate_id): {summary_failure_log_list}"
         )
 
-        emoji = "🚀"
         self.send_slack_message(
             title=f"{emoji} [AddSupplyAreaUseCase] >>> 공급면적 추가 배치",
             message=f"AddSupplyAreaUseCase : Finished !! \n "
@@ -1553,19 +1565,28 @@ class BindSupplyAreaUseCase(BaseHouseWorkerUseCase):
     def execute(self):
         logger.info(f"🚀\tBindSupplyAreaUseCase Start - {self.client_id}")
         start_time = time()
+        emoji = "🚀"
 
         last_target_id = None  # 실패로그를 위한 변수
         create_list = list()
         failure_list = list()
 
-        try:
-            # private_sales.create_at or updated_at이 오늘날짜인 타겟 id를 조회한다.s
-            target_entities: List[
-                BindTargetSupplyAreaEntity
-            ] = self._house_repo.get_private_sales_target_ids_for_supply_area()
-            if not target_entities:
-                logger.info(f"🚀\tUpdate_private_sales_ids : Nothing target_ids")
+        # private_sales.create_at or updated_at이 오늘날짜인 타겟 id를 조회한다.
+        target_entities: List[
+            BindTargetSupplyAreaEntity
+        ] = self._house_repo.get_private_sales_target_ids_for_supply_area()
 
+        if not target_entities:
+            logger.info(f"🚀\tUpdate_private_sales_ids : Nothing target_ids")
+            self.send_slack_message(
+                title=f"{emoji} [BindSupplyAreaUseCase] >>> 공급면적 추가 배치",
+                message=f"BindSupplyAreaUseCase : Finished !! \n "
+                        f"records: {time() - start_time} secs \n "
+                        f"Update_private_sales_ids : Nothing target_ids",
+            )
+            exit(os.EX_OK)
+
+        try:
             for target_entity in target_entities:
                 if not target_entity.ref_summary_id:
                     failure_list.append(
@@ -1622,16 +1643,15 @@ class BindSupplyAreaUseCase(BaseHouseWorkerUseCase):
             f"🚀\tBindSupplyAreaUseCase - Done! \n"
             f"last_real_estate_id: {last_target_id} \n"
             f"records: {time() - start_time} secs \n"
-            # f"(총 타겟: {len(target_list)} / 실패: {len(summary_failure_log_list)}) \n"
+            f"(총 타겟: {len(target_entities)} / 실패: {len(failure_list)}) \n"
             f"summary_failure_log_list(real_estate_id): {failure_list}"
         )
 
-        emoji = "🚀"
         self.send_slack_message(
             title=f"{emoji} [BindSupplyAreaUseCase] >>> 공급면적 추가 배치",
             message=f"BindSupplyAreaUseCase : Finished !! \n "
             f"records: {time() - start_time} secs \n "
-            # f"(총 타겟: {len(target_list)} / 실패: {len(summary_failure_log_list)}) \n"
+            f"(총 타겟: {len(target_entities)} / 실패: {len(failure_list)}) \n"
             f"summary_failure_log_list(real_estate_id): {failure_list}",
         )
 
