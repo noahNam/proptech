@@ -1,3 +1,4 @@
+import datetime
 import re
 from datetime import timedelta
 from enum import Enum
@@ -134,7 +135,7 @@ class HouseRepository:
             interest_house = (
                 session.query(InterestHouseModel)
                 .filter(*filters)
-                .update({"is_like": dto.is_like, "updated_at": get_server_timestamp()})
+                .update({"is_like": dto.is_like})
             )
             session.commit()
 
@@ -242,7 +243,7 @@ class HouseRepository:
         public_results = list()
 
         real_estate_sub_query = (
-            session.query(RealEstateModel).filter(*filters)
+            session.using_bind("read_only").query(RealEstateModel).filter(*filters)
         ).subquery()
 
         if include_private == BoundingIncludePrivateEnum.INCLUDE.value:
@@ -284,7 +285,8 @@ class HouseRepository:
             if not trade_pyoung_filters:
                 # (1)
                 private_trade_query = (
-                    session.query(real_estate_sub_query)
+                    session.using_bind("read_only")
+                    .query(real_estate_sub_query)
                     .with_entities(
                         real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address.label("jibun_address"),
@@ -323,7 +325,8 @@ class HouseRepository:
                 )
 
                 private_deposit_query = (
-                    session.query(real_estate_sub_query)
+                    session.using_bind("read_only")
+                    .query(real_estate_sub_query)
                     .with_entities(
                         real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address.label("jibun_address"),
@@ -365,7 +368,8 @@ class HouseRepository:
                     private_deposit_query
                 ).subquery()
                 private_query = (
-                    session.query(union_q)
+                    session.using_bind("read_only")
+                    .query(union_q)
                     .with_entities(
                         func.max(union_q.c.real_estate_id).label("real_estate_id"),
                         func.max(union_q.c.jibun_address).label("jibun_address"),
@@ -390,7 +394,8 @@ class HouseRepository:
                 # private_sales 매매 조회
                 # 가장 최근 계약일 기준으로 매매가 조회
                 private_trade_sub_q = (
-                    session.query(real_estate_sub_query)
+                    session.using_bind("read_only")
+                    .query(real_estate_sub_query)
                     .with_entities(
                         real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address,
@@ -432,7 +437,8 @@ class HouseRepository:
                 ).subquery()
 
                 private_trade_query = (
-                    session.query(private_trade_sub_q)
+                    session.using_bind("read_only")
+                    .query(private_trade_sub_q)
                     .with_entities(
                         func.max(private_trade_sub_q.c.real_estate_id).label(
                             "real_estate_id"
@@ -472,7 +478,8 @@ class HouseRepository:
                 # private_sales 전세 조회
                 # 가장 최근 계약일 기준으로 전세가 조회
                 private_deposit_sub_q = (
-                    session.query(real_estate_sub_query)
+                    session.using_bind("read_only")
+                    .query(real_estate_sub_query)
                     .with_entities(
                         real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address,
@@ -514,7 +521,8 @@ class HouseRepository:
                 ).subquery()
 
                 private_deposit_query = (
-                    session.query(private_deposit_sub_q)
+                    session.using_bind("read_only")
+                    .query(private_deposit_sub_q)
                     .with_entities(
                         func.max(private_deposit_sub_q.c.real_estate_id).label(
                             "real_estate_id"
@@ -558,7 +566,8 @@ class HouseRepository:
                     private_deposit_query
                 ).subquery()
                 final_query = (
-                    session.query(union_q)
+                    session.using_bind("read_only")
+                    .query(union_q)
                     .with_entities(
                         func.max(union_q.c.real_estate_id).label("real_estate_id"),
                         func.max(union_q.c.jibun_address).label("jibun_address"),
@@ -612,7 +621,8 @@ class HouseRepository:
 
         # 분양 건 조회
         public_query = (
-            session.query(real_estate_sub_query)
+            session.using_bind("read_only")
+            .query(real_estate_sub_query)
             .with_entities(
                 real_estate_sub_query.c.id.label("real_estate_id"),
                 real_estate_sub_query.c.jibun_address,
@@ -644,8 +654,7 @@ class HouseRepository:
         if query_set:
             for query in query_set:
                 status = HouseHelper.public_status(
-                    offer_date=query.offer_date,
-                    subscription_end_date=query.subscription_end_date,
+                    offer_date=query.offer_date, end_date=query.subscription_end_date,
                 )
 
                 avg_competition, min_score = None, None
@@ -730,7 +739,11 @@ class HouseRepository:
                 AdministrativeDivisionModel.level == DivisionLevelEnum.LEVEL_1.value
             )
         filters.append(AdministrativeDivisionModel.is_available == "True")
-        query = session.query(AdministrativeDivisionModel).filter(*filters)
+        query = (
+            session.using_bind("read_only")
+            .query(AdministrativeDivisionModel)
+            .filter(*filters)
+        )
         queryset = query.all()
 
         return self._make_bounding_administrative_entity(queryset=queryset)
@@ -783,7 +796,12 @@ class HouseRepository:
         filters.append(InterestHouseModel.house_id == dto.house_id)
         filters.append(InterestHouseModel.type == HouseTypeEnum.PUBLIC_SALES.value)
 
-        interest_house = session.query(InterestHouseModel).filter(*filters).first()
+        interest_house = (
+            session.using_bind("read_only")
+            .query(InterestHouseModel)
+            .filter(*filters)
+            .first()
+        )
 
         if not interest_house:
             return None
@@ -801,7 +819,8 @@ class HouseRepository:
             )
         )
         query = (
-            session.query(
+            session.using_bind("read_only")
+            .query(
                 PublicSaleModel,
                 func.min(PublicSaleDetailModel.supply_area).label("min_supply_area"),
                 func.max(PublicSaleDetailModel.supply_area).label("max_supply_area"),
@@ -943,7 +962,8 @@ class HouseRepository:
 
     def _get_calendar_info_queryset(self, search_filters: list) -> Optional[list]:
         query = (
-            session.query(RealEstateModel)
+            session.using_bind("read_only")
+            .query(RealEstateModel)
             .join(RealEstateModel.public_sales)
             .options(selectinload(RealEstateModel.public_sales))
             .filter(*search_filters)
@@ -970,7 +990,8 @@ class HouseRepository:
 
     def get_interest_house_list(self, dto: GetUserDto) -> List[InterestHouseListEntity]:
         public_sales_query = (
-            session.query(InterestHouseModel)
+            session.using_bind("read_only")
+            .query(InterestHouseModel)
             .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
@@ -1001,7 +1022,8 @@ class HouseRepository:
         )
 
         private_sales_query = (
-            session.query(InterestHouseModel)
+            session.using_bind("read_only")
+            .query(InterestHouseModel)
             .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
@@ -1025,8 +1047,10 @@ class HouseRepository:
 
         union_query = public_sales_query.union_all(private_sales_query).subquery()
 
-        query = session.query(union_query).order_by(
-            union_query.c.interest_houses_updated_at.desc()
+        query = (
+            session.using_bind("read_only")
+            .query(union_query)
+            .order_by(union_query.c.interest_houses_updated_at.desc())
         )
         query_set = query.all()
 
@@ -1063,7 +1087,8 @@ class HouseRepository:
         self, user_id: int, house_id: int
     ) -> Optional[InterestHouseListEntity]:
         query = (
-            session.query(InterestHouseModel)
+            session.using_bind("read_only")
+            .query(InterestHouseModel)
             .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
@@ -1114,7 +1139,8 @@ class HouseRepository:
     def get_recent_view_list(self, dto: GetUserDto) -> List[GetRecentViewListEntity]:
         # private_sales 는 X -> MVP 에서는 매매 상세화면이 없음
         query = (
-            session.query(RecentlyViewModel)
+            session.using_bind("read_only")
+            .query(RecentlyViewModel)
             .with_entities(
                 func.max(RecentlyViewModel.id).label("id"),
                 RecentlyViewModel.house_id,
@@ -1142,7 +1168,11 @@ class HouseRepository:
         sub_query = query.subquery()
         sub_q = aliased(sub_query)
 
-        query = session.query(sub_q).order_by(sub_q.c.updated_at.desc())
+        query = (
+            session.using_bind("read_only")
+            .query(sub_q)
+            .order_by(sub_q.c.updated_at.desc())
+        )
         queryset = query.all()
 
         return self._make_get_recent_view_list_entity(queryset=queryset)
@@ -1215,7 +1245,7 @@ class HouseRepository:
                         subscription_end_date=query.subscription_end_date,
                         status=HouseHelper().public_status(
                             offer_date=query.offer_date,
-                            subscription_end_date=query.subscription_end_date,
+                            end_date=query.subscription_end_date,
                         ),
                         avg_down_payment=avg_down_payment,
                         avg_supply_price=query.avg_supply_price
@@ -1320,7 +1350,8 @@ class HouseRepository:
                 )
 
         query_cond1 = (
-            session.query(PublicSaleModel)
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
             .with_entities(
                 RealEstateModel.id,
                 PublicSaleModel.name.label("name"),
@@ -1338,7 +1369,8 @@ class HouseRepository:
         )
 
         query_cond2 = (
-            session.query(PrivateSaleModel)
+            session.using_bind("read_only")
+            .query(PrivateSaleModel)
             .with_entities(
                 RealEstateModel.id,
                 (RealEstateModel.dong_myun + " " + PrivateSaleModel.name).label("name"),
@@ -1380,7 +1412,10 @@ class HouseRepository:
         self, real_estate_id: int
     ) -> Optional[Geometry]:
         real_estate = (
-            session.query(RealEstateModel).filter_by(id=real_estate_id).first()
+            session.using_bind("read_only")
+            .query(RealEstateModel)
+            .filter_by(id=real_estate_id)
+            .first()
         )
 
         if real_estate:
@@ -1391,7 +1426,10 @@ class HouseRepository:
         self, public_sale_id: int
     ) -> Optional[Geometry]:
         public_sale = (
-            session.query(PublicSaleModel).filter_by(id=public_sale_id).first()
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
+            .filter_by(id=public_sale_id)
+            .first()
         )
 
         if public_sale:
@@ -1404,7 +1442,8 @@ class HouseRepository:
         self, administrative_division_id: int
     ) -> Optional[Geometry]:
         division = (
-            session.query(AdministrativeDivisionModel)
+            session.using_bind("read_only")
+            .query(AdministrativeDivisionModel)
             .filter_by(id=administrative_division_id)
             .first()
         )
@@ -1417,7 +1456,8 @@ class HouseRepository:
         self, public_house_ids: int
     ) -> List[GetPublicSaleOfTicketUsageEntity]:
         query = (
-            session.query(PublicSaleModel)
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
             .join(
                 PublicSalePhotoModel,
                 (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
@@ -1453,7 +1493,8 @@ class HouseRepository:
 
     def get_public_sale_info(self, house_id: int) -> PublicSaleReportEntity:
         query = (
-            session.query(PublicSaleModel)
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
             .options(joinedload(PublicSaleModel.real_estates, innerjoin=True))
             .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
             .options(joinedload(PublicSaleModel.public_sale_photos))
@@ -1484,7 +1525,8 @@ class HouseRepository:
             < get_server_timestamp().strftime("%Y%m%d")
         )
         query = (
-            session.query(PublicSaleModel)
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
             .join(
                 RealEstateModel,
                 (RealEstateModel.id == PublicSaleModel.real_estate_id)
@@ -1519,7 +1561,8 @@ class HouseRepository:
             )
 
             sub_query = (
-                session.query(RealEstateModel)
+                session.using_bind("read_only")
+                .query(RealEstateModel)
                 .join(
                     PublicSaleModel,
                     RealEstateModel.id == PublicSaleModel.real_estate_id,
@@ -1530,7 +1573,8 @@ class HouseRepository:
             ).subquery()
 
             query = (
-                session.query(PublicSaleModel)
+                session.using_bind("read_only")
+                .query(PublicSaleModel)
                 .join(sub_query, (sub_query.c.id == PublicSaleModel.real_estate_id))
                 .options(
                     joinedload(PublicSaleModel.public_sale_details, innerjoin=True)
@@ -1817,7 +1861,6 @@ class HouseRepository:
                 "max_trade_contract_date": recent_info.max_trade_contract_date,
                 "max_deposit_contract_date": recent_info.max_deposit_contract_date,
                 "id": recent_info.private_sale_avg_price_id,
-                "updated_at": get_server_timestamp(),
             }
 
             if recent_info.private_sale_avg_price_id:
@@ -2128,7 +2171,6 @@ class HouseRepository:
             "supply_price": default_info["supply_price"],
             "avg_competition": competition_and_score_info["avg_competition"],
             "min_score": competition_and_score_info["min_score"],
-            "updated_at": get_server_timestamp(),
         }
         public_sale_avg_price_id = self._is_exists_public_sale_avg_prices(
             public_sales_id=avg_price_info["public_sales_id"],
@@ -2203,6 +2245,7 @@ class HouseRepository:
     def get_common_query_object(self, yyyymm: int) -> Query:
         filters = list()
         today = get_server_timestamp().strftime("%Y-%m-%d")
+
         filters.append(PrivateSaleDetailModel.contract_ym >= yyyymm)
 
         filters.append(
@@ -2803,7 +2846,8 @@ class HouseRepository:
         )
 
         query = (
-            session.query(PublicSaleModel)
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
             .with_entities(
                 PublicSaleModel.id.label("id"),
                 PublicSaleModel.name.label("name"),
@@ -2902,11 +2946,12 @@ class HouseRepository:
         )
 
         real_estate_sub_query = (
-            session.query(RealEstateModel).filter(*filters)
+            session.using_bind("read_only").query(RealEstateModel).filter(*filters)
         ).subquery()
 
         private_trade_query = (
-            session.query(real_estate_sub_query)
+            session.using_bind("read_only")
+            .query(real_estate_sub_query)
             .with_entities(
                 real_estate_sub_query.c.id.label("real_estate_id"),
                 real_estate_sub_query.c.jibun_address.label("jibun_address"),
@@ -3064,6 +3109,7 @@ class HouseRepository:
         target_ids = list()
         filters = list()
         today = get_server_timestamp().strftime("%Y-%m-%d")
+
         filters.append(
             and_(
                 PrivateSaleModel.is_available == "True",
@@ -3201,6 +3247,7 @@ class HouseRepository:
     def get_target_list_of_upsert_public_sale_avg_prices(self) -> Optional[List[int]]:
         filters = list()
         today = get_server_timestamp().strftime("%Y-%m-%d")
+
         filters.append(
             and_(
                 PublicSaleModel.is_available == "True",

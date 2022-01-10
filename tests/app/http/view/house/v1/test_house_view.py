@@ -2,6 +2,7 @@ import json
 from decimal import Decimal
 from unittest.mock import patch
 
+import pytest
 from flask import url_for
 
 from app.extensions.utils.house_helper import HouseHelper
@@ -336,7 +337,6 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
     sample_calendar_info = DetailCalendarInfoEntity(
         is_like=True,
         id=1,
-        name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
         public_sale=public_sale_detail_calendar,
@@ -355,7 +355,6 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
     data = response.get_json()["data"]
     assert response.status_code == 200
     assert mock_calendar_info.called is True
-    assert data["houses"][0]["name"] == sample_calendar_info.name
     assert data["houses"][0]["is_like"] == sample_calendar_info.is_like
 
 
@@ -416,7 +415,7 @@ def test_house_public_detail_view_when_valid_request_id(
         subscription_end_date=public_sales.subscription_end_date,
         status=HouseHelper().public_status(
             offer_date=public_sales.offer_date,
-            subscription_end_date=public_sales.subscription_end_date,
+            end_date=public_sales.subscription_end_date,
         ),
         special_supply_date=public_sales.special_supply_date,
         special_supply_etc_date=public_sales.special_supply_etc_date,
@@ -485,6 +484,7 @@ def test_house_public_detail_view_when_valid_request_id(
         min_acquisition_tax=2000,
         max_acquisition_tax=3000,
         public_sales=public_sales_entity,
+        is_special_supply_finished=False
     )
 
     with patch(
@@ -509,7 +509,6 @@ def test_house_public_detail_view_when_valid_request_id(
                     )
 
     data = response.get_json()
-    print(data)
 
     assert response.status_code == 200
     assert mock_house_public_detail.called is True
@@ -853,7 +852,6 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     sample_calendar_info = SimpleCalendarInfoEntity(
         is_like=True,
         id=1,
-        name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
         public_sale=public_sale_simple_calendar,
@@ -893,7 +891,6 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
     assert response.status_code == 200
     assert mock_calendar_info.called is True
     assert len(data["banners"]["banner_list"]) == 2
-    assert data["banners"]["calendar_infos"][0]["name"] == sample_calendar_info.name
     assert (
         data["banners"]["calendar_infos"][0]["is_like"] == sample_calendar_info.is_like
     )

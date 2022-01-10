@@ -1,12 +1,12 @@
 import os
 
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from pytest_factoryboy import register
 from sqlalchemy.orm import scoped_session
+
 from app import create_app
 from app.extensions import SmsClient, RedisClient
-from app.extensions.database import db as _db
+from app.extensions.database import db as _db, CustomSQLAlchemy
 from .seeder.conftest import *
 
 
@@ -53,7 +53,7 @@ def _is_local_db_used(database_url: str):
 
 
 @pytest.fixture(scope="function")
-def session(db: SQLAlchemy) -> scoped_session:
+def session(db: CustomSQLAlchemy) -> scoped_session:
     """
     Creates a new persistence session for a tests.
     http://alexmic.net/flask-sqlalchemy-pytest/

@@ -27,8 +27,10 @@ class ReportRepository:
     def get_ticket_usage_results(
         self, user_id: int, type_: str
     ) -> List[TicketUsageResultEntity]:
-        query = session.query(TicketUsageResultModel).filter_by(
-            user_id=user_id, is_active=True, type=type_
+        query = (
+            session.using_bind("read_only")
+            .query(TicketUsageResultModel)
+            .filter_by(user_id=user_id, is_active=True, type=type_)
         )
         query_set = query.all()
 
@@ -37,20 +39,28 @@ class ReportRepository:
         return [query.to_entity() for query in query_set]
 
     def is_ticket_usage_for_house(self, user_id: int, house_id: int) -> bool:
-        return session.query(
-            exists()
-            .where(TicketUsageResultModel.public_house_id == house_id)
-            .where(TicketUsageResultModel.user_id == user_id)
-            .where(TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value)
-            .where(TicketUsageResultModel.is_active == True)
-        ).scalar()
+        return (
+            session.using_bind("read_only")
+            .query(
+                exists()
+                .where(TicketUsageResultModel.public_house_id == house_id)
+                .where(TicketUsageResultModel.user_id == user_id)
+                .where(TicketUsageResultModel.type == TicketUsageTypeEnum.HOUSE.value)
+                .where(TicketUsageResultModel.is_active == True)
+            )
+            .scalar()
+        )
 
     def is_ticket_usage_for_user(self, user_id: int,) -> bool:
-        return session.query(
-            exists()
-            .where(TicketUsageResultModel.user_id == user_id)
-            .where(TicketUsageResultModel.type == TicketUsageTypeEnum.USER.value)
-        ).scalar()
+        return (
+            session.using_bind("read_only")
+            .query(
+                exists()
+                .where(TicketUsageResultModel.user_id == user_id)
+                .where(TicketUsageResultModel.type == TicketUsageTypeEnum.USER.value)
+            )
+            .scalar()
+        )
 
     def update_ticket_usage_result(
         self, user_id: int, public_house_id: Optional[int], ticket_id: int
@@ -91,7 +101,8 @@ class ReportRepository:
         filters.append(TicketUsageResultModel.is_active == True)
 
         query = (
-            session.query(TicketUsageResultModel)
+            session.using_bind("read_only")
+            .query(TicketUsageResultModel)
             .join(TicketUsageResultModel.predicted_competitions)
             .options(selectinload(TicketUsageResultModel.predicted_competitions))
             .options(joinedload(TicketUsageResultModel.house_type_ranks))
@@ -106,7 +117,11 @@ class ReportRepository:
         return query_set.to_entity()
 
     def get_user_survey_results(self, user_id: int,) -> Optional[SurveyResultEntity]:
-        query = session.query(SurveyResultModel).filter_by(user_id=user_id)
+        query = (
+            session.using_bind("read_only")
+            .query(SurveyResultModel)
+            .filter_by(user_id=user_id)
+        )
         query_set = query.first()
 
         if not query_set:
@@ -121,7 +136,8 @@ class ReportRepository:
         filters.append(TicketUsageResultModel.type == TicketUsageTypeEnum.USER.value)
 
         query = (
-            session.query(UserAnalysisModel)
+            session.using_bind("read_only")
+            .query(UserAnalysisModel)
             .join(
                 TicketUsageResultModel,
                 TicketUsageResultModel.id == UserAnalysisModel.ticket_usage_result_id,
@@ -145,7 +161,8 @@ class ReportRepository:
         filters.append(UserAnalysisCategoryModel.is_active == True)
 
         query = (
-            session.query(UserAnalysisCategoryModel)
+            session.using_bind("read_only")
+            .query(UserAnalysisCategoryModel)
             .options(
                 joinedload(UserAnalysisCategoryModel.user_analysis_category_detail,)
             )
