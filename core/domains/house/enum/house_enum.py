@@ -87,10 +87,10 @@ class BoundingLevelEnum(Enum):
         목적: bounding level 조건에 따라 쿼리 필터 조정
 
         <Request Parameter>
-        [16 ~ 21 level range] (BoundingPresenter()) -> 부동산
+        [15 ~ 21 level range] (BoundingPresenter()) -> 부동산
         level < SELECT_QUERYSET_FLAG_LEVEL -> BoundingAdministrativePresenter() else BoundingPresenter()
 
-        [13 ~ 15 level range] (BoundingAdministrativePresenter())
+        [13 ~ 14 level range] (BoundingAdministrativePresenter())
         MAX_SI_GUN_GU_LEVEL < level -> Level_3 : 읍, 면, 동, 리
 
         [11 ~ 12 level range]
@@ -100,7 +100,7 @@ class BoundingLevelEnum(Enum):
         level < MIN_SI_GUN_GU_LEVEL -> Level_1 : 광역시, 특별시, 도
     """
 
-    SELECT_QUERYSET_FLAG_LEVEL = 16
+    SELECT_QUERYSET_FLAG_LEVEL = 15
     MIN_SI_GUN_GU_LEVEL = 11
     MAX_SI_GUN_GU_LEVEL = 12
     MAX_NAVER_MAP_API_ZOOM_LEVEL = 21

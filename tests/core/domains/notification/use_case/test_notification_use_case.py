@@ -1,3 +1,5 @@
+import pytest
+
 from app.persistence.model import ReceivePushTypeHistoryModel, AppAgreeTermsModel
 from core.domains.notification.dto.notification_dto import (
     GetNotificationDto,

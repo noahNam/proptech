@@ -2,9 +2,10 @@ from http import HTTPStatus
 
 import sentry_sdk
 
-from flask import Blueprint
+from flask import Blueprint, current_app
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from jwt import ExpiredSignatureError
+from sqlalchemy.orm import close_all_sessions
 
 from core.exceptions import TokenValidationErrorException
 
@@ -70,3 +71,14 @@ def handle_token_validation_exception(error):
         {"detail": error.code, "message": error.msg},
         error.code,
     )
+
+
+@api.teardown_app_request
+def teardown_session(f):
+    """
+        읽기 작업시 session 객체를 새로 하나 더 생성하기 때문에,
+        tanos의 request가 종료될 때마다 열린 세션이 있으면 모두 closing 처리 합니다
+    """
+    if not current_app.config.get("TESTING"):
+        close_all_sessions()
+    return f

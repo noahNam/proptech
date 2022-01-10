@@ -40,14 +40,14 @@ class HouseHelper:
             return None
 
     @classmethod
-    def public_status(cls, offer_date: str, subscription_end_date: str) -> int:
+    def public_status(cls, offer_date: str, end_date: str) -> int:
         if (
             not offer_date
             or offer_date == "0"
             or offer_date == "00000000"
-            or not subscription_end_date
-            or subscription_end_date == "0"
-            or subscription_end_date == "00000000"
+            or not end_date
+            or end_date == "0"
+            or end_date == "00000000"
         ):
             return PublicSaleStatusEnum.UNKNOWN.value
 
@@ -55,9 +55,9 @@ class HouseHelper:
 
         if today < offer_date:
             return PublicSaleStatusEnum.BEFORE_OPEN.value
-        elif offer_date <= today <= subscription_end_date:
+        elif offer_date <= today <= end_date:
             return PublicSaleStatusEnum.IS_RECEIVING.value
-        elif subscription_end_date < today:
+        elif end_date < today:
             return PublicSaleStatusEnum.IS_CLOSED.value
         else:
             return PublicSaleStatusEnum.UNKNOWN.value

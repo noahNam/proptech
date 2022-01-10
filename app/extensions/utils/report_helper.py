@@ -189,105 +189,105 @@ class ReportHelper:
             key = "{}_{}_{}".format(
                 competition.area_type, competition.private_area, competition.supply_area
             )
-
-            for special_supply_result in competition.special_supply_results:
-                domain_common_dict = dict(
-                    region=special_supply_result.region,
-                    region_percentage=special_supply_result.region_percent,
-                )
-                marry_dict = dict(
-                    competition=None,
-                    applicant=special_supply_result.newlywed_vol,
-                    score=None,
-                )
-                first_life_dict = dict(
-                    competition=None,
-                    applicant=special_supply_result.first_life_vol,
-                    score=None,
-                )
-                children_dict = dict(
-                    competition=None,
-                    applicant=special_supply_result.multi_children_vol,
-                    score=None,
-                )
-                old_parent_dict = dict(
-                    competition=None,
-                    applicant=special_supply_result.old_parent_vol,
-                    score=None,
-                )
-
-                marry_dict.update(domain_common_dict)
-                first_life_dict.update(domain_common_dict)
-                children_dict.update(domain_common_dict)
-                old_parent_dict.update(domain_common_dict)
-
-                if domain_marry_dict.get(key):
-                    domain_marry_list.append(marry_dict)
-                    domain_first_life_list.append(first_life_dict)
-                    domain_children_list.append(children_dict)
-                    domain_old_parent_list.append(old_parent_dict)
-                else:
-                    domain_marry_list = [marry_dict]
-                    domain_first_life_list = [first_life_dict]
-                    domain_children_list = [children_dict]
-                    domain_old_parent_list = [old_parent_dict]
-
-                # 각 타입별 마지막 지역(해당지역,기타경기,기타지역)이 들어오면 지역순서대로 정렬
-                if len(domain_marry_list) == 3:
-                    cls.sort_domain_list_to_region(
-                        target_list=[
-                            domain_marry_list,
-                            domain_first_life_list,
-                            domain_children_list,
-                            domain_old_parent_list,
-                            domain_normal_list,
-                        ]
+            if competition.special_supply_results:
+                for special_supply_result in competition.special_supply_results:
+                    domain_common_dict = dict(
+                        region=special_supply_result.region,
+                        region_percentage=special_supply_result.region_percent,
+                    )
+                    marry_dict = dict(
+                        competition=None,
+                        applicant=special_supply_result.newlywed_vol,
+                        score=None,
+                    )
+                    first_life_dict = dict(
+                        competition=None,
+                        applicant=special_supply_result.first_life_vol,
+                        score=None,
+                    )
+                    children_dict = dict(
+                        competition=None,
+                        applicant=special_supply_result.multi_children_vol,
+                        score=None,
+                    )
+                    old_parent_dict = dict(
+                        competition=None,
+                        applicant=special_supply_result.old_parent_vol,
+                        score=None,
                     )
 
-                domain_marry_dict.setdefault(key, dict()).update(
-                    house_structure_type=competition.area_type,
-                    supply_household=competition.newlywed_household,
-                    infos=domain_marry_list,
-                )
-                domain_first_life_dict.setdefault(key, dict()).update(
-                    house_structure_type=competition.area_type,
-                    supply_household=competition.first_life_household,
-                    infos=domain_first_life_list,
-                )
-                domain_children_dict.setdefault(key, dict()).update(
-                    house_structure_type=competition.area_type,
-                    supply_household=competition.multi_children_household,
-                    infos=domain_children_list,
-                )
-                domain_old_parent_dict.setdefault(key, dict()).update(
-                    house_structure_type=competition.area_type,
-                    supply_household=competition.old_parent_household,
-                    infos=domain_old_parent_list,
-                )
+                    marry_dict.update(domain_common_dict)
+                    first_life_dict.update(domain_common_dict)
+                    children_dict.update(domain_common_dict)
+                    old_parent_dict.update(domain_common_dict)
 
-            for general_supply_result in competition.general_supply_results:
-                domain_common_dict = dict(
-                    region=general_supply_result.region,
-                    region_percentage=general_supply_result.region_percent,
-                )
-                normal_dict = dict(
-                    competition=general_supply_result.competition_rate,
-                    applicant=general_supply_result.applicant_num,
-                    score=general_supply_result.win_point,
-                )
+                    if domain_marry_dict.get(key):
+                        domain_marry_list.append(marry_dict)
+                        domain_first_life_list.append(first_life_dict)
+                        domain_children_list.append(children_dict)
+                        domain_old_parent_list.append(old_parent_dict)
+                    else:
+                        domain_marry_list = [marry_dict]
+                        domain_first_life_list = [first_life_dict]
+                        domain_children_list = [children_dict]
+                        domain_old_parent_list = [old_parent_dict]
 
-                normal_dict.update(domain_common_dict)
+                    # 각 타입별 마지막 지역(해당지역,기타경기,기타지역)이 들어오면 지역순서대로 정렬
+                    if len(domain_marry_list) == 3:
+                        cls.sort_domain_list_to_region(
+                            target_list=[
+                                domain_marry_list,
+                                domain_first_life_list,
+                                domain_children_list,
+                                domain_old_parent_list,
+                                domain_normal_list,
+                            ]
+                        )
 
-                if domain_normal_dict.get(key):
-                    domain_normal_list.append(normal_dict)
-                else:
-                    domain_normal_list = [normal_dict]
+                    domain_marry_dict.setdefault(key, dict()).update(
+                        house_structure_type=competition.area_type,
+                        supply_household=competition.newlywed_household,
+                        infos=domain_marry_list,
+                    )
+                    domain_first_life_dict.setdefault(key, dict()).update(
+                        house_structure_type=competition.area_type,
+                        supply_household=competition.first_life_household,
+                        infos=domain_first_life_list,
+                    )
+                    domain_children_dict.setdefault(key, dict()).update(
+                        house_structure_type=competition.area_type,
+                        supply_household=competition.multi_children_household,
+                        infos=domain_children_list,
+                    )
+                    domain_old_parent_dict.setdefault(key, dict()).update(
+                        house_structure_type=competition.area_type,
+                        supply_household=competition.old_parent_household,
+                        infos=domain_old_parent_list,
+                    )
+            if competition.general_supply_results:
+                for general_supply_result in competition.general_supply_results:
+                    domain_common_dict = dict(
+                        region=general_supply_result.region,
+                        region_percentage=general_supply_result.region_percent,
+                    )
+                    normal_dict = dict(
+                        competition=general_supply_result.competition_rate,
+                        applicant=general_supply_result.applicant_num,
+                        score=general_supply_result.win_point,
+                    )
 
-                domain_normal_dict.setdefault(key, dict()).update(
-                    house_structure_type=competition.area_type,
-                    supply_household=competition.general_household,
-                    infos=domain_normal_list,
-                )
+                    normal_dict.update(domain_common_dict)
+
+                    if domain_normal_dict.get(key):
+                        domain_normal_list.append(normal_dict)
+                    else:
+                        domain_normal_list = [normal_dict]
+
+                    domain_normal_dict.setdefault(key, dict()).update(
+                        house_structure_type=competition.area_type,
+                        supply_household=competition.general_household,
+                        infos=domain_normal_list,
+                    )
 
         convert_target_dict = dict(
             marry=domain_marry_dict,

@@ -66,7 +66,6 @@ class RealEstateModel(db.Model):
         return DetailCalendarInfoEntity(
             is_like=is_like,
             id=self.id,
-            name=self.name,
             road_address=self.road_address,
             jibun_address=self.calender_address,
             public_sale=self.public_sales.to_calendar_entity()
@@ -78,7 +77,6 @@ class RealEstateModel(db.Model):
         return SimpleCalendarInfoEntity(
             is_like=is_like,
             id=self.id,
-            name=self.name,
             road_address=self.road_address,
             jibun_address=self.calender_address,
             public_sale=self.public_sales.to_calendar_entity()
