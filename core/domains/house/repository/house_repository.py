@@ -4,7 +4,18 @@ from enum import Enum
 from typing import Optional, List, Any, Tuple, Union
 
 from geoalchemy2 import Geometry
-from sqlalchemy import and_, func, or_, literal, String, exists, Integer, case, Numeric
+from sqlalchemy import (
+    and_,
+    func,
+    or_,
+    literal,
+    String,
+    exists,
+    Integer,
+    case,
+    Numeric,
+    not_,
+)
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased, Query
 from sqlalchemy.sql.functions import _FunctionGenerator
@@ -3277,10 +3288,10 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-                TempSupplyAreaApiModel.id == None
+                TempSupplyAreaApiModel.id == None,
+                TempSummarySupplyAreaApiModel.id == None,
             )
-            &
-            and_(
+            & and_(
                 or_(
                     func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
                     func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
@@ -3304,7 +3315,14 @@ class HouseRepository:
                 PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
             )
             .join(
-                TempSupplyAreaApiModel, PrivateSaleModel.id == TempSupplyAreaApiModel.req_private_sales_id, isouter=True
+                TempSupplyAreaApiModel,
+                PrivateSaleModel.id == TempSupplyAreaApiModel.req_private_sales_id,
+                isouter=True,
+            )
+            .join(
+                TempSummarySupplyAreaApiModel,
+                PrivateSaleModel.id == TempSummarySupplyAreaApiModel.private_sales_id,
+                isouter=True,
             )
             .filter(*filters)
             .order_by(RealEstateModel.id)
@@ -3335,7 +3353,9 @@ class HouseRepository:
         return target_list
 
     # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
-    def create_temp_supply_area_api(self, create_list: List[dict], summary_failure_list: List[dict]) -> None:
+    def create_temp_supply_area_api(
+        self, create_list: List[dict], summary_failure_list: List[dict]
+    ) -> None:
         try:
             session.bulk_insert_mappings(
                 TempSupplyAreaApiModel, [create_info for create_info in create_list]
@@ -3349,10 +3369,10 @@ class HouseRepository:
             for create_info in create_list:
                 summary_failure_list.append(
                     dict(
-                        real_estate_id=create_info['req_real_estate_id'],
-                        real_estate_name=create_info['req_real_estate_name'],
-                        private_sales_id=create_info['req_private_sales_id'],
-                        private_sale_name=create_info['req_private_sale_name'],
+                        real_estate_id=create_info["req_real_estate_id"],
+                        real_estate_name=create_info["req_real_estate_name"],
+                        private_sales_id=create_info["req_private_sales_id"],
+                        private_sale_name=create_info["req_private_sale_name"],
                         success_yn=False,
                     )
                 )
@@ -3381,8 +3401,16 @@ class HouseRepository:
         filters = list()
 
         filters.append(
-            and_(
-                TempSupplyAreaApiModel.update_need == True,
+            and_(TempSupplyAreaApiModel.update_need == True,)
+            & not_(
+                or_(
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%주차장%"),
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%관리%"),
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%기계%"),
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%전기%"),
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%제어%"),
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%경비%"),
+                )
             )
         )
 
@@ -3464,7 +3492,8 @@ class HouseRepository:
             # update 필요여부 갱신
             for obj in create_list:
                 session.query(TempSupplyAreaApiModel).filter(
-                    TempSupplyAreaApiModel.private_sales_id == obj['private_sales_id'],
+                    TempSupplyAreaApiModel.req_private_sales_id
+                    == obj["private_sales_id"],
                     TempSupplyAreaApiModel.update_need == True,
                 ).update({"update_need": False})
 
@@ -3493,8 +3522,7 @@ class HouseRepository:
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
             )
-            &
-            and_(
+            & and_(
                 or_(
                     func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
                     func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
@@ -3513,8 +3541,12 @@ class HouseRepository:
                 PrivateSaleModel.name.label("private_sale_name"),
                 RealEstateModel.jibun_address,
                 RealEstateModel.road_address,
-                TempSummarySupplyAreaApiModel.private_area,
-                TempSummarySupplyAreaApiModel.supply_area,
+                func.round(
+                    func.cast(TempSummarySupplyAreaApiModel.private_area, Numeric), 2
+                ).label("private_area"),
+                func.round(
+                    func.cast(TempSummarySupplyAreaApiModel.supply_area, Numeric), 2
+                ).label("supply_area"),
                 TempSummarySupplyAreaApiModel.id.label("ref_summary_id"),
             )
             .join(

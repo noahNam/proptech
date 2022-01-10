@@ -1361,8 +1361,8 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
             self.send_slack_message(
                 title=f"{emoji} [AddSupplyAreaUseCase] >>> 공급면적 추가 배치",
                 message=f"AddSupplyAreaUseCase : Finished !! \n "
-                        f"records: {time() - start_time} secs \n "
-                        f"(총 타겟: 0 / 실패: 0)"
+                f"records: {time() - start_time} secs \n "
+                f"(총 타겟: 0 / 실패: 0)",
             )
             exit(os.EX_OK)
 
@@ -1511,7 +1511,8 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                 # bulk insert to temp_supply_area_api
                 if create_list:
                     self._house_repo.create_temp_supply_area_api(
-                        create_list=create_list, summary_failure_list=summary_failure_list
+                        create_list=create_list,
+                        summary_failure_list=summary_failure_list,
                     )
 
                 # bulk insert summary_failure_list to temp_summary_supply_area_api
@@ -1581,8 +1582,8 @@ class BindSupplyAreaUseCase(BaseHouseWorkerUseCase):
             self.send_slack_message(
                 title=f"{emoji} [BindSupplyAreaUseCase] >>> 공급면적 추가 배치",
                 message=f"BindSupplyAreaUseCase : Finished !! \n "
-                        f"records: {time() - start_time} secs \n "
-                        f"Update_private_sales_ids : Nothing target_ids",
+                f"records: {time() - start_time} secs \n "
+                f"Update_private_sales_ids : Nothing target_ids",
             )
             exit(os.EX_OK)
 
@@ -1626,10 +1627,12 @@ class BindSupplyAreaUseCase(BaseHouseWorkerUseCase):
                     )
 
             # update private_sale_details && insert to temp_success_supply_area
+            # 히스토리 저장 (append insert)
             self._house_repo.create_temp_success_supply_area(
                 create_list=create_list, failure_list=failure_list
             )
             # insert to temp_failure_supply_area
+            # 히스토리 저장 (append insert)
             self._house_repo.create_temp_failure_supply_area(failure_list=failure_list)
 
         except Exception as e:
