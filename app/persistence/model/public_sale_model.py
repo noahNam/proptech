@@ -19,6 +19,7 @@ from sqlalchemy.orm import relationship, backref
 from app import db
 from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.image_helper import S3Helper
+from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model.real_estate_model import RealEstateModel
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.entity.house_entity import (
@@ -122,6 +123,18 @@ class PublicSaleModel(db.Model):
         viewonly=True,
     )
 
+    @property
+    def is_special_supply_finished(self) -> bool:
+        result = False
+        if not self.special_supply_etc_date:
+            return result
+
+        today = get_server_timestamp().strftime("%Y%m%d")
+
+        if self.special_supply_etc_date <= today:
+            result = True
+        return result
+
     def to_entity(self) -> PublicSaleEntity:
         return PublicSaleEntity(
             id=self.id,
@@ -138,8 +151,7 @@ class PublicSaleModel(db.Model):
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,
             status=HouseHelper().public_status(
-                offer_date=self.offer_date,
-                subscription_end_date=self.subscription_end_date,
+                offer_date=self.offer_date, end_date=self.subscription_end_date,
             ),
             special_supply_date=self.special_supply_date,
             special_supply_etc_date=self.special_supply_etc_date,
@@ -291,6 +303,7 @@ class PublicSaleModel(db.Model):
             min_supply_price=min_supply_price,
             max_supply_price=max_supply_price,
             public_sales=self.to_entity(),
+            is_special_supply_finished=self.is_special_supply_finished,
             button_links=button_links if button_links else None,
             ticket_usage_results=ticket_usage_results if ticket_usage_results else None,
             report_recently_public_sale_info=self.to_report_entity(),

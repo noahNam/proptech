@@ -64,6 +64,7 @@ class PublicSaleDetailBaseSchema(BaseModel):
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
     status: int
+    is_special_supply_finished: bool
     special_supply_date: Optional[str]
     special_supply_etc_date: Optional[str]
     special_etc_gyeonggi_date: Optional[str]

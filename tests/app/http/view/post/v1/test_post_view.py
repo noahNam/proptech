@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from flask import url_for
 
 from core.domains.post.enum.post_enum import PostCategoryEnum, PostCategoryDetailEnum

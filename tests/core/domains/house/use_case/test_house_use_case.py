@@ -1,6 +1,8 @@
 from decimal import Decimal
 from unittest.mock import patch
 
+import pytest
+
 from app.extensions.utils.house_helper import HouseHelper
 from app.persistence.model import InterestHouseModel, RecentlyViewModel
 from core.domains.house.dto.house_dto import (
@@ -261,7 +263,7 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         subscription_end_date=public_sales.subscription_end_date,
         status=HouseHelper().public_status(
             offer_date=public_sales.offer_date,
-            subscription_end_date=public_sales.subscription_end_date,
+            end_date=public_sales.subscription_end_date,
         ),
         special_supply_date=public_sales.special_supply_date,
         special_supply_etc_date=public_sales.special_supply_etc_date,
@@ -329,6 +331,7 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         min_acquisition_tax=100000,
         max_acquisition_tax=200000,
         public_sales=public_sales_entity,
+        is_special_supply_finished=False
     )
 
     with patch(

@@ -1,3 +1,5 @@
+import pytest
+
 from core.domains.post.dto.post_dto import GetPostListDto
 from core.domains.post.enum.post_enum import PostCategoryEnum, PostCategoryDetailEnum
 from core.domains.post.repository.post_repository import PostRepository
