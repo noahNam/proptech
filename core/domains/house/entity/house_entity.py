@@ -278,6 +278,7 @@ class HousePublicDetailEntity(BaseModel):
     latitude: float
     longitude: float
     is_like: bool
+    is_special_supply_finished: bool
     min_pyoung_number: Optional[float]
     max_pyoung_number: Optional[float]
     min_supply_area: Optional[float]
@@ -327,7 +328,7 @@ class PublicSaleDetailCalendarEntity(BaseModel):
 class PublicSaleSimpleCalendarEntity(BaseModel):
     id: int
     real_estate_id: int
-    name: str
+    name: Optional[str]
     trade_type: Enum
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
@@ -349,9 +350,8 @@ class PublicSaleSimpleCalendarEntity(BaseModel):
 class DetailCalendarInfoEntity(BaseModel):
     is_like: bool
     id: int
-    name: str
-    road_address: str
-    jibun_address: str
+    road_address: Optional[str]
+    jibun_address: Optional[str]
     public_sale: PublicSaleDetailCalendarEntity = None
 
     class Config:
@@ -404,9 +404,8 @@ class GetMainPreSubscriptionEntity(BaseModel):
 class SimpleCalendarInfoEntity(BaseModel):
     is_like: bool
     id: int
-    name: str
-    road_address: str
-    jibun_address: str
+    road_address: Optional[str]
+    jibun_address: Optional[str]
     public_sale: PublicSaleSimpleCalendarEntity = None
 
     class Config:

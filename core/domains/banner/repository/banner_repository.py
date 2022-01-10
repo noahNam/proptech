@@ -23,7 +23,8 @@ class BannerRepository:
         )
 
         query = (
-            session.query(BannerModel)
+            session.using_bind("read_only")
+            .query(BannerModel)
             .join(BannerModel.banner_image)
             .filter(*filters)
             .order_by(asc(BannerModel.sub_topic))
@@ -44,7 +45,7 @@ class BannerRepository:
                 ButtonLinkModel.is_active == True,
             )
         )
-        query = session.query(ButtonLinkModel).filter(*filters)
+        query = session.using_bind("read_only").query(ButtonLinkModel).filter(*filters)
 
         button_links = query.all()
 

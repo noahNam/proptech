@@ -45,7 +45,12 @@ logger = logger_.getLogger(__name__)
 
 class UserRepository:
     def get_user(self, user_id: int) -> Optional[UserEntity]:
-        user = session.query(UserModel).filter_by(id=user_id).first()
+        user = (
+            session.using_bind("read_only")
+            .query(UserModel)
+            .filter_by(id=user_id)
+            .first()
+        )
         if not user:
             return None
 
@@ -167,7 +172,10 @@ class UserRepository:
 
     def get_user_profile(self, user_id: int) -> Optional[UserProfileEntity]:
         user_profile = (
-            session.query(UserProfileModel).filter_by(user_id=user_id).first()
+            session.using_bind("read_only")
+            .query(UserProfileModel)
+            .filter_by(user_id=user_id)
+            .first()
         )
         if not user_profile:
             return None
@@ -175,11 +183,15 @@ class UserRepository:
         return user_profile.to_entity()
 
     def is_user_info(self, dto: UpsertUserInfoDetailDto) -> bool:
-        return session.query(
-            exists()
-            .where(UserInfoModel.user_profile_id == dto.user_profile_id)
-            .where(UserInfoModel.code == dto.code)
-        ).scalar()
+        return (
+            session.using_bind("read_only")
+            .query(
+                exists()
+                .where(UserInfoModel.user_profile_id == dto.user_profile_id)
+                .where(UserInfoModel.code == dto.code)
+            )
+            .scalar()
+        )
 
     def is_surveys_complete(self, dto: UpsertUserInfoDetailDto) -> bool:
         return session.query(
@@ -295,7 +307,9 @@ class UserRepository:
             # 2단계 설문 데이터 조회
             filters.append(UserInfoModel.code.in_(CodeStepEnum.TWO.value))
 
-        user_infos = session.query(UserInfoModel).filter(*filters).all()
+        user_infos = (
+            session.using_bind("read_only").query(UserInfoModel).filter(*filters).all()
+        )
 
         if not user_infos:
             return []
@@ -313,7 +327,8 @@ class UserRepository:
         self, user_profile_id: int, code: int
     ) -> Optional[UserInfoEntity]:
         user_info = (
-            session.query(UserInfoModel)
+            session.using_bind("read_only")
+            .query(UserInfoModel)
             .filter_by(user_profile_id=user_profile_id, code=code)
             .first()
         )
@@ -324,7 +339,10 @@ class UserRepository:
 
     def get_avg_monthly_income_workers(self) -> AvgMonthlyIncomeWokrerDto:
         result = (
-            session.query(AvgMonthlyIncomeWokrerModel).filter_by(is_active=True).first()
+            session.using_bind("read_only")
+            .query(AvgMonthlyIncomeWokrerModel)
+            .filter_by(is_active=True)
+            .first()
         )
         return self._make_avg_monthly_income_worker_object(result)
 
@@ -341,7 +359,7 @@ class UserRepository:
         )
 
     def get_sido_codes(self, code: int) -> UserInfoCodeValueEntity:
-        result = session.query(SidoCodeModel).all()
+        result = session.using_bind("read_only").query(SidoCodeModel).all()
         return self._make_sido_codes_object(result, code)
 
     def _make_sido_codes_object(
@@ -366,7 +384,8 @@ class UserRepository:
 
     def get_sido_name(self, sido_id: int, sigugun_id: int) -> SidoCodeEntity:
         query_set = (
-            session.query(SidoCodeModel)
+            session.using_bind("read_only")
+            .query(SidoCodeModel)
             .filter_by(sido_code=sido_id, sigugun_code=sigugun_id)
             .first()
         )
@@ -405,7 +424,8 @@ class UserRepository:
 
     def get_user_survey_step_and_ticket(self, dto: GetUserDto) -> UserEntity:
         query = (
-            session.query(UserModel)
+            session.using_bind("read_only")
+            .query(UserModel)
             .options(joinedload(UserModel.user_profile))
             .options(joinedload(UserModel.tickets))
             .filter(UserModel.id == dto.user_id)
@@ -451,15 +471,11 @@ class UserRepository:
     ) -> None:
         try:
             session.query(UserProfileModel).filter_by(id=dto.user_profile_id).update(
-                {
-                    "nickname": dto.value,
-                    "last_update_code": dto.code,
-                    "updated_at": get_server_timestamp(),
-                }
+                {"nickname": dto.value, "last_update_code": dto.code,}
             )
             session.query(UserInfoModel).filter_by(
                 user_profile_id=dto.user_profile_id, code=dto.code
-            ).update({"value": dto.value, "updated_at": get_server_timestamp()})
+            ).update({"value": dto.value})
 
             session.commit()
         except Exception as e:
@@ -470,9 +486,16 @@ class UserRepository:
             raise Exception(e)
 
     def is_duplicate_nickname(self, nickname: str) -> bool:
-        return session.query(
-            session.query(UserProfileModel).filter_by(nickname=nickname).exists()
-        ).scalar()
+        return (
+            session.using_bind("read_only")
+            .query(
+                session.using_bind("read_only")
+                .query(UserProfileModel)
+                .filter_by(nickname=nickname)
+                .exists()
+            )
+            .scalar()
+        )
 
     def update_device_endpoint(self, device_id: int) -> None:
         try:
