@@ -3324,14 +3324,15 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+                TempSupplyAreaApiModel.id == None
             )
-            # &
-            # and_(
-            #     or_(
-            #         func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
-            #         func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
-            #     )
-            # )
+            &
+            and_(
+                or_(
+                    func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+                    func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
+                )
+            )
         )
         query = (
             session.query(RealEstateModel)
@@ -3349,10 +3350,11 @@ class HouseRepository:
             .join(
                 PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
             )
+            .join(
+                TempSupplyAreaApiModel, PrivateSaleModel.id == TempSupplyAreaApiModel.req_private_sales_id, isouter=True
+            )
             .filter(*filters)
-            .filter(RealEstateModel.id > 305289)
             .order_by(RealEstateModel.id)
-            .limit(10000)
         )
 
         print("-----------------------")
@@ -3380,7 +3382,7 @@ class HouseRepository:
         return target_list
 
     # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
-    def create_temp_supply_area_api(self, create_list: List[dict]) -> None:
+    def create_temp_supply_area_api(self, create_list: List[dict], summary_failure_list: List[dict]) -> None:
         try:
             session.bulk_insert_mappings(
                 TempSupplyAreaApiModel, [create_info for create_info in create_list]
@@ -3390,7 +3392,17 @@ class HouseRepository:
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(f"[HouseRepository][create_temp_supply_area_api] error : {e}")
-            raise NotUniqueErrorException
+
+            for create_info in create_list:
+                summary_failure_list.append(
+                    dict(
+                        real_estate_id=create_info['req_real_estate_id'],
+                        real_estate_name=create_info['req_real_estate_name'],
+                        private_sales_id=create_info['req_private_sales_id'],
+                        private_sale_name=create_info['req_private_sale_name'],
+                        success_yn=False,
+                    )
+                )
 
     # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
     def create_summary_failure_list_to_temp_summary(
@@ -3406,13 +3418,20 @@ class HouseRepository:
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
-                f"[HouseRepository][create_temp_summary_supply_area_api] error : {e}"
+                f"[HouseRepository][create_summary_failure_list_to_temp_summary] error : {e}"
             )
             raise NotUniqueErrorException
 
     # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
     def create_summary_success_list_to_temp_summary(self) -> None:
         create_list = list()
+        filters = list()
+
+        filters.append(
+            and_(
+                TempSupplyAreaApiModel.update_need == True,
+            )
+        )
 
         try:
             sub_query = (
@@ -3427,6 +3446,7 @@ class HouseRepository:
                     ),
                     func.max(TempSupplyAreaApiModel.resp_area).label("private_area"),
                 )
+                .filter(*filters)
                 .group_by(
                     TempSupplyAreaApiModel.req_real_estate_id,
                     TempSupplyAreaApiModel.req_real_estate_name,
@@ -3466,9 +3486,9 @@ class HouseRepository:
                 )
             )
 
-            query_set = query.all()
             print("------")
             RawQueryHelper.print_raw_query(query)
+            query_set = query.all()
 
             for query in query_set:
                 create_list.append(
@@ -3488,12 +3508,19 @@ class HouseRepository:
                 [create_info for create_info in create_list],
             )
 
+            # update 필요여부 갱신
+            for obj in create_list:
+                session.query(TempSupplyAreaApiModel).filter(
+                    TempSupplyAreaApiModel.private_sales_id == obj['private_sales_id'],
+                    TempSupplyAreaApiModel.update_need == True,
+                ).update({"update_need": False})
+
             session.commit()
 
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
-                f"[HouseRepository][create_temp_summary_supply_area_api] error : {e}"
+                f"[HouseRepository][create_summary_success_list_to_temp_summary] error : {e}"
             )
             raise NotUniqueErrorException
 
@@ -3513,13 +3540,13 @@ class HouseRepository:
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
             )
-            # &
-            # and_(
-            #     or_(
-            #         func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
-            #         func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
-            #     )
-            # )
+            &
+            and_(
+                or_(
+                    func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+                    func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
+                )
+            )
         )
         query = (
             session.query(RealEstateModel)
@@ -3546,9 +3573,7 @@ class HouseRepository:
                 isouter=True,
             )
             .filter(*filters)
-            .filter(RealEstateModel.id.in_(365081, 331714))
             .order_by(RealEstateModel.id)
-            .limit(5000)
         )
 
         print("-----------------------")
@@ -3592,6 +3617,7 @@ class HouseRepository:
                     PrivateSaleDetailModel.supply_area == 0,
                 ).update({"supply_area": obj.supply_area})
 
+                # 히스토리 저장
                 temp_success_supply_area = TempSuccessSupplyAreaModel(
                     real_estate_name=obj.real_estate_name,
                     private_sale_name=obj.private_sale_name,
