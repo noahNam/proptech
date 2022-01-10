@@ -1,6 +1,6 @@
 from typing import List, Union
 
-from sqlalchemy import and_
+from sqlalchemy import and_, exists
 
 from app.extensions.database import session
 from app.extensions.utils.log_helper import logger_
@@ -20,9 +20,13 @@ logger = logger_.getLogger(__name__)
 
 class PostRepository:
     def is_post_exist(self, post_id: int) -> bool:
-        return session.query(
-            session.query(PostModel).filter_by(id=post_id).exists()
-        ).scalar()
+        query = session.using_bind("read_only").query(
+            exists().where(PostModel.id == post_id)
+        )
+
+        if query.scalar():
+            return True
+        return False
 
     def get_post_list_include_contents(
         self, dto: GetPostListDto
@@ -54,7 +58,8 @@ class PostRepository:
 
         try:
             query = (
-                session.query(PostModel)
+                session.using_bind("read_only")
+                .query(PostModel)
                 .join(PostModel.article, isouter=True)
                 .join(PostModel.post_attachments, isouter=True)
                 .filter(*search_filter)
@@ -88,10 +93,7 @@ class PostRepository:
     def update_read_count(self, post_id: int) -> None:
         try:
             session.query(PostModel).filter_by(id=post_id).update(
-                {
-                    "read_count": PostModel.read_count + 1,
-                    "updated_at": get_server_timestamp(),
-                }
+                {"read_count": PostModel.read_count + 1,}
             )
             session.commit()
 

@@ -278,6 +278,7 @@ class HousePublicDetailEntity(BaseModel):
     latitude: float
     longitude: float
     is_like: bool
+    is_special_supply_finished: bool
     min_pyoung_number: Optional[float]
     max_pyoung_number: Optional[float]
     min_supply_area: Optional[float]
@@ -327,7 +328,7 @@ class PublicSaleDetailCalendarEntity(BaseModel):
 class PublicSaleSimpleCalendarEntity(BaseModel):
     id: int
     real_estate_id: int
-    name: str
+    name: Optional[str]
     trade_type: Enum
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
@@ -349,9 +350,8 @@ class PublicSaleSimpleCalendarEntity(BaseModel):
 class DetailCalendarInfoEntity(BaseModel):
     is_like: bool
     id: int
-    name: str
-    road_address: str
-    jibun_address: str
+    road_address: Optional[str]
+    jibun_address: Optional[str]
     public_sale: PublicSaleDetailCalendarEntity = None
 
     class Config:
@@ -404,9 +404,8 @@ class GetMainPreSubscriptionEntity(BaseModel):
 class SimpleCalendarInfoEntity(BaseModel):
     is_like: bool
     id: int
-    name: str
-    road_address: str
-    jibun_address: str
+    road_address: Optional[str]
+    jibun_address: Optional[str]
     public_sale: PublicSaleSimpleCalendarEntity = None
 
     class Config:
@@ -597,5 +596,59 @@ class AddSupplyAreaEntity(BaseModel):
     resp_main_atch_gb_cd: Optional[int]
     resp_main_atch_gb_cd_nm: Optional[str]
     resp_main_purps_cd: Optional[str]
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+
+
+# todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+class BindTargetSupplyAreaEntity(BaseModel):
+    real_estate_name: Optional[str]
+    private_sale_name: Optional[str]
+    real_estate_id: Optional[int]
+    private_sales_id: Optional[int]
+    private_area: Optional[float]
+    supply_area: Optional[float]
+    front_legal_code: Optional[str]
+    back_legal_code: Optional[str]
+    jibun_address: Optional[str]
+    road_address: Optional[str]
+    land_number: Optional[str]
+    ref_summary_id: Optional[int]
+
+
+# todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+class BindSuccessSupplyAreaEntity(BaseModel):
+    real_estate_name: Optional[str]
+    private_sale_name: Optional[str]
+    real_estate_id: Optional[int]
+    private_sales_id: Optional[int]
+    private_area: Optional[float]
+    supply_area: Optional[float]
+    front_legal_code: Optional[str]
+    back_legal_code: Optional[str]
+    jibun_address: Optional[str]
+    road_address: Optional[str]
+    land_number: Optional[str]
+    ref_summary_id: Optional[int]
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
+
+
+# todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+class BindFailureSupplyAreaEntity(BaseModel):
+    real_estate_name: Optional[str]
+    private_sale_name: Optional[str]
+    real_estate_id: Optional[int]
+    private_sales_id: Optional[int]
+    private_area: Optional[float]
+    supply_area: Optional[float]
+    front_legal_code: Optional[str]
+    back_legal_code: Optional[str]
+    jibun_address: Optional[str]
+    road_address: Optional[str]
+    land_number: Optional[str]
+    failure_reason: Optional[str]
+    is_done: Optional[bool]
+    ref_summary_id: Optional[int]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]

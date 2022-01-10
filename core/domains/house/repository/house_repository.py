@@ -1,10 +1,11 @@
+import datetime
 import re
 from datetime import timedelta
 from enum import Enum
 from typing import Optional, List, Any, Tuple, Union
 
 from geoalchemy2 import Geometry
-from sqlalchemy import and_, func, or_, literal, String, exists, Integer, case
+from sqlalchemy import and_, func, or_, literal, String, exists, Integer, case, Numeric
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased, Query
 from sqlalchemy.sql.functions import _FunctionGenerator
@@ -30,6 +31,12 @@ from app.persistence.model import (
     PrivateSaleAvgPriceModel,
     GeneralSupplyResultModel,
     PublicSaleDetailPhotoModel,
+)
+from app.persistence.model.temp_failure_supply_area_model import (
+    TempFailureSupplyAreaModel,
+)
+from app.persistence.model.temp_success_supply_area_model import (
+    TempSuccessSupplyAreaModel,
 )
 from app.persistence.model.temp_summary_supply_area_api_model import (
     TempSummarySupplyAreaApiModel,
@@ -64,6 +71,9 @@ from core.domains.house.entity.house_entity import (
     NearHouseEntity,
     CheckIdsRealEstateEntity,
     AddSupplyAreaEntity,
+    BindSuccessSupplyAreaEntity,
+    BindTargetSupplyAreaEntity,
+    BindFailureSupplyAreaEntity,
 )
 from core.domains.house.enum.house_enum import (
     BoundingLevelEnum,
@@ -114,7 +124,7 @@ class HouseRepository:
             interest_house = (
                 session.query(InterestHouseModel)
                 .filter(*filters)
-                .update({"is_like": dto.is_like, "updated_at": get_server_timestamp()})
+                .update({"is_like": dto.is_like})
             )
             session.commit()
 
@@ -222,7 +232,7 @@ class HouseRepository:
         public_results = list()
 
         real_estate_sub_query = (
-            session.query(RealEstateModel).filter(*filters)
+            session.using_bind("read_only").query(RealEstateModel).filter(*filters)
         ).subquery()
 
         if include_private == BoundingIncludePrivateEnum.INCLUDE.value:
@@ -264,7 +274,8 @@ class HouseRepository:
             if not trade_pyoung_filters:
                 # (1)
                 private_trade_query = (
-                    session.query(real_estate_sub_query)
+                    session.using_bind("read_only")
+                    .query(real_estate_sub_query)
                     .with_entities(
                         real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address.label("jibun_address"),
@@ -303,7 +314,8 @@ class HouseRepository:
                 )
 
                 private_deposit_query = (
-                    session.query(real_estate_sub_query)
+                    session.using_bind("read_only")
+                    .query(real_estate_sub_query)
                     .with_entities(
                         real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address.label("jibun_address"),
@@ -345,7 +357,8 @@ class HouseRepository:
                     private_deposit_query
                 ).subquery()
                 private_query = (
-                    session.query(union_q)
+                    session.using_bind("read_only")
+                    .query(union_q)
                     .with_entities(
                         func.max(union_q.c.real_estate_id).label("real_estate_id"),
                         func.max(union_q.c.jibun_address).label("jibun_address"),
@@ -370,7 +383,8 @@ class HouseRepository:
                 # private_sales 매매 조회
                 # 가장 최근 계약일 기준으로 매매가 조회
                 private_trade_sub_q = (
-                    session.query(real_estate_sub_query)
+                    session.using_bind("read_only")
+                    .query(real_estate_sub_query)
                     .with_entities(
                         real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address,
@@ -412,7 +426,8 @@ class HouseRepository:
                 ).subquery()
 
                 private_trade_query = (
-                    session.query(private_trade_sub_q)
+                    session.using_bind("read_only")
+                    .query(private_trade_sub_q)
                     .with_entities(
                         func.max(private_trade_sub_q.c.real_estate_id).label(
                             "real_estate_id"
@@ -452,7 +467,8 @@ class HouseRepository:
                 # private_sales 전세 조회
                 # 가장 최근 계약일 기준으로 전세가 조회
                 private_deposit_sub_q = (
-                    session.query(real_estate_sub_query)
+                    session.using_bind("read_only")
+                    .query(real_estate_sub_query)
                     .with_entities(
                         real_estate_sub_query.c.id.label("real_estate_id"),
                         real_estate_sub_query.c.jibun_address,
@@ -494,7 +510,8 @@ class HouseRepository:
                 ).subquery()
 
                 private_deposit_query = (
-                    session.query(private_deposit_sub_q)
+                    session.using_bind("read_only")
+                    .query(private_deposit_sub_q)
                     .with_entities(
                         func.max(private_deposit_sub_q.c.real_estate_id).label(
                             "real_estate_id"
@@ -538,7 +555,8 @@ class HouseRepository:
                     private_deposit_query
                 ).subquery()
                 final_query = (
-                    session.query(union_q)
+                    session.using_bind("read_only")
+                    .query(union_q)
                     .with_entities(
                         func.max(union_q.c.real_estate_id).label("real_estate_id"),
                         func.max(union_q.c.jibun_address).label("jibun_address"),
@@ -592,7 +610,8 @@ class HouseRepository:
 
         # 분양 건 조회
         public_query = (
-            session.query(real_estate_sub_query)
+            session.using_bind("read_only")
+            .query(real_estate_sub_query)
             .with_entities(
                 real_estate_sub_query.c.id.label("real_estate_id"),
                 real_estate_sub_query.c.jibun_address,
@@ -624,8 +643,7 @@ class HouseRepository:
         if query_set:
             for query in query_set:
                 status = HouseHelper.public_status(
-                    offer_date=query.offer_date,
-                    subscription_end_date=query.subscription_end_date,
+                    offer_date=query.offer_date, end_date=query.subscription_end_date,
                 )
 
                 avg_competition, min_score = None, None
@@ -710,7 +728,11 @@ class HouseRepository:
                 AdministrativeDivisionModel.level == DivisionLevelEnum.LEVEL_1.value
             )
         filters.append(AdministrativeDivisionModel.is_available == "True")
-        query = session.query(AdministrativeDivisionModel).filter(*filters)
+        query = (
+            session.using_bind("read_only")
+            .query(AdministrativeDivisionModel)
+            .filter(*filters)
+        )
         queryset = query.all()
 
         return self._make_bounding_administrative_entity(queryset=queryset)
@@ -763,7 +785,12 @@ class HouseRepository:
         filters.append(InterestHouseModel.house_id == dto.house_id)
         filters.append(InterestHouseModel.type == HouseTypeEnum.PUBLIC_SALES.value)
 
-        interest_house = session.query(InterestHouseModel).filter(*filters).first()
+        interest_house = (
+            session.using_bind("read_only")
+            .query(InterestHouseModel)
+            .filter(*filters)
+            .first()
+        )
 
         if not interest_house:
             return None
@@ -781,7 +808,8 @@ class HouseRepository:
             )
         )
         query = (
-            session.query(
+            session.using_bind("read_only")
+            .query(
                 PublicSaleModel,
                 func.min(PublicSaleDetailModel.supply_area).label("min_supply_area"),
                 func.max(PublicSaleDetailModel.supply_area).label("max_supply_area"),
@@ -923,7 +951,8 @@ class HouseRepository:
 
     def _get_calendar_info_queryset(self, search_filters: list) -> Optional[list]:
         query = (
-            session.query(RealEstateModel)
+            session.using_bind("read_only")
+            .query(RealEstateModel)
             .join(RealEstateModel.public_sales)
             .options(selectinload(RealEstateModel.public_sales))
             .filter(*search_filters)
@@ -950,7 +979,8 @@ class HouseRepository:
 
     def get_interest_house_list(self, dto: GetUserDto) -> List[InterestHouseListEntity]:
         public_sales_query = (
-            session.query(InterestHouseModel)
+            session.using_bind("read_only")
+            .query(InterestHouseModel)
             .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
@@ -981,7 +1011,8 @@ class HouseRepository:
         )
 
         private_sales_query = (
-            session.query(InterestHouseModel)
+            session.using_bind("read_only")
+            .query(InterestHouseModel)
             .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
@@ -1005,8 +1036,10 @@ class HouseRepository:
 
         union_query = public_sales_query.union_all(private_sales_query).subquery()
 
-        query = session.query(union_query).order_by(
-            union_query.c.interest_houses_updated_at.desc()
+        query = (
+            session.using_bind("read_only")
+            .query(union_query)
+            .order_by(union_query.c.interest_houses_updated_at.desc())
         )
         query_set = query.all()
 
@@ -1043,7 +1076,8 @@ class HouseRepository:
         self, user_id: int, house_id: int
     ) -> Optional[InterestHouseListEntity]:
         query = (
-            session.query(InterestHouseModel)
+            session.using_bind("read_only")
+            .query(InterestHouseModel)
             .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
@@ -1094,7 +1128,8 @@ class HouseRepository:
     def get_recent_view_list(self, dto: GetUserDto) -> List[GetRecentViewListEntity]:
         # private_sales 는 X -> MVP 에서는 매매 상세화면이 없음
         query = (
-            session.query(RecentlyViewModel)
+            session.using_bind("read_only")
+            .query(RecentlyViewModel)
             .with_entities(
                 func.max(RecentlyViewModel.id).label("id"),
                 RecentlyViewModel.house_id,
@@ -1122,7 +1157,11 @@ class HouseRepository:
         sub_query = query.subquery()
         sub_q = aliased(sub_query)
 
-        query = session.query(sub_q).order_by(sub_q.c.updated_at.desc())
+        query = (
+            session.using_bind("read_only")
+            .query(sub_q)
+            .order_by(sub_q.c.updated_at.desc())
+        )
         queryset = query.all()
 
         return self._make_get_recent_view_list_entity(queryset=queryset)
@@ -1195,7 +1234,7 @@ class HouseRepository:
                         subscription_end_date=query.subscription_end_date,
                         status=HouseHelper().public_status(
                             offer_date=query.offer_date,
-                            subscription_end_date=query.subscription_end_date,
+                            end_date=query.subscription_end_date,
                         ),
                         avg_down_payment=avg_down_payment,
                         avg_supply_price=query.avg_supply_price
@@ -1300,7 +1339,8 @@ class HouseRepository:
                 )
 
         query_cond1 = (
-            session.query(PublicSaleModel)
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
             .with_entities(
                 RealEstateModel.id,
                 PublicSaleModel.name.label("name"),
@@ -1318,7 +1358,8 @@ class HouseRepository:
         )
 
         query_cond2 = (
-            session.query(PrivateSaleModel)
+            session.using_bind("read_only")
+            .query(PrivateSaleModel)
             .with_entities(
                 RealEstateModel.id,
                 (RealEstateModel.dong_myun + " " + PrivateSaleModel.name).label("name"),
@@ -1360,7 +1401,10 @@ class HouseRepository:
         self, real_estate_id: int
     ) -> Optional[Geometry]:
         real_estate = (
-            session.query(RealEstateModel).filter_by(id=real_estate_id).first()
+            session.using_bind("read_only")
+            .query(RealEstateModel)
+            .filter_by(id=real_estate_id)
+            .first()
         )
 
         if real_estate:
@@ -1371,7 +1415,10 @@ class HouseRepository:
         self, public_sale_id: int
     ) -> Optional[Geometry]:
         public_sale = (
-            session.query(PublicSaleModel).filter_by(id=public_sale_id).first()
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
+            .filter_by(id=public_sale_id)
+            .first()
         )
 
         if public_sale:
@@ -1384,7 +1431,8 @@ class HouseRepository:
         self, administrative_division_id: int
     ) -> Optional[Geometry]:
         division = (
-            session.query(AdministrativeDivisionModel)
+            session.using_bind("read_only")
+            .query(AdministrativeDivisionModel)
             .filter_by(id=administrative_division_id)
             .first()
         )
@@ -1397,7 +1445,8 @@ class HouseRepository:
         self, public_house_ids: int
     ) -> List[GetPublicSaleOfTicketUsageEntity]:
         query = (
-            session.query(PublicSaleModel)
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
             .join(
                 PublicSalePhotoModel,
                 (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
@@ -1433,7 +1482,8 @@ class HouseRepository:
 
     def get_public_sale_info(self, house_id: int) -> PublicSaleReportEntity:
         query = (
-            session.query(PublicSaleModel)
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
             .options(joinedload(PublicSaleModel.real_estates, innerjoin=True))
             .options(joinedload(PublicSaleModel.public_sale_details, innerjoin=True))
             .options(joinedload(PublicSaleModel.public_sale_photos))
@@ -1464,7 +1514,8 @@ class HouseRepository:
             < get_server_timestamp().strftime("%Y%m%d")
         )
         query = (
-            session.query(PublicSaleModel)
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
             .join(
                 RealEstateModel,
                 (RealEstateModel.id == PublicSaleModel.real_estate_id)
@@ -1499,7 +1550,8 @@ class HouseRepository:
             )
 
             sub_query = (
-                session.query(RealEstateModel)
+                session.using_bind("read_only")
+                .query(RealEstateModel)
                 .join(
                     PublicSaleModel,
                     RealEstateModel.id == PublicSaleModel.real_estate_id,
@@ -1510,7 +1562,8 @@ class HouseRepository:
             ).subquery()
 
             query = (
-                session.query(PublicSaleModel)
+                session.using_bind("read_only")
+                .query(PublicSaleModel)
                 .join(sub_query, (sub_query.c.id == PublicSaleModel.real_estate_id))
                 .options(
                     joinedload(PublicSaleModel.public_sale_details, innerjoin=True)
@@ -1797,7 +1850,6 @@ class HouseRepository:
                 "max_trade_contract_date": recent_info.max_trade_contract_date,
                 "max_deposit_contract_date": recent_info.max_deposit_contract_date,
                 "id": recent_info.private_sale_avg_price_id,
-                "updated_at": get_server_timestamp(),
             }
 
             if recent_info.private_sale_avg_price_id:
@@ -2108,7 +2160,6 @@ class HouseRepository:
             "supply_price": default_info["supply_price"],
             "avg_competition": competition_and_score_info["avg_competition"],
             "min_score": competition_and_score_info["min_score"],
-            "updated_at": get_server_timestamp(),
         }
         public_sale_avg_price_id = self._is_exists_public_sale_avg_prices(
             public_sales_id=avg_price_info["public_sales_id"],
@@ -2183,6 +2234,7 @@ class HouseRepository:
     def get_common_query_object(self, yyyymm: int) -> Query:
         filters = list()
         today = get_server_timestamp().strftime("%Y-%m-%d")
+
         filters.append(PrivateSaleDetailModel.contract_ym >= yyyymm)
 
         filters.append(
@@ -2783,7 +2835,8 @@ class HouseRepository:
         )
 
         query = (
-            session.query(PublicSaleModel)
+            session.using_bind("read_only")
+            .query(PublicSaleModel)
             .with_entities(
                 PublicSaleModel.id.label("id"),
                 PublicSaleModel.name.label("name"),
@@ -2882,11 +2935,12 @@ class HouseRepository:
         )
 
         real_estate_sub_query = (
-            session.query(RealEstateModel).filter(*filters)
+            session.using_bind("read_only").query(RealEstateModel).filter(*filters)
         ).subquery()
 
         private_trade_query = (
-            session.query(real_estate_sub_query)
+            session.using_bind("read_only")
+            .query(real_estate_sub_query)
             .with_entities(
                 real_estate_sub_query.c.id.label("real_estate_id"),
                 real_estate_sub_query.c.jibun_address.label("jibun_address"),
@@ -3044,6 +3098,7 @@ class HouseRepository:
         target_ids = list()
         filters = list()
         today = get_server_timestamp().strftime("%Y-%m-%d")
+
         filters.append(
             and_(
                 PrivateSaleModel.is_available == "True",
@@ -3181,6 +3236,7 @@ class HouseRepository:
     def get_target_list_of_upsert_public_sale_avg_prices(self) -> Optional[List[int]]:
         filters = list()
         today = get_server_timestamp().strftime("%Y-%m-%d")
+
         filters.append(
             and_(
                 PublicSaleModel.is_available == "True",
@@ -3268,13 +3324,15 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-                # func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+                TempSupplyAreaApiModel.id == None
             )
-            # | and_(
-            #     PrivateSaleModel.is_available == "True",
-            #     PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-            #     func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
-            # )
+            &
+            and_(
+                or_(
+                    func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+                    func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
+                )
+            )
         )
         query = (
             session.query(RealEstateModel)
@@ -3292,9 +3350,11 @@ class HouseRepository:
             .join(
                 PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
             )
+            .join(
+                TempSupplyAreaApiModel, PrivateSaleModel.id == TempSupplyAreaApiModel.req_private_sales_id, isouter=True
+            )
             .filter(*filters)
             .order_by(RealEstateModel.id)
-            .limit(5000)
         )
 
         print("-----------------------")
@@ -3322,7 +3382,7 @@ class HouseRepository:
         return target_list
 
     # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
-    def create_temp_supply_area_api(self, create_list: List[dict]) -> None:
+    def create_temp_supply_area_api(self, create_list: List[dict], summary_failure_list: List[dict]) -> None:
         try:
             session.bulk_insert_mappings(
                 TempSupplyAreaApiModel, [create_info for create_info in create_list]
@@ -3332,7 +3392,17 @@ class HouseRepository:
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(f"[HouseRepository][create_temp_supply_area_api] error : {e}")
-            raise NotUniqueErrorException
+
+            for create_info in create_list:
+                summary_failure_list.append(
+                    dict(
+                        real_estate_id=create_info['req_real_estate_id'],
+                        real_estate_name=create_info['req_real_estate_name'],
+                        private_sales_id=create_info['req_private_sales_id'],
+                        private_sale_name=create_info['req_private_sale_name'],
+                        success_yn=False,
+                    )
+                )
 
     # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
     def create_summary_failure_list_to_temp_summary(
@@ -3348,13 +3418,20 @@ class HouseRepository:
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
-                f"[HouseRepository][create_temp_summary_supply_area_api] error : {e}"
+                f"[HouseRepository][create_summary_failure_list_to_temp_summary] error : {e}"
             )
             raise NotUniqueErrorException
 
     # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
     def create_summary_success_list_to_temp_summary(self) -> None:
         create_list = list()
+        filters = list()
+
+        filters.append(
+            and_(
+                TempSupplyAreaApiModel.update_need == True,
+            )
+        )
 
         try:
             sub_query = (
@@ -3369,6 +3446,7 @@ class HouseRepository:
                     ),
                     func.max(TempSupplyAreaApiModel.resp_area).label("private_area"),
                 )
+                .filter(*filters)
                 .group_by(
                     TempSupplyAreaApiModel.req_real_estate_id,
                     TempSupplyAreaApiModel.req_real_estate_name,
@@ -3392,13 +3470,14 @@ class HouseRepository:
                         "req_private_sale_name"
                     ),
                     sub_query.c.private_area,
-                    sub_query.c.supply_area,
+                    func.cast(func.min(sub_query.c.supply_area), Numeric).label(
+                        "supply_area"
+                    ),
                 )
                 .group_by(
                     sub_query.c.req_real_estate_id,
                     sub_query.c.req_private_sales_id,
                     sub_query.c.private_area,
-                    sub_query.c.supply_area,
                 )
                 .order_by(
                     sub_query.c.req_real_estate_id,
@@ -3407,6 +3486,8 @@ class HouseRepository:
                 )
             )
 
+            print("------")
+            RawQueryHelper.print_raw_query(query)
             query_set = query.all()
 
             for query in query_set:
@@ -3417,7 +3498,7 @@ class HouseRepository:
                         private_sales_id=query.req_private_sales_id,
                         private_sale_name=query.req_private_sale_name,
                         private_area=query.private_area,
-                        supply_area=MathHelper.round(query.supply_area, 2),
+                        supply_area=query.supply_area,
                         success_yn=True,
                     )
                 )
@@ -3427,11 +3508,185 @@ class HouseRepository:
                 [create_info for create_info in create_list],
             )
 
+            # update 필요여부 갱신
+            for obj in create_list:
+                session.query(TempSupplyAreaApiModel).filter(
+                    TempSupplyAreaApiModel.private_sales_id == obj['private_sales_id'],
+                    TempSupplyAreaApiModel.update_need == True,
+                ).update({"update_need": False})
+
             session.commit()
 
         except exc.IntegrityError as e:
             session.rollback()
             logger.error(
-                f"[HouseRepository][create_temp_summary_supply_area_api] error : {e}"
+                f"[HouseRepository][create_summary_success_list_to_temp_summary] error : {e}"
+            )
+            raise NotUniqueErrorException
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def get_private_sales_target_ids_for_supply_area(
+        self,
+    ) -> Optional[List[BindTargetSupplyAreaEntity]]:
+        """
+             연립다세대 제외
+         """
+        target_list = list()
+        filters = list()
+        today = get_server_timestamp().strftime("%Y-%m-%d")
+        filters.append(
+            and_(
+                RealEstateModel.is_available == "True",
+                PrivateSaleModel.is_available == "True",
+                PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+            )
+            &
+            and_(
+                or_(
+                    func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+                    func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
+                )
+            )
+        )
+        query = (
+            session.query(RealEstateModel)
+            .with_entities(
+                RealEstateModel.front_legal_code,
+                RealEstateModel.back_legal_code,
+                RealEstateModel.land_number,
+                RealEstateModel.id,
+                RealEstateModel.name,
+                PrivateSaleModel.id.label("private_sales_id"),
+                PrivateSaleModel.name.label("private_sale_name"),
+                RealEstateModel.jibun_address,
+                RealEstateModel.road_address,
+                TempSummarySupplyAreaApiModel.private_area,
+                TempSummarySupplyAreaApiModel.supply_area,
+                TempSummarySupplyAreaApiModel.id.label("ref_summary_id"),
+            )
+            .join(
+                PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
+            )
+            .join(
+                TempSummarySupplyAreaApiModel,
+                RealEstateModel.id == TempSummarySupplyAreaApiModel.real_estate_id,
+                isouter=True,
+            )
+            .filter(*filters)
+            .order_by(RealEstateModel.id)
+        )
+
+        print("-----------------------")
+        RawQueryHelper.print_raw_query(query)
+        query_set = query.all()
+
+        if not query_set:
+            return None
+
+        for query in query_set:
+            target_list.append(
+                BindTargetSupplyAreaEntity(
+                    real_estate_name=query.name,
+                    private_sale_name=query.private_sale_name,
+                    real_estate_id=query.id,
+                    private_sales_id=query.private_sales_id,
+                    private_area=query.private_area,
+                    supply_area=query.supply_area,
+                    front_legal_code=query.front_legal_code,
+                    back_legal_code=query.back_legal_code,
+                    jibun_address=query.jibun_address,
+                    road_address=query.road_address,
+                    land_number=query.land_number,
+                    ref_summary_id=query.ref_summary_id,
+                )
+            )
+
+        return target_list
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def create_temp_success_supply_area(
+        self,
+        create_list: List[BindSuccessSupplyAreaEntity],
+        failure_list: List[BindFailureSupplyAreaEntity],
+    ) -> None:
+        for obj in create_list:
+            try:
+                session.query(PrivateSaleDetailModel).filter(
+                    PrivateSaleDetailModel.private_sales_id == obj.private_sales_id,
+                    PrivateSaleDetailModel.private_area == obj.private_area,
+                    PrivateSaleDetailModel.supply_area == 0,
+                ).update({"supply_area": obj.supply_area})
+
+                # 히스토리 저장
+                temp_success_supply_area = TempSuccessSupplyAreaModel(
+                    real_estate_name=obj.real_estate_name,
+                    private_sale_name=obj.private_sale_name,
+                    real_estate_id=obj.real_estate_id,
+                    private_sales_id=obj.private_sales_id,
+                    private_area=obj.private_area,
+                    supply_area=obj.supply_area,
+                    front_legal_code=obj.front_legal_code,
+                    back_legal_code=obj.back_legal_code,
+                    jibun_address=obj.jibun_address,
+                    road_address=obj.road_address,
+                    land_number=obj.land_number,
+                    ref_summary_id=obj.ref_summary_id,
+                )
+                session.add(temp_success_supply_area)
+                session.commit()
+
+            except Exception as e:
+                session.rollback()
+                logger.error(
+                    f"[HouseRepository][create_temp_success_supply_area] error : {e}"
+                )
+                failure_list.append(
+                    BindFailureSupplyAreaEntity(
+                        real_estate_name=obj.real_estate_name,
+                        private_sale_name=obj.private_sale_name,
+                        real_estate_id=obj.real_estate_id,
+                        private_sales_id=obj.private_sales_id,
+                        private_area=obj.private_area,
+                        supply_area=obj.supply_area,
+                        front_legal_code=obj.front_legal_code,
+                        back_legal_code=obj.back_legal_code,
+                        jibun_address=obj.jibun_address,
+                        road_address=obj.road_address,
+                        land_number=obj.land_number,
+                        failure_reason=str(e),
+                        is_done=False,
+                        ref_summary_id=obj.ref_summary_id,
+                    )
+                )
+
+    # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    def create_temp_failure_supply_area(
+        self, failure_list: List[BindFailureSupplyAreaEntity]
+    ) -> None:
+        try:
+            for obj in failure_list:
+                temp_failure_supply_area = TempFailureSupplyAreaModel(
+                    real_estate_name=obj.real_estate_name,
+                    private_sale_name=obj.private_sale_name,
+                    real_estate_id=obj.real_estate_id,
+                    private_sales_id=obj.private_sales_id,
+                    private_area=obj.private_area,
+                    supply_area=obj.supply_area,
+                    front_legal_code=obj.front_legal_code,
+                    back_legal_code=obj.back_legal_code,
+                    jibun_address=obj.jibun_address,
+                    road_address=obj.road_address,
+                    land_number=obj.land_number,
+                    failure_reason=obj.failure_reason,
+                    is_done=obj.is_done,
+                    ref_summary_id=obj.ref_summary_id,
+                )
+                session.add(temp_failure_supply_area)
+                session.commit()
+
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][create_temp_failure_supply_area] error : {e}"
             )
             raise NotUniqueErrorException

@@ -17,3 +17,6 @@ class TopicEnum(Enum):
     ADD_SUPPLY_AREA_TO_PRIVATE_SALE_DETAILS = (
         "tanos.add_supply_area_to_private_sale_details.v1"
     )
+    BIND_SUPPLY_AREA_TO_PRIVATE_SALE_DETAILS = (
+        "tanos.bind_supply_area_to_private_sale_details.v1"
+    )

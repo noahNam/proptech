@@ -27,6 +27,9 @@ from core.domains.house.entity.house_entity import (
     RecentlyContractedEntity,
     CheckIdsRealEstateEntity,
     AddSupplyAreaEntity,
+    BindTargetSupplyAreaEntity,
+    BindFailureSupplyAreaEntity,
+    BindSuccessSupplyAreaEntity,
 )
 from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
@@ -827,7 +830,9 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             os.path.splitext(image_name)[-1].split(".")[1].lower()
                         )
                         path = S3Helper().get_image_upload_uuid_path(
-                            image_table_name=table_name, extension=extension
+                            image_table_name=table_name,
+                            dir_name=dir_name,
+                            extension=extension,
                         )
 
                         public_sale_photos.append(
@@ -853,6 +858,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                         # S3 upload
                         S3Helper().upload(
                             bucket="toadhome-tanos-bucket",
+                            dir_name=dir_name,
                             file_name=file_name,
                             object_name=path,
                             extension=extension,
@@ -879,7 +885,9 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                                 os.path.splitext(image_name)[-1].split(".")[1].lower()
                             )
                             path = S3Helper().get_image_upload_uuid_path(
-                                image_table_name=table_name, extension=extension
+                                image_table_name=table_name,
+                                dir_name=dir_name,
+                                extension=extension,
                             )
                             public_sale_detail_photos.append(
                                 {
@@ -904,6 +912,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             S3Helper().upload(
                                 bucket="toadhome-tanos-bucket",
                                 file_name=file_name,
+                                dir_name=dir_name,
                                 object_name=path,
                                 extension=extension,
                             )
@@ -1326,18 +1335,49 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
     def execute(self):
         logger.info(f"🚀\tAddSupplyAreaUseCase Start - {self.client_id}")
         start_time = time()
+        emoji = "🚀"
 
-        # private_sales 중 아파트 건만 데이터를 조회한다.
+        # # bulk insert summary_create_list to temp_summary_supply_area_api
+        # self._house_repo.create_summary_success_list_to_temp_summary()
+        #
+        # logger.info(
+        #     f"🚀\tAddSupplyAreaUseCase - Done! \n"
+        #     f"records: {time() - start_time} secs \n"
+        # )
+        # exit(os.EX_OK)
+
+        # private_sales 중 아파트,오피스텔 건만 데이터를 조회한다.
         target_list: List[
             AddSupplyAreaEntity
         ] = self._house_repo.get_target_of_add_to_supply_area()
         last_target_id = None  # 실패로그를 위한 변수
         create_list = list()
         summary_failure_list = list()
+        summary_failure_log_list = list()
+        count = 0  # 로그 확인용 변수
+
+        if not target_list:
+            logger.info(
+                f"🚀\tAddSupplyAreaUseCase - Done! \n"
+                f"last_real_estate_id: {last_target_id} \n"
+                f"records: {time() - start_time} secs \n"
+                f"(총 타겟: 0 / 실패: 0)"
+            )
+
+            self.send_slack_message(
+                title=f"{emoji} [AddSupplyAreaUseCase] >>> 공급면적 추가 배치",
+                message=f"AddSupplyAreaUseCase : Finished !! \n "
+                        f"records: {time() - start_time} secs \n "
+                        f"(총 타겟: 0 / 실패: 0)"
+            )
+            exit(os.EX_OK)
 
         url = "http://apis.data.go.kr/1613000/BldRgstService_v2/getBrExposPubuseAreaInfo?ServiceKey=dbNxRdjZCqBvSjcfDHnxPgUm0CXIjGhNHSAlbvBxI0BvOu3dpL8t%2FFQ%2BDRE%2FoKPw61Nm0gHxqYTlYEgDxz37aw%3D%3D"
+
         try:
             for target in target_list:
+                count += 1
+
                 last_target_id = target.req_real_estate_id
                 req_land_number = target.req_land_number
                 land_number = req_land_number.split("-")
@@ -1375,7 +1415,8 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                     )
 
                     logger.info(
-                        f"🚀\tcall API! \n"
+                        f"🚀\tcall API!\n"
+                        f"count: {count} \n"
                         f"real_estate_id: {target.req_real_estate_id} \n"
                         f"page_no: {page_no} / front_legal_code: {target.req_front_legal_code} / back_legal_code: {target.req_back_legal_code} \n"
                         f"bun: {bun} / ji: {ji} \n"
@@ -1397,6 +1438,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                                     success_yn=False,
                                 )
                             )
+                            summary_failure_log_list.append(target.req_real_estate_id)
                             break
 
                         total_count = data["totalCount"]
@@ -1460,11 +1502,11 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
 
                             create_list.append(create_dict)
 
-                        print("real_estate_id -------> ", target.req_real_estate_id)
-                        print("pageNo -------> ", page_no)
-                        print("r_num -------> ", r_num)
-                        print("total_count -------> ", total_count)
-                        print("url -------> ", url + request_param)
+                        # print("real_estate_id -------> ", target.req_real_estate_id)
+                        # print("pageNo -------> ", page_no)
+                        # print("r_num -------> ", r_num)
+                        # print("total_count -------> ", total_count)
+                        # print("url -------> ", url + request_param)
 
                         if int(r_num) < int(total_count):
                             page_no += 1
@@ -1475,7 +1517,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                 # bulk insert to temp_supply_area_api
                 if create_list:
                     self._house_repo.create_temp_supply_area_api(
-                        create_list=create_list
+                        create_list=create_list, summary_failure_list=summary_failure_list
                     )
 
                 # bulk insert summary_failure_list to temp_summary_supply_area_api
@@ -1490,28 +1532,133 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
             # bulk insert summary_create_list to temp_summary_supply_area_api
             self._house_repo.create_summary_success_list_to_temp_summary()
 
-            logger.info(
-                f"🚀\tAddSupplyAreaUseCase - Done! \n"
-                f"last_target_id: {last_target_id} \n"
-                # f"({len(not_uploaded_public_sales_ids)}/ {len(public_sales_ids)})\n"
-                # f"passed_dirs: {passed_dirs}\n"
-                f"records: {time() - start_time} secs"
-            )
-
-            emoji = "🚀"
-            # self.send_slack_message(
-            #     title=f"{emoji} [CheckNotUploadedPhotoUseCase] >>> 업로드 누락 이미지 체크",
-            #     message=f"CheckNotUploadedPhotoUseCase : Finished !! \n "
-            #     f"records: {time() - start_time} secs \n "
-            #     f"public_sales_id: {not_uploaded_public_sales_ids} not uploaded photos, "
-            #     f"({len(not_uploaded_public_sales_ids)}/ {len(public_sales_ids)}) \n",
-            # )
-
         except Exception as e:
             logger.info(
                 f"☠️\tAddSupplyAreaUseCase - Failure! \n"
-                f"last_target_id: {last_target_id} \n"
+                f"exception : {str(e)} \n"
+                f"last_real_estate_id: {last_target_id} \n"
                 f"records: {time() - start_time} secs"
             )
+
+        logger.info(
+            f"🚀\tAddSupplyAreaUseCase - Done! \n"
+            f"last_real_estate_id: {last_target_id} \n"
+            f"records: {time() - start_time} secs \n"
+            f"(총 타겟: {len(target_list)} / 실패: {len(summary_failure_log_list)}) \n"
+            f"summary_failure_log_list(real_estate_id): {summary_failure_log_list}"
+        )
+
+        self.send_slack_message(
+            title=f"{emoji} [AddSupplyAreaUseCase] >>> 공급면적 추가 배치",
+            message=f"AddSupplyAreaUseCase : Finished !! \n "
+            f"records: {time() - start_time} secs \n "
+            f"(총 타겟: {len(target_list)} / 실패: {len(summary_failure_log_list)}) \n"
+            f"summary_failure_log_list(real_estate_id): {summary_failure_log_list}",
+        )
+
+        exit(os.EX_OK)
+
+
+class BindSupplyAreaUseCase(BaseHouseWorkerUseCase):
+    """
+        - What : 현재 실거래가에 공급면적이 존재하지 않기 때문에 건축물대장 API를 통해서 추가한다.
+                 원래는 Core DB에 추가해야 하지만 현재 Sam의 리소스가 없기 때문에 Tanos에 먼저 추가하고
+                 MVP 이후에 Core 쪽에 추가한 후 해당 Topic은 삭제한다.
+        - When : 데일리 실거래가가 들어온 직후 Tanos 배치가 돌기전에 돌려야 한다.
+        - 삭제필요 코드는 전부 옆에와 같이 todo를 달아놈 -> todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
+    """
+
+    def execute(self):
+        logger.info(f"🚀\tBindSupplyAreaUseCase Start - {self.client_id}")
+        start_time = time()
+        emoji = "🚀"
+
+        last_target_id = None  # 실패로그를 위한 변수
+        create_list = list()
+        failure_list = list()
+
+        # private_sales.create_at or updated_at이 오늘날짜인 타겟 id를 조회한다.
+        target_entities: List[
+            BindTargetSupplyAreaEntity
+        ] = self._house_repo.get_private_sales_target_ids_for_supply_area()
+
+        if not target_entities:
+            logger.info(f"🚀\tUpdate_private_sales_ids : Nothing target_ids")
+            self.send_slack_message(
+                title=f"{emoji} [BindSupplyAreaUseCase] >>> 공급면적 추가 배치",
+                message=f"BindSupplyAreaUseCase : Finished !! \n "
+                        f"records: {time() - start_time} secs \n "
+                        f"Update_private_sales_ids : Nothing target_ids",
+            )
+            exit(os.EX_OK)
+
+        try:
+            for target_entity in target_entities:
+                if not target_entity.ref_summary_id:
+                    failure_list.append(
+                        BindFailureSupplyAreaEntity(
+                            real_estate_name=target_entity.real_estate_name,
+                            private_sale_name=target_entity.private_sale_name,
+                            real_estate_id=target_entity.real_estate_id,
+                            private_sales_id=target_entity.private_sales_id,
+                            private_area=target_entity.private_area,
+                            supply_area=target_entity.supply_area,
+                            front_legal_code=target_entity.front_legal_code,
+                            back_legal_code=target_entity.back_legal_code,
+                            jibun_address=target_entity.jibun_address,
+                            road_address=target_entity.road_address,
+                            land_number=target_entity.land_number,
+                            failure_reason="not target_entity.ref_summary_id",
+                            is_done=False,
+                            ref_summary_id=target_entity.ref_summary_id,
+                        )
+                    )
+                else:
+                    create_list.append(
+                        BindSuccessSupplyAreaEntity(
+                            real_estate_name=target_entity.real_estate_name,
+                            private_sale_name=target_entity.private_sale_name,
+                            real_estate_id=target_entity.real_estate_id,
+                            private_sales_id=target_entity.private_sales_id,
+                            private_area=target_entity.private_area,
+                            supply_area=target_entity.supply_area,
+                            front_legal_code=target_entity.front_legal_code,
+                            back_legal_code=target_entity.back_legal_code,
+                            jibun_address=target_entity.jibun_address,
+                            road_address=target_entity.road_address,
+                            land_number=target_entity.land_number,
+                            ref_summary_id=target_entity.ref_summary_id,
+                        )
+                    )
+
+            # update private_sale_details && insert to temp_success_supply_area
+            self._house_repo.create_temp_success_supply_area(
+                create_list=create_list, failure_list=failure_list
+            )
+            # insert to temp_failure_supply_area
+            self._house_repo.create_temp_failure_supply_area(failure_list=failure_list)
+
+        except Exception as e:
+            logger.info(
+                f"☠️\tBindSupplyAreaUseCase - Failure! \n"
+                f"last_real_estate_id: {last_target_id} \n"
+                f"records: {time() - start_time} secs"
+            )
+
+        logger.info(
+            f"🚀\tBindSupplyAreaUseCase - Done! \n"
+            f"last_real_estate_id: {last_target_id} \n"
+            f"records: {time() - start_time} secs \n"
+            f"(총 타겟: {len(target_entities)} / 실패: {len(failure_list)}) \n"
+            f"summary_failure_log_list(real_estate_id): {failure_list}"
+        )
+
+        self.send_slack_message(
+            title=f"{emoji} [BindSupplyAreaUseCase] >>> 공급면적 추가 배치",
+            message=f"BindSupplyAreaUseCase : Finished !! \n "
+            f"records: {time() - start_time} secs \n "
+            f"(총 타겟: {len(target_entities)} / 실패: {len(failure_list)}) \n"
+            f"summary_failure_log_list(real_estate_id): {failure_list}",
+        )
 
         exit(os.EX_OK)
