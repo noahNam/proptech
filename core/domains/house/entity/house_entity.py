@@ -581,6 +581,7 @@ class AddSupplyAreaEntity(BaseModel):
     req_real_estate_name: Optional[str]
     req_private_sales_id: Optional[int]
     req_private_sale_name: Optional[str]
+    req_private_building_type: Enum
     req_jibun_address: Optional[str]
     req_road_address: Optional[str]
     resp_rnum: Optional[int]
@@ -598,6 +599,9 @@ class AddSupplyAreaEntity(BaseModel):
     resp_main_purps_cd: Optional[str]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
+
+    class Config:
+        use_enum_values = True
 
 
 # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요

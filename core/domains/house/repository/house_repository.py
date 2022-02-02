@@ -5,7 +5,18 @@ from enum import Enum
 from typing import Optional, List, Any, Tuple, Union
 
 from geoalchemy2 import Geometry
-from sqlalchemy import and_, func, or_, literal, String, exists, Integer, case, Numeric
+from sqlalchemy import (
+    and_,
+    func,
+    or_,
+    literal,
+    String,
+    exists,
+    Integer,
+    case,
+    Numeric,
+    not_,
+)
 from sqlalchemy import exc
 from sqlalchemy.orm import joinedload, selectinload, contains_eager, aliased, Query
 from sqlalchemy.sql.functions import _FunctionGenerator
@@ -1875,7 +1886,10 @@ class HouseRepository:
 
     def update_private_sale_avg_prices(self, update_list: List[dict]) -> None:
         try:
-            session.bulk_update_mappings(
+            session.query(PrivateSaleAvgPriceModel).filter(PrivateSaleAvgPriceModel.id.in_([update_info['id'] for update_info in update_list])).delete()
+            session.commit()
+
+            session.bulk_insert_mappings(
                 PrivateSaleAvgPriceModel, [update_info for update_info in update_list]
             )
 
@@ -3324,10 +3338,10 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-                TempSupplyAreaApiModel.id == None
+                TempSupplyAreaApiModel.id == None,
+                TempSummarySupplyAreaApiModel.id == None,
             )
-            &
-            and_(
+            & and_(
                 or_(
                     func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
                     func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
@@ -3344,6 +3358,7 @@ class HouseRepository:
                 RealEstateModel.name,
                 PrivateSaleModel.id.label("private_sales_id"),
                 PrivateSaleModel.name.label("private_sale_name"),
+                PrivateSaleModel.building_type.label("private_building_type"),
                 RealEstateModel.jibun_address,
                 RealEstateModel.road_address,
             )
@@ -3351,14 +3366,20 @@ class HouseRepository:
                 PrivateSaleModel, RealEstateModel.id == PrivateSaleModel.real_estate_id
             )
             .join(
-                TempSupplyAreaApiModel, PrivateSaleModel.id == TempSupplyAreaApiModel.req_private_sales_id, isouter=True
+                TempSupplyAreaApiModel,
+                PrivateSaleModel.id == TempSupplyAreaApiModel.req_private_sales_id,
+                isouter=True,
+            )
+            .join(
+                TempSummarySupplyAreaApiModel,
+                PrivateSaleModel.id == TempSummarySupplyAreaApiModel.private_sales_id,
+                isouter=True,
             )
             .filter(*filters)
+            .filter(~RealEstateModel.id.in_([220825, 302963, 320862]))  # 220825,302963,320862 는 아파트인데 주건축물 코드가 없어서 제외시킴
             .order_by(RealEstateModel.id)
         )
 
-        print("-----------------------")
-        RawQueryHelper.print_raw_query(query)
         query_set = query.all()
 
         if not query_set:
@@ -3374,6 +3395,7 @@ class HouseRepository:
                     req_real_estate_name=query.name,
                     req_private_sales_id=query.private_sales_id,
                     req_private_sale_name=query.private_sale_name,
+                    req_private_building_type=query.private_building_type,
                     req_jibun_address=query.jibun_address,
                     req_road_address=query.road_address,
                 )
@@ -3382,7 +3404,9 @@ class HouseRepository:
         return target_list
 
     # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
-    def create_temp_supply_area_api(self, create_list: List[dict], summary_failure_list: List[dict]) -> None:
+    def create_temp_supply_area_api(
+        self, create_list: List[dict], summary_failure_list: List[dict]
+    ) -> None:
         try:
             session.bulk_insert_mappings(
                 TempSupplyAreaApiModel, [create_info for create_info in create_list]
@@ -3396,10 +3420,10 @@ class HouseRepository:
             for create_info in create_list:
                 summary_failure_list.append(
                     dict(
-                        real_estate_id=create_info['req_real_estate_id'],
-                        real_estate_name=create_info['req_real_estate_name'],
-                        private_sales_id=create_info['req_private_sales_id'],
-                        private_sale_name=create_info['req_private_sale_name'],
+                        real_estate_id=create_info["req_real_estate_id"],
+                        real_estate_name=create_info["req_real_estate_name"],
+                        private_sales_id=create_info["req_private_sales_id"],
+                        private_sale_name=create_info["req_private_sale_name"],
                         success_yn=False,
                     )
                 )
@@ -3428,25 +3452,42 @@ class HouseRepository:
         filters = list()
 
         filters.append(
-            and_(
-                TempSupplyAreaApiModel.update_need == True,
+            and_(TempSupplyAreaApiModel.update_need == True,)
+            & not_(
+                or_(
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%주차장%"),
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%관리%"),
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%기계%"),
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%전기%"),
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%제어%"),
+                    TempSupplyAreaApiModel.resp_etc_purps.like("%경비%"),
+                )
             )
         )
 
+        case_stmt = case(
+            [
+                (TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm == '전유', func.max(TempSupplyAreaApiModel.resp_area))
+            ],
+            else_=func.coalesce(func.sum(TempSupplyAreaApiModel.resp_area), 0)
+        ).label("resp_area")
+
         try:
-            sub_query = (
+            apt_query = (
                 session.query(TempSupplyAreaApiModel)
                 .with_entities(
-                    TempSupplyAreaApiModel.req_real_estate_id,
-                    TempSupplyAreaApiModel.req_real_estate_name,
-                    TempSupplyAreaApiModel.req_private_sales_id,
-                    TempSupplyAreaApiModel.req_private_sale_name,
-                    func.coalesce(func.sum(TempSupplyAreaApiModel.resp_area), 0).label(
-                        "supply_area"
-                    ),
-                    func.max(TempSupplyAreaApiModel.resp_area).label("private_area"),
+                    TempSupplyAreaApiModel.req_real_estate_id.label("req_real_estate_id"),
+                    TempSupplyAreaApiModel.req_real_estate_name.label("req_real_estate_name"),
+                    TempSupplyAreaApiModel.req_private_sales_id.label("req_private_sales_id"),
+                    TempSupplyAreaApiModel.req_private_sale_name.label("req_private_sale_name"),
+                    TempSupplyAreaApiModel.resp_name.label("resp_name"),
+                    TempSupplyAreaApiModel.resp_dong_nm.label("resp_dong_nm"),
+                    TempSupplyAreaApiModel.resp_ho_nm.label("resp_ho_nm"),
+                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm.label("resp_expos_pubuse_gb_cd_nm"),
+                    case_stmt
                 )
                 .filter(*filters)
+                .filter(TempSupplyAreaApiModel.req_private_building_type == BuildTypeEnum.APARTMENT.value)
                 .group_by(
                     TempSupplyAreaApiModel.req_real_estate_id,
                     TempSupplyAreaApiModel.req_real_estate_name,
@@ -3455,40 +3496,83 @@ class HouseRepository:
                     TempSupplyAreaApiModel.resp_name,
                     TempSupplyAreaApiModel.resp_dong_nm,
                     TempSupplyAreaApiModel.resp_ho_nm,
-                )
-            ).subquery()
-
-            query = (
-                session.query(sub_query)
-                .with_entities(
-                    sub_query.c.req_real_estate_id,
-                    func.max(sub_query.c.req_real_estate_name).label(
-                        "req_real_estate_name"
-                    ),
-                    sub_query.c.req_private_sales_id,
-                    func.max(sub_query.c.req_private_sale_name).label(
-                        "req_private_sale_name"
-                    ),
-                    sub_query.c.private_area,
-                    func.cast(func.min(sub_query.c.supply_area), Numeric).label(
-                        "supply_area"
-                    ),
-                )
-                .group_by(
-                    sub_query.c.req_real_estate_id,
-                    sub_query.c.req_private_sales_id,
-                    sub_query.c.private_area,
-                )
-                .order_by(
-                    sub_query.c.req_real_estate_id,
-                    sub_query.c.req_private_sales_id,
-                    sub_query.c.private_area,
+                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm
                 )
             )
 
-            print("------")
-            RawQueryHelper.print_raw_query(query)
-            query_set = query.all()
+            opt_query = (
+                session.query(TempSupplyAreaApiModel)
+                .with_entities(
+                    TempSupplyAreaApiModel.req_real_estate_id.label("req_real_estate_id"),
+                    TempSupplyAreaApiModel.req_real_estate_name.label("req_real_estate_name"),
+                    TempSupplyAreaApiModel.req_private_sales_id.label("req_private_sales_id"),
+                    TempSupplyAreaApiModel.req_private_sale_name.label("req_private_sale_name"),
+                    TempSupplyAreaApiModel.resp_name.label("resp_name"),
+                    TempSupplyAreaApiModel.resp_dong_nm.label("resp_dong_nm"),
+                    TempSupplyAreaApiModel.resp_ho_nm.label("resp_ho_nm"),
+                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm.label("resp_expos_pubuse_gb_cd_nm"),
+                    case_stmt
+                )
+                .filter(TempSupplyAreaApiModel.update_need == True)
+                .filter(TempSupplyAreaApiModel.req_private_building_type == BuildTypeEnum.STUDIO.value)
+                .group_by(
+                    TempSupplyAreaApiModel.req_real_estate_id,
+                    TempSupplyAreaApiModel.req_real_estate_name,
+                    TempSupplyAreaApiModel.req_private_sales_id,
+                    TempSupplyAreaApiModel.req_private_sale_name,
+                    TempSupplyAreaApiModel.resp_name,
+                    TempSupplyAreaApiModel.resp_dong_nm,
+                    TempSupplyAreaApiModel.resp_ho_nm,
+                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm
+                )
+            )
+
+            union_query = apt_query.union_all(opt_query).subquery()
+            middle_query = (
+                session.query(union_query)
+                .with_entities(
+                    union_query.c.req_real_estate_id.label("req_real_estate_id"),
+                    union_query.c.req_real_estate_name.label("req_real_estate_name"),
+                    union_query.c.req_private_sales_id.label("req_private_sales_id"),
+                    union_query.c.req_private_sale_name.label("req_private_sale_name"),
+                    union_query.c.resp_name.label("resp_name"),
+                    case(
+                        [
+                            (union_query.c.resp_expos_pubuse_gb_cd_nm == '전유',
+                             union_query.c.resp_area)
+                        ],
+                        else_=0
+                    ).label("private_area"),
+                    func.sum(union_query.c.resp_area)
+                        .over(
+                        partition_by=(union_query.c.req_real_estate_id, union_query.c.resp_name, union_query.c.resp_dong_nm, union_query.c.resp_ho_nm),
+
+                    )
+                    .label("supply_area")
+                )
+            ).subquery()
+
+            final_query = (
+                session.query(middle_query)
+                .with_entities(
+                    middle_query.c.req_real_estate_id.label("req_real_estate_id"),
+                    middle_query.c.req_real_estate_name.label("req_real_estate_name"),
+                    middle_query.c.req_private_sales_id.label("req_private_sales_id"),
+                    middle_query.c.req_private_sale_name.label("req_private_sale_name"),
+                    middle_query.c.resp_name.label("resp_name"),
+                    middle_query.c.private_area.label("private_area"),
+                    func.max(middle_query.c.supply_area).label("supply_area"),
+                ).group_by(
+                    middle_query.c.req_real_estate_id,
+                    middle_query.c.req_real_estate_name,
+                    middle_query.c.req_private_sales_id,
+                    middle_query.c.req_private_sale_name,
+                    middle_query.c.resp_name,
+                    middle_query.c.private_area,
+                )
+            )
+
+            query_set = final_query.all()
 
             for query in query_set:
                 create_list.append(
@@ -3511,7 +3595,8 @@ class HouseRepository:
             # update 필요여부 갱신
             for obj in create_list:
                 session.query(TempSupplyAreaApiModel).filter(
-                    TempSupplyAreaApiModel.private_sales_id == obj['private_sales_id'],
+                    TempSupplyAreaApiModel.req_private_sales_id
+                    == obj["private_sales_id"],
                     TempSupplyAreaApiModel.update_need == True,
                 ).update({"update_need": False})
 
@@ -3539,9 +3624,9 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
+                TempSummarySupplyAreaApiModel.success_yn == True
             )
-            &
-            and_(
+            & and_(
                 or_(
                     func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
                     func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
@@ -3560,8 +3645,12 @@ class HouseRepository:
                 PrivateSaleModel.name.label("private_sale_name"),
                 RealEstateModel.jibun_address,
                 RealEstateModel.road_address,
-                TempSummarySupplyAreaApiModel.private_area,
-                TempSummarySupplyAreaApiModel.supply_area,
+                func.round(
+                    func.cast(TempSummarySupplyAreaApiModel.private_area, Numeric), 2
+                ).label("private_area"),
+                func.round(
+                    func.cast(TempSummarySupplyAreaApiModel.supply_area, Numeric), 2
+                ).label("supply_area"),
                 TempSummarySupplyAreaApiModel.id.label("ref_summary_id"),
             )
             .join(
@@ -3576,8 +3665,6 @@ class HouseRepository:
             .order_by(RealEstateModel.id)
         )
 
-        print("-----------------------")
-        RawQueryHelper.print_raw_query(query)
         query_set = query.all()
 
         if not query_set:
