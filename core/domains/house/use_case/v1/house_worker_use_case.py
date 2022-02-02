@@ -4,7 +4,7 @@ import re
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
-from time import time
+from time import time, sleep
 from typing import List, Optional, Dict
 
 import inject
@@ -1337,7 +1337,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
         start_time = time()
         emoji = "🚀"
 
-        # # bulk insert summary_create_list to temp_summary_supply_area_api
+        # bulk insert summary_create_list to temp_summary_supply_area_api
         # self._house_repo.create_summary_success_list_to_temp_summary()
         #
         # logger.info(
@@ -1406,13 +1406,21 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                     if ji:
                         request_param += "&ji={}".format(ji)
 
-                    response = requests.get(
-                        url=url + request_param,
-                        headers={
-                            "Content-Type": "application/json; charset=utf8",
-                            "Cache-Control": "no-cache",
-                        },
-                    )
+                    try:
+                        response = requests.get(
+                            url=url + request_param,
+                            headers={
+                                "Content-Type": "application/json; charset=utf8",
+                                "Cache-Control": "no-cache",
+                            },
+                        )
+                    except Exception as e:
+                        logger.info(
+                            f"☠️\tAddSupplyAreaUseCase - Response Failure! \n"
+                            f"exception : {str(e)} \n"
+                        )
+                        sleep(5)
+                        continue
 
                     logger.info(
                         f"🚀\tcall API!\n"
@@ -1443,7 +1451,9 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
 
                         total_count = data["totalCount"]
 
-                        for item in data["items"]["item"]:
+                        item_type = isinstance(data["items"]["item"], dict)  # list에 담겨져오는 것이 대부분이나 일부는 json 형식으로 내려옴
+                        if item_type:
+                            item = data["items"]["item"]
                             resp_dong_nm = item["dongNm"]
                             resp_ho_nm = item["hoNm"]
                             resp_bld_nm = item["bldNm"]  # 아파트 이름
@@ -1471,7 +1481,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                             # if not (resp_main_atch_gb_cd == "0" and resp_main_purps_cd == "02001"):
                             #     continue
 
-                            if resp_main_atch_gb_cd != "0":
+                            if resp_main_atch_gb_cd != "0" and target.req_private_building_type.value == "아파트":
                                 continue
 
                             create_dict = dict(
@@ -1482,6 +1492,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                                 req_real_estate_name=target.req_real_estate_name,
                                 req_private_sales_id=target.req_private_sales_id,
                                 req_private_sale_name=target.req_private_sale_name,
+                                req_private_building_type=target.req_private_building_type.value,
                                 req_jibun_address=target.req_jibun_address,
                                 req_road_address=target.req_road_address,
                                 resp_rnum=r_num,
@@ -1498,15 +1509,71 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                                 resp_main_atch_gb_cd=resp_main_atch_gb_cd,
                                 resp_main_atch_gb_cd_nm=resp_main_atch_gb_cd_nm,
                                 resp_main_purps_cd=resp_main_purps_cd,
+                                update_need=True
                             )
 
                             create_list.append(create_dict)
+                        else:
+                            for item in data["items"]["item"]:
+                                resp_dong_nm = item["dongNm"]
+                                resp_ho_nm = item["hoNm"]
+                                resp_bld_nm = item["bldNm"]  # 아파트 이름
+                                resp_flr_no_nm = item["flrNoNm"]  # 층 이름
+                                resp_area = item["area"]  # 공급면적
+                                resp_jibun_address = item["newPlatPlc"]  # 지번 주소
+                                resp_road_address = item["platPlc"]  # 도로명 주소
+                                resp_etc_purps = item[
+                                    "etcPurps"
+                                ]  # 아파트/ 오피스텔 / 펌프실 / 관리 / 주차장 ...
+                                resp_expos_pubuse_gb_cd_nm = item[
+                                    "exposPubuseGbCdNm"
+                                ]  # 전유 / 공용
+                                resp_main_atch_gb_cd = item["mainAtchGbCd"]  # 0 / 1
+                                resp_main_atch_gb_cd_nm = item[
+                                    "mainAtchGbCdNm"
+                                ]  # 주건축물 / 부속건출물, ....
+                                resp_main_purps_cd = item[
+                                    "mainPurpsCd"
+                                ]  # 02001 / 02002~02006 (부속건축물)
 
-                        # print("real_estate_id -------> ", target.req_real_estate_id)
-                        # print("pageNo -------> ", page_no)
-                        # print("r_num -------> ", r_num)
-                        # print("total_count -------> ", total_count)
-                        # print("url -------> ", url + request_param)
+                                # 1부터 시작
+                                r_num = item["rnum"]
+
+                                # if not (resp_main_atch_gb_cd == "0" and resp_main_purps_cd == "02001"):
+                                #     continue
+
+                                if resp_main_atch_gb_cd != "0" and target.req_private_building_type.value == "아파트":
+                                    continue
+
+                                create_dict = dict(
+                                    req_front_legal_code=target.req_front_legal_code,
+                                    req_back_legal_code=target.req_back_legal_code,
+                                    req_land_number=target.req_land_number,
+                                    req_real_estate_id=target.req_real_estate_id,
+                                    req_real_estate_name=target.req_real_estate_name,
+                                    req_private_sales_id=target.req_private_sales_id,
+                                    req_private_sale_name=target.req_private_sale_name,
+                                    req_private_building_type=target.req_private_building_type.value,
+                                    req_jibun_address=target.req_jibun_address,
+                                    req_road_address=target.req_road_address,
+                                    resp_rnum=r_num,
+                                    resp_total_count=total_count,
+                                    resp_name=resp_bld_nm,
+                                    resp_dong_nm=resp_dong_nm,
+                                    resp_ho_nm=resp_ho_nm,
+                                    resp_flr_no_nm=resp_flr_no_nm,
+                                    resp_area=resp_area,
+                                    resp_jibun_address=resp_jibun_address,
+                                    resp_road_address=resp_road_address,
+                                    resp_etc_purps=resp_etc_purps,
+                                    resp_expos_pubuse_gb_cd_nm=resp_expos_pubuse_gb_cd_nm,
+                                    resp_main_atch_gb_cd=resp_main_atch_gb_cd,
+                                    resp_main_atch_gb_cd_nm=resp_main_atch_gb_cd_nm,
+                                    resp_main_purps_cd=resp_main_purps_cd,
+                                    update_need=True
+                                )
+
+                                create_list.append(create_dict)
 
                         if int(r_num) < int(total_count):
                             page_no += 1
