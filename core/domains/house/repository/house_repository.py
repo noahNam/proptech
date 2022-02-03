@@ -1750,17 +1750,29 @@ class HouseRepository:
         )
 
         union_query = query_cond1.union_all(query_cond2).subquery()
+        # pyoung_case = case(
+        #     [
+        #         (
+        #             and_(
+        #                 union_query.columns.private_sale_details_supply_area != 0,
+        #                 union_query.columns.private_sale_details_supply_area != None,
+        #             ),
+        #             union_query.columns.private_sale_details_supply_area,
+        #         ),
+        #         (
+        #             union_query.columns.private_sale_details_supply_area == 0,
+        #             union_query.columns.private_sale_details_private_area,
+        #         ),
+        #     ]
+        # )
         pyoung_case = case(
             [
                 (
-                    and_(
-                        union_query.columns.private_sale_details_supply_area != 0,
-                        union_query.columns.private_sale_details_supply_area != None,
-                    ),
+                    PrivateSaleAvgPriceModel.pyoung_div == 'S',
                     union_query.columns.private_sale_details_supply_area,
                 ),
                 (
-                    union_query.columns.private_sale_details_supply_area == 0,
+                    PrivateSaleAvgPriceModel.pyoung_div == 'P',
                     union_query.columns.private_sale_details_private_area,
                 ),
             ]
@@ -1839,7 +1851,7 @@ class HouseRepository:
 
         for recent_info in recent_infos:
             # 평 계산시 겹치는 것들이 있기 때문에 정확도를 위해 supply_area 없을때는, private_area 로 평을 대체
-            if not recent_info.supply_area and recent_info.supply_area != 0:
+            if recent_info.supply_area and int(recent_info.supply_area) != 0:
                 pyoung_div = "S"  # {S}upply_area
                 pyoung = recent_info.supply_area
             else:
@@ -1886,10 +1898,7 @@ class HouseRepository:
 
     def update_private_sale_avg_prices(self, update_list: List[dict]) -> None:
         try:
-            session.query(PrivateSaleAvgPriceModel).filter(PrivateSaleAvgPriceModel.id.in_([update_info['id'] for update_info in update_list])).delete()
-            session.commit()
-
-            session.bulk_insert_mappings(
+            session.bulk_update_mappings(
                 PrivateSaleAvgPriceModel, [update_info for update_info in update_list]
             )
 
@@ -2046,13 +2055,13 @@ class HouseRepository:
             # 평 계산시 겹치는 것들이 있기 때문에 정확도를 위해 supply_area 없을때는, private_area 로 평을 대체
             trade_default_pyoung = (
                 query.trade_supply_area
-                if not query.trade_supply_area and query.trade_supply_area != 0
+                if query.trade_supply_area and int(query.trade_supply_area) != 0
                 else query.trade_private_area
             )
 
             deposit_default_pyoung = (
                 query.deposit_supply_area
-                if not query.deposit_supply_area and query.deposit_supply_area != 0
+                if query.deposit_supply_area and int(query.deposit_supply_area) != 0
                 else query.deposit_private_area
             )
 
@@ -3297,12 +3306,12 @@ class HouseRepository:
             and_(
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-                func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
+                # func.to_char(PrivateSaleModel.created_at, "YYYY-mm-dd") == today,
             )
             | and_(
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-                func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
+                # func.to_char(PrivateSaleModel.updated_at, "YYYY-mm-dd") == today,
             )
         )
         query = session.query(PrivateSaleModel).filter(*filters)
