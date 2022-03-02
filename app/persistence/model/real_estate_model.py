@@ -107,15 +107,18 @@ class RealEstateModel(db.Model):
     def calender_address(self) -> Optional[str]:
         if not self.si_do:
             return ""
-        elif self.si_do == "세종특별자치시":
+
+        if self.si_do == "세종특별자치시":
             # 세종시는 시군구가 무조건 없음
             return f"{self.si_do} {self.dong_myun} {self.land_number}"
+
+        if self.dong_myun == "":
+            return f"{self.si_do} {self.si_gun_gu}"
+
+        if not self.land_number:
+            return f"{self.si_do} {self.si_gun_gu} {self.dong_myun}"
         else:
-            return (
-                f"{self.si_do} {self.si_gun_gu} {self.dong_myun} {self.land_number}"
-                if self.dong_myun != ""
-                else f"{self.si_do} {self.si_gun_gu}"
-            )
+            f"{self.si_do} {self.si_gun_gu} {self.dong_myun} {self.land_number}"
 
     # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
     def to_add_supply_area_entity(self) -> Optional[AddSupplyAreaEntity]:
