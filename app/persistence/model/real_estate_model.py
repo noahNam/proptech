@@ -118,7 +118,7 @@ class RealEstateModel(db.Model):
         if not self.land_number:
             return f"{self.si_do} {self.si_gun_gu} {self.dong_myun}"
         else:
-            f"{self.si_do} {self.si_gun_gu} {self.dong_myun} {self.land_number}"
+            return f"{self.si_do} {self.si_gun_gu} {self.dong_myun} {self.land_number}"
 
     # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요
     def to_add_supply_area_entity(self) -> Optional[AddSupplyAreaEntity]:
