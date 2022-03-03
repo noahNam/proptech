@@ -329,7 +329,7 @@ class NotificationFactory(BaseFactory):
     message = {}
     is_read = False
     is_pending = False
-    status = NotificationStatusEnum.WAIT.value
+    status = NotificationStatusEnum.SUCCESS.value
     created_at = get_server_timestamp()
 
 
