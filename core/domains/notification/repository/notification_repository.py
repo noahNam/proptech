@@ -29,6 +29,7 @@ from core.domains.notification.entity.notification_entity import (
     ReceivePushTypeEntity,
     NoticeTemplateEntity,
 )
+from core.domains.notification.enum.notification_enum import NotificationStatusEnum
 from core.domains.user.entity.user_entity import PushTargetEntity
 
 logger = logger_.getLogger(__name__)
@@ -40,6 +41,7 @@ class NotificationRepository:
     ) -> List[Optional[NotificationEntity]]:
         notification_filters = list()
         notification_filters.append(NotificationModel.user_id == dto.user_id)
+        notification_filters.append(NotificationModel.status == NotificationStatusEnum.SUCCESS.value)
         notification_filters.append(
             NotificationModel.created_at >= get_server_timestamp() - timedelta(weeks=1)
         )
@@ -62,6 +64,10 @@ class NotificationRepository:
         notification_filters = list()
         notification_filters.append(NotificationModel.user_id == dto.user_id)
         notification_filters.append(NotificationModel.is_read == False)
+        notification_filters.append(NotificationModel.status == NotificationStatusEnum.SUCCESS.value)
+        notification_filters.append(
+            NotificationModel.created_at >= get_server_timestamp() - timedelta(weeks=1)
+        )
 
         # MVP 단계에서는 제외
         # notification_filters.append(NotificationModel.badge_type == dto.badge_type)

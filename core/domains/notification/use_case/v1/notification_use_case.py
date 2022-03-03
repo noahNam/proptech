@@ -79,7 +79,8 @@ class GetNotificationUseCase(NotificationBaseUseCase):
         result = list()
 
         for notification in notifications:
-            created_date = notification.created_at.date().strftime("%Y%m%d 09:00:00")
+            created_date = notification.created_at.strftime("%Y%m%d %H:%M:%S")
+
             make_date = datetime.datetime.strptime(
                 created_date, "%Y%m%d %H:%M:%S"
             ).replace(tzinfo=timezone("Asia/Seoul"))
