@@ -811,8 +811,6 @@ class HouseRepository:
         filters = list()
         filters.append(
             and_(
-                RealEstateModel.is_available == "True",
-                PublicSaleModel.is_available == "True",
                 PublicSaleModel.id == house_id,
                 PublicSaleModel.real_estate_id == RealEstateModel.id,
                 PublicSaleDetailModel.public_sales_id == PublicSaleModel.id,
@@ -845,6 +843,9 @@ class HouseRepository:
             .group_by(PublicSaleModel.id)
         )
         query_set = query.first()
+
+        if not query_set:
+            return None, None
 
         return query_set, query_set[0].housing_category
 
@@ -1008,6 +1009,7 @@ class HouseRepository:
             .join(
                 PublicSaleModel,
                 (InterestHouseModel.house_id == PublicSaleModel.id)
+                & (PublicSaleModel.is_available == True)
                 & (InterestHouseModel.type == HouseTypeEnum.PUBLIC_SALES.value)
                 & (InterestHouseModel.user_id == dto.user_id)
                 & (InterestHouseModel.is_like == True),
@@ -1152,6 +1154,7 @@ class HouseRepository:
             .join(
                 PublicSaleModel,
                 (RecentlyViewModel.house_id == PublicSaleModel.id)
+                & (PublicSaleModel.is_available == True)
                 & (RecentlyViewModel.type == HouseTypeEnum.PUBLIC_SALES.value)
                 & (RecentlyViewModel.user_id == dto.user_id)
                 & (RecentlyViewModel.is_available == True),
