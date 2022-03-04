@@ -585,7 +585,7 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
         except Exception as e:
             logger.error(f"🚀\tPreCalculateAdministrative Error - {e}")
             self.send_slack_message(
-                title="☠️ [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
+                title="☠️ [PreCalculateAdministrativeDivisionUseCase] >>> 행정구역별 매매,전세 평균가 계산",
                 message=f"PreCalculateAdministrative Error - {e}",
             )
             sys.exit(0)
