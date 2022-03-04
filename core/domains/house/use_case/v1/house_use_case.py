@@ -365,7 +365,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             house_with_public_sales,
             housing_category,
         ) = self._house_repo.get_house_with_public_sales(house_id=dto.house_id)
-        if not house_with_public_sales:
+        if not house_with_public_sales or not housing_category:
             return UseCaseFailureOutput(
                 type="house_id",
                 message=FailureType.NOT_FOUND_ERROR,
