@@ -4,7 +4,7 @@ from pydantic import BaseModel, StrictStr, StrictInt, StrictFloat, StrictBool
 
 from core.domains.house.entity.house_entity import (
     SpecialSupplyResultReportEntity,
-    GeneralSupplyResultReportEntity,
+    GeneralSupplyResultReportEntity, RealEstateReportEntity,
 )
 from core.domains.report.entity.report_entity import (
     SurveyResultEntity,
@@ -64,10 +64,6 @@ class PublicSaleDetailReportSchema(BaseModel):
     public_sale_detail_photo: Optional[str]
 
 
-class RealEstateReportSchema(BaseModel):
-    jibun_address: Optional[StrictStr]
-
-
 class PublicSaleReportSchema(BaseModel):
     supply_household: StrictInt
     offer_date: Optional[StrictStr]
@@ -83,7 +79,7 @@ class PublicSaleReportSchema(BaseModel):
     notice_winner_date: Optional[StrictStr]
     public_sale_photos: Optional[List[str]]
     public_sale_details: Optional[dict]
-    real_estates: RealEstateReportSchema
+    real_estates: RealEstateReportEntity
 
 
 class VicinityPublicSaleReportSchema(BaseModel):
@@ -129,7 +125,7 @@ class RecentlySaleReportSchema(BaseModel):
     notice_winner_date: Optional[StrictStr]
     public_sale_photos: Optional[List[str]]
     public_sale_details: Optional[Dict]
-    real_estates: RealEstateReportSchema
+    real_estates: RealEstateReportEntity
 
 
 class GetRecentlySaleResponseSchema(BaseModel):
