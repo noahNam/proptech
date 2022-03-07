@@ -1089,8 +1089,7 @@ class HouseRepository:
         self, user_id: int, house_id: int
     ) -> Optional[InterestHouseListEntity]:
         query = (
-            session.using_bind("read_only")
-            .query(InterestHouseModel)
+            session.query(InterestHouseModel)
             .with_entities(
                 InterestHouseModel.house_id,
                 InterestHouseModel.type,
