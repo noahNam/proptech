@@ -706,8 +706,8 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
         logger.info(
             f"🚀\tAddLegalCodeUseCase : Finished !!, "
             f"records: {time() - start_time} secs, "
-            f"{len(update_list)} Updated, "
-            f"{len(failure_list)} Failed"
+            f"{len(update_list) if update_list else 0} Updated, "
+            f"{len(failure_list) if failure_list else 0} Failed"
         )
 
         emoji = "🚀"
@@ -719,8 +719,8 @@ class AddLegalCodeUseCase(BaseHouseWorkerUseCase):
             title=f"{emoji} [AddLegalCodeUseCase] >>> New real_estates - 법정코드 부여 배치",
             message=f"AddLegalCodeUseCase : Finished !! \n "
             f"records: {time() - start_time} secs \n "
-            f"{len(update_list)} Updated"
-            f"{len(failure_list)} Failed"
+            f"{len(update_list) if update_list else 0} Updated, "
+            f"{len(failure_list) if failure_list else 0} Failed"
             f"Failed_list : {failure_list}",
         )
 
