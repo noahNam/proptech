@@ -35,7 +35,7 @@ from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
     PrivateSaleContractStatusEnum,
     ReplacePublicToPrivateSalesEnum,
-    BuildTypeEnum,
+    BuildTypeEnum, HouseBatchTimeDelta,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 
@@ -81,11 +81,12 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         3. public_sale_details -> 취득세 계산
         - 매물 상세 페이지 -> 최대 최소 취득세의 경우 SQL max, min func() 쿼리 사용
 
-        4. private_sales -> 현재 날짜 기준 3개월 이내 거래 상태 업데이트 (trade_status, deposit_status)
+        4. private_sales -> 현재 날짜 기준 N 개월 이내 거래 상태 업데이트 (trade_status, deposit_status)
+        - N 개월 설정 : HouseBatchTimeDelta Enum
         - private_sales -> 아파트, 오피스텔 건만 업데이트
         - private_sale_details -> max(contract_date): 최근 거래 기준, 매매, 전세만 업데이트
-        - 현재 날짜 기준 3개월 이내 거래 건이 있다 -> status: 2
-        - 현재 날짜 기준 3개월 이내 거래 건이 없지만 과거 거래가 있다 -> status: 1
+        - 현재 날짜 기준 N개월 이내 거래 건이 있다 -> status: 2
+        - 현재 날짜 기준 N개월 이내 거래 건이 없지만 과거 거래가 있다 -> status: 1
         - 거래가 전혀 없다 -> status: 0
     """
 
@@ -217,16 +218,14 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         self, min_contract_date: Optional[str], max_contract_date: Optional[str]
     ) -> int:
         today = (datetime.now()).strftime("%Y%m%d")
-        three_month_from_today = (datetime.now() - timedelta(days=93)).strftime(
-            "%Y%m%d"
-        )
+        timedelta_from_today = (datetime.now() - timedelta(days=HouseBatchTimeDelta.SIX_MONTH.value)).strftime("%Y%m%d")
 
         if not min_contract_date or not max_contract_date:
             return PrivateSaleContractStatusEnum.NOTHING.value
 
-        if three_month_from_today <= max_contract_date <= today:
+        if timedelta_from_today <= max_contract_date <= today:
             return PrivateSaleContractStatusEnum.RECENT_CONTRACT.value
-        elif max_contract_date <= three_month_from_today:
+        elif max_contract_date <= timedelta_from_today:
             return PrivateSaleContractStatusEnum.LONG_AGO.value
         else:
             return PrivateSaleContractStatusEnum.NOTHING.value
@@ -459,7 +458,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             private_batch_flag = False
 
         # Batch_step_4 : update_private_sales_status
-        # (현재 날짜 기준 최근 3달 거래 여부 업데이트)
+        # (현재 날짜 기준 최근 N개월 거래 여부 업데이트)
         if private_batch_flag:
             update_list = list()
             try:
@@ -534,7 +533,7 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
 
             # si_do
             two_month_from_today = int(
-                (datetime.now() - timedelta(days=60)).strftime("%Y%m")
+                (datetime.now() - timedelta(days=HouseBatchTimeDelta.SIX_MONTH.value)).strftime("%Y%m")
             )
             common_query_object: Query = self._house_repo.get_common_query_object(
                 yyyymm=two_month_from_today

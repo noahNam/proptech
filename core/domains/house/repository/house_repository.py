@@ -99,7 +99,7 @@ from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,
     CalcPyoungEnum,
     BoundingIncludePrivateEnum,
-    RealTradeTypeEnum,
+    RealTradeTypeEnum, HouseBatchTimeDelta,
 )
 from core.domains.report.entity.report_entity import (
     TicketUsageResultForHousePublicDetailEntity,
@@ -2265,22 +2265,22 @@ class HouseRepository:
         filters.append(
             and_(
                 PrivateSaleDetailModel.is_available == "True",
-                func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
+                # func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "매매",
             )
             | and_(
                 PrivateSaleDetailModel.is_available == "True",
-                func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
+                # func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "매매",
             )
             | and_(
                 PrivateSaleDetailModel.is_available == "True",
-                func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
+                # func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "전세",
             )
             | and_(
                 PrivateSaleDetailModel.is_available == "True",
-                func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
+                # func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "전세",
             )
         )
@@ -3044,7 +3044,7 @@ class HouseRepository:
                         func.to_date(
                             func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
                         )
-                        - timedelta(days=93)
+                        - timedelta(days=HouseBatchTimeDelta.SIX_MONTH.value)
                     ),
                     "YYYYMMDD",
                 ).label("min_contract_date"),
@@ -3073,7 +3073,7 @@ class HouseRepository:
                         func.to_date(
                             func.max(PrivateSaleDetailModel.contract_date), "YYYYMMDD"
                         )
-                        - timedelta(days=93)
+                        - timedelta(days=HouseBatchTimeDelta.SIX_MONTH.value)
                     ),
                     "YYYYMMDD",
                 ).label("min_contract_date"),
