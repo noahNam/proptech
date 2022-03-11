@@ -681,13 +681,21 @@ class GetHouseMainUseCase(HouseBaseUseCase):
 
         return entity_list
 
-    def _sort_recent_public_infos(self, recent_public_info_entities: List[MainRecentPublicInfoEntity]) -> None:
-        if not len(recent_public_info_entities) or len(recent_public_info_entities) == 1:
+    def _sort_recent_public_infos(
+        self, recent_public_info_entities: List[MainRecentPublicInfoEntity]
+    ) -> None:
+        if (
+            not len(recent_public_info_entities)
+            or len(recent_public_info_entities) == 1
+        ):
             return None
 
-        self._sort_public_infos_about_capital_area(recent_public_info_entities=recent_public_info_entities)
-        self._sort_public_infos_image_first(recent_public_info_entities=recent_public_info_entities)
-
+        self._sort_public_infos_about_capital_area(
+            recent_public_info_entities=recent_public_info_entities
+        )
+        self._sort_public_infos_image_first(
+            recent_public_info_entities=recent_public_info_entities
+        )
 
     def _sort_public_infos_about_capital_area(
         self, recent_public_info_entities: List[MainRecentPublicInfoEntity]
@@ -707,7 +715,9 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                         recent_public_info_entities[i],
                     )
 
-    def _sort_public_infos_image_first(self, recent_public_info_entities: List[MainRecentPublicInfoEntity]) -> None:
+    def _sort_public_infos_image_first(
+        self, recent_public_info_entities: List[MainRecentPublicInfoEntity]
+    ) -> None:
         """이미지가 있는 분양 정보 우선 정렬"""
 
         length = len(recent_public_info_entities)
@@ -751,7 +761,9 @@ class GetHouseMainUseCase(HouseBaseUseCase):
         )
 
         # 이미지 있는 분양, 수도권 우선 정렬
-        self._sort_recent_public_infos(recent_public_info_entities=recent_public_info_entities)
+        self._sort_recent_public_infos(
+            recent_public_info_entities=recent_public_info_entities
+        )
 
         # get present calendar info
         now = get_server_timestamp()
