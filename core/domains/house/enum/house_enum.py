@@ -297,3 +297,12 @@ class CapitalAreaEnum(Enum):
     SEOUL = "서울특별시"
     GYEONGGI = "경기도"
     INCHEON = "인천광역시"
+
+
+class HouseBatchTimeDelta(Enum):
+    """
+        사용 목적
+        - PreCalculateAverageUseCase: -> Step_4: update_private_sales_status -> timedelta
+        - PreCalculateAdministrativeDivisionUseCase -> timedelta
+    """
+    SIX_MONTH = 180
