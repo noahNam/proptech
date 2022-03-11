@@ -99,7 +99,8 @@ from core.domains.house.enum.house_enum import (
     HousingCategoryEnum,
     CalcPyoungEnum,
     BoundingIncludePrivateEnum,
-    RealTradeTypeEnum, HouseBatchTimeDelta,
+    RealTradeTypeEnum,
+    HouseBatchTimeDelta,
 )
 from core.domains.report.entity.report_entity import (
     TicketUsageResultForHousePublicDetailEntity,
@@ -1770,11 +1771,11 @@ class HouseRepository:
         pyoung_case = case(
             [
                 (
-                    PrivateSaleAvgPriceModel.pyoung_div == 'S',
+                    PrivateSaleAvgPriceModel.pyoung_div == "S",
                     union_query.columns.private_sale_details_supply_area,
                 ),
                 (
-                    PrivateSaleAvgPriceModel.pyoung_div == 'P',
+                    PrivateSaleAvgPriceModel.pyoung_div == "P",
                     union_query.columns.private_sale_details_private_area,
                 ),
             ]
@@ -2265,22 +2266,22 @@ class HouseRepository:
         filters.append(
             and_(
                 PrivateSaleDetailModel.is_available == "True",
-                # func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
+                func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "매매",
             )
             | and_(
                 PrivateSaleDetailModel.is_available == "True",
-                # func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
+                func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "매매",
             )
             | and_(
                 PrivateSaleDetailModel.is_available == "True",
-                # func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
+                func.to_char(PrivateSaleDetailModel.created_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "전세",
             )
             | and_(
                 PrivateSaleDetailModel.is_available == "True",
-                # func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
+                func.to_char(PrivateSaleDetailModel.updated_at, "YYYY-mm-dd") == today,
                 PrivateSaleDetailModel.trade_type == "전세",
             )
         )
@@ -3387,7 +3388,9 @@ class HouseRepository:
                 isouter=True,
             )
             .filter(*filters)
-            .filter(~RealEstateModel.id.in_([220825, 302963, 320862]))  # 220825,302963,320862 는 아파트인데 주건축물 코드가 없어서 제외시킴
+            .filter(
+                ~RealEstateModel.id.in_([220825, 302963, 320862])
+            )  # 220825,302963,320862 는 아파트인데 주건축물 코드가 없어서 제외시킴
             .order_by(RealEstateModel.id)
         )
 
@@ -3478,27 +3481,43 @@ class HouseRepository:
 
         case_stmt = case(
             [
-                (TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm == '전유', func.max(TempSupplyAreaApiModel.resp_area))
+                (
+                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm == "전유",
+                    func.max(TempSupplyAreaApiModel.resp_area),
+                )
             ],
-            else_=func.coalesce(func.sum(TempSupplyAreaApiModel.resp_area), 0)
+            else_=func.coalesce(func.sum(TempSupplyAreaApiModel.resp_area), 0),
         ).label("resp_area")
 
         try:
             apt_query = (
                 session.query(TempSupplyAreaApiModel)
                 .with_entities(
-                    TempSupplyAreaApiModel.req_real_estate_id.label("req_real_estate_id"),
-                    TempSupplyAreaApiModel.req_real_estate_name.label("req_real_estate_name"),
-                    TempSupplyAreaApiModel.req_private_sales_id.label("req_private_sales_id"),
-                    TempSupplyAreaApiModel.req_private_sale_name.label("req_private_sale_name"),
+                    TempSupplyAreaApiModel.req_real_estate_id.label(
+                        "req_real_estate_id"
+                    ),
+                    TempSupplyAreaApiModel.req_real_estate_name.label(
+                        "req_real_estate_name"
+                    ),
+                    TempSupplyAreaApiModel.req_private_sales_id.label(
+                        "req_private_sales_id"
+                    ),
+                    TempSupplyAreaApiModel.req_private_sale_name.label(
+                        "req_private_sale_name"
+                    ),
                     TempSupplyAreaApiModel.resp_name.label("resp_name"),
                     TempSupplyAreaApiModel.resp_dong_nm.label("resp_dong_nm"),
                     TempSupplyAreaApiModel.resp_ho_nm.label("resp_ho_nm"),
-                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm.label("resp_expos_pubuse_gb_cd_nm"),
-                    case_stmt
+                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm.label(
+                        "resp_expos_pubuse_gb_cd_nm"
+                    ),
+                    case_stmt,
                 )
                 .filter(*filters)
-                .filter(TempSupplyAreaApiModel.req_private_building_type == BuildTypeEnum.APARTMENT.value)
+                .filter(
+                    TempSupplyAreaApiModel.req_private_building_type
+                    == BuildTypeEnum.APARTMENT.value
+                )
                 .group_by(
                     TempSupplyAreaApiModel.req_real_estate_id,
                     TempSupplyAreaApiModel.req_real_estate_name,
@@ -3507,25 +3526,38 @@ class HouseRepository:
                     TempSupplyAreaApiModel.resp_name,
                     TempSupplyAreaApiModel.resp_dong_nm,
                     TempSupplyAreaApiModel.resp_ho_nm,
-                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm
+                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm,
                 )
             )
 
             opt_query = (
                 session.query(TempSupplyAreaApiModel)
                 .with_entities(
-                    TempSupplyAreaApiModel.req_real_estate_id.label("req_real_estate_id"),
-                    TempSupplyAreaApiModel.req_real_estate_name.label("req_real_estate_name"),
-                    TempSupplyAreaApiModel.req_private_sales_id.label("req_private_sales_id"),
-                    TempSupplyAreaApiModel.req_private_sale_name.label("req_private_sale_name"),
+                    TempSupplyAreaApiModel.req_real_estate_id.label(
+                        "req_real_estate_id"
+                    ),
+                    TempSupplyAreaApiModel.req_real_estate_name.label(
+                        "req_real_estate_name"
+                    ),
+                    TempSupplyAreaApiModel.req_private_sales_id.label(
+                        "req_private_sales_id"
+                    ),
+                    TempSupplyAreaApiModel.req_private_sale_name.label(
+                        "req_private_sale_name"
+                    ),
                     TempSupplyAreaApiModel.resp_name.label("resp_name"),
                     TempSupplyAreaApiModel.resp_dong_nm.label("resp_dong_nm"),
                     TempSupplyAreaApiModel.resp_ho_nm.label("resp_ho_nm"),
-                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm.label("resp_expos_pubuse_gb_cd_nm"),
-                    case_stmt
+                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm.label(
+                        "resp_expos_pubuse_gb_cd_nm"
+                    ),
+                    case_stmt,
                 )
                 .filter(TempSupplyAreaApiModel.update_need == True)
-                .filter(TempSupplyAreaApiModel.req_private_building_type == BuildTypeEnum.STUDIO.value)
+                .filter(
+                    TempSupplyAreaApiModel.req_private_building_type
+                    == BuildTypeEnum.STUDIO.value
+                )
                 .group_by(
                     TempSupplyAreaApiModel.req_real_estate_id,
                     TempSupplyAreaApiModel.req_real_estate_name,
@@ -3534,14 +3566,13 @@ class HouseRepository:
                     TempSupplyAreaApiModel.resp_name,
                     TempSupplyAreaApiModel.resp_dong_nm,
                     TempSupplyAreaApiModel.resp_ho_nm,
-                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm
+                    TempSupplyAreaApiModel.resp_expos_pubuse_gb_cd_nm,
                 )
             )
 
             union_query = apt_query.union_all(opt_query).subquery()
             middle_query = (
-                session.query(union_query)
-                .with_entities(
+                session.query(union_query).with_entities(
                     union_query.c.req_real_estate_id.label("req_real_estate_id"),
                     union_query.c.req_real_estate_name.label("req_real_estate_name"),
                     union_query.c.req_private_sales_id.label("req_private_sales_id"),
@@ -3549,17 +3580,23 @@ class HouseRepository:
                     union_query.c.resp_name.label("resp_name"),
                     case(
                         [
-                            (union_query.c.resp_expos_pubuse_gb_cd_nm == '전유',
-                             union_query.c.resp_area)
+                            (
+                                union_query.c.resp_expos_pubuse_gb_cd_nm == "전유",
+                                union_query.c.resp_area,
+                            )
                         ],
-                        else_=0
+                        else_=0,
                     ).label("private_area"),
                     func.sum(union_query.c.resp_area)
-                        .over(
-                        partition_by=(union_query.c.req_real_estate_id, union_query.c.resp_name, union_query.c.resp_dong_nm, union_query.c.resp_ho_nm),
-
+                    .over(
+                        partition_by=(
+                            union_query.c.req_real_estate_id,
+                            union_query.c.resp_name,
+                            union_query.c.resp_dong_nm,
+                            union_query.c.resp_ho_nm,
+                        ),
                     )
-                    .label("supply_area")
+                    .label("supply_area"),
                 )
             ).subquery()
 
@@ -3573,7 +3610,8 @@ class HouseRepository:
                     middle_query.c.resp_name.label("resp_name"),
                     middle_query.c.private_area.label("private_area"),
                     func.max(middle_query.c.supply_area).label("supply_area"),
-                ).group_by(
+                )
+                .group_by(
                     middle_query.c.req_real_estate_id,
                     middle_query.c.req_real_estate_name,
                     middle_query.c.req_private_sales_id,
@@ -3635,7 +3673,7 @@ class HouseRepository:
                 RealEstateModel.is_available == "True",
                 PrivateSaleModel.is_available == "True",
                 PrivateSaleModel.building_type != BuildTypeEnum.ROW_HOUSE.value,
-                TempSummarySupplyAreaApiModel.success_yn == True
+                TempSummarySupplyAreaApiModel.success_yn == True,
             )
             & and_(
                 or_(
