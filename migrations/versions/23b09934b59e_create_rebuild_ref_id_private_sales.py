@@ -10,15 +10,22 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '23b09934b59e'
-down_revision = '693088aaa4c5'
+revision = "23b09934b59e"
+down_revision = "693088aaa4c5"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.add_column('private_sales', sa.Column('rebuild_ref_id', sa.BigInteger().with_variant(sa.Integer(), 'sqlite'), nullable=True))
+    op.add_column(
+        "private_sales",
+        sa.Column(
+            "rebuild_ref_id",
+            sa.BigInteger().with_variant(sa.Integer(), "sqlite"),
+            nullable=True,
+        ),
+    )
 
 
 def downgrade():
-    op.drop_column('private_sales', 'rebuild_ref_id')
+    op.drop_column("private_sales", "rebuild_ref_id")

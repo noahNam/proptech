@@ -4,7 +4,8 @@ from pydantic import BaseModel, StrictStr, StrictInt, StrictFloat, StrictBool
 
 from core.domains.house.entity.house_entity import (
     SpecialSupplyResultReportEntity,
-    GeneralSupplyResultReportEntity, RealEstateReportEntity,
+    GeneralSupplyResultReportEntity,
+    RealEstateReportEntity,
 )
 from core.domains.report.entity.report_entity import (
     SurveyResultEntity,
