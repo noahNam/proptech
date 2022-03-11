@@ -331,7 +331,7 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         min_acquisition_tax=100000,
         max_acquisition_tax=200000,
         public_sales=public_sales_entity,
-        is_special_supply_finished=False
+        is_special_supply_finished=False,
     )
 
     with patch(
