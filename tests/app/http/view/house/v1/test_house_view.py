@@ -484,7 +484,7 @@ def test_house_public_detail_view_when_valid_request_id(
         min_acquisition_tax=2000,
         max_acquisition_tax=3000,
         public_sales=public_sales_entity,
-        is_special_supply_finished=False
+        is_special_supply_finished=False,
     )
 
     with patch(

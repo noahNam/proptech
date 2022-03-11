@@ -305,4 +305,5 @@ class HouseBatchTimeDelta(Enum):
         - PreCalculateAverageUseCase: -> Step_4: update_private_sales_status -> timedelta
         - PreCalculateAdministrativeDivisionUseCase -> timedelta
     """
+
     SIX_MONTH = 180

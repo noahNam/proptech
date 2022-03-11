@@ -35,7 +35,8 @@ from core.domains.house.enum.house_enum import (
     RealTradeTypeEnum,
     PrivateSaleContractStatusEnum,
     ReplacePublicToPrivateSalesEnum,
-    BuildTypeEnum, HouseBatchTimeDelta,
+    BuildTypeEnum,
+    HouseBatchTimeDelta,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 
@@ -218,7 +219,9 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
         self, min_contract_date: Optional[str], max_contract_date: Optional[str]
     ) -> int:
         today = (datetime.now()).strftime("%Y%m%d")
-        timedelta_from_today = (datetime.now() - timedelta(days=HouseBatchTimeDelta.SIX_MONTH.value)).strftime("%Y%m%d")
+        timedelta_from_today = (
+            datetime.now() - timedelta(days=HouseBatchTimeDelta.SIX_MONTH.value)
+        ).strftime("%Y%m%d")
 
         if not min_contract_date or not max_contract_date:
             return PrivateSaleContractStatusEnum.NOTHING.value
@@ -533,7 +536,9 @@ class PreCalculateAdministrativeDivisionUseCase(BaseHouseWorkerUseCase):
 
             # si_do
             two_month_from_today = int(
-                (datetime.now() - timedelta(days=HouseBatchTimeDelta.SIX_MONTH.value)).strftime("%Y%m")
+                (
+                    datetime.now() - timedelta(days=HouseBatchTimeDelta.SIX_MONTH.value)
+                ).strftime("%Y%m")
             )
             common_query_object: Query = self._house_repo.get_common_query_object(
                 yyyymm=two_month_from_today
@@ -1450,7 +1455,9 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
 
                         total_count = data["totalCount"]
 
-                        item_type = isinstance(data["items"]["item"], dict)  # list에 담겨져오는 것이 대부분이나 일부는 json 형식으로 내려옴
+                        item_type = isinstance(
+                            data["items"]["item"], dict
+                        )  # list에 담겨져오는 것이 대부분이나 일부는 json 형식으로 내려옴
                         if item_type:
                             item = data["items"]["item"]
                             resp_dong_nm = item["dongNm"]
@@ -1480,7 +1487,10 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                             # if not (resp_main_atch_gb_cd == "0" and resp_main_purps_cd == "02001"):
                             #     continue
 
-                            if resp_main_atch_gb_cd != "0" and target.req_private_building_type.value == "아파트":
+                            if (
+                                resp_main_atch_gb_cd != "0"
+                                and target.req_private_building_type.value == "아파트"
+                            ):
                                 continue
 
                             create_dict = dict(
@@ -1508,7 +1518,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                                 resp_main_atch_gb_cd=resp_main_atch_gb_cd,
                                 resp_main_atch_gb_cd_nm=resp_main_atch_gb_cd_nm,
                                 resp_main_purps_cd=resp_main_purps_cd,
-                                update_need=True
+                                update_need=True,
                             )
 
                             create_list.append(create_dict)
@@ -1541,7 +1551,10 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                                 # if not (resp_main_atch_gb_cd == "0" and resp_main_purps_cd == "02001"):
                                 #     continue
 
-                                if resp_main_atch_gb_cd != "0" and target.req_private_building_type.value == "아파트":
+                                if (
+                                    resp_main_atch_gb_cd != "0"
+                                    and target.req_private_building_type.value == "아파트"
+                                ):
                                     continue
 
                                 create_dict = dict(
@@ -1569,7 +1582,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                                     resp_main_atch_gb_cd=resp_main_atch_gb_cd,
                                     resp_main_atch_gb_cd_nm=resp_main_atch_gb_cd_nm,
                                     resp_main_purps_cd=resp_main_purps_cd,
-                                    update_need=True
+                                    update_need=True,
                                 )
 
                                 create_list.append(create_dict)
