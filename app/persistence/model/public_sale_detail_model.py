@@ -47,7 +47,7 @@ class PublicSaleDetailModel(db.Model):
 
     hallway_type = Column(String(3), nullable=True)
     bay = Column(SmallInteger, nullable=True)
-    plate_tower_duplex = Column(String(2), nullable=True)
+    plate_tower_duplex = Column(String(3), nullable=True)
     kitchen_window = Column(String(1), nullable=True)
     cross_ventilation = Column(String(1), nullable=True)
     alpha_room = Column(String(1), nullable=True)
