@@ -57,7 +57,7 @@ def upgrade():
     )
     op.add_column(
         "public_sale_details",
-        sa.Column("plate_tower_duplex", sa.String(length=2), nullable=True),
+        sa.Column("plate_tower_duplex", sa.String(length=3), nullable=True),
     )
     op.add_column(
         "public_sale_details",
