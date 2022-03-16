@@ -2118,7 +2118,7 @@ class HouseRepository:
         min_point_query = (
             session.query(PublicSaleDetailModel)
             .with_entities(
-                func.coalesce(func.min(GeneralSupplyResultModel.win_point), 0).label(
+                func.min(GeneralSupplyResultModel.win_point).label(
                     "min_win_point"
                 )
             )
@@ -2130,14 +2130,11 @@ class HouseRepository:
         base_query = (
             session.query(sub_query)
             .with_entities(
-                func.coalesce(
                     func.round(
                         func.sum(sub_query.c.sum_applicant_num)
                         / func.sum(sub_query.c.max_general_household)
-                    ),
-                    0,
-                ).label("avg_competition"),
-                func.coalesce(func.min(min_point_query.c.min_win_point), 0).label(
+                    ).label("avg_competition"),
+                func.min(min_point_query.c.min_win_point).label(
                     "min_win_point"
                 ),
             )
