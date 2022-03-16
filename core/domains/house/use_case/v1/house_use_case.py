@@ -311,6 +311,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             public_sale_details=public_sale_detail_dict.get("public_sale_details")
             if public_sale_detail_dict
             else None,
+            is_checked=house_public_detail_entity.public_sales.is_checked,
         )
 
         return HousePublicDetailSchema(

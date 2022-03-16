@@ -2118,9 +2118,7 @@ class HouseRepository:
         min_point_query = (
             session.query(PublicSaleDetailModel)
             .with_entities(
-                func.min(GeneralSupplyResultModel.win_point).label(
-                    "min_win_point"
-                )
+                func.min(GeneralSupplyResultModel.win_point).label("min_win_point")
             )
             .join(PublicSaleDetailModel.general_supply_results)
             .filter(PublicSaleDetailModel.public_sales_id == public_sales_id)
@@ -2130,13 +2128,11 @@ class HouseRepository:
         base_query = (
             session.query(sub_query)
             .with_entities(
-                    func.round(
-                        func.sum(sub_query.c.sum_applicant_num)
-                        / func.sum(sub_query.c.max_general_household)
-                    ).label("avg_competition"),
-                func.min(min_point_query.c.min_win_point).label(
-                    "min_win_point"
-                ),
+                func.round(
+                    func.sum(sub_query.c.sum_applicant_num)
+                    / func.sum(sub_query.c.max_general_household)
+                ).label("avg_competition"),
+                func.min(min_point_query.c.min_win_point).label("min_win_point"),
             )
             .group_by(sub_query.c.public_sales_id)
         )
