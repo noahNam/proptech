@@ -92,6 +92,7 @@ class PublicSaleDetailBaseSchema(BaseModel):
     remain_amount: Optional[float]
     sale_limit: Optional[str]
     public_sale_details: Optional[Dict]
+    is_checked: bool
 
     class Config:
         use_enum_values = True
