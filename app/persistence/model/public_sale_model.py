@@ -100,6 +100,7 @@ class PublicSaleModel(db.Model):
     remain_amount = Column(Float(), nullable=True)
     sale_limit = Column(String(100), nullable=True)
     compulsory_residence = Column(String(100), nullable=True)
+    is_checked = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
@@ -196,6 +197,7 @@ class PublicSaleModel(db.Model):
             ]
             if self.public_sale_details
             else None,
+            is_checked=self.is_checked,
         )
 
     def to_push_entity(self, message_type: str) -> PublicSalePushEntity:
