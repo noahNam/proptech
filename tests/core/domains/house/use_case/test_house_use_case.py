@@ -285,6 +285,7 @@ def test_get_house_public_detail_use_case_when_enable_public_sale_house(
         reference_url=public_sales.reference_url,
         created_at=public_sales.created_at,
         updated_at=public_sales.updated_at,
+        is_checked=public_sales.is_checked,
         public_sale_photos=[
             public_sale_photo_1.to_entity(),
             public_sale_photo_2.to_entity(),
