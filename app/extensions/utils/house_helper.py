@@ -64,14 +64,20 @@ class HouseHelper:
 
     @classmethod
     def convert_avg_competition(cls, avg_competition: Optional[int]) -> str:
-        if not avg_competition or avg_competition == 0:
+        if avg_competition == 0:
             return "미달"
+        elif not avg_competition:
+            return "-"
+
         return "{}:1".format(avg_competition)
 
     @classmethod
     def convert_min_score(cls, min_score: Optional[int]) -> str:
-        if not min_score or min_score == 0:
+        if min_score == 0:
             return "미달"
+        elif not min_score:
+            return "-"
+
         return "{}점".format(min_score)
 
     @classmethod
