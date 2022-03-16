@@ -119,7 +119,7 @@ class MonthlyIncomeEnum(Enum):
 
 
 class AssetsRealEstateEnum(Enum):
-    COND_CD = [1, 2, 3]
+    COND_CD = [1, 2, 3, 4]
     COND_NM = ["없어요", "215,500천원 이하", "331,000천원 이하", "331,000천원 초과"]
 
 
@@ -129,7 +129,7 @@ class AssetsCarEnum(Enum):
 
 
 class AssetsTotalEnum(Enum):
-    COND_CD = [1, 2, 3, 4, 5]
+    COND_CD = [1, 2, 3, 4, 5, 6]
     COND_NM = [
         "없어요",
         "215,500천원 이하",
