@@ -525,6 +525,7 @@ class PublicSaleFactory(BaseFactory):
     reference_url = "https://www.reference.com"
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
+    is_checked = False
 
     @factory.post_generation
     def public_sale_photos(obj, create, extracted, **kwargs):

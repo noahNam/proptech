@@ -492,7 +492,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                     )
 
                 self.send_slack_message(
-                    title=f"🚀 [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
+                    title=f"🚀 [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 6달 거래 여부 업데이트",
                     message=f"Update_private_sales_status : Finished !! \n "
                     f"records: {time() - start_time} secs \n "
                     f"{len(update_list)} Updated",
@@ -501,7 +501,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             except Exception as e:
                 logger.error(f"🚀\tUpdate_private_sales_status Error - {e}")
                 self.send_slack_message(
-                    title="☠️ [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 3달 거래 여부 업데이트",
+                    title="☠️ [PreCalculateAverageUseCase Step4] >>> 현재 날짜 기준 최근 6달 거래 여부 업데이트",
                     message=f"Update_private_sales_status Error - {e}",
                 )
         else:
