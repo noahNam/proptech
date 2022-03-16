@@ -107,6 +107,7 @@ class PublicSaleEntity(BaseModel):
     updated_at: datetime
     public_sale_photos: Optional[List[PublicSalePhotoEntity]]
     public_sale_details: Optional[List[PublicSaleDetailEntity]]
+    is_checked: bool
 
     class Config:
         use_enum_values = True
