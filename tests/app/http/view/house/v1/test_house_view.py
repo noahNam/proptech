@@ -437,6 +437,7 @@ def test_house_public_detail_view_when_valid_request_id(
         reference_url=public_sales.reference_url,
         created_at=public_sales.created_at,
         updated_at=public_sales.updated_at,
+        is_checked=public_sales.is_checked,
         public_sale_photos=[
             public_sale_photo_1.to_entity(),
             public_sale_photo_2.to_entity(),
