@@ -2130,13 +2130,10 @@ class HouseRepository:
         base_query = (
             session.query(sub_query)
             .with_entities(
-                func.coalesce(
                     func.round(
                         func.sum(sub_query.c.sum_applicant_num)
                         / func.sum(sub_query.c.max_general_household)
-                    ),
-                    0,
-                ).label("avg_competition"),
+                    ).label("avg_competition"),
                 func.min(min_point_query.c.min_win_point).label(
                     "min_win_point"
                 ),
