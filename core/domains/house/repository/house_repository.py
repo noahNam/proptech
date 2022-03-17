@@ -2111,7 +2111,7 @@ class HouseRepository:
             )
             .join(PublicSaleDetailModel.general_supply_results)
             .filter(PublicSaleDetailModel.public_sales_id == public_sales_id)
-            .filter(PublicSaleDetailModel.general_household >= 0)
+            .filter(PublicSaleDetailModel.general_household > 0)
             .group_by(PublicSaleDetailModel.id,)
         ).subquery()
 
