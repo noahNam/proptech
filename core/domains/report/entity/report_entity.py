@@ -72,8 +72,8 @@ class TicketUsageResultUserReportEntity(BaseModel):
 
 
 class SurveyResultEntity(BaseModel):
-    id = int
-    user_id = int
+    id = Optional[int]
+    user_id = Optional[int]
     total_point: Optional[int]
     detail_point_house: Optional[int]
     detail_point_family: Optional[int]
@@ -110,8 +110,8 @@ class SurveyResultEntity(BaseModel):
     hope_two_household_point: Optional[int]
     hope_two_address_point: Optional[int]
     hope_two_bank_point: Optional[int]
-    created_at = datetime
-    updated_at = datetime
+    created_at = Optional[datetime]
+    updated_at = Optional[datetime]
 
 
 class UserAnalysisCategoryDetailEntity(BaseModel):
