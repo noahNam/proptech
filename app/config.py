@@ -70,9 +70,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get("DEV_DATABASE_URL") or "sqlite:///:memory:"
     SENTRY_KEY = os.environ.get("SENTRY_KEY")
-    SQLALCHEMY_BINDS = {
-        "read_only": SQLALCHEMY_DATABASE_URI
-    }
+    SQLALCHEMY_BINDS = {"read_only": SQLALCHEMY_DATABASE_URI}
 
 
 class ProductionConfig(Config):
