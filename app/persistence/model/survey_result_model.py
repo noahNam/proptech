@@ -35,16 +35,18 @@ class SurveyResultModel(db.Model):
     public_first_life_div = Column(String(2), nullable=True)
     public_multiple_children = Column(SmallInteger, nullable=True)
     public_old_parent = Column(SmallInteger, nullable=True)
-    public_agency_recommend = Column(SmallInteger, nullable=True)
+    public_agency_recommend = Column(Boolean, nullable=True)
     public_normal = Column(SmallInteger, nullable=True)
+    public_normal_div = Column(String(3), nullable=True)
     private_newly_married = Column(SmallInteger, nullable=True)
     private_newly_married_div = Column(String(2), nullable=True)
     private_first_life = Column(Boolean, nullable=True)
     private_first_life_div = Column(String(2), nullable=True)
     private_multiple_children = Column(SmallInteger, nullable=True)
     private_old_parent = Column(SmallInteger, nullable=True)
-    private_agency_recommend = Column(SmallInteger, nullable=True)
+    private_agency_recommend = Column(Boolean, nullable=True)
     private_normal = Column(SmallInteger, nullable=True)
+    private_normal_div = Column(String(3), nullable=True)
     hope_town_phase_one = Column(SmallInteger, nullable=True)
     hope_town_phase_two = Column(SmallInteger, nullable=True)
     hope_one_income_point = Column(SmallInteger, nullable=True)
@@ -82,6 +84,7 @@ class SurveyResultModel(db.Model):
             public_old_parent=self.public_old_parent,
             public_agency_recommend=self.public_agency_recommend,
             public_normal=self.public_normal,
+            public_normal_div=self.public_normal_div,
             private_newly_married=self.private_newly_married,
             private_newly_married_div=self.private_newly_married_div,
             private_first_life=self.private_first_life,
@@ -90,6 +93,7 @@ class SurveyResultModel(db.Model):
             private_old_parent=self.private_old_parent,
             private_agency_recommend=self.private_agency_recommend,
             private_normal=self.private_normal,
+            private_normal_div=self.private_normal_div,
             hope_town_phase_one=self.hope_town_phase_one,
             hope_town_phase_two=self.hope_town_phase_two,
             hope_one_income_point=self.hope_one_income_point,
