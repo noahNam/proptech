@@ -1736,7 +1736,7 @@ class BindSupplyAreaUseCase(BaseHouseWorkerUseCase):
         )
 
         self.send_slack_message(
-            title=f"{emoji} [BindSupplyAreaUseCase] >>> 공급면적 추가 배치",
+            title=f"{emoji} [BindSupplyAreaUseCase] >>> 공급면적 바인딩 배치",
             message=f"BindSupplyAreaUseCase : Finished !! \n "
             f"records: {time() - start_time} secs \n "
             f"(총 타겟: {len(target_entities)} / 실패: {len(failure_list)}) \n"
