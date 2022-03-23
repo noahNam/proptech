@@ -747,7 +747,7 @@ class GetHouseMainUseCase(HouseBaseUseCase):
         for i in range(length - 1):
             for j in range(i + 1, length):
                 if (
-                    recent_public_info_entities[j].si_do
+                    recent_public_info_entities[j].is_checked
                     and not recent_public_info_entities[i].is_checked
                 ):
                     recent_public_info_entities[i], recent_public_info_entities[j] = (
