@@ -24,6 +24,8 @@ end_y = 37.42
 level = BoundingLevelEnum.SELECT_QUERYSET_FLAG_LEVEL.value
 private_type = BoundingPrivateTypeEnum.APT_ONLY.value
 public_type = BoundingPublicTypeEnum.PUBLIC_ONLY.value
+min_area = 0
+max_area = 120
 
 
 def test_get_coordinates_request_when_valid_request_then_success():
@@ -37,8 +39,8 @@ def test_get_coordinates_request_when_valid_request_then_success():
         private_type=private_type,
         public_type=public_type,
         public_status=None,
-        max_area=None,
-        min_area=None,
+        max_area=max_area,
+        min_area=min_area,
         include_private=1,
     ).validate_request_and_make_dto()
     assert result.start_x == start_x
@@ -46,6 +48,8 @@ def test_get_coordinates_request_when_valid_request_then_success():
     assert result.end_x == end_x
     assert result.end_y == end_y
     assert result.private_type == private_type
+    assert result.min_area == min_area
+    assert result.max_area == max_area
 
 
 def test_get_coordinates_request_when_invalid_coordinates_then_fail():

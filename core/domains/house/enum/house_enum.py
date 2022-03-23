@@ -307,3 +307,10 @@ class HouseBatchTimeDelta(Enum):
     """
 
     SIX_MONTH = 180
+
+
+class HouseAreaRange(Enum):
+    """GetCoordinatesRequestSchema -> 최소, 최대 면적 값"""
+
+    MIN_AREA = 0
+    MAX_AREA = 500
