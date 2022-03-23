@@ -46,7 +46,7 @@ class SurveyResultModel(db.Model):
     private_old_parent = Column(SmallInteger, nullable=True)
     private_agency_recommend = Column(Boolean, nullable=True)
     private_normal = Column(SmallInteger, nullable=True)
-    private_normal_div = Column(String(3), nullable=True)
+    private_normal_div = Column(String(10), nullable=True)
     hope_town_phase_one = Column(SmallInteger, nullable=True)
     hope_town_phase_two = Column(SmallInteger, nullable=True)
     hope_one_income_point = Column(SmallInteger, nullable=True)
