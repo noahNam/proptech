@@ -2861,6 +2861,7 @@ class HouseRepository:
                 PublicSaleModel.name.label("name"),
                 PublicSaleModel.offer_date.label("offer_date"),
                 PublicSaleModel.subscription_end_date.label("subscription_end_date"),
+                PublicSaleModel.is_checked.label("is_checked"),
                 RealEstateModel.si_do.label("si_do"),
                 func.coalesce(PublicSalePhotoModel.path, None).label(
                     "public_sale_photo"

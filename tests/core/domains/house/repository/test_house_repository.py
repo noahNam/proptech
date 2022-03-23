@@ -16,6 +16,7 @@ from core.domains.house.enum.house_enum import (
     BoundingPublicTypeEnum,
     BoundingLevelEnum,
     BoundingIncludePrivateEnum,
+    HouseAreaRange,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.user.dto.user_dto import GetUserDto
@@ -34,11 +35,13 @@ coordinates_dto = CoordinatesRangeDto(
     private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
     public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
     include_private=BoundingIncludePrivateEnum.INCLUDE.value,
+    min_area=HouseAreaRange.MIN_AREA.value,
+    max_area=HouseAreaRange.MAX_AREA.value,
 )
 
 get_house_public_detail_dto = GetHousePublicDetailDto(user_id=1, house_id=1)
 
-get_calendar_info_dto = GetCalendarInfoDto(year=2021, month=7, user_id=1)
+get_calendar_info_dto = GetCalendarInfoDto(year="2021", month="7", user_id=1)
 
 
 def test_create_like_house_repo_when_like_public_sales_then_success(session):

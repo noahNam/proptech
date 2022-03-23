@@ -1,8 +1,6 @@
 from decimal import Decimal
 from unittest.mock import patch
 
-import pytest
-
 from app.extensions.utils.house_helper import HouseHelper
 from app.persistence.model import InterestHouseModel, RecentlyViewModel
 from core.domains.house.dto.house_dto import (
@@ -37,6 +35,7 @@ from core.domains.house.enum.house_enum import (
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
     BoundingIncludePrivateEnum,
+    HouseAreaRange,
 )
 from core.domains.house.use_case.v1.house_use_case import (
     UpsertInterestHouseUseCase,
@@ -67,10 +66,12 @@ coordinates_dto = CoordinatesRangeDto(
     private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
     public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
     include_private=BoundingIncludePrivateEnum.INCLUDE.value,
+    min_area=HouseAreaRange.MIN_AREA.value,
+    max_area=HouseAreaRange.MAX_AREA.value,
 )
 
 
-get_calendar_info_dto = GetCalendarInfoDto(year=2021, month=7, user_id=1)
+get_calendar_info_dto = GetCalendarInfoDto(year="2021", month="7", user_id=1)
 
 
 def test_upsert_interest_house_use_case_when_like_public_sales_then_success(
@@ -129,6 +130,8 @@ def test_bounding_use_case_when_get_wrong_level_then_400_error(
         private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
         public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
         include_private=BoundingIncludePrivateEnum.INCLUDE.value,
+        min_area=HouseAreaRange.MIN_AREA.value,
+        max_area=HouseAreaRange.MAX_AREA.value,
     )
     result = BoundingUseCase().execute(dto=wrong_dto)
 
@@ -154,6 +157,8 @@ def test_bounding_use_case_when_get_no_coordinates_then_404_error(
         private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
         public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
         include_private=BoundingIncludePrivateEnum.INCLUDE.value,
+        min_area=HouseAreaRange.MIN_AREA.value,
+        max_area=HouseAreaRange.MAX_AREA.value,
     )
     result = BoundingUseCase().execute(dto=wrong_dto)
 
@@ -198,6 +203,8 @@ def test_bounding_use_case_when_level_is_lower_than_queryset_flag_then_call_get_
         private_type=BoundingPrivateTypeEnum.APT_ONLY.value,
         public_type=BoundingPublicTypeEnum.PUBLIC_ONLY.value,
         include_private=BoundingIncludePrivateEnum.INCLUDE.value,
+        min_area=HouseAreaRange.MIN_AREA.value,
+        max_area=HouseAreaRange.MAX_AREA.value,
     )
     with patch(
         "core.domains.house.repository.house_repository.HouseRepository.get_administrative_divisions"
@@ -659,7 +666,6 @@ def test_when_get_house_main_use_case_then_include_present_calendar_info(
     sample_calendar_info = SimpleCalendarInfoEntity(
         is_like=True,
         id=1,
-        name="힐스테이트",
         road_address="서울 서초구 어딘가",
         jibun_address="서울 서초구 어딘가",
         public_sale=public_sale_simple_calendar,
@@ -670,7 +676,8 @@ def test_when_get_house_main_use_case_then_include_present_calendar_info(
         name="힐스테이트",
         si_do="서울특별시",
         status=3,
-        public_sale_photos=[public_sale_photo.to_entity()],
+        public_sale_photo="test_photo",
+        is_checked=False,
     )
 
     dto = GetHouseMainDto(
