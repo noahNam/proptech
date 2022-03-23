@@ -121,8 +121,8 @@ class BoundingUseCase(HouseBaseUseCase):
     ) -> Union[UseCaseSuccessOutput, UseCaseFailureOutput]:
         """
             <dto.level condition>
-                level 16 이상 : 매물 쿼리
-                level 15 이하 : 행정구역별 평균 가격 쿼리
+                level 15 이상 : 매물 쿼리
+                level 14 이하 : 행정구역별 평균 가격 쿼리
                 level 값 조절시 bounding_view()의 presenter 선택 조건 고려해야 합니다.
         """
         if not (dto.start_x and dto.start_y and dto.end_x and dto.end_y and dto.level):
@@ -677,6 +677,7 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                     + query.public_sale_photo
                     if query.public_sale_photo
                     else None,
+                    is_checked=query.is_checked,
                 )
             )
 
@@ -695,6 +696,9 @@ class GetHouseMainUseCase(HouseBaseUseCase):
             recent_public_info_entities=recent_public_info_entities
         )
         self._sort_public_infos_image_first(
+            recent_public_info_entities=recent_public_info_entities
+        )
+        self._sort_public_infos_about_is_checked(
             recent_public_info_entities=recent_public_info_entities
         )
 
@@ -728,6 +732,23 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                 if (
                     recent_public_info_entities[j].public_sale_photo
                     and not recent_public_info_entities[i].public_sale_photo
+                ):
+                    recent_public_info_entities[i], recent_public_info_entities[j] = (
+                        recent_public_info_entities[j],
+                        recent_public_info_entities[i],
+                    )
+
+    def _sort_public_infos_about_is_checked(
+        self, recent_public_info_entities: List[MainRecentPublicInfoEntity]
+    ) -> None:
+        """is_checked == True 인 분양 정보 우선 정렬"""
+        length = len(recent_public_info_entities)
+
+        for i in range(length - 1):
+            for j in range(i + 1, length):
+                if (
+                    recent_public_info_entities[j].si_do
+                    and not recent_public_info_entities[i].is_checked
                 ):
                     recent_public_info_entities[i], recent_public_info_entities[j] = (
                         recent_public_info_entities[j],

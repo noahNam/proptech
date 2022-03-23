@@ -52,7 +52,7 @@ class PaymentBaseUseCase:
         return get_event_object(topic_name=UserTopicEnum.GET_USER_PROFILE)
 
     def _make_create_use_ticket_dto(
-        self, user_id: int, type_: int, amount: int, sign: TicketSignEnum
+        self, user_id: int, type_: int, amount: int, sign: str
     ) -> CreateTicketDto:
         return CreateTicketDto(
             user_id=user_id, type=type_, amount=amount, sign=sign, created_by="system",
