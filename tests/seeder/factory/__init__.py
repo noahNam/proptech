@@ -122,17 +122,19 @@ class SurveyResultFactory(BaseFactory):
     public_first_life_div = "잔여"
     public_multiple_children = 12
     public_old_parent = 13
-    public_agency_recommend = 14
+    public_agency_recommend = False
     public_normal = 15
     private_newly_married = 16
     private_newly_married_div = "잔여"
     private_first_life = True
     private_first_life_div = "우선"
     private_old_parent = 19
-    private_agency_recommend = 20
+    private_agency_recommend = False
     private_normal = 21
     hope_town_phase_one = 7
     hope_town_phase_two = 9
+    public_normal_div = "1순위"
+    private_normal_div = "1순위"
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
 

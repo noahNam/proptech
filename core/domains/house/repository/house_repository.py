@@ -1975,6 +1975,11 @@ class HouseRepository:
                 trade_sub_q.c.supply_area.label("trade_supply_area"),
                 literal(0, None).label("deposit_private_area"),
                 literal(0, None).label("deposit_supply_area"),
+                literal("매매").label("div"),
+                case(
+                    [(trade_sub_q.c.supply_area != 0, trade_sub_q.c.rank,)],
+                    else_=trade_sub_q.c.rank + 100,
+                ).label("cal_rank"),
             )
             .group_by(
                 trade_sub_q.c.private_sales_id,
@@ -1982,7 +1987,6 @@ class HouseRepository:
                 trade_sub_q.c.supply_area,
                 trade_sub_q.c.rank,
             )
-            .having(trade_sub_q.c.rank == 1)
         )
 
         # 전세 거래 중 가장 건수가 많은 type 조회
@@ -2023,6 +2027,11 @@ class HouseRepository:
                 literal(0, None).label("trade_supply_area"),
                 deposit_sub_q.c.private_area.label("deposit_private_area"),
                 deposit_sub_q.c.supply_area.label("deposit_supply_area"),
+                literal("전세").label("div"),
+                case(
+                    [(deposit_sub_q.c.supply_area != 0, deposit_sub_q.c.rank,)],
+                    else_=deposit_sub_q.c.rank + 100,
+                ).label("cal_rank"),
             )
             .group_by(
                 deposit_sub_q.c.private_sales_id,
@@ -2030,24 +2039,39 @@ class HouseRepository:
                 deposit_sub_q.c.supply_area,
                 deposit_sub_q.c.rank,
             )
-            .having(deposit_sub_q.c.rank == 1)
         )
 
         union_query = trade_query.union_all(deposit_query).subquery()
-        final_query = (
-            session.query(union_query)
-            .with_entities(
+
+        cal_query = (
+            session.query(union_query).with_entities(
                 union_query.c.private_sales_id.label("private_sales_id"),
-                func.max(union_query.c.trade_private_area).label("trade_private_area"),
-                func.max(union_query.c.trade_supply_area).label("trade_supply_area"),
-                func.max(union_query.c.deposit_private_area).label(
+                union_query.c.trade_private_area.label("trade_private_area"),
+                union_query.c.trade_supply_area.label("trade_supply_area"),
+                union_query.c.deposit_private_area.label("deposit_private_area"),
+                union_query.c.deposit_supply_area.label("deposit_supply_area"),
+                func.row_number()
+                .over(
+                    partition_by=(union_query.c.private_sales_id, union_query.c.div),
+                    order_by=union_query.c.cal_rank,
+                )
+                .label("f_rank"),
+            )
+        ).subquery()
+
+        final_query = (
+            session.query(cal_query)
+            .with_entities(
+                cal_query.c.private_sales_id.label("private_sales_id"),
+                func.max(cal_query.c.trade_private_area).label("trade_private_area"),
+                func.max(cal_query.c.trade_supply_area).label("trade_supply_area"),
+                func.max(cal_query.c.deposit_private_area).label(
                     "deposit_private_area"
                 ),
-                func.max(union_query.c.deposit_supply_area).label(
-                    "deposit_supply_area"
-                ),
+                func.max(cal_query.c.deposit_supply_area).label("deposit_supply_area"),
             )
-            .group_by(union_query.c.private_sales_id)
+            .group_by(cal_query.c.private_sales_id, cal_query.c.f_rank)
+            .having(cal_query.c.f_rank == 1)
         )
 
         query_set = final_query.all()
@@ -2111,7 +2135,7 @@ class HouseRepository:
             )
             .join(PublicSaleDetailModel.general_supply_results)
             .filter(PublicSaleDetailModel.public_sales_id == public_sales_id)
-            .filter(PublicSaleDetailModel.general_household >= 0)
+            .filter(PublicSaleDetailModel.general_household > 0)
             .group_by(PublicSaleDetailModel.id,)
         ).subquery()
 
