@@ -38,30 +38,7 @@ from core.domains.house.enum.house_enum import (
 )
 from core.use_case_output import UseCaseSuccessOutput
 
-bounding_entitiy = BoundingRealEstateEntity(
-    id=1,
-    name="분양아파트",
-    road_address="서울특별시 서초구 어딘가1길 10",
-    jibun_address="서울특별시 서초구 어딘가 123-1",
-    si_do="서울특별시",
-    si_gun_gu="서초구",
-    dong_myun="어딘가",
-    ri="-",
-    road_name="어딘가1길",
-    road_number="10",
-    land_number="123-1",
-    is_available=True,
-    latitude=127,
-    longitude=37.71,
-    avg_trade_price=100,
-    avg_deposit_price=200,
-    avg_rent_price=50,
-    avg_supply_price=300,
-    avg_private_pyoung_number=10,
-    avg_public_pyoung_number=20,
-    private_sales=None,
-    public_sales=None,
-)
+bounding_entitiy = BoundingRealEstateEntity(private_sales=None, public_sales=None,)
 
 
 def test_upsert_interest_house_view_when_like_public_sales_then_insert_success(
@@ -835,7 +812,6 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         real_estate_id=1,
         name="힐스테이트",
         trade_type=PreSaleTypeEnum.PRE_SALE,
-        offer_date="20210705",
         subscription_start_date="20210705",
         subscription_end_date="20210705",
         special_supply_date="20210705",
@@ -845,10 +821,6 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         second_supply_date="20210705",
         second_supply_etc_date="20210705",
         notice_winner_date="20210705",
-        contract_start_date="20210705",
-        contract_end_date="20210705",
-        move_in_year=2023,
-        move_in_month=12,
     )
     sample_calendar_info = SimpleCalendarInfoEntity(
         is_like=True,
@@ -863,7 +835,8 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         name="힐스테이트",
         si_do="서울특별시",
         status=3,
-        public_sale_photos=[public_sale_photo.to_entity()],
+        public_sale_photo="test_photo",
+        is_checked=False,
     )
 
     with patch(
