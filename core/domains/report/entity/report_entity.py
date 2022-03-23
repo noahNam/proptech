@@ -72,8 +72,8 @@ class TicketUsageResultUserReportEntity(BaseModel):
 
 
 class SurveyResultEntity(BaseModel):
-    id = int
-    user_id = int
+    id: int
+    user_id: int
     total_point: Optional[int]
     detail_point_house: Optional[int]
     detail_point_family: Optional[int]
@@ -91,16 +91,18 @@ class SurveyResultEntity(BaseModel):
     public_first_life_div: Optional[str]
     public_multiple_children: Optional[int]
     public_old_parent: Optional[int]
-    public_agency_recommend: Optional[int]
+    public_agency_recommend: Optional[bool]
     public_normal: Optional[int]
+    public_normal_div: Optional[str]
     private_newly_married: Optional[int]
     private_newly_married_div: Optional[str]
     private_first_life: Optional[bool]
     private_first_life_div: Optional[str]
     private_multiple_children: Optional[int]
     private_old_parent: Optional[int]
-    private_agency_recommend: Optional[int]
+    private_agency_recommend: Optional[bool]
     private_normal: Optional[int]
+    private_normal_div: Optional[str]
     hope_town_phase_one: Optional[int]
     hope_town_phase_two: Optional[int]
     hope_one_income_point: Optional[int]
@@ -110,8 +112,8 @@ class SurveyResultEntity(BaseModel):
     hope_two_household_point: Optional[int]
     hope_two_address_point: Optional[int]
     hope_two_bank_point: Optional[int]
-    created_at = datetime
-    updated_at = datetime
+    created_at: datetime
+    updated_at: datetime
 
 
 class UserAnalysisCategoryDetailEntity(BaseModel):
