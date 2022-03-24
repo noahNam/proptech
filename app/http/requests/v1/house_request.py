@@ -166,8 +166,8 @@ class GetCoordinatesSchema(BaseModel):
     private_type: Optional[StrictInt]
     public_type: Optional[StrictInt]
     public_status: List[StrictInt]
-    min_area: StrictInt
-    max_area: StrictInt
+    min_area: Optional[StrictInt]
+    max_area: Optional[StrictInt]
 
     @validator("x_points")
     def check_longitudes_range(cls, x_points) -> Tuple:
@@ -270,8 +270,8 @@ class GetCoordinatesRequestSchema:
             if not public_status
             else json.loads(public_status)
         )
-        self._min_area = int(min_area) if min_area else HouseAreaRange.MIN_AREA.value
-        self._max_area = int(max_area) if max_area else HouseAreaRange.MAX_AREA.value
+        self._min_area = int(min_area) if min_area else None
+        self._max_area = int(max_area) if max_area else None
 
     def validate_request_and_make_dto(self):
         try:
