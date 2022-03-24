@@ -48,8 +48,6 @@ def test_get_coordinates_request_when_valid_request_then_success():
     assert result.end_x == end_x
     assert result.end_y == end_y
     assert result.private_type == private_type
-    assert result.min_area == min_area
-    assert result.max_area == max_area
 
 
 def test_get_coordinates_request_when_invalid_coordinates_then_fail():
