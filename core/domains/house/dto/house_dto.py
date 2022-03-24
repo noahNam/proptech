@@ -19,8 +19,8 @@ class CoordinatesRangeDto(BaseModel):
     private_type: Optional[int]
     public_type: Optional[int]
     public_status: Optional[List[int]]
-    min_area: int
-    max_area: int
+    min_area: Optional[int]
+    max_area: Optional[int]
 
 
 class UpsertInterestHouseDto(BaseModel):
