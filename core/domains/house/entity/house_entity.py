@@ -108,6 +108,7 @@ class PublicSaleEntity(BaseModel):
     public_sale_photos: Optional[List[PublicSalePhotoEntity]]
     public_sale_details: Optional[List[PublicSaleDetailEntity]]
     is_checked: bool
+    heating_type: Optional[str]
 
     class Config:
         use_enum_values = True

@@ -312,6 +312,7 @@ class GetHousePublicDetailUseCase(HouseBaseUseCase):
             if public_sale_detail_dict
             else None,
             is_checked=house_public_detail_entity.public_sales.is_checked,
+            heating_type=house_public_detail_entity.public_sales.heating_type,
         )
 
         return HousePublicDetailSchema(
