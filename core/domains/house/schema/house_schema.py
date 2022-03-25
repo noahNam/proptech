@@ -93,6 +93,7 @@ class PublicSaleDetailBaseSchema(BaseModel):
     sale_limit: Optional[str]
     public_sale_details: Optional[Dict]
     is_checked: bool
+    heating_type: Optional[str]
 
     class Config:
         use_enum_values = True
