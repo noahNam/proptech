@@ -43,16 +43,6 @@ class CreateUserSchema(BaseModel):
     is_auth: StrictBool
     token: StrictStr
 
-    @validator("phone_number")
-    def check_phone_number(cls, phone_number) -> Optional[str]:
-        if not phone_number:
-            return None
-
-        phone_number = "".join(phone_number.split("-"))
-        if len(phone_number) > 11:
-            raise ValidationError
-        return phone_number
-
 
 class CreateAppAgreeTermsSchema(BaseModel):
     user_id: StrictInt

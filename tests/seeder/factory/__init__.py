@@ -528,6 +528,7 @@ class PublicSaleFactory(BaseFactory):
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
     is_checked = False
+    heating_type = "개별난방"
 
     @factory.post_generation
     def public_sale_photos(obj, create, extracted, **kwargs):

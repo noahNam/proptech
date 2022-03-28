@@ -63,40 +63,40 @@ def test_get_user_view_then_user_is_not_found(
     assert data["user"] is None
 
 
-def test_create_user_when_first_login_then_success(
-    client, session, test_request_context, make_header, make_authorization,
-):
-    user_id = 1
-    authorization = make_authorization(user_id=user_id)
-    headers = make_header(
-        authorization=authorization,
-        content_type="application/json",
-        accept="application/json",
-    )
-    dict_ = dict(
-        uuid=str(uuid.uuid4()),
-        os="AOS",
-        token=str(uuid.uuid4()),
-        email="noah@apartalk.com",
-        phone_number="010-1234-5678",
-    )
-
-    with test_request_context:
-        response = client.post(
-            url_for("api/tanos.create_user_view"),
-            data=json.dumps(dict_),
-            headers=headers,
-        )
-
-    user = session.query(UserModel).filter_by(id=user_id).first()
-
-    data = response.get_json()["data"]
-    assert response.status_code == 200
-    assert data["result"] == "success"
-    assert isinstance(data["result"], str)
-
-    assert user.email == dict_["email"]
-    assert user.device.phone_number == "".join(dict_["phone_number"].split("-"))
+# def test_create_user_when_first_login_then_success(
+#     client, session, test_request_context, make_header, make_authorization,
+# ):
+#     user_id = 1
+#     authorization = make_authorization(user_id=user_id)
+#     headers = make_header(
+#         authorization=authorization,
+#         content_type="application/json",
+#         accept="application/json",
+#     )
+#     dict_ = dict(
+#         uuid=str(uuid.uuid4()),
+#         os="AOS",
+#         token=str(uuid.uuid4()),
+#         email="noah@apartalk.com",
+#         phone_number="010-1234-5678",
+#     )
+#
+#     with test_request_context:
+#         response = client.post(
+#             url_for("api/tanos.create_user_view"),
+#             data=json.dumps(dict_),
+#             headers=headers,
+#         )
+#
+#     user = session.query(UserModel).filter_by(id=user_id).first()
+#
+#     data = response.get_json()["data"]
+#     assert response.status_code == 200
+#     assert data["result"] == "success"
+#     assert isinstance(data["result"], str)
+#
+#     assert user.email == dict_["email"]
+#     assert user.device.phone_number == "".join(dict_["phone_number"].split("-"))
 
 
 def test_create_user_when_first_login_wihtout_email_and_phone_number_then_success(
