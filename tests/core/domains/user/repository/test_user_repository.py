@@ -86,18 +86,6 @@ def test_get_user_repo_then_success(create_users):
     assert user.is_out == create_users[0].is_out
     assert user.is_active == create_users[0].is_active
 
-# 카카오 로그인 이슈로 임시 주석 처리
-# def test_create_user_when_first_login_then_success(session):
-#     UserRepository().create_user(dto=create_user_dto)
-#
-#     user = session.query(UserModel).first()
-#
-#     assert user.id == create_user_dto.user_id
-#     assert user.number_ticket == 0
-#     assert user.is_required_agree_terms == create_user_dto.is_required_agree_terms
-#     assert user.is_active == create_user_dto.is_active
-#     assert user.is_out == create_user_dto.is_out
-
 
 def test_create_user_profiles_with_dupulicate_id_when_first_login_then_not_unique_error(
     session,
