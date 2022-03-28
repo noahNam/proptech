@@ -40,11 +40,11 @@ class DeviceEntity(BaseModel):
     os: str
     is_active: bool
     is_auth: bool
-    phone_number: str = None
+    phone_number: Optional[str]
     endpoint: str = ""
     created_at: datetime
     updated_at: datetime
-    device_token: DeviceTokenEntity = None
+    device_token: Optional[DeviceTokenEntity]
 
 
 class UserProfileEntity(BaseModel):
