@@ -26,7 +26,7 @@ class DeviceModel(db.Model):
     os = Column(String(3), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     is_auth = Column(Boolean, nullable=False, default=False)
-    phone_number = Column(String(11), nullable=True)
+    phone_number = Column(String(75), nullable=True)
     endpoint = Column(String(100), nullable=True, default="")
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
