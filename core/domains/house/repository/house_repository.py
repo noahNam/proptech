@@ -2127,8 +2127,8 @@ class HouseRepository:
             .with_entities(
                 PublicSaleDetailModel.public_sales_id,
                 func.coalesce(
-                    func.max(PublicSaleDetailModel.general_household), 0
-                ).label("max_general_household"),
+                    func.sum(PublicSaleDetailModel.general_household), 0
+                ).label("sum_general_household"),
                 func.coalesce(
                     func.sum(GeneralSupplyResultModel.applicant_num), 0
                 ).label("sum_applicant_num"),
@@ -2136,6 +2136,7 @@ class HouseRepository:
             .join(PublicSaleDetailModel.general_supply_results)
             .filter(PublicSaleDetailModel.public_sales_id == public_sales_id)
             .filter(PublicSaleDetailModel.general_household > 0)
+            .filter(GeneralSupplyResultModel.region == "해당지역")
             .group_by(PublicSaleDetailModel.id,)
         ).subquery()
 
@@ -2154,7 +2155,7 @@ class HouseRepository:
             .with_entities(
                 func.round(
                     func.sum(sub_query.c.sum_applicant_num)
-                    / func.sum(sub_query.c.max_general_household)
+                    / func.sum(sub_query.c.sum_general_household)
                 ).label("avg_competition"),
                 func.min(min_point_query.c.min_win_point).label("min_win_point"),
             )
