@@ -198,7 +198,7 @@ class PublicSaleModel(db.Model):
             if self.public_sale_details
             else None,
             is_checked=self.is_checked,
-            heating_type=self.heating_type
+            heating_type=self.heating_type,
         )
 
     def to_push_entity(self, message_type: str) -> PublicSalePushEntity:

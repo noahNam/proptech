@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'eaa096feb2b8'
-down_revision = '1342ddd4b73e'
+revision = "eaa096feb2b8"
+down_revision = "1342ddd4b73e"
 branch_labels = None
 depends_on = None
 
@@ -32,4 +32,3 @@ def downgrade():
         existing_type=sa.String(length=75),
         type_=sa.String(length=11),
     )
-
