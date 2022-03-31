@@ -715,6 +715,10 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                 if (
                     recent_public_info_entities[j].si_do in capital_area
                     and recent_public_info_entities[i].si_do not in capital_area
+                ) or (
+                    recent_public_info_entities[j].si_do == CapitalAreaEnum.SEOUL.value
+                    and recent_public_info_entities[i].si_do
+                    in [CapitalAreaEnum.INCHEON.value, CapitalAreaEnum.GYEONGGI.value]
                 ):
                     recent_public_info_entities[i], recent_public_info_entities[j] = (
                         recent_public_info_entities[j],
