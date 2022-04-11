@@ -270,8 +270,12 @@ class GetCoordinatesRequestSchema:
             if not public_status
             else json.loads(public_status)
         )
-        self._min_area = int(min_area) if min_area else None
-        self._max_area = int(max_area) if max_area else None
+        # 평수 필터는 앤트맨 고도화 이후 추가. 현재 client에서도 평수필터 안보이도록 변경
+        # self._min_area = int(min_area) if min_area else None
+        # self._max_area = int(max_area) if max_area else None
+        self._min_area = None
+        self._max_area = None
+
 
     def validate_request_and_make_dto(self):
         try:
