@@ -107,7 +107,7 @@ class GetUserRequestSchema:
 
 
 class CreateUserRequestSchema:
-    def __init__(self, user_id, uuid, os, token, email, phone_number=None):
+    def __init__(self, user_id, uuid, os, token, email=None, phone_number=None):
         self.user_id = int(user_id) if user_id else None
         self.email = email
         self.phone_number = phone_number if phone_number else None
