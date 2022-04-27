@@ -276,7 +276,6 @@ class GetCoordinatesRequestSchema:
         self._min_area = None
         self._max_area = None
 
-
     def validate_request_and_make_dto(self):
         try:
             schema = GetCoordinatesSchema(

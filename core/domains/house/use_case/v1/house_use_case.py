@@ -50,6 +50,7 @@ from core.domains.house.enum.house_enum import (
     CapitalAreaEnum,
     HousingCategoryEnum,
     ButtonSectionType,
+    PublicSaleStatusEnum,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 from core.domains.house.schema.house_schema import (
@@ -714,6 +715,8 @@ class GetHouseMainUseCase(HouseBaseUseCase):
             for j in range(i + 1, length):
                 if (
                     recent_public_info_entities[j].si_do in capital_area
+                    and recent_public_info_entities[j].status
+                    == PublicSaleStatusEnum.IS_RECEIVING.value
                     and recent_public_info_entities[i].si_do not in capital_area
                 ) or (
                     recent_public_info_entities[j].si_do == CapitalAreaEnum.SEOUL.value
@@ -737,6 +740,8 @@ class GetHouseMainUseCase(HouseBaseUseCase):
                 if (
                     recent_public_info_entities[j].public_sale_photo
                     and not recent_public_info_entities[i].public_sale_photo
+                    and recent_public_info_entities[j].status
+                    == PublicSaleStatusEnum.IS_RECEIVING.value
                 ):
                     recent_public_info_entities[i], recent_public_info_entities[j] = (
                         recent_public_info_entities[j],
