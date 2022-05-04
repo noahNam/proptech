@@ -25,8 +25,6 @@ from app.extensions.database import session
 from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
-from app.extensions.utils.math_helper import MathHelper
-from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
@@ -43,6 +41,7 @@ from app.persistence.model import (
     GeneralSupplyResultModel,
     PublicSaleDetailPhotoModel,
 )
+from app.persistence.model.sync_failure_history_model import SyncFailureHistoryModel
 from app.persistence.model.temp_failure_supply_area_model import (
     TempFailureSupplyAreaModel,
 )
@@ -106,7 +105,11 @@ from core.domains.report.entity.report_entity import (
     TicketUsageResultForHousePublicDetailEntity,
 )
 from core.domains.user.dto.user_dto import GetUserDto
-from core.exceptions import NotUniqueErrorException, UpdateFailErrorException
+from core.exceptions import (
+    NotUniqueErrorException,
+    UpdateFailErrorException,
+    InsertFailErrorException,
+)
 
 logger = logger_.getLogger(__name__)
 
@@ -3124,18 +3127,6 @@ class HouseRepository:
             for query in query_set
         ]
 
-    def bulk_update_private_sales(self, update_list: List[dict]) -> None:
-        try:
-            session.bulk_update_mappings(
-                PrivateSaleModel, [update_info for update_info in update_list],
-            )
-
-            session.commit()
-        except Exception as e:
-            session.rollback()
-            logger.error(f"[HouseRepository][bulk_update_private_sales] error : {e}")
-            raise UpdateFailErrorException
-
     def get_private_sales_all_id_list(self,) -> Optional[List[int]]:
         """
             연립다세대 제외
@@ -3845,3 +3836,53 @@ class HouseRepository:
                 f"[HouseRepository][create_temp_failure_supply_area] error : {e}"
             )
             raise NotUniqueErrorException
+
+    def bulk_update_private_sales(self, update_list: List[dict]) -> None:
+        try:
+            session.bulk_update_mappings(
+                PrivateSaleModel, [update_info for update_info in update_list],
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(f"[HouseRepository][bulk_update_private_sales] error : {e}")
+            raise UpdateFailErrorException
+
+    def bulk_update_target_model(self, model: object, update_list: List[dict]) -> None:
+        try:
+            session.bulk_update_mappings(
+                model, [update_info for update_info in update_list],
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(f"[HouseRepository][bulk_update_target_model] error : {e}")
+            raise UpdateFailErrorException
+
+    def bulk_insert_target_model(self, model: object, insert_list: List[dict]) -> None:
+        try:
+            session.bulk_insert_mappings(
+                model, [insert_info for insert_info in insert_list],
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(f"[HouseRepository][bulk_insert_target_model] error : {e}")
+            raise InsertFailErrorException
+
+    def bulk_insert_sync_failure_histories(self, insert_list: List[dict]) -> None:
+        try:
+            session.bulk_insert_mappings(
+                SyncFailureHistoryModel, [insert_info for insert_info in insert_list],
+            )
+
+            session.commit()
+        except Exception as e:
+            session.rollback()
+            logger.error(
+                f"[HouseRepository][bulk_insert_sync_failure_histories] error : {e}"
+            )
+            raise InsertFailErrorException

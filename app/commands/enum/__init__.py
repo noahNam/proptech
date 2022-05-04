@@ -20,3 +20,7 @@ class TopicEnum(Enum):
     BIND_SUPPLY_AREA_TO_PRIVATE_SALE_DETAILS = (
         "tanos.bind_supply_area_to_private_sale_details.v1"
     )
+
+    # message pulling from redis
+    SET_REDIS = "tanos.set_redis.v1"
+    SYNC_HOUSE_DATA = "tanos.sync_house_data.v1"
