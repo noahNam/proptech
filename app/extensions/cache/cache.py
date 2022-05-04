@@ -24,7 +24,7 @@ class Cache:
         pass
 
     @abc.abstractmethod
-    def set(self, key: Any, value: Any, ex: Union[int, timedelta] = None, ) -> None:
+    def set(self, key: Any, value: Any, ex: Union[int, timedelta] = None,) -> None:
         pass
 
     @abc.abstractmethod
@@ -89,7 +89,7 @@ class RedisClient(Cache):
         except StopIteration:
             return None
 
-    def set(self, key: Any, value: Any, ex: Union[int, timedelta] = None, ) -> None:
+    def set(self, key: Any, value: Any, ex: Union[int, timedelta] = None,) -> None:
         self._redis_client.set(name=key, value=value, ex=ex)
 
     def clear_cache(self) -> None:

@@ -7,20 +7,26 @@ import inject
 
 from app import redis
 from app.extensions.utils.log_helper import logger_
-from app.persistence.model import PublicSaleModel, PrivateSaleModel, GeneralSupplyResultModel
+from app.persistence.model import (
+    PublicSaleModel,
+    PrivateSaleModel,
+    GeneralSupplyResultModel,
+)
 from core.domains.house.repository.house_repository import HouseRepository
 
 logger = logger_.getLogger(__name__)
 
-model_transfer_dict = dict(public_sales=PublicSaleModel, private_sales=PrivateSaleModel, general_supply_results=GeneralSupplyResultModel)
+model_transfer_dict = dict(
+    public_sales=PublicSaleModel,
+    private_sales=PrivateSaleModel,
+    general_supply_results=GeneralSupplyResultModel,
+)
 
 
 class SyncDataUseCase:
     @inject.autoparams()
     def __init__(
-            self,
-            topic: str,
-            house_repo: HouseRepository,
+        self, topic: str, house_repo: HouseRepository,
     ):
         self.topic = topic
         self._redis_client = redis
@@ -52,7 +58,9 @@ class SyncDataUseCase:
                 messages = self._get_messages()
 
                 if messages:
-                    logger.info(f"[*] Get length of insert sync data -> {self._get_sync_data_len(messages=messages)}")
+                    logger.info(
+                        f"[*] Get length of insert sync data -> {self._get_sync_data_len(messages=messages)}"
+                    )
 
                     self._insert_target_model(messages=messages)
                     logger.info("🚀\tInsert target model success")
@@ -61,8 +69,12 @@ class SyncDataUseCase:
                 self._is_insert_failure = True
 
             if self._is_insert_failure:
-                failure_list: Union[List[Dict], List] = self._transfer_sync_failure_history_entity(messages=messages)
-                self._house_repo.bulk_insert_sync_failure_histories(insert_list=failure_list)
+                failure_list: Union[
+                    List[Dict], List
+                ] = self._transfer_sync_failure_history_entity(messages=messages)
+                self._house_repo.bulk_insert_sync_failure_histories(
+                    insert_list=failure_list
+                )
                 self._is_insert_failure = False
 
             try:
@@ -71,7 +83,9 @@ class SyncDataUseCase:
                 messages = self._get_messages()
 
                 if messages:
-                    logger.info(f"[*] Get length of update sync data -> {self._get_sync_data_len(messages=messages)}")
+                    logger.info(
+                        f"[*] Get length of update sync data -> {self._get_sync_data_len(messages=messages)}"
+                    )
 
                     self._update_target_model(messages=messages)
                     logger.info("🚀\tUpdate target model success")
@@ -80,26 +94,32 @@ class SyncDataUseCase:
                 self._is_update_failure = True
 
             if self._is_update_failure:
-                failure_list: Union[List[Dict], List] = self._transfer_sync_failure_history_entity(messages=messages)
-                self._house_repo.bulk_insert_sync_failure_histories(insert_list=failure_list)
+                failure_list: Union[
+                    List[Dict], List
+                ] = self._transfer_sync_failure_history_entity(messages=messages)
+                self._house_repo.bulk_insert_sync_failure_histories(
+                    insert_list=failure_list
+                )
                 self._is_update_failure = False
 
             # Clear cache
             if self._redis_client.copied_keys:
-                logger.info(f"🚀️\t Clear key length -> {len(self._redis_client.copied_keys)}")
+                logger.info(
+                    f"🚀️\t Clear key length -> {len(self._redis_client.copied_keys)}"
+                )
                 logger.info(f"🚀️\t Clear keys -> {self._redis_client.copied_keys}")
                 self._redis_client.clear_cache()
 
-
-    def _transfer_sync_failure_history_entity(self, messages: Dict) -> Union[List[Dict], List]:
+    def _transfer_sync_failure_history_entity(
+        self, messages: Dict
+    ) -> Union[List[Dict], List]:
         failure_list = list()
         for key in messages.keys():
             message = messages.get(key)
 
             for sync_data in message:
                 sync_failure_histories_dict = dict(
-                    target_table=key,
-                    sync_data=sync_data,
+                    target_table=key, sync_data=sync_data,
                 )
 
                 failure_list.append(sync_failure_histories_dict)
@@ -148,13 +168,17 @@ class SyncDataUseCase:
 
             if len(message) > limit:
                 while True:
-                    insert_data = message[offset:offset+limit]
+                    insert_data = message[offset : offset + limit]
                     if not insert_data:
                         break
-                    self._house_repo.bulk_insert_target_model(model=model, insert_list=insert_data)
+                    self._house_repo.bulk_insert_target_model(
+                        model=model, insert_list=insert_data
+                    )
                     offset += limit
             else:
-                self._house_repo.bulk_insert_target_model(model=model , insert_list=message)
+                self._house_repo.bulk_insert_target_model(
+                    model=model, insert_list=message
+                )
 
     def _update_target_model(self, messages: Dict) -> None:
         for key in model_transfer_dict.keys():
@@ -170,10 +194,14 @@ class SyncDataUseCase:
 
             if len(message) > limit:
                 while True:
-                    update_data = message[offset:offset+limit]
+                    update_data = message[offset : offset + limit]
                     if not update_data:
                         break
-                    self._house_repo.bulk_update_target_model(model=model, update_list=update_data)
+                    self._house_repo.bulk_update_target_model(
+                        model=model, update_list=update_data
+                    )
                     offset += limit
             else:
-                self._house_repo.bulk_update_target_model(model=model, update_list=message)
+                self._house_repo.bulk_update_target_model(
+                    model=model, update_list=message
+                )
