@@ -12,6 +12,8 @@ from core.domains.house.use_case.v1.house_worker_use_case import (
     AddSupplyAreaUseCase,
     BindSupplyAreaUseCase,
 )
+from core.domains.house.use_case.v1.set_redis import SetRedisUseCase
+from core.domains.house.use_case.v1.sync_data_to_mart import SyncDataUseCase
 from core.domains.notification.use_case.v1.notification_worker_use_case import (
     PrePrcsNotificationUseCase,
     ConvertNoticePushMessageUseCase,
@@ -39,6 +41,10 @@ def get_worker(topic: str):
         return AddSupplyAreaUseCase(topic=topic)
     elif topic == TopicEnum.BIND_SUPPLY_AREA_TO_PRIVATE_SALE_DETAILS.value:
         return BindSupplyAreaUseCase(topic=topic)
+    elif topic == TopicEnum.SYNC_HOUSE_DATA.value:
+        return SyncDataUseCase(topic=topic)
+    elif topic == TopicEnum.SET_REDIS.value:
+        return SetRedisUseCase()
 
 
 @current_app.cli.command("start-worker")

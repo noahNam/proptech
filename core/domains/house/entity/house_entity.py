@@ -1,12 +1,11 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from pydantic import BaseModel
 
 from core.domains.banner.entity.banner_entity import BannerEntity, ButtonLinkEntity
 from core.domains.report.entity.report_entity import (
-    HouseTypeRankEntity,
     TicketUsageResultForHousePublicDetailEntity,
 )
 
@@ -573,6 +572,15 @@ class CheckIdsRealEstateEntity(BaseModel):
     supply_household: Optional[int]
     move_in_year: Optional[str]
     construct_company: Optional[str]
+
+
+class SyncFailureHistoryEntity(BaseModel):
+    id: Optional[int]
+    target_table: Optional[str]
+    sync_data: Optional[Dict]
+    is_solved: Optional[bool]
+    created_at: Optional[datetime]
+    updated_at: Optional[datetime]
 
 
 # todo. AddSupplyAreaUseCase에서 사용 -> antman 이관 후 삭제 필요

@@ -19,7 +19,7 @@ class Config:
     # JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=60)
 
     # Redis
-    REDIS_URL = os.environ.get("REDIS_URL") or "redis://localhost:6379"
+    REDIS_URL = os.environ.get("REDIS_URL") or "redis://127.0.0.1:6379"
 
     # Naver Cloud Platform Environment
     SENS_SID = os.environ.get("SENS_SID") or ""
