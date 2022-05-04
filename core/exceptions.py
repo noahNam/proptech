@@ -65,3 +65,8 @@ class TokenValidationErrorException(ErrorFormat):
 class UpdateFailErrorException(ErrorFormat):
     code = HTTPStatus.BAD_REQUEST
     msg = "update_fail_error"
+
+
+class InsertFailErrorException(ErrorFormat):
+    code = HTTPStatus.BAD_REQUEST
+    msg = "insert_fail_error"
