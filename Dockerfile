@@ -42,7 +42,7 @@ RUN apt-get update \
 RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
 
 # cleanup
- RUN rm -rf /var/lib/apt/lists/*
+RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
@@ -59,7 +59,7 @@ COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 ENV APP_DIR /server
 COPY app ${APP_DIR}/app
 COPY core ${APP_DIR}/core
-COPY application.py VERSION newrelic.ini ${APP_DIR}/
+COPY application.py celery_app.py newrelic.ini ${APP_DIR}/
 COPY supervisord.conf ${APP_DIR}/
 
 EXPOSE 5000
