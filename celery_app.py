@@ -35,11 +35,11 @@ celery = make_celery(app)
 def setup_periodic_tasks(sender, **kwargs):
     from app.commands import tasks
 
-    sender.add_periodic_task(
-        20.0,
-        tasks.start_worker.s(topic=TopicEnum.SET_REDIS.value),
-        name='set-redis',
-    )
+    # sender.add_periodic_task(
+    #     20.0,
+    #     tasks.start_worker.s(topic=TopicEnum.SET_REDIS.value),
+    #     name='set-redis',
+    # )
 
     tasks.start_worker.delay(topic=TopicEnum.SYNC_HOUSE_DATA.value)
 
