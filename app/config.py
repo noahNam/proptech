@@ -1,6 +1,4 @@
 import os
-import datetime
-from urllib.parse import quote as urlquote
 
 
 class Config:
@@ -41,6 +39,12 @@ class Config:
     # Ironman service
     IRONMAN_SERVICE_URL = os.environ.get("IRONMAN_SERVICE_URL") or ""
 
+    # Celery
+    BACKEND_RESULT = (
+        "db+postgresql://toadhome_tanos:!Dkvkxhr117@localhost:5432/tanos"
+    )
+    TIMEZONE = 'Asia/Seoul'
+    CELERY_ENABLE_UTC = False
 
 class LocalConfig(Config):
     os.environ["FLASK_ENV"] = "local"

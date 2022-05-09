@@ -41,10 +41,6 @@ def get_worker(topic: str):
         return AddSupplyAreaUseCase(topic=topic)
     elif topic == TopicEnum.BIND_SUPPLY_AREA_TO_PRIVATE_SALE_DETAILS.value:
         return BindSupplyAreaUseCase(topic=topic)
-    elif topic == TopicEnum.SYNC_HOUSE_DATA.value:
-        return SyncDataUseCase(topic=topic)
-    elif topic == TopicEnum.SET_REDIS.value:
-        return SetRedisUseCase()
 
 
 @current_app.cli.command("start-worker")
