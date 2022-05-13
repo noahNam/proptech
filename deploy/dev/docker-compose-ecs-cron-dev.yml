@@ -4,7 +4,7 @@ services:
     image: __ECR_ADDRESS__
     ports:
       - "5000:5000"
-    command: "newrelic-admin run-program supervisord"
+    command: "celery -A celery_app.celery worker -B --loglevel=info -P threads -c 2"
     logging:
       driver: awslogs
       options:
