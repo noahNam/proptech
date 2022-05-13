@@ -39,8 +39,8 @@ class SyncDataUseCase:
 
     def execute(self) -> None:
         """
-        PRIVATE_SALES = "sync-I-private-sales-1={...}"
-        key = sync(유형)-CRUD유형(I,U)-private-sales(테이블)-pk(1):value
+        PRIVATE_SALES = "sync:I:private-sales:1={...}"
+        key = sync(유형):CRUD유형(I,U):private-sales(테이블):pk(1)=value
         CRUD유형
             1. I -> Insert with PK
             2. IA -> Insert with Auto-increment PK
