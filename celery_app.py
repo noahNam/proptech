@@ -8,11 +8,11 @@ from app.commands.enum import TopicEnum
 def make_celery(app):
     celery = Celery(
         "celery",
-        backend=app.config['BACKEND_RESULT'],
-        broker=app.config['REDIS_URL'],
-        timezone=app.config['TIMEZONE'],
-        enable_utc=app.config['CELERY_ENABLE_UTC'],
-        include=['app.commands.tasks'],
+        backend=app.config["BACKEND_RESULT"],
+        broker=app.config["REDIS_URL"],
+        timezone=app.config["TIMEZONE"],
+        enable_utc=app.config["CELERY_ENABLE_UTC"],
+        include=["app.commands.tasks"],
     )
 
     celery.conf.update(app.config)
@@ -24,6 +24,7 @@ def make_celery(app):
 
     celery.Task = ContextTask
     return celery
+
 
 """
     celery 실행명령어 -> celery -A celery_app.celery worker -B --loglevel=info -P threads -c 2
@@ -46,4 +47,3 @@ def setup_periodic_tasks(sender, **kwargs):
     # )
 
     tasks.start_worker.delay(topic=TopicEnum.SYNC_HOUSE_DATA.value)
-

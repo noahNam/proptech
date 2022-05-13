@@ -3,6 +3,7 @@ import random
 
 import pytest
 from faker import Faker
+from pytest_factoryboy import register
 
 from app.extensions.utils.message_converter import MessageConverter
 from app.extensions.utils.time_helper import get_server_timestamp
@@ -86,6 +87,9 @@ MODEL_FACTORIES = [
 ]
 
 faker = Faker()
+
+for factory in MODEL_FACTORIES:
+    register(factory_class=factory)
 
 
 @pytest.fixture

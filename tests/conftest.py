@@ -1,7 +1,6 @@
 import os
 
 from flask import Flask
-from pytest_factoryboy import register
 from sqlalchemy.orm import scoped_session
 
 from app import create_app
@@ -74,15 +73,6 @@ def session(db: CustomSQLAlchemy) -> scoped_session:
     transaction.rollback()
     connection.close()
     session.remove()
-
-
-def register_factories():
-    # 예시) register(StoreFactory) 이런 형태
-    for factory in MODEL_FACTORIES:
-        register(factory)
-
-
-register_factories()
 
 
 def set_factories_session(session):
