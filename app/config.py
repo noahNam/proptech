@@ -40,7 +40,7 @@ class Config:
     IRONMAN_SERVICE_URL = os.environ.get("IRONMAN_SERVICE_URL") or ""
 
     # Celery
-    BACKEND_RESULT = "db+postgresql://toadhome_tanos:!Dkvkxhr117@localhost:5432/tanos"
+    BACKEND_RESULT = os.environ.get("BACKEND_RESULT") or ""
     TIMEZONE = "Asia/Seoul"
     CELERY_ENABLE_UTC = False
 
