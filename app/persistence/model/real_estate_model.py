@@ -6,7 +6,7 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    Boolean,
+    Boolean, DateTime, func,
 )
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, backref, column_property
@@ -30,6 +30,12 @@ class RealEstateModel(db.Model):
     name = Column(String(50), nullable=True)
     road_address = Column(String(100), nullable=False)
     jibun_address = Column(String(100), nullable=False)
+    road_address_ts = Column(
+        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
+    )
+    jibun_address_ts = Column(
+        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
+    )
     si_do = Column(String(20), nullable=False)
     si_gun_gu = Column(String(16), nullable=False)
     dong_myun = Column(String(16), nullable=False)
@@ -37,19 +43,16 @@ class RealEstateModel(db.Model):
     road_name = Column(String(30), nullable=True)
     road_number = Column(String(10), nullable=True)
     land_number = Column(String(10), nullable=False)
-    is_available = Column(Boolean, nullable=False, default=True)
-    front_legal_code = Column(String(5), nullable=False, unique=False, index=True)
-    back_legal_code = Column(String(5), nullable=False, unique=False, index=True)
     coordinates = Column(
         Geometry(geometry_type="POINT", srid=4326).with_variant(String, "sqlite"),
         nullable=True,
     )
-
-    jibun_address_ts = Column(
-        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
-    )
-    road_address_ts = Column(
-        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
+    front_legal_code = Column(String(5), nullable=False, unique=False, index=True)
+    back_legal_code = Column(String(5), nullable=False, unique=False, index=True)
+    is_available = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
     latitude = column_property(coordinates.ST_Y())
