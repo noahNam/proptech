@@ -58,12 +58,8 @@ class RealEstateModel(db.Model):
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())
 
-    private_sales = relationship(
-        "PrivateSaleModel", backref=backref("real_estates"), uselist=False,
-    )
-    public_sales = relationship(
-        "PublicSaleModel", backref=backref("real_estates"), uselist=False,
-    )
+    private_sales = relationship("PrivateSaleModel", back_populates="real_estates")
+    public_sales = relationship("PublicSaleModel", back_populates="real_estates")
 
     def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:
         return DetailCalendarInfoEntity(
