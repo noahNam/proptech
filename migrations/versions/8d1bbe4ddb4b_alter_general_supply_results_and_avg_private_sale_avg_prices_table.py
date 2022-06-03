@@ -18,15 +18,15 @@ depends_on = None
 
 def upgrade():
     op.create_index(
-        op.f("ix_general_supply_results_public_sale_details_id"),
+        op.f("ix_general_supply_results_public_sale_detail_id"),
         "general_supply_results",
-        ["public_sale_details_id"],
+        ["public_sale_detail_id"],
         unique=False,
     )
     op.create_unique_constraint(
-        "general_supply_results_public_sale_details_id_region_key",
+        "general_supply_results_public_sale_detail_id_region_key",
         "general_supply_results",
-        ["public_sale_details_id", "region"],
+        ["public_sale_detail_id", "region"],
     )
 
     op.add_column(
@@ -54,11 +54,11 @@ def downgrade():
     op.drop_column("private_sale_avg_prices", "default_trade_pyoung")
 
     op.drop_constraint(
-        "general_supply_results_public_sale_details_id_region_key",
+        "general_supply_results_public_sale_detail_id_region_key",
         "general_supply_results",
         type_="unique",
     )
     op.drop_index(
-        op.f("ix_general_supply_results_public_sale_details_id"),
+        op.f("ix_general_supply_results_public_sale_detail_id"),
         table_name="general_supply_results",
     )

@@ -63,7 +63,7 @@ class SetRedisUseCase:
         key7 = "sync:I:general_supply_results:9"
         data = dict(
             id=900000,
-            public_sale_details_id=106986,
+            public_sale_detail_id=106986,
             region="해당지역900",
             region_percent=900,
             win_point=900,
@@ -75,7 +75,7 @@ class SetRedisUseCase:
         token = str(uuid.uuid4())
         key8 = f"sync:IA:general_supply_results:{token}"
         data = dict(
-            public_sale_details_id=106986,
+            public_sale_detail_id=106986,
             region="해당지역999",
             region_percent=999,
             win_point=999,

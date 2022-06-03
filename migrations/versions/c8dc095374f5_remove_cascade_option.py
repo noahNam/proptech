@@ -25,7 +25,7 @@ def upgrade():
     )
 
     op.drop_constraint(
-        "general_supply_results_public_sale_details_id_fkey",
+        "general_supply_results_public_sale_detail_id_fkey",
         "general_supply_results",
         type_="foreignkey",
     )
@@ -33,7 +33,7 @@ def upgrade():
         None,
         "general_supply_results",
         "public_sale_details",
-        ["public_sale_details_id"],
+        ["public_sale_detail_id"],
         ["id"],
     )
 
@@ -63,12 +63,12 @@ def upgrade():
     )
 
     op.drop_constraint(
-        "public_sale_detail_photos_public_sale_details_id_key",
+        "public_sale_detail_photos_public_sale_detail_id_key",
         "public_sale_detail_photos",
         type_="unique",
     )
     op.drop_constraint(
-        "public_sale_detail_photos_public_sale_details_id_fkey",
+        "public_sale_detail_photos_public_sale_detail_id_fkey",
         "public_sale_detail_photos",
         type_="foreignkey",
     )
@@ -76,7 +76,7 @@ def upgrade():
         None,
         "public_sale_detail_photos",
         "public_sale_details",
-        ["public_sale_details_id"],
+        ["public_sale_detail_id"],
         ["id"],
     )
 
@@ -114,7 +114,7 @@ def upgrade():
     op.create_foreign_key(None, "room_photos", "room_infos", ["room_info_id"], ["id"])
 
     op.drop_constraint(
-        "special_supply_results_public_sale_details_id_fkey",
+        "special_supply_results_public_sale_detail_id_fkey",
         "special_supply_results",
         type_="foreignkey",
     )
@@ -122,7 +122,7 @@ def upgrade():
         None,
         "special_supply_results",
         "public_sale_details",
-        ["public_sale_details_id"],
+        ["public_sale_detail_id"],
         ["id"],
     )
 
@@ -130,10 +130,10 @@ def upgrade():
 def downgrade():
     op.drop_constraint(None, "special_supply_results", type_="foreignkey")
     op.create_foreign_key(
-        "special_supply_results_public_sale_details_id_fkey",
+        "special_supply_results_public_sale_detail_id_fkey",
         "special_supply_results",
         "public_sale_details",
-        ["public_sale_details_id"],
+        ["public_sale_detail_id"],
         ["id"],
         ondelete="CASCADE",
     )
@@ -190,17 +190,17 @@ def downgrade():
 
     op.drop_constraint(None, "public_sale_detail_photos", type_="foreignkey")
     op.create_foreign_key(
-        "public_sale_detail_photos_public_sale_details_id_fkey",
+        "public_sale_detail_photos_public_sale_detail_id_fkey",
         "public_sale_detail_photos",
         "public_sale_details",
-        ["public_sale_details_id"],
+        ["public_sale_detail_id"],
         ["id"],
         ondelete="CASCADE",
     )
     op.create_unique_constraint(
-        "public_sale_detail_photos_public_sale_details_id_key",
+        "public_sale_detail_photos_public_sale_detail_id_key",
         "public_sale_detail_photos",
-        ["public_sale_details_id"],
+        ["public_sale_detail_id"],
     )
 
     op.drop_constraint(None, "private_sales", type_="foreignkey")
@@ -235,10 +235,10 @@ def downgrade():
 
     op.drop_constraint(None, "general_supply_results", type_="foreignkey")
     op.create_foreign_key(
-        "general_supply_results_public_sale_details_id_fkey",
+        "general_supply_results_public_sale_detail_id_fkey",
         "general_supply_results",
         "public_sale_details",
-        ["public_sale_details_id"],
+        ["public_sale_detail_id"],
         ["id"],
         ondelete="CASCADE",
     )

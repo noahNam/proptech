@@ -780,11 +780,11 @@ class HouseRepository:
             return False
         return True
 
-    def is_enable_public_sale_detail_info(self, public_sale_details_id: int) -> bool:
+    def is_enable_public_sale_detail_info(self, public_sale_detail_id: int) -> bool:
         try:
             detail_info = (
                 session.query(PublicSaleDetailModel)
-                .filter_by(id=public_sale_details_id)
+                .filter_by(id=public_sale_detail_id)
                 .first()
             )
         except Exception:

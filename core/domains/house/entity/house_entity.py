@@ -23,7 +23,7 @@ class InterestHouseEntity(BaseModel):
 
 class PublicSaleDetailPhotoEntity(BaseModel):
     id: int
-    public_sale_details_id: int
+    public_sale_detail_id: int
     file_name: str
     path: Optional[str]
     extension: str
@@ -41,8 +41,8 @@ class PublicSaleDetailEntity(BaseModel):
     supply_price: int
     acquisition_tax: int
     area_type: str
-    special_household: Optional[int]
-    general_household: Optional[int]
+    special_household: Optional[float]
+    general_household: Optional[float]
     total_household: Optional[int]
     public_sale_detail_photos: Optional[str]
 
@@ -55,6 +55,7 @@ class PublicSalePhotoEntity(BaseModel):
     extension: str
     is_thumbnail: bool
     seq: int
+    is_available: bool
     created_at: datetime
     updated_at: datetime
 
@@ -68,10 +69,8 @@ class PublicSaleEntity(BaseModel):
     rent_type: str
     trade_type: str
     construct_company: Optional[str]
-    supply_household: int
-    is_available: bool
+    supply_household: float
     offer_date: Optional[str]
-    offer_notice_url: Optional[str]
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
     status: int
@@ -87,28 +86,32 @@ class PublicSaleEntity(BaseModel):
     notice_winner_date: Optional[str]
     contract_start_date: Optional[str]
     contract_end_date: Optional[str]
-    move_in_year: int
-    move_in_month: int
+    move_in_year: str
+    move_in_month: str
     min_down_payment: int
     max_down_payment: int
     down_payment_ratio: int
     reference_url: Optional[str]
-
-    total_household: Optional[int]
-    total_park_number: Optional[int]
-    top_floor: Optional[int]
-    dong_number: Optional[int]
+    offer_notice_url: Optional[str]
+    heating_type: Optional[str]
+    vc_rat: Optional[float]
+    bc_rat: Optional[float]
+    hhld_total_cnt: Optional[float]
+    park_total_cnt: Optional[float]
+    highest_floor: Optional[float]
+    dong_cnt: Optional[float]
     contract_amount: Optional[int]
     middle_amount: Optional[float]
     remain_amount: Optional[float]
     sale_limit: Optional[str]
-
+    compulsory_residence: Optional[str]
+    hallway_type: Optional[str]
+    is_checked: bool
+    is_available: bool
     created_at: datetime
     updated_at: datetime
     public_sale_photos: Optional[List[PublicSalePhotoEntity]]
     public_sale_details: Optional[List[PublicSaleDetailEntity]]
-    is_checked: bool
-    heating_type: Optional[str]
 
 
 class PublicSalePushEntity(BaseModel):
@@ -279,7 +282,7 @@ class AdministrativeDivisionEntity(BaseModel):
 
 class SpecialSupplyResultReportEntity(BaseModel):
     region: Optional[str]
-    region_percent: Optional[int]
+    region_percent: Optional[float]
     multi_children_vol: Optional[int] = 0
     newlywed_vol: Optional[int] = 0
     old_parent_vol: Optional[int] = 0
@@ -289,10 +292,10 @@ class SpecialSupplyResultReportEntity(BaseModel):
 
 class GeneralSupplyResultReportEntity(BaseModel):
     region: Optional[str]
-    region_percent: Optional[int]
-    applicant_num: Optional[int] = 0
-    competition_rate: Optional[int] = 0
-    win_point: Optional[int] = 0
+    region_percent: Optional[float]
+    applicant_num: Optional[float] = 0
+    competition_rate: Optional[float] = 0
+    win_point: Optional[float] = 0
 
 
 class PublicSaleDetailReportEntity(BaseModel):
@@ -303,18 +306,18 @@ class PublicSaleDetailReportEntity(BaseModel):
     supply_area: float
     supply_price: int
     acquisition_tax: int
-    special_household: Optional[int]
-    multi_children_household: Optional[int]
-    newlywed_household: Optional[int]
-    old_parent_household: Optional[int]
-    first_life_household: Optional[int]
-    general_household: Optional[int]
+    special_household: Optional[float]
+    multi_children_household: Optional[float]
+    newlywed_household: Optional[float]
+    old_parent_household: Optional[float]
+    first_life_household: Optional[float]
+    general_household: Optional[float]
     total_household: Optional[int]
     pyoung_number: Optional[int] = 0
     price_per_meter: Optional[int] = 0
     public_sale_detail_photo: Optional[str]
-    special_supply_results: List[SpecialSupplyResultReportEntity] = None
-    general_supply_results: List[GeneralSupplyResultReportEntity] = None
+    special_supply_results: Optional[List[SpecialSupplyResultReportEntity]] = None
+    general_supply_results: Optional[List[GeneralSupplyResultReportEntity]] = None
 
 
 class RealEstateReportEntity(BaseModel):
@@ -330,7 +333,7 @@ class PublicSaleReportEntity(BaseModel):
     id: int
     name: Optional[str]
     real_estate_id: int
-    supply_household: int
+    supply_household: float
     offer_date: Optional[str]
     special_supply_date: Optional[str]
     special_supply_etc_date: Optional[str]
@@ -387,7 +390,7 @@ class PublicSaleDetailCalendarEntity(BaseModel):
     id: int
     real_estate_id: int
     name: Optional[str]
-    trade_type: Enum
+    trade_type: str
     offer_date: Optional[str]
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
@@ -403,8 +406,8 @@ class PublicSaleDetailCalendarEntity(BaseModel):
     notice_winner_date: Optional[str]
     contract_start_date: Optional[str]
     contract_end_date: Optional[str]
-    move_in_year: int
-    move_in_month: int
+    move_in_year: str
+    move_in_month: str
 
     class Config:
         use_enum_values = True
