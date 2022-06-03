@@ -431,7 +431,7 @@ class PublicSaleDetailPhotoFactory(BaseFactory):
     class Meta:
         model = PublicSaleDetailPhotoModel
 
-    public_sale_details_id = factory.Sequence(lambda n: n + 1)
+    public_sale_detail_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
     path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"

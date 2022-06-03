@@ -746,7 +746,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         config.py AWS 관련 config 시크릿 값 직접 넣어주어야 합니다
         S3Helper().upload() 함수 -> bucket 이름 직접 넣어주어야 합니다.
         테스트시 DB sequence 경우에 따라 초기화해줘야 할 필요가 있습니다. (전부 삭제 후 다시 업로드시)
-        업로드 대상 폴더 내에 중복 public_sale_details_id가 없어야 합니다 - 사전에 제거 필요(예: 윗층-아랫층)
+        업로드 대상 폴더 내에 중복 public_sale_detail_id가 없어야 합니다 - 사전에 제거 필요(예: 윗층-아랫층)
         업로드 대상 폴더 내에 평면도 없음(폴더) 가 없어야 합니다 - 사전에 제거 필요
         파일명: 이름(PK) -> PK가 없는 파일 이름은 업로드 무시하고 넘어갑니다
 
@@ -876,12 +876,12 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                     # public_sale_detail_photos 테이블 upload 대상
                     table_name = "public_sale_detail_photos"
                     try:
-                        public_sale_details_id = int(
+                        public_sale_detail_id = int(
                             image_name.split("(")[1].rsplit(")")[0]
                         )
 
                         if self._house_repo.is_enable_public_sale_detail_info(
-                            public_sale_details_id
+                            public_sale_detail_id
                         ):
 
                             file_name = image_name.split("(")[0]
@@ -896,7 +896,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             public_sale_detail_photos.append(
                                 {
                                     "id": public_sale_detail_photos_start_idx,
-                                    "public_sale_details_id": public_sale_details_id,
+                                    "public_sale_detail_id": public_sale_detail_id,
                                     "file_name": file_name,
                                     "path": path,
                                     "extension": extension,
@@ -925,7 +925,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                             )
                         else:
                             # public_sale_details_photos 실패 수집
-                            failed_public_sale_detail_ids.append(public_sale_details_id)
+                            failed_public_sale_detail_ids.append(public_sale_detail_id)
                             failed_public_sale_detail_image_names.append(image_name)
                     except Exception:
                         # FK 없는 이미지 이름은 제외

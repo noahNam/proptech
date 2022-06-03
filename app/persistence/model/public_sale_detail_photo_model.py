@@ -23,7 +23,7 @@ class PublicSaleDetailPhotoModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    public_sale_details_id = Column(
+    public_sale_detail_id = Column(
         BigInteger,
         ForeignKey(PublicSaleDetailModel.id),
         nullable=False,
@@ -42,7 +42,7 @@ class PublicSaleDetailPhotoModel(db.Model):
     def to_entity(self) -> PublicSaleDetailPhotoEntity:
         return PublicSaleDetailPhotoEntity(
             id=self.id,
-            public_sale_details_id=self.public_sale_details_id,
+            public_sale_detail_id=self.public_sale_detail_id,
             file_name=self.file_name,
             path=S3Helper.get_cloudfront_url() + "/" + self.path if self.path else None,
             extension=self.extension,

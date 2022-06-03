@@ -25,14 +25,14 @@ def upgrade():
             nullable=False,
             autoincrement=True,
         ),
-        sa.Column("public_sale_details_id", sa.BigInteger(), nullable=False),
+        sa.Column("public_sale_detail_id", sa.BigInteger(), nullable=False),
         sa.Column("region", sa.String(length=10), nullable=True),
         sa.Column("region_percent", sa.SmallInteger(), nullable=True),
         sa.Column("applicant_num", sa.Integer(), nullable=True),
         sa.Column("competition_rate", sa.SmallInteger(), nullable=True),
         sa.Column("win_point", sa.SmallInteger(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["public_sale_details_id"], ["public_sale_details.id"], ondelete="CASCADE"
+            ["public_sale_detail_id"], ["public_sale_details.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -44,7 +44,7 @@ def upgrade():
             nullable=False,
             autoincrement=True,
         ),
-        sa.Column("public_sale_details_id", sa.BigInteger(), nullable=False),
+        sa.Column("public_sale_detail_id", sa.BigInteger(), nullable=False),
         sa.Column("region", sa.String(length=10), nullable=True),
         sa.Column("region_percent", sa.SmallInteger(), nullable=True),
         sa.Column("multi_children_vol", sa.SmallInteger(), nullable=True),
@@ -52,7 +52,7 @@ def upgrade():
         sa.Column("old_parent_vol", sa.SmallInteger(), nullable=True),
         sa.Column("first_life_vol", sa.SmallInteger(), nullable=True),
         sa.ForeignKeyConstraint(
-            ["public_sale_details_id"], ["public_sale_details.id"], ondelete="CASCADE"
+            ["public_sale_detail_id"], ["public_sale_details.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
     )

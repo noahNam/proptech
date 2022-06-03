@@ -2,17 +2,14 @@ from sqlalchemy import (
     Column,
     BigInteger,
     Integer,
-    ForeignKey,
-    Float,
     String,
-    SmallInteger,
+    SmallInteger, Numeric,
 )
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 
 from app import db
 from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.image_helper import S3Helper
-from app.persistence.model.public_sale_model import PublicSaleModel
 from core.domains.house.entity.house_entity import (
     PublicSaleDetailEntity,
     PublicSaleDetailReportEntity,
@@ -25,47 +22,53 @@ class PublicSaleDetailModel(db.Model):
     __tablename__ = "public_sale_details"
 
     id = Column(
-        BigInteger().with_variant(Integer, "sqlite"),
-        primary_key=True,
-        nullable=False,
-        autoincrement=True,
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     public_sale_id = Column(
-        BigInteger, ForeignKey(PublicSaleModel.id), nullable=False, index=True,
+        BigInteger().with_variant(Integer, "sqlite"), nullable=False, index=True,
     )
-    private_area = Column(Float, nullable=False)
-    supply_area = Column(Float, nullable=False)
+    area_type = Column(String(5), nullable=True)
+    private_area = Column(Numeric(6, 2), nullable=False)
+    supply_area =Column(Numeric(6, 2), nullable=False)
     supply_price = Column(Integer, nullable=False)
     acquisition_tax = Column(Integer, nullable=False)
-    area_type = Column(String(5), nullable=True)
-    special_household = Column(SmallInteger, nullable=True)
-    multi_children_household = Column(SmallInteger, nullable=True)
-    newlywed_household = Column(SmallInteger, nullable=True)
-    old_parent_household = Column(SmallInteger, nullable=True)
-    first_life_household = Column(SmallInteger, nullable=True)
-    general_household = Column(SmallInteger, nullable=True)
-
-    hallway_type = Column(String(3), nullable=True)
+    special_household = Column(Numeric(5), nullable=True)
+    multi_children_household = Column(Numeric(5), nullable=True)
+    newlywed_household = Column(Numeric(5), nullable=True)
+    old_parent_household = Column(Numeric(5), nullable=True)
+    first_life_household = Column(Numeric(5), nullable=True)
+    general_household = Column(Numeric(5), nullable=True)
     bay = Column(SmallInteger, nullable=True)
-    plate_tower_duplex = Column(String(3), nullable=True)
+    pansang_tower = Column(String(10), nullable=True)
     kitchen_window = Column(String(1), nullable=True)
-    cross_ventilation = Column(String(1), nullable=True)
+    direct_window = Column(String(1), nullable=True)
     alpha_room = Column(String(1), nullable=True)
-    cyber_house_link = Column(String(200), nullable=True)
+    cyber_model_house_link = Column(String(200), nullable=True)
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
-    # 1:1 relationship
+    # relationship
     public_sale_detail_photos = relationship(
         "PublicSaleDetailPhotoModel",
-        backref=backref("public_sale_details"),
+        backref="public_sale_details",
         uselist=False,
+        primaryjoin="PublicSaleDetailModel.id == foreign(PublicSaleAvgPriceModel.public_sale_id)",
     )
 
     special_supply_results = relationship(
-        "SpecialSupplyResultModel", backref=backref("public_sale_details"),
+        "SpecialSupplyResultModel",
+        backref="public_sale_details",
+        uselist=True,
+        primaryjoin="PublicSaleDetailModel.id == foreign(SpecialSupplyResultModel.public_sale_detail_id)",
     )
 
     general_supply_results = relationship(
-        "GeneralSupplyResultModel", backref=backref("public_sale_details"),
+        "SpecialSupplyResultModel",
+        backref="public_sale_details",
+        uselist=True,
+        primaryjoin="PublicSaleDetailModel.id == foreign(SpecialSupplyResultModel.public_sale_detail_id)"
     )
 
     def to_entity(self) -> PublicSaleDetailEntity:

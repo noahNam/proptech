@@ -18,15 +18,15 @@ depends_on = None
 
 def upgrade():
     op.create_unique_constraint(
-        "special_supply_results_public_sale_details_id_region_key",
+        "special_supply_results_public_sale_detail_id_region_key",
         "special_supply_results",
-        ["public_sale_details_id", "region"],
+        ["public_sale_detail_id", "region"],
     )
 
 
 def downgrade():
     op.drop_constraint(
-        "special_supply_results_public_sale_details_id_region_key",
+        "special_supply_results_public_sale_detail_id_region_key",
         "special_supply_results",
         type_="unique",
     )
