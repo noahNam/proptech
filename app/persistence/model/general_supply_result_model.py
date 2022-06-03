@@ -3,7 +3,7 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    UniqueConstraint, Numeric, DateTime, func,
+    UniqueConstraint, Numeric, DateTime, func, SmallInteger,
 )
 
 from app import db
@@ -22,10 +22,10 @@ class GeneralSupplyResultModel(db.Model):
     )
 
     region = Column(String(10), nullable=True)
-    region_percent = Column(Numeric(3), nullable=True)
-    applicant_num = Column(Numeric(5), nullable=True)
-    competition_rate = Column(Numeric(3), nullable=True)
-    win_point = Column(Numeric(3), nullable=True)
+    region_percent = Column(SmallInteger, nullable=True)
+    applicant_num = Column(SmallInteger, nullable=True)
+    competition_rate = Column(SmallInteger, nullable=True)
+    win_point = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False

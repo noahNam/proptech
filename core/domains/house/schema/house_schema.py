@@ -1,5 +1,3 @@
-from datetime import datetime
-from enum import Enum
 from typing import List, Union, Optional, Dict
 
 from pydantic import BaseModel, StrictStr
@@ -8,13 +6,11 @@ from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.entity.house_entity import (
     BoundingRealEstateEntity,
     AdministrativeDivisionEntity,
-    HousePublicDetailEntity,
     GetHouseMainEntity,
     GetMainPreSubscriptionEntity,
     SimpleCalendarInfoEntity,
     MapSearchEntity,
     NearHouseEntity,
-    PublicSaleReportEntity,
 )
 from core.domains.report.entity.report_entity import (
     TicketUsageResultForHousePublicDetailEntity,
@@ -77,16 +73,16 @@ class PublicSaleDetailBaseSchema(BaseModel):
     notice_winner_date: Optional[str]
     contract_start_date: Optional[str]
     contract_end_date: Optional[str]
-    move_in_year: int
-    move_in_month: int
+    move_in_year: str
+    move_in_month: str
     min_down_payment: int
     max_down_payment: int
     down_payment_ratio: int
     reference_url: Optional[str]
-    total_household: Optional[int]
-    total_park_number: Optional[int]
-    top_floor: Optional[int]
-    dong_number: Optional[int]
+    hhld_total_cnt: Optional[int]
+    park_total_cnt: Optional[int]
+    highest_floor: Optional[int]
+    dong_cnt: Optional[int]
     contract_amount: Optional[int]
     middle_amount: Optional[float]
     remain_amount: Optional[float]

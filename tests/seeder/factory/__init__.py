@@ -469,6 +469,7 @@ class PublicSalePhotoFactory(BaseFactory):
     extension = "jpeg"
     is_thumbnail = True
     seq = factory.Sequence(lambda n: n + 1)
+    is_available = True
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
 
@@ -479,7 +480,6 @@ class PublicSaleFactory(BaseFactory):
 
     real_estate_id = factory.Sequence(lambda n: n + 1)
     name = factory.Sequence(lambda n: f"아파트_{n}")
-    name_ts = factory.Sequence(lambda n: f"아파트_{n}")
     region = "경기"
     housing_category = HousingCategoryEnum.PUBLIC.value
     rent_type = RentTypeEnum.PRE_SALE.value

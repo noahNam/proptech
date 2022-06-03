@@ -32,12 +32,12 @@ class PublicSaleDetailModel(db.Model):
     supply_area =Column(Numeric(6, 2), nullable=False)
     supply_price = Column(Integer, nullable=False)
     acquisition_tax = Column(Integer, nullable=False)
-    special_household = Column(Numeric(5), nullable=True)
-    multi_children_household = Column(Numeric(5), nullable=True)
-    newlywed_household = Column(Numeric(5), nullable=True)
-    old_parent_household = Column(Numeric(5), nullable=True)
-    first_life_household = Column(Numeric(5), nullable=True)
-    general_household = Column(Numeric(5), nullable=True)
+    special_household = Column(SmallInteger, nullable=True)
+    multi_children_household = Column(SmallInteger, nullable=True)
+    newlywed_household = Column(SmallInteger, nullable=True)
+    old_parent_household = Column(SmallInteger, nullable=True)
+    first_life_household = Column(SmallInteger, nullable=True)
+    general_household = Column(SmallInteger, nullable=True)
     bay = Column(SmallInteger, nullable=True)
     pansang_tower = Column(String(10), nullable=True)
     kitchen_window = Column(String(1), nullable=True)
@@ -54,7 +54,7 @@ class PublicSaleDetailModel(db.Model):
         "PublicSaleDetailPhotoModel",
         backref="public_sale_details",
         uselist=False,
-        primaryjoin="PublicSaleDetailModel.id == foreign(PublicSaleAvgPriceModel.public_sale_id)",
+        primaryjoin="PublicSaleDetailModel.id == foreign(PublicSaleDetailPhotoModel.public_sale_detail_id)",
     )
 
     special_supply_results = relationship(
@@ -65,10 +65,10 @@ class PublicSaleDetailModel(db.Model):
     )
 
     general_supply_results = relationship(
-        "SpecialSupplyResultModel",
+        "GeneralSupplyResultModel",
         backref="public_sale_details",
         uselist=True,
-        primaryjoin="PublicSaleDetailModel.id == foreign(SpecialSupplyResultModel.public_sale_detail_id)"
+        primaryjoin="PublicSaleDetailModel.id == foreign(GeneralSupplyResultModel.public_sale_detail_id)"
     )
 
     def to_entity(self) -> PublicSaleDetailEntity:

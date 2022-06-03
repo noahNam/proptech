@@ -186,7 +186,7 @@ class GetCalendarInfoPresenter:
         if isinstance(output, UseCaseSuccessOutput):
             try:
                 schema = GetCalendarInfoResponseSchema(houses=output.value)
-            except ValidationError:
+            except ValidationError as e:
                 return failure_response(
                     UseCaseFailureOutput(
                         type="response schema validation error",

@@ -3,7 +3,7 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    Numeric, DateTime, func,
+    DateTime, func, SmallInteger,
 )
 from sqlalchemy.orm import relationship
 
@@ -21,8 +21,8 @@ class DongInfoModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), nullable=False, index=True,
     )
     name = Column(String(30), nullable=True)
-    hhld_cnt = Column(Numeric(5), nullable=True)
-    grnd_flr_cnt = Column(Numeric(5), nullable=True)
+    hhld_cnt = Column(SmallInteger, nullable=True)
+    grnd_flr_cnt = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False

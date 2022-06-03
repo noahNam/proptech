@@ -280,6 +280,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
     make_authorization,
     create_real_estate_with_public_sale,
 ):
+
     # request header
     user_id = 1
     authorization = make_authorization(user_id=user_id)
@@ -288,12 +289,11 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         content_type="application/json",
         accept="application/json",
     )
-
     public_sale_detail_calendar = PublicSaleDetailCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
-        trade_type=PreSaleTypeEnum.PRE_SALE,
+        trade_type=PreSaleTypeEnum.PRE_SALE.value,
         offer_date="20210705",
         subscription_start_date="20210705",
         subscription_end_date="20210705",
@@ -306,8 +306,8 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         notice_winner_date="20210705",
         contract_start_date="20210705",
         contract_end_date="20210705",
-        move_in_year=2023,
-        move_in_month=12,
+        move_in_year="2023",
+        move_in_month="12",
     )
     sample_calendar_info = DetailCalendarInfoEntity(
         is_like=True,
@@ -326,6 +326,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
                 url_for("api/tanos.house_calendar_list_view", year=2021, month=7),
                 headers=headers,
             )
+
 
     data = response.get_json()["data"]
     assert response.status_code == 200
@@ -810,7 +811,7 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         id=1,
         real_estate_id=1,
         name="힐스테이트",
-        trade_type=PreSaleTypeEnum.PRE_SALE,
+        trade_type=PreSaleTypeEnum.PRE_SALE.value,
         subscription_start_date="20210705",
         subscription_end_date="20210705",
         special_supply_date="20210705",
