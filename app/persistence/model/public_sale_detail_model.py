@@ -3,7 +3,7 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    SmallInteger, Numeric,
+    SmallInteger, Numeric, DateTime, func,
 )
 from sqlalchemy.orm import relationship
 
