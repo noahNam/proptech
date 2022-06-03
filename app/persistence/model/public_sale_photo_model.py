@@ -44,6 +44,7 @@ class PublicSalePhotoModel(db.Model):
             extension=self.extension,
             is_thumbnail=self.is_thumbnail,
             seq=self.seq,
+            is_available=self.is_available,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )

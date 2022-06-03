@@ -5,7 +5,7 @@ from sqlalchemy import (
     DateTime,
     Boolean,
     String,
-    func, Numeric,
+    func, Numeric, SmallInteger,
 )
 
 from app import db
@@ -26,11 +26,11 @@ class PrivateSaleDetailModel(db.Model):
     private_area = Column(Numeric(6,2), nullable=True)
     supply_area = Column(Numeric(6,2), nullable=True)
     contract_date = Column(String(8), nullable=True)
-    contract_ym = Column(Numeric(6), nullable=True, index=True)
+    contract_ym = Column(SmallInteger, nullable=True, index=True)
     deposit_price = Column(Integer, nullable=True)
     rent_price = Column(Integer, nullable=True)
     trade_price = Column(Integer, nullable=True)
-    floor = Column(Numeric(3), nullable=True)
+    floor = Column(SmallInteger, nullable=True)
     trade_type = Column(
         String(5),
         nullable=False,

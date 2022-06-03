@@ -3,7 +3,7 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    UniqueConstraint, Numeric, DateTime, func,
+    UniqueConstraint, Numeric, DateTime, func, SmallInteger,
 )
 
 from app import db
@@ -22,11 +22,11 @@ class SpecialSupplyResultModel(db.Model):
     )
 
     region = Column(String(10), nullable=True)
-    region_percent = Column(Numeric(3), nullable=True)
-    multi_children_vol = Column(Numeric(5), nullable=True)
-    newlywed_vol = Column(Numeric(5), nullable=True)
-    old_parent_vol = Column(Numeric(5), nullable=True)
-    first_life_vol = Column(Numeric(5), nullable=True)
+    region_percent = Column(SmallInteger, nullable=True)
+    multi_children_vol = Column(SmallInteger, nullable=True)
+    newlywed_vol = Column(SmallInteger, nullable=True)
+    old_parent_vol = Column(SmallInteger, nullable=True)
+    first_life_vol = Column(SmallInteger, nullable=True)
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False

@@ -8,7 +8,7 @@ from sqlalchemy import (
     Boolean,
     String,
     func,
-    Float, Numeric,
+    Float, Numeric, SmallInteger,
 )
 from sqlalchemy.orm import relationship
 
@@ -43,7 +43,7 @@ class PublicSaleModel(db.Model):
     rent_type = Column(String(10), nullable=False)
     trade_type = Column(String(5), nullable=False)
     construct_company = Column(String(50), nullable=True)
-    supply_household = Column(Numeric(5), nullable=False)
+    supply_household = Column(SmallInteger, nullable=False)
     offer_date = Column(String(8), nullable=True)
     subscription_start_date = Column(String(8), nullable=True)
     subscription_end_date = Column(String(8), nullable=True)
@@ -69,10 +69,10 @@ class PublicSaleModel(db.Model):
     heating_type = Column(String(10), nullable=True)
     vc_rat = Column(Numeric(6,2), nullable=True)
     bc_rat = Column(Numeric(6,2), nullable=True)
-    hhld_total_cnt  = Column(Numeric(5), nullable=True)
-    park_total_cnt = Column(Numeric(5), nullable=True)
-    highest_floor = Column(Numeric(3), nullable=True)
-    dong_cnt = Column(Numeric(3), nullable=True)
+    hhld_total_cnt  = Column(SmallInteger, nullable=True)
+    park_total_cnt = Column(SmallInteger, nullable=True)
+    highest_floor = Column(SmallInteger, nullable=True)
+    dong_cnt = Column(SmallInteger, nullable=True)
     contract_amount = Column(Float(), nullable=True)
     middle_amount = Column(Float(), nullable=True)
     remain_amount = Column(Float(), nullable=True)
