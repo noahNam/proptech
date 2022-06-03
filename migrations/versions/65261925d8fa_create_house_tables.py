@@ -248,21 +248,21 @@ def upgrade():
             autoincrement=True,
             nullable=False,
         ),
-        sa.Column("public_sales_id", sa.BigInteger(), nullable=False),
+        sa.Column("public_sale_id", sa.BigInteger(), nullable=False),
         sa.Column("private_area", sa.Float(), nullable=False),
         sa.Column("supply_area", sa.Float(), nullable=False),
         sa.Column("supply_price", sa.Integer(), nullable=False),
         sa.Column("acquisition_tax", sa.Integer(), nullable=False),
         sa.Column("area_type", sa.String(length=5), nullable=True),
         sa.ForeignKeyConstraint(
-            ["public_sales_id"], ["public_sales.id"], ondelete="CASCADE"
+            ["public_sale_id"], ["public_sales.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_public_sale_details_public_sales_id"),
+        op.f("ix_public_sale_details_public_sale_id"),
         "public_sale_details",
-        ["public_sales_id"],
+        ["public_sale_id"],
         unique=False,
     )
 
@@ -274,22 +274,22 @@ def upgrade():
             autoincrement=True,
             nullable=False,
         ),
-        sa.Column("public_sales_id", sa.BigInteger(), nullable=False),
+        sa.Column("public_sale_id", sa.BigInteger(), nullable=False),
         sa.Column("file_name", sa.String(length=20), nullable=False),
         sa.Column("path", sa.String(length=150), nullable=False),
         sa.Column("extension", sa.String(length=4), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["public_sales_id"], ["public_sales.id"], ondelete="CASCADE"
+            ["public_sale_id"], ["public_sales.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("public_sales_id"),
+        sa.UniqueConstraint("public_sale_id"),
     )
     op.create_index(
-        op.f("ix_public_sale_photos_public_sales_id"),
+        op.f("ix_public_sale_photos_public_sale_id"),
         "public_sale_photos",
-        ["public_sales_id"],
+        ["public_sale_id"],
         unique=True,
     )
     # with open("./migrations/seeds/default_houses.sql") as fp:
@@ -314,10 +314,10 @@ def downgrade():
     op.drop_index(op.f("ix_private_sales_real_estate_id"), table_name="private_sales")
     op.drop_index(op.f("ix_public_sales_real_estate_id"), table_name="public_sales")
     op.drop_index(
-        op.f("ix_public_sale_details_public_sales_id"), table_name="public_sale_details"
+        op.f("ix_public_sale_details_public_sale_id"), table_name="public_sale_details"
     )
     op.drop_index(
-        op.f("ix_public_sale_photos_public_sales_id"), table_name="public_sale_photos"
+        op.f("ix_public_sale_photos_public_sale_id"), table_name="public_sale_photos"
     )
     op.drop_index(op.f("jubun_address_gin_varchar_idx"), table_name="real_estates")
     op.drop_index(op.f("jubun_address_gin_ts_idx"), table_name="real_estates")

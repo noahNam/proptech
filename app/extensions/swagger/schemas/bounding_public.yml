@@ -166,7 +166,7 @@ bounding_public:
                     id:
                       type: integer
                       example: 15
-                    public_sales_id:
+                    public_sale_id:
                       type: integer
                       example: 3
                     private_area:

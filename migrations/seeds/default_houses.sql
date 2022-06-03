@@ -12,19 +12,19 @@ INSERT INTO public.public_sales (id, real_estate_id, name, region, housing_categ
 (2, 2, '봉담자이 프라이드시티', '경기', '민영', '분양', '분양', '지에스건설(주)', 1701, 'True', '20210714', '20210617', '20210622', '20210617', '20210617', '20210618', '20210621', '20210622', '20210622', '20210628', '20210710', '20210716', 2024, 7, 31800000, 77580000, 10, 'https://xi.co.kr/pridecity', '2021-07-13 04:38:21.370035', '2021-07-13 04:38:21.370058'),
 (1, 1, '래미안 원베일리', '서울', '민영', '분양', '분양', '삼성물산(주)', 224, 'True', '20210607', '20210617', '20210621', NULL, NULL, '20210714', '20210618', '20210621', '20210621', '20210625', '20210709', '20210713', 2023, 8, 181000000, 344000000, 20, 'https://www.raemian.co.kr', '2021-07-13 04:16:54.746256', '2021-07-13 04:16:54.74628');
 
-INSERT INTO public.public_sale_details (id, public_sales_id, private_area, supply_area, supply_price, acquisition_tax) VALUES
+INSERT INTO public.public_sale_details (id, public_sale_id, private_area, supply_area, supply_price, acquisition_tax) VALUES
 (1, 1, '46.93', '62.6816', 92370, 30482100),
 (2, 1, '59.96', '80.6362', 142500, 47025000),
 (3, 1, '74.97', '100.2876', 176000, 58080000),
 (4, 2, '59.6481', '82.5295', 34540, 3799400),
 (5, 2, '72.018', '98.0448', 39460, 4340600);
 
-INSERT INTO public.public_sale_photos (id, public_sales_id, file_name, "path", "extension", created_at, updated_at) VALUES
+INSERT INTO public.public_sale_photos (id, public_sale_id, file_name, "path", "extension", created_at, updated_at) VALUES
 (1, 1, 'photo', 'public_sale_photos/2021/07/13/2c222a5b-b115-4330-8c88-9be638b14b46.png', 'png', '2021-07-13 04:30:32.749113', '2021-07-13 04:30:32.749154'),
 (2, 2, 'photo_test', 'public_sale_photos/2021/07/13/e71dead1-212e-4cf4-84c1-51d2d166ab06.png', 'png', '2021-07-13 04:38:46.631388', '2021-07-13 04:38:46.631411');
 
 INSERT INTO public.private_sales (id, real_estate_id, building_type, created_at, updated_at) VALUES
 (1, 3, '아파트', '2021-07-13 08:56:59.486593', '2021-07-13 08:56:59.486611');
 
-INSERT INTO public.private_sale_details (id, private_sales_id, private_area, supply_area, contract_date, deposit_price, rent_price, trade_price, floor, trade_type, is_available, created_at, updated_at) VALUES
+INSERT INTO public.private_sale_details (id, private_sale_id, private_area, supply_area, contract_date, deposit_price, rent_price, trade_price, floor, trade_type, is_available, created_at, updated_at) VALUES
 (1, 1, '56', '84', '20210707', 0, 0, 100000, 3, '매매', 'True', '2021-07-13 08:56:59.486593', '2021-07-13 08:56:59.486611');

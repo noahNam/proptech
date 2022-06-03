@@ -26,9 +26,9 @@ def upgrade():
         op.f("ix_device_tokens_device_id"), "device_tokens", ["device_id"], unique=True
     )
     op.create_index(
-        op.f("ix_dong_infos_private_sales_id"),
+        op.f("ix_dong_infos_private_sale_id"),
         "dong_infos",
-        ["private_sales_id"],
+        ["private_sale_id"],
         unique=False,
     )
     op.create_index(
@@ -140,7 +140,7 @@ def downgrade():
     )
     op.drop_index(op.f("ix_post_attachments_post_id"), table_name="post_attachments")
     op.drop_index(op.f("ix_interest_houses_user_id"), table_name="interest_houses")
-    op.drop_index(op.f("ix_dong_infos_private_sales_id"), table_name="dong_infos")
+    op.drop_index(op.f("ix_dong_infos_private_sale_id"), table_name="dong_infos")
     op.drop_index(op.f("ix_device_tokens_device_id"), table_name="device_tokens")
     op.create_unique_constraint(
         "device_tokens_device_id_key", "device_tokens", ["device_id"]

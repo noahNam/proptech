@@ -54,8 +54,8 @@ class PublicSaleDetailBaseSchema(BaseModel):
     name: str
     region: str
     housing_category: str
-    rent_type: Enum
-    trade_type: Enum
+    rent_type: str
+    trade_type: str
     construct_company: Optional[str]
     supply_household: int
     is_available: bool
@@ -94,9 +94,6 @@ class PublicSaleDetailBaseSchema(BaseModel):
     public_sale_details: Optional[Dict]
     is_checked: bool
     heating_type: Optional[str]
-
-    class Config:
-        use_enum_values = True
 
 
 class HousePublicDetailSchema(BaseModel):

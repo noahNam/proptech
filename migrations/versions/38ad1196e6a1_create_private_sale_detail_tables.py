@@ -24,7 +24,7 @@ def upgrade():
             autoincrement=True,
             nullable=False,
         ),
-        sa.Column("private_sales_id", sa.BigInteger(), nullable=False),
+        sa.Column("private_sale_id", sa.BigInteger(), nullable=False),
         sa.Column("private_area", sa.Float(), nullable=False),
         sa.Column("supply_area", sa.Float(), nullable=False),
         sa.Column("contract_date", sa.String(length=8), nullable=True),
@@ -41,16 +41,16 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["private_sales_id"], ["private_sales.id"], ondelete="CASCADE"
+            ["private_sale_id"], ["private_sales.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
     )
     # with open("./migrations/seeds/default_houses.sql") as fp:
     #     op.execute(fp.read())
     op.create_index(
-        op.f("ix_private_sale_details_private_sales_id"),
+        op.f("ix_private_sale_details_private_sale_id"),
         "private_sale_details",
-        ["private_sales_id"],
+        ["private_sale_id"],
         unique=False,
     )
 
@@ -58,7 +58,7 @@ def upgrade():
 def downgrade():
     op.drop_table("private_sale_details")
     op.drop_index(
-        op.f("ix_private_sale_details_private_sales_id"),
+        op.f("ix_private_sale_details_private_sale_id"),
         table_name="private_sale_details",
     )
     op.execute("drop type realtradetypeenum;")

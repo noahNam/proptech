@@ -28,7 +28,7 @@ def test_get_ticket_usage_result_view_then_return_usage_ticket_list(
     create_ticket_usage_results,
     public_sale_photo_factory,
 ):
-    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    public_sale_photo = public_sale_photo_factory.build(public_sale_id=1)
     session.add(public_sale_photo)
     session.commit()
 
@@ -61,7 +61,7 @@ def test_get_ticket_usage_result_view_then_return_no_list(
     create_real_estate_with_public_sale,
     public_sale_photo_factory,
 ):
-    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    public_sale_photo = public_sale_photo_factory.build(public_sale_id=1)
     session.add(public_sale_photo)
     session.commit()
 

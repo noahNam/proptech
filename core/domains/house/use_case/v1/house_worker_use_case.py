@@ -76,7 +76,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
 
         2. Default pyoung 값 선정
         - 지도에 나타낼 대표 평수를 구한다 -> 공급면적(supply_area) 값 -> 평수 변환
-        - private_sale_details.group_by(private_sales_id).count() -> 제일 많은 카운트 선정
+        - private_sale_details.group_by(private_sale_id).count() -> 제일 많은 카운트 선정
         - 새로운 아파트가 없으면 -> 가장 낮은 평수를 Default pyoung 선정
 
         3. public_sale_details -> 취득세 계산
@@ -197,7 +197,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             if target.trade_type == RealTradeTypeEnum.TRADING:
                 result_dict_list.append(
                     {
-                        "id": target.private_sales_id,
+                        "id": target.private_sale_id,
                         "trade_status": status,
                         "updated_at": get_server_timestamp(),
                     }
@@ -205,7 +205,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             elif target.trade_type == RealTradeTypeEnum.LONG_TERM_RENT:
                 result_dict_list.append(
                     {
-                        "id": target.private_sales_id,
+                        "id": target.private_sale_id,
                         "deposit_status": status,
                         "updated_at": get_server_timestamp(),
                     }
@@ -258,10 +258,10 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
             else:
                 for idx in target_ids:
                     competition_and_score_info: dict = self._house_repo.get_competition_and_min_score(
-                        public_sales_id=idx
+                        public_sale_id=idx
                     )
                     default_info: dict = self._house_repo.get_default_infos(
-                        public_sales_id=idx
+                        public_sale_id=idx
                     )
 
                     if default_info:
@@ -269,7 +269,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                             avg_price_update_list,
                             avg_price_create_list,
                         ) = self._house_repo.make_pre_calc_target_public_sale_avg_prices_list(
-                            public_sales_id=idx,
+                            public_sale_id=idx,
                             default_info=default_info,
                             competition_and_score_info=competition_and_score_info,
                         )
@@ -402,7 +402,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                 recent_infos: List[
                     RecentlyContractedEntity
                 ] = self._house_repo.get_recently_contracted_private_sale_details(
-                    private_sales_ids=target_ids
+                    private_sale_ids=target_ids
                 )
 
                 default_pyoung_dict: Dict = self._house_repo.get_default_pyoung_number_for_private_sale(
@@ -476,7 +476,7 @@ class PreCalculateAverageUseCase(BaseHouseWorkerUseCase):
                     target_list: List[
                         UpdateContractStatusTargetEntity
                     ] = self._house_repo.get_update_status_target_of_private_sale_details(
-                        private_sales_ids=target_ids
+                        private_sale_ids=target_ids
                     )
 
                     update_list = self._make_private_sale_status_update_list(
@@ -820,10 +820,10 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                     table_name = "public_sale_photos"
                     is_thumbnail = False
 
-                    public_sales_id = int(dir_name.split("(")[1].rsplit(")")[0])
+                    public_sale_id = int(dir_name.split("(")[1].rsplit(")")[0])
 
                     if self._house_repo.is_enable_public_sale_house(
-                        house_id=public_sales_id
+                        house_id=public_sale_id
                     ):
 
                         seq = int(image_name.split("@")[0]) - 1
@@ -842,7 +842,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                         public_sale_photos.append(
                             {
                                 "id": public_sale_photos_start_idx,
-                                "public_sales_id": public_sales_id,
+                                "public_sale_id": public_sale_id,
                                 "file_name": file_name,
                                 "path": path,
                                 "extension": extension,
@@ -870,7 +870,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
                         public_sale_photos_start_idx = public_sale_photos_start_idx + 1
                     else:
                         # public_sale_photos 실패 수집
-                        failed_public_sale_ids.append(public_sales_id)
+                        failed_public_sale_ids.append(public_sale_id)
                         failed_public_sale_image_names.append(image_name)
                 else:
                     # public_sale_detail_photos 테이블 upload 대상
@@ -935,7 +935,7 @@ class UpsertUploadPhotoUseCase(BaseHouseWorkerUseCase):
         # 실패 리스트 로그 기록
         if failed_public_sale_ids and failed_public_sale_image_names:
             for pk, name in zip(failed_public_sale_ids, failed_public_sale_image_names):
-                logger.info(f"🚀\tpublic_sales_id : {pk} - {name} failed")
+                logger.info(f"🚀\tpublic_sale_id : {pk} - {name} failed")
 
         if failed_public_sale_detail_ids and failed_public_sale_detail_image_names:
             for pk, name in zip(
@@ -1168,11 +1168,11 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
         for target in target_list:
             result_dict_list.append(
                 {
-                    "id": target.private_sales_id,
+                    "id": target.private_sale_id,
                     "supply_household": target.supply_household,
                     "construct_company": target.construct_company,
                     "move_in_year": target.move_in_year,
-                    "public_ref_id": target.public_sales_id,
+                    "public_ref_id": target.public_sale_id,
                     "updated_at": get_server_timestamp(),
                 }
             )
@@ -1232,7 +1232,7 @@ class ReplacePublicToPrivateUseCase(BaseHouseWorkerUseCase):
             logger.error(f"🚀\t [bulk_update_private_sales] - Error : {e} ")
             exit(os.EX_OK)
 
-        # 최초 생성 매매건 - 이미 생성되어 있는 real_estates_id는 패스하고 insert 진행
+        # 최초 생성 매매건 - 이미 생성되어 있는 real_estate_id는 패스하고 insert 진행
         create_list = self._make_replace_private_sales_create_list(
             target_list=replace_targets,
             avoid_pk_list=avoid_pk_list,
@@ -1288,20 +1288,20 @@ class CheckNotUploadedPhotoUseCase(BaseHouseWorkerUseCase):
             keys = elm.keys()
             dir_name_list.append(*keys)
 
-        public_sales_ids, passed_dirs = collector.get_public_sale_photos_ids(
+        public_sale_ids, passed_dirs = collector.get_public_sale_photos_ids(
             dir_name_list=dir_name_list
         )
 
-        not_uploaded_public_sales_ids = list()
+        not_uploaded_public_sale_ids = list()
 
-        for id_ in public_sales_ids:
+        for id_ in public_sale_ids:
             if not self._house_repo.is_exists_public_sale_photos(id_):
-                not_uploaded_public_sales_ids.append(id_)
+                not_uploaded_public_sale_ids.append(id_)
 
         logger.info(
             f"🚀\tCheckNotUploadedPhotoUseCase - Done! \n"
-            f"public_sales_id: {not_uploaded_public_sales_ids} not uploaded photos, "
-            f"({len(not_uploaded_public_sales_ids)}/ {len(public_sales_ids)})\n"
+            f"public_sale_id: {not_uploaded_public_sale_ids} not uploaded photos, "
+            f"({len(not_uploaded_public_sale_ids)}/ {len(public_sale_ids)})\n"
             f"passed_dirs: {passed_dirs}\n"
             f"records: {time() - start_time} secs"
         )
@@ -1312,8 +1312,8 @@ class CheckNotUploadedPhotoUseCase(BaseHouseWorkerUseCase):
             title=f"{emoji} [CheckNotUploadedPhotoUseCase] >>> 업로드 누락 이미지 체크",
             message=f"CheckNotUploadedPhotoUseCase : Finished !! \n "
             f"records: {time() - start_time} secs \n "
-            f"public_sales_id: {not_uploaded_public_sales_ids} not uploaded photos, "
-            f"({len(not_uploaded_public_sales_ids)}/ {len(public_sales_ids)}) \n",
+            f"public_sale_id: {not_uploaded_public_sale_ids} not uploaded photos, "
+            f"({len(not_uploaded_public_sale_ids)}/ {len(public_sale_ids)}) \n",
         )
 
         exit(os.EX_OK)
@@ -1445,7 +1445,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                                 dict(
                                     real_estate_id=target.req_real_estate_id,
                                     real_estate_name=target.req_real_estate_name,
-                                    private_sales_id=target.req_private_sales_id,
+                                    private_sale_id=target.req_private_sale_id,
                                     private_sale_name=target.req_private_sale_name,
                                     success_yn=False,
                                 )
@@ -1499,7 +1499,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                                 req_land_number=target.req_land_number,
                                 req_real_estate_id=target.req_real_estate_id,
                                 req_real_estate_name=target.req_real_estate_name,
-                                req_private_sales_id=target.req_private_sales_id,
+                                req_private_sale_id=target.req_private_sale_id,
                                 req_private_sale_name=target.req_private_sale_name,
                                 req_private_building_type=target.req_private_building_type.value,
                                 req_jibun_address=target.req_jibun_address,
@@ -1563,7 +1563,7 @@ class AddSupplyAreaUseCase(BaseHouseWorkerUseCase):
                                     req_land_number=target.req_land_number,
                                     req_real_estate_id=target.req_real_estate_id,
                                     req_real_estate_name=target.req_real_estate_name,
-                                    req_private_sales_id=target.req_private_sales_id,
+                                    req_private_sale_id=target.req_private_sale_id,
                                     req_private_sale_name=target.req_private_sale_name,
                                     req_private_building_type=target.req_private_building_type.value,
                                     req_jibun_address=target.req_jibun_address,
@@ -1663,12 +1663,12 @@ class BindSupplyAreaUseCase(BaseHouseWorkerUseCase):
         ] = self._house_repo.get_private_sales_target_ids_for_supply_area()
 
         if not target_entities:
-            logger.info(f"🚀\tUpdate_private_sales_ids : Nothing target_ids")
+            logger.info(f"🚀\tUpdate_private_sale_ids : Nothing target_ids")
             self.send_slack_message(
                 title=f"{emoji} [BindSupplyAreaUseCase] >>> 공급면적 추가 배치",
                 message=f"BindSupplyAreaUseCase : Finished !! \n "
                 f"records: {time() - start_time} secs \n "
-                f"Update_private_sales_ids : Nothing target_ids",
+                f"Update_private_sale_ids : Nothing target_ids",
             )
             exit(os.EX_OK)
 
@@ -1680,7 +1680,7 @@ class BindSupplyAreaUseCase(BaseHouseWorkerUseCase):
                             real_estate_name=target_entity.real_estate_name,
                             private_sale_name=target_entity.private_sale_name,
                             real_estate_id=target_entity.real_estate_id,
-                            private_sales_id=target_entity.private_sales_id,
+                            private_sale_id=target_entity.private_sale_id,
                             private_area=target_entity.private_area,
                             supply_area=target_entity.supply_area,
                             front_legal_code=target_entity.front_legal_code,
@@ -1699,7 +1699,7 @@ class BindSupplyAreaUseCase(BaseHouseWorkerUseCase):
                             real_estate_name=target_entity.real_estate_name,
                             private_sale_name=target_entity.private_sale_name,
                             real_estate_id=target_entity.real_estate_id,
-                            private_sales_id=target_entity.private_sales_id,
+                            private_sale_id=target_entity.private_sale_id,
                             private_area=target_entity.private_area,
                             supply_area=target_entity.supply_area,
                             front_legal_code=target_entity.front_legal_code,

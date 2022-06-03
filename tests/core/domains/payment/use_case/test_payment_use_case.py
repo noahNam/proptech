@@ -44,7 +44,7 @@ def test_get_ticket_usage_result_use_case_then_success(
     create_ticket_usage_results,
     public_sale_photo_factory,
 ):
-    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    public_sale_photo = public_sale_photo_factory.build(public_sale_id=1)
     session.add(public_sale_photo)
     session.commit()
 
