@@ -30,7 +30,7 @@ class PublicSaleDetailModel(db.Model):
         nullable=False,
         autoincrement=True,
     )
-    public_sales_id = Column(
+    public_sale_id = Column(
         BigInteger, ForeignKey(PublicSaleModel.id), nullable=False, index=True,
     )
     private_area = Column(Float, nullable=False)
@@ -71,7 +71,7 @@ class PublicSaleDetailModel(db.Model):
     def to_entity(self) -> PublicSaleDetailEntity:
         return PublicSaleDetailEntity(
             id=self.id,
-            public_sales_id=self.public_sales_id,
+            public_sale_id=self.public_sale_id,
             private_area=self.private_area,
             private_pyoung_number=HouseHelper.convert_area_to_pyoung(
                 self.private_area
@@ -126,7 +126,7 @@ class PublicSaleDetailModel(db.Model):
         ##################################################################################################
         return PublicSaleDetailReportEntity(
             id=self.id,
-            public_sales_id=self.public_sales_id,
+            public_sale_id=self.public_sale_id,
             private_area=self.private_area,
             supply_area=self.supply_area,
             supply_price=self.supply_price,

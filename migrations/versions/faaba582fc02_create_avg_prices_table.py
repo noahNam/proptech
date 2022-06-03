@@ -22,7 +22,7 @@ def upgrade():
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
-        sa.Column("private_sales_id", sa.BigInteger(), nullable=False),
+        sa.Column("private_sale_id", sa.BigInteger(), nullable=False),
         sa.Column("pyoung", sa.SmallInteger(), nullable=False),
         sa.Column("default_pyoung", sa.SmallInteger(), nullable=False),
         sa.Column("trade_price", sa.Integer(), nullable=True),
@@ -32,9 +32,9 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_private_sale_avg_prices_private_sales_id"),
+        op.f("ix_private_sale_avg_prices_private_sale_id"),
         "private_sale_avg_prices",
-        ["private_sales_id"],
+        ["private_sale_id"],
         unique=False,
     )
 
@@ -43,7 +43,7 @@ def upgrade():
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
-        sa.Column("public_sales_id", sa.BigInteger(), nullable=False),
+        sa.Column("public_sale_id", sa.BigInteger(), nullable=False),
         sa.Column("pyoung", sa.SmallInteger(), nullable=False),
         sa.Column("default_pyoung", sa.SmallInteger(), nullable=False),
         sa.Column("supply_price", sa.Integer(), nullable=True),
@@ -52,21 +52,21 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_public_sale_avg_prices_public_sales_id"),
+        op.f("ix_public_sale_avg_prices_public_sale_id"),
         "public_sale_avg_prices",
-        ["public_sales_id"],
+        ["public_sale_id"],
         unique=False,
     )
 
 
 def downgrade():
     op.drop_index(
-        op.f("ix_public_sale_avg_prices_public_sales_id"),
+        op.f("ix_public_sale_avg_prices_public_sale_id"),
         table_name="public_sale_avg_prices",
     )
     op.drop_table("public_sale_avg_prices")
     op.drop_index(
-        op.f("ix_private_sale_avg_prices_private_sales_id"),
+        op.f("ix_private_sale_avg_prices_private_sale_id"),
         table_name="private_sale_avg_prices",
     )
     op.drop_table("private_sale_avg_prices")

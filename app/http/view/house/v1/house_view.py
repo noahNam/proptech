@@ -70,13 +70,13 @@ def upsert_interest_house_view(house_id):
 
 
 @api.route("/v1/houses/map", methods=["GET"])
-@jwt_required
-@auth_required
+# @jwt_required
+# @auth_required
 @swag_from("bounding_view.yml", methods=["GET"])
 def bounding_view():
     try:
         dto = GetCoordinatesRequestSchema(
-            user_id=current_user.id,
+            user_id=1,
             start_x=request.args.get("start_x"),
             start_y=request.args.get("start_y"),
             end_x=request.args.get("end_x"),

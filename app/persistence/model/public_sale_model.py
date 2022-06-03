@@ -54,14 +54,8 @@ class PublicSaleModel(db.Model):
     name = Column(String(150), nullable=False)
     region = Column(String(20), nullable=False)
     housing_category = Column(String(2), nullable=False,)
-    rent_type = Column(
-        Enum(RentTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
-        nullable=False,
-    )
-    trade_type = Column(
-        Enum(PreSaleTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
-        nullable=False,
-    )
+    rent_type = Column(String(10), nullable=False,)
+    trade_type = Column(String(5), nullable=False,)
     construct_company = Column(String(50), nullable=True)
     supply_household = Column(Integer, nullable=False)
     is_available = Column(Boolean, nullable=False, default=True)
@@ -113,14 +107,14 @@ class PublicSaleModel(db.Model):
         "PublicSalePhotoModel", backref=backref("public_sales"), uselist=True
     )
     public_sale_details = relationship(
-        "PublicSaleDetailModel", backref=backref("public_sales")
+        "PublicSaleDetailModel", backref=backref("public_sales"), uselist=True
     )
 
     public_sale_avg_prices = relationship(
         "PublicSaleAvgPriceModel",
         backref=backref("public_sale_avg_prices"),
         uselist=True,
-        primaryjoin="foreign(PublicSaleModel.id)== PublicSaleAvgPriceModel.public_sales_id",
+        primaryjoin="foreign(PublicSaleModel.id)== PublicSaleAvgPriceModel.public_sale_id",
         viewonly=True,
     )
 

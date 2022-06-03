@@ -55,6 +55,7 @@ class LocalConfig(Config):
     SQLALCHEMY_DATABASE_URI = (
         "postgresql+psycopg2://toadhome_tanos:!Dkvkxhr117@localhost:5432/tanos"
     )
+    SQLALCHEMY_BINDS = {"read_only": "postgresql+psycopg2://toadhome_tanos:!Dkvkxhr117@localhost:5432/tanos"}
     # Prod migrate
     # SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://postgres:%s@localhost:5432/tanos" % urlquote("password")
 

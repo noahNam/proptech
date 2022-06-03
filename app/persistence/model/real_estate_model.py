@@ -9,7 +9,7 @@ from sqlalchemy import (
     Boolean, DateTime, func,
 )
 from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import relationship, backref, column_property
+from sqlalchemy.orm import relationship, column_property
 
 from app import db
 from core.domains.house.entity.house_entity import (
@@ -55,11 +55,13 @@ class RealEstateModel(db.Model):
         DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
+    # geometry 위치정보
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())
 
-    private_sales = relationship("PrivateSaleModel", back_populates="real_estates")
-    public_sales = relationship("PublicSaleModel", back_populates="real_estates")
+    # relationship
+    private_sales = relationship("PrivateSaleModel", backref="real_estates", uselist=True, primaryjoin="RealEstateModel.id == foreign(PrivateSaleModel.real_estate_id)")
+    public_sales = relationship("PublicSaleModel", backref="real_estates", uselist=True, primaryjoin="RealEstateModel.id == foreign(PublicSaleModel.real_estate_id)")
 
     def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:
         return DetailCalendarInfoEntity(
@@ -127,7 +129,7 @@ class RealEstateModel(db.Model):
             req_land_number=self.req_land_number,
             req_real_estate_id=self.req_real_estate_id,
             req_real_estate_name=self.req_real_estate_name,
-            req_private_sales_id=self.req_private_sales_id,
+            req_private_sale_id=self.req_private_sale_id,
             req_private_sale_name=self.req_private_sale_name,
             req_jibun_address=self.req_jibun_address,
             req_road_address=self.req_road_address,

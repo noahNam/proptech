@@ -29,8 +29,8 @@ def test_get_ticket_usage_results_then_return_public_sale_ids(
     create_ticket_usage_results,
     public_sale_photo_factory,
 ):
-    public_sales_id = 1
-    public_sale_photo = public_sale_photo_factory.build(public_sales_id=public_sales_id)
+    public_sale_id = 1
+    public_sale_photo = public_sale_photo_factory.build(public_sale_id=public_sale_id)
     session.add(public_sale_photo)
     session.commit()
 
@@ -39,7 +39,7 @@ def test_get_ticket_usage_results_then_return_public_sale_ids(
     )
 
     assert len(result) == 1
-    assert result[0].public_house_id == public_sales_id
+    assert result[0].public_house_id == public_sale_id
 
 
 def test_is_ticket_usage_for_house_then_return_true(
