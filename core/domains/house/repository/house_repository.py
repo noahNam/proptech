@@ -25,6 +25,7 @@ from app.extensions.database import session
 from app.extensions.utils.house_helper import HouseHelper
 from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.log_helper import logger_
+from app.extensions.utils.query_helper import RawQueryHelper
 from app.extensions.utils.time_helper import get_server_timestamp
 from app.persistence.model import (
     RealEstateModel,
@@ -316,7 +317,7 @@ class HouseRepository:
                     .join(
                         PrivateSaleAvgPriceModel,
                         (
-                            PrivateSaleAvgPriceModel.private_sales_id
+                            PrivateSaleAvgPriceModel.private_sale_id
                             == PrivateSaleModel.id
                         )
                         & (
@@ -356,7 +357,7 @@ class HouseRepository:
                     .join(
                         PrivateSaleAvgPriceModel,
                         (
-                            PrivateSaleAvgPriceModel.private_sales_id
+                            PrivateSaleAvgPriceModel.private_sale_id
                             == PrivateSaleModel.id
                         )
                         & (
@@ -392,7 +393,13 @@ class HouseRepository:
                     )
                     .group_by(union_q.c.id)
                 )
-                query_set = private_query.all()
+                print("@@@@")
+                RawQueryHelper.print_raw_query(private_query)
+                print("@@@@")
+                try:
+                    query_set = private_query.all()
+                except Exception as e:
+                    pass
             else:
                 # (2)
                 # private_sales 매매 조회
@@ -432,7 +439,7 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sales_id
+                        PrivateSaleAvgPriceModel.private_sale_id
                         == PrivateSaleModel.id,
                     )
                     .filter(*private_filters)
@@ -516,7 +523,7 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sales_id
+                        PrivateSaleAvgPriceModel.private_sale_id
                         == PrivateSaleModel.id,
                     )
                     .filter(*private_filters)
@@ -601,7 +608,7 @@ class HouseRepository:
                             road_address=query.road_address,
                             latitude=query.latitude,
                             longitude=query.longitude,
-                            private_sales_id=query.id,
+                            private_sale_id=query.id,
                             building_type=query.building_type,
                             name=query.name,
                             trade_status=query.trade_status,
@@ -649,7 +656,7 @@ class HouseRepository:
             )
             .join(
                 PublicSaleAvgPriceModel,
-                PublicSaleAvgPriceModel.public_sales_id == PublicSaleModel.id,
+                PublicSaleAvgPriceModel.public_sale_id == PublicSaleModel.id,
             )
             .filter(*public_filters)
         )
@@ -675,7 +682,7 @@ class HouseRepository:
                         road_address=query.road_address,
                         latitude=query.latitude,
                         longitude=query.longitude,
-                        public_sales_id=query.id,
+                        public_sale_id=query.id,
                         housing_category=query.housing_category,
                         name=query.name,
                         status=status,
@@ -773,11 +780,11 @@ class HouseRepository:
             return False
         return True
 
-    def is_enable_public_sale_detail_info(self, public_sale_details_id: int) -> bool:
+    def is_enable_public_sale_detail_info(self, public_sale_detail_id: int) -> bool:
         try:
             detail_info = (
                 session.query(PublicSaleDetailModel)
-                .filter_by(id=public_sale_details_id)
+                .filter_by(id=public_sale_detail_id)
                 .first()
             )
         except Exception:
@@ -817,7 +824,7 @@ class HouseRepository:
             and_(
                 PublicSaleModel.id == house_id,
                 PublicSaleModel.real_estate_id == RealEstateModel.id,
-                PublicSaleDetailModel.public_sales_id == PublicSaleModel.id,
+                PublicSaleDetailModel.public_sale_id == PublicSaleModel.id,
             )
         )
         query = (
@@ -1021,7 +1028,7 @@ class HouseRepository:
             .join(PublicSaleModel.real_estates)
             .join(
                 PublicSalePhotoModel,
-                (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                (PublicSalePhotoModel.public_sale_id == PublicSaleModel.id)
                 & (PublicSalePhotoModel.is_thumbnail == "True"),
                 isouter=True,
             )
@@ -1113,7 +1120,7 @@ class HouseRepository:
             .join(PublicSaleModel.real_estates)
             .join(
                 PublicSalePhotoModel,
-                (PublicSalePhotoModel.public_sales_id == InterestHouseModel.house_id)
+                (PublicSalePhotoModel.public_sale_id == InterestHouseModel.house_id)
                 & (PublicSalePhotoModel.is_thumbnail == True),
                 isouter=True,
             )
@@ -1164,7 +1171,7 @@ class HouseRepository:
             )
             .join(
                 PublicSalePhotoModel,
-                (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                (PublicSalePhotoModel.public_sale_id == PublicSaleModel.id)
                 & (PublicSalePhotoModel.is_thumbnail == True),
                 isouter=True,
             )
@@ -1466,7 +1473,7 @@ class HouseRepository:
             .query(PublicSaleModel)
             .join(
                 PublicSalePhotoModel,
-                (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                (PublicSalePhotoModel.public_sale_id == PublicSaleModel.id)
                 & (PublicSalePhotoModel.is_thumbnail == True),
                 isouter=True,
             )
@@ -1602,17 +1609,17 @@ class HouseRepository:
         return (min_down_payment + max_down_payment) / 2
 
     def get_recently_contracted_private_sale_details(
-        self, private_sales_ids: List[int]
+        self, private_sale_ids: List[int]
     ) -> List[RecentlyContractedEntity]:
         filters = list()
         filters.append(
-            and_(PrivateSaleDetailModel.private_sales_id.in_(private_sales_ids),)
+            and_(PrivateSaleDetailModel.private_sale_id.in_(private_sale_ids),)
         )
 
         sub_query_cond_1 = (
             session.query(PrivateSaleDetailModel)
             .with_entities(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
                 func.to_char(
@@ -1634,7 +1641,7 @@ class HouseRepository:
             .filter(*filters)
             .filter(PrivateSaleDetailModel.trade_type == "매매")
             .group_by(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
                 PrivateSaleDetailModel.trade_type,
@@ -1644,7 +1651,7 @@ class HouseRepository:
         sub_query_cond_2 = (
             session.query(PrivateSaleDetailModel)
             .with_entities(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
                 func.to_char(
@@ -1666,7 +1673,7 @@ class HouseRepository:
             .filter(*filters)
             .filter(PrivateSaleDetailModel.trade_type == "전세")
             .group_by(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
                 PrivateSaleDetailModel.trade_type,
@@ -1676,7 +1683,7 @@ class HouseRepository:
         query_cond1 = (
             session.query(PrivateSaleDetailModel)
             .with_entities(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
                 func.avg(PrivateSaleDetailModel.trade_price).label("avg_trade_price"),
@@ -1687,8 +1694,8 @@ class HouseRepository:
             .join(
                 sub_query_cond_1,
                 and_(
-                    PrivateSaleDetailModel.private_sales_id
-                    == sub_query_cond_1.c.private_sales_id,
+                    PrivateSaleDetailModel.private_sale_id
+                    == sub_query_cond_1.c.private_sale_id,
                     PrivateSaleDetailModel.private_area
                     == sub_query_cond_1.c.private_area,
                 ),
@@ -1705,7 +1712,7 @@ class HouseRepository:
                 <= sub_query_cond_1.c.max_contract_date
             )
             .group_by(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
                 sub_query_cond_1.c.min_contract_date,
@@ -1716,7 +1723,7 @@ class HouseRepository:
         query_cond2 = (
             session.query(PrivateSaleDetailModel)
             .with_entities(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
                 literal(0, Integer).label("avg_trade_price"),
@@ -1729,8 +1736,8 @@ class HouseRepository:
             .join(
                 sub_query_cond_2,
                 and_(
-                    PrivateSaleDetailModel.private_sales_id
-                    == sub_query_cond_2.c.private_sales_id,
+                    PrivateSaleDetailModel.private_sale_id
+                    == sub_query_cond_2.c.private_sale_id,
                     PrivateSaleDetailModel.private_area
                     == sub_query_cond_2.c.private_area,
                 ),
@@ -1747,7 +1754,7 @@ class HouseRepository:
                 <= sub_query_cond_2.c.max_contract_date
             )
             .group_by(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
                 sub_query_cond_2.c.min_contract_date,
@@ -1786,8 +1793,8 @@ class HouseRepository:
 
         query = (
             session.query(
-                union_query.columns.private_sale_details_private_sales_id.label(
-                    "private_sales_id"
+                union_query.columns.private_sale_details_private_sale_id.label(
+                    "private_sale_id"
                 ),
                 union_query.columns.private_sale_details_private_area.label(
                     "private_area"
@@ -1814,14 +1821,14 @@ class HouseRepository:
             .join(
                 PrivateSaleAvgPriceModel,
                 (
-                    union_query.columns.private_sale_details_private_sales_id
-                    == PrivateSaleAvgPriceModel.private_sales_id
+                    union_query.columns.private_sale_details_private_sale_id
+                    == PrivateSaleAvgPriceModel.private_sale_id
                 )
                 & (pyoung_case == PrivateSaleAvgPriceModel.pyoung),
                 isouter=True,
             )
             .group_by(
-                union_query.columns.private_sale_details_private_sales_id,
+                union_query.columns.private_sale_details_private_sale_id,
                 union_query.columns.private_sale_details_private_area,
                 union_query.columns.private_sale_details_supply_area,
             )
@@ -1834,7 +1841,7 @@ class HouseRepository:
 
         return [
             RecentlyContractedEntity(
-                private_sales_id=query.private_sales_id,
+                private_sale_id=query.private_sale_id,
                 private_area=query.private_area,
                 supply_area=query.supply_area,
                 avg_trade_price=query.avg_trade_price,
@@ -1864,12 +1871,12 @@ class HouseRepository:
                 pyoung_div = "P"  # {P}rivate_area
                 pyoung = recent_info.private_area
 
-            default_pyoung = default_pyoung_dict.get(recent_info.private_sales_id)
+            default_pyoung = default_pyoung_dict.get(recent_info.private_sale_id)
             if not pyoung or not default_pyoung:
                 continue
 
             avg_price_info = {
-                "private_sales_id": recent_info.private_sales_id,
+                "private_sale_id": recent_info.private_sale_id,
                 "pyoung": pyoung,
                 "default_trade_pyoung": default_pyoung["default_trade_pyoung"],
                 "default_deposit_pyoung": default_pyoung["default_deposit_pyoung"],
@@ -1917,12 +1924,12 @@ class HouseRepository:
             raise UpdateFailErrorException
 
     def _is_exists_private_sale_avg_prices(
-        self, private_sales_id: int, pyoung_number: int
+        self, private_sale_id: int, pyoung_number: int
     ) -> bool:
         query = session.query(
             exists().where(
                 and_(
-                    PrivateSaleAvgPriceModel.private_sales_id == private_sales_id,
+                    PrivateSaleAvgPriceModel.private_sale_id == private_sale_id,
                     PrivateSaleAvgPriceModel.pyoung == pyoung_number,
                 )
             )
@@ -1936,7 +1943,7 @@ class HouseRepository:
 
         default_filters.append(
             and_(
-                PrivateSaleDetailModel.private_sales_id.in_(target_ids),
+                PrivateSaleDetailModel.private_sale_id.in_(target_ids),
                 PrivateSaleDetailModel.is_available == True,
             )
         )
@@ -1944,12 +1951,12 @@ class HouseRepository:
         # 매매 거래 중 가장 건수가 많은 type 조회
         trade_sub_query = (
             session.query(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
                 func.row_number()
                 .over(
-                    partition_by=PrivateSaleDetailModel.private_sales_id,
+                    partition_by=PrivateSaleDetailModel.private_sale_id,
                     order_by=and_(
                         func.count(PrivateSaleDetailModel.private_area).desc(),
                         func.max(PrivateSaleDetailModel.contract_date).desc(),
@@ -1962,7 +1969,7 @@ class HouseRepository:
                 PrivateSaleDetailModel.trade_type == RealTradeTypeEnum.TRADING.value
             )
             .group_by(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
             )
@@ -1973,7 +1980,7 @@ class HouseRepository:
         trade_query = (
             session.query(trade_sub_q)
             .with_entities(
-                trade_sub_q.c.private_sales_id.label("private_sales_id"),
+                trade_sub_q.c.private_sale_id.label("private_sale_id"),
                 trade_sub_q.c.private_area.label("trade_private_area"),
                 trade_sub_q.c.supply_area.label("trade_supply_area"),
                 literal(0, None).label("deposit_private_area"),
@@ -1985,7 +1992,7 @@ class HouseRepository:
                 ).label("cal_rank"),
             )
             .group_by(
-                trade_sub_q.c.private_sales_id,
+                trade_sub_q.c.private_sale_id,
                 trade_sub_q.c.private_area,
                 trade_sub_q.c.supply_area,
                 trade_sub_q.c.rank,
@@ -1995,12 +2002,12 @@ class HouseRepository:
         # 전세 거래 중 가장 건수가 많은 type 조회
         deposit_sub_query = (
             session.query(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
                 func.row_number()
                 .over(
-                    partition_by=PrivateSaleDetailModel.private_sales_id,
+                    partition_by=PrivateSaleDetailModel.private_sale_id,
                     order_by=and_(
                         func.count(PrivateSaleDetailModel.private_area).desc(),
                         func.max(PrivateSaleDetailModel.contract_date).desc(),
@@ -2014,7 +2021,7 @@ class HouseRepository:
                 == RealTradeTypeEnum.LONG_TERM_RENT.value
             )
             .group_by(
-                PrivateSaleDetailModel.private_sales_id,
+                PrivateSaleDetailModel.private_sale_id,
                 PrivateSaleDetailModel.private_area,
                 PrivateSaleDetailModel.supply_area,
             )
@@ -2106,12 +2113,12 @@ class HouseRepository:
 
         return default_pyoung_dict
 
-    def get_default_infos(self, public_sales_id: int) -> Optional[dict]:
+    def get_default_infos(self, public_sale_id: int) -> Optional[dict]:
         query = (
             session.query(
                 PublicSaleDetailModel.supply_area, PublicSaleDetailModel.supply_price,
             )
-            .filter(PublicSaleDetailModel.public_sales_id == public_sales_id)
+            .filter(PublicSaleDetailModel.public_sale_id == public_sale_id)
             .order_by(PublicSaleDetailModel.general_household.desc(),)
         )
 
@@ -2124,11 +2131,11 @@ class HouseRepository:
 
         return dict(supply_area=query_set[0], supply_price=query_set[1])
 
-    def get_competition_and_min_score(self, public_sales_id: int) -> dict:
+    def get_competition_and_min_score(self, public_sale_id: int) -> dict:
         sub_query = (
             session.query(PublicSaleDetailModel)
             .with_entities(
-                PublicSaleDetailModel.public_sales_id,
+                PublicSaleDetailModel.public_sale_id,
                 func.coalesce(
                     func.sum(PublicSaleDetailModel.general_household), 0
                 ).label("sum_general_household"),
@@ -2137,7 +2144,7 @@ class HouseRepository:
                 ).label("sum_applicant_num"),
             )
             .join(PublicSaleDetailModel.general_supply_results)
-            .filter(PublicSaleDetailModel.public_sales_id == public_sales_id)
+            .filter(PublicSaleDetailModel.public_sale_id == public_sale_id)
             .filter(PublicSaleDetailModel.general_household > 0)
             .filter(GeneralSupplyResultModel.region == "해당지역")
             .group_by(PublicSaleDetailModel.id,)
@@ -2149,7 +2156,7 @@ class HouseRepository:
                 func.min(GeneralSupplyResultModel.win_point).label("min_win_point")
             )
             .join(PublicSaleDetailModel.general_supply_results)
-            .filter(PublicSaleDetailModel.public_sales_id == public_sales_id)
+            .filter(PublicSaleDetailModel.public_sale_id == public_sale_id)
             .filter(GeneralSupplyResultModel.win_point >= 0)
         ).subquery()
 
@@ -2162,7 +2169,7 @@ class HouseRepository:
                 ).label("avg_competition"),
                 func.min(min_point_query.c.min_win_point).label("min_win_point"),
             )
-            .group_by(sub_query.c.public_sales_id)
+            .group_by(sub_query.c.public_sale_id)
         )
 
         query_set = base_query.first()
@@ -2172,12 +2179,12 @@ class HouseRepository:
         return dict(avg_competition=query_set[0], min_score=query_set[1])
 
     def _is_exists_public_sale_avg_prices(
-        self, public_sales_id: int, pyoung_number: int
+        self, public_sale_id: int, pyoung_number: int
     ) -> Optional[int]:
         query = (
             session.query(PublicSaleAvgPriceModel.id).filter(
                 and_(
-                    PublicSaleAvgPriceModel.public_sales_id == public_sales_id,
+                    PublicSaleAvgPriceModel.public_sale_id == public_sale_id,
                     PublicSaleAvgPriceModel.pyoung == pyoung_number,
                 )
             )
@@ -2188,7 +2195,7 @@ class HouseRepository:
         return query.id
 
     def make_pre_calc_target_public_sale_avg_prices_list(
-        self, public_sales_id: int, default_info: dict, competition_and_score_info: dict
+        self, public_sale_id: int, default_info: dict, competition_and_score_info: dict
     ) -> Optional[Tuple[List[dict], List[dict]]]:
         if not default_info:
             return None
@@ -2197,7 +2204,7 @@ class HouseRepository:
         avg_prices_create_list = list()
 
         avg_price_info = {
-            "public_sales_id": public_sales_id,
+            "public_sale_id": public_sale_id,
             "pyoung": HouseHelper.convert_area_to_pyoung(
                 area=default_info["supply_area"]
             ),
@@ -2209,7 +2216,7 @@ class HouseRepository:
             "min_score": competition_and_score_info["min_score"],
         }
         public_sale_avg_price_id = self._is_exists_public_sale_avg_prices(
-            public_sales_id=avg_price_info["public_sales_id"],
+            public_sale_id=avg_price_info["public_sale_id"],
             pyoung_number=avg_price_info["pyoung"],
         )
 
@@ -2256,7 +2263,7 @@ class HouseRepository:
             session.query(PublicSaleDetailModel)
             .with_entities(
                 PublicSaleDetailModel.id,
-                PublicSaleDetailModel.public_sales_id,
+                PublicSaleDetailModel.public_sale_id,
                 PublicSaleDetailModel.private_area,
                 PublicSaleDetailModel.supply_price,
                 PublicSaleDetailModel.acquisition_tax,
@@ -2897,7 +2904,7 @@ class HouseRepository:
             )
             .join(
                 PublicSalePhotoModel,
-                (PublicSalePhotoModel.public_sales_id == PublicSaleModel.id)
+                (PublicSalePhotoModel.public_sale_id == PublicSaleModel.id)
                 & (PublicSalePhotoModel.is_thumbnail == "True")
                 & (PublicSalePhotoModel.seq == 0),
                 isouter=True,
@@ -3008,7 +3015,7 @@ class HouseRepository:
             )
             .join(
                 PrivateSaleAvgPriceModel,
-                PrivateSaleAvgPriceModel.private_sales_id == PrivateSaleModel.id,
+                PrivateSaleAvgPriceModel.private_sale_id == PrivateSaleModel.id,
             )
             .filter(*private_filters, *pyoung_filters)
         )
@@ -3161,10 +3168,10 @@ class HouseRepository:
         return target_ids
 
     def get_private_sales_have_real_estates_both_public_and_private(
-        self, real_estates_ids: List[int]
+        self, real_estate_ids: List[int]
     ) -> Optional[List]:
         filters = list()
-        filters.append(and_(PrivateSaleModel.real_estate_id.in_(real_estates_ids),))
+        filters.append(and_(PrivateSaleModel.real_estate_id.in_(real_estate_ids),))
         query = (
             session.query(PrivateSaleModel)
             .options(joinedload(PrivateSaleModel.private_sale_details))
@@ -3220,18 +3227,18 @@ class HouseRepository:
             raise NotUniqueErrorException
 
     def get_real_estates_have_both_public_and_private(
-        self, real_estates_ids: List[int]
+        self, real_estate_ids: List[int]
     ) -> Optional[List[CheckIdsRealEstateEntity]]:
         result = list()
         filters = list()
-        filters.append(RealEstateModel.id.in_(real_estates_ids),)
+        filters.append(RealEstateModel.id.in_(real_estate_ids),)
 
         query = (
             session.query(RealEstateModel)
             .with_entities(
                 RealEstateModel.id.label("real_estate_id"),
                 PrivateSaleModel.id.label("private_sales_id"),
-                PublicSaleModel.id.label("public_sales_id"),
+                PublicSaleModel.id.label("public_sale_id"),
                 PublicSaleModel.move_in_year.label("move_in_year"),
                 PublicSaleModel.move_in_month.label("move_in_month"),
                 PublicSaleModel.supply_household.label("supply_household"),
@@ -3252,7 +3259,7 @@ class HouseRepository:
             result.append(
                 CheckIdsRealEstateEntity(
                     real_estate_id=query.real_estate_id,
-                    public_sales_id=query.public_sales_id,
+                    public_sale_id=query.public_sale_id,
                     private_sales_id=query.private_sales_id,
                     move_in_year=HouseHelper().add_move_in_year_and_move_in_month_to_str(
                         move_in_year=query.move_in_year,
@@ -3289,7 +3296,7 @@ class HouseRepository:
             session.query(PublicSaleModel)
             .join(
                 PublicSaleDetailModel,
-                (PublicSaleDetailModel.public_sales_id == PublicSaleModel.id)
+                (PublicSaleDetailModel.public_sale_id == PublicSaleModel.id)
                 & (PublicSaleDetailModel.supply_area != 0)
                 & (PublicSaleDetailModel.area_type != None),
             )
@@ -3339,9 +3346,9 @@ class HouseRepository:
 
         return target_ids
 
-    def is_exists_public_sale_photos(self, public_sales_id: int) -> bool:
+    def is_exists_public_sale_photos(self, public_sale_id: int) -> bool:
         query = session.query(
-            exists().where(PublicSalePhotoModel.public_sales_id == public_sales_id)
+            exists().where(PublicSalePhotoModel.public_sale_id == public_sale_id)
         )
         if query.scalar():
             return True

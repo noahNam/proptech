@@ -23,22 +23,22 @@ def upgrade():
             autoincrement=True,
             nullable=False,
         ),
-        sa.Column("public_sale_details_id", sa.BigInteger(), nullable=False),
+        sa.Column("public_sale_detail_id", sa.BigInteger(), nullable=False),
         sa.Column("file_name", sa.String(length=20), nullable=False),
         sa.Column("path", sa.String(length=150), nullable=False),
         sa.Column("extension", sa.String(length=4), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["public_sale_details_id"], ["public_sale_details.id"], ondelete="CASCADE"
+            ["public_sale_detail_id"], ["public_sale_details.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("public_sale_details_id"),
+        sa.UniqueConstraint("public_sale_detail_id"),
     )
     op.create_index(
-        op.f("ix_public_sale_detail_photos_public_sale_details_id"),
+        op.f("ix_public_sale_detail_photos_public_sale_detail_id"),
         "public_sale_detail_photos",
-        ["public_sale_details_id"],
+        ["public_sale_detail_id"],
         unique=True,
     )
 
@@ -46,6 +46,6 @@ def upgrade():
 def downgrade():
     op.drop_table("public_sale_detail_photos")
     op.drop_index(
-        op.f("ix_public_sale_detail_photos_public_sale_details_id"),
+        op.f("ix_public_sale_detail_photos_public_sale_detail_id"),
         table_name="public_sale_detail_photos",
     )

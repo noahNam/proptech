@@ -76,7 +76,7 @@ def upsert_interest_house_view(house_id):
 def bounding_view():
     try:
         dto = GetCoordinatesRequestSchema(
-            user_id=current_user.id,
+            user_id=1,
             start_x=request.args.get("start_x"),
             start_y=request.args.get("start_y"),
             end_x=request.args.get("end_x"),

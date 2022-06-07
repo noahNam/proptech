@@ -190,7 +190,7 @@ def test_get_recent_view_list_then_entity_result(
     create_real_estate_with_public_sale,
     public_sale_photo_factory,
 ):
-    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    public_sale_photo = public_sale_photo_factory.build(public_sale_id=1)
     session.add(public_sale_photo)
     session.commit()
 
@@ -209,7 +209,7 @@ def test_get_search_house_list_when_get_keywords(
     public_sale_photo_factory,
 ):
     dto = GetSearchHouseListDto(keywords="서울", user_id=create_users[0].id)
-    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    public_sale_photo = public_sale_photo_factory.build(public_sale_id=1)
     session.add(public_sale_photo)
     session.commit()
 

@@ -26,7 +26,7 @@ class TempSupplyAreaApiModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), nullable=True
     )
     req_real_estate_name = Column(String(50), nullable=True)
-    req_private_sales_id = Column(
+    req_private_sale_id = Column(
         BigInteger().with_variant(Integer, "sqlite"), nullable=True
     )
     req_private_sale_name = Column(String(50), nullable=True)

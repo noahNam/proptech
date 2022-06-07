@@ -516,7 +516,7 @@ class UseUserTicketUseCase(PaymentBaseUseCase):
     def _call_jarvis_user_analytics_api(self, dto: UseUserTicketDto) -> int:
         # todo. 유저 분석 자비스 API 만들어지면 변경 필요
         # response = requests.get(
-        #     url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sales_id=1",
+        #     url="https://www.apartalk.com/api/jarvis/v1/predict/execute?public_sale_id=1",
         #     headers={
         #         "Content-Type": "application/json",
         #         "Cache-Control": "no-cache",
