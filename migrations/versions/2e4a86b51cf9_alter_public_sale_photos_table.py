@@ -17,31 +17,31 @@ depends_on = None
 
 def upgrade():
     op.drop_constraint(
-        "public_sale_photos_public_sales_id_key", "public_sale_photos", type_="unique"
+        "public_sale_photos_public_sale_id_key", "public_sale_photos", type_="unique"
     )
     op.drop_index(
-        "ix_public_sale_photos_public_sales_id", table_name="public_sale_photos"
+        "ix_public_sale_photos_public_sale_id", table_name="public_sale_photos"
     )
     op.create_index(
-        op.f("ix_public_sale_photos_public_sales_id"),
+        op.f("ix_public_sale_photos_public_sale_id"),
         "public_sale_photos",
-        ["public_sales_id"],
+        ["public_sale_id"],
         unique=False,
     )
 
 
 def downgrade():
     op.drop_index(
-        op.f("ix_public_sale_photos_public_sales_id"), table_name="public_sale_photos"
+        op.f("ix_public_sale_photos_public_sale_id"), table_name="public_sale_photos"
     )
     op.create_unique_constraint(
-        "public_sale_photos_public_sales_id_key",
+        "public_sale_photos_public_sale_id_key",
         "public_sale_photos",
-        ["public_sales_id"],
+        ["public_sale_id"],
     )
     op.create_index(
-        op.f("ix_public_sale_photos_public_sales_id"),
+        op.f("ix_public_sale_photos_public_sale_id"),
         "public_sale_photos",
-        ["public_sales_id"],
+        ["public_sale_id"],
         unique=True,
     )

@@ -4,23 +4,17 @@ from sqlalchemy import (
     Column,
     BigInteger,
     Integer,
-    ForeignKey,
     DateTime,
     Boolean,
-    Enum,
     String,
-    SmallInteger,
     func,
-    Float,
+    Float, Numeric, SmallInteger,
 )
-from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 
 from app import db
 from app.extensions.utils.house_helper import HouseHelper
-from app.extensions.utils.image_helper import S3Helper
 from app.extensions.utils.time_helper import get_server_timestamp
-from app.persistence.model.real_estate_model import RealEstateModel
 from core.domains.banner.entity.banner_entity import ButtonLinkEntity
 from core.domains.house.entity.house_entity import (
     PublicSaleEntity,
@@ -28,10 +22,6 @@ from core.domains.house.entity.house_entity import (
     PublicSaleDetailCalendarEntity,
     PublicSaleReportEntity,
     HousePublicDetailEntity,
-)
-from core.domains.house.enum.house_enum import (
-    RentTypeEnum,
-    PreSaleTypeEnum,
 )
 from core.domains.report.entity.report_entity import (
     TicketUsageResultForHousePublicDetailEntity,
@@ -45,26 +35,15 @@ class PublicSaleModel(db.Model):
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     real_estate_id = Column(
-        BigInteger,
-        ForeignKey(RealEstateModel.id),
-        nullable=False,
-        unique=True,
-        index=True,
+        BigInteger().with_variant(Integer, "sqlite"), nullable=False, index=True,
     )
     name = Column(String(150), nullable=False)
     region = Column(String(20), nullable=False)
-    housing_category = Column(String(2), nullable=False,)
-    rent_type = Column(
-        Enum(RentTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
-        nullable=False,
-    )
-    trade_type = Column(
-        Enum(PreSaleTypeEnum, values_callable=lambda obj: [e.value for e in obj]),
-        nullable=False,
-    )
+    housing_category = Column(String(2), nullable=False)
+    rent_type = Column(String(10), nullable=False)
+    trade_type = Column(String(5), nullable=False)
     construct_company = Column(String(50), nullable=True)
-    supply_household = Column(Integer, nullable=False)
-    is_available = Column(Boolean, nullable=False, default=True)
+    supply_household = Column(SmallInteger, nullable=False)
     offer_date = Column(String(8), nullable=True)
     subscription_start_date = Column(String(8), nullable=True)
     subscription_end_date = Column(String(8), nullable=True)
@@ -80,48 +59,46 @@ class PublicSaleModel(db.Model):
     notice_winner_date = Column(String(8), nullable=True)
     contract_start_date = Column(String(8), nullable=True)
     contract_end_date = Column(String(8), nullable=True)
-    move_in_year = Column(SmallInteger, nullable=True)
-    move_in_month = Column(SmallInteger, nullable=True)
+    move_in_year = Column(String(4), nullable=True)
+    move_in_month = Column(String(2), nullable=True)
     min_down_payment = Column(Integer, nullable=False)
     max_down_payment = Column(Integer, nullable=False)
     down_payment_ratio = Column(Integer, nullable=False)
-    reference_url = Column(String(50), nullable=True)
+    reference_url = Column(String(200), nullable=True)
     offer_notice_url = Column(String(100), nullable=True)
-
-    heating_type = Column(String(100), nullable=True)
-    floor_area_ratio = Column(Float(), nullable=True)
-    building_cover_ratio = Column(Float(), nullable=True)
-    total_household = Column(Integer, nullable=True)
-    total_park_number = Column(Integer, nullable=True)
-    top_floor = Column(SmallInteger, nullable=True)
-    dong_number = Column(Integer, nullable=True)
+    heating_type = Column(String(10), nullable=True)
+    vc_rat = Column(Numeric(6,2), nullable=True)
+    bc_rat = Column(Numeric(6,2), nullable=True)
+    hhld_total_cnt  = Column(SmallInteger, nullable=True)
+    park_total_cnt = Column(SmallInteger, nullable=True)
+    highest_floor = Column(SmallInteger, nullable=True)
+    dong_cnt = Column(SmallInteger, nullable=True)
     contract_amount = Column(Float(), nullable=True)
     middle_amount = Column(Float(), nullable=True)
     remain_amount = Column(Float(), nullable=True)
     sale_limit = Column(String(100), nullable=True)
     compulsory_residence = Column(String(100), nullable=True)
+    hallway_type = Column(String(4), nullable=True)
     is_checked = Column(Boolean, nullable=False, default=False)
-
+    is_available = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
-    name_ts = Column(TSVECTOR().with_variant(String(150), "sqlite"), nullable=True)
 
-    # 1:M relationship
+    # relationship
     public_sale_photos = relationship(
-        "PublicSalePhotoModel", backref=backref("public_sales"), uselist=True
+        "PublicSalePhotoModel", backref="public_sales", uselist=True, primaryjoin="PublicSaleModel.id == foreign(PublicSalePhotoModel.public_sale_id)"
     )
     public_sale_details = relationship(
-        "PublicSaleDetailModel", backref=backref("public_sales")
+        "PublicSaleDetailModel", backref="public_sales", uselist=True, primaryjoin="PublicSaleModel.id == foreign(PublicSaleDetailModel.public_sale_id)"
     )
 
     public_sale_avg_prices = relationship(
         "PublicSaleAvgPriceModel",
-        backref=backref("public_sale_avg_prices"),
+        backref="public_sale_avg_prices",
         uselist=True,
-        primaryjoin="foreign(PublicSaleModel.id)== PublicSaleAvgPriceModel.public_sales_id",
-        viewonly=True,
+        primaryjoin="PublicSaleModel.id == foreign(PublicSaleAvgPriceModel.public_sale_id)",
     )
 
     @property
@@ -147,7 +124,6 @@ class PublicSaleModel(db.Model):
             trade_type=self.trade_type,
             construct_company=self.construct_company,
             supply_household=self.supply_household,
-            is_available=self.is_available,
             offer_date=self.offer_date,
             subscription_start_date=self.subscription_start_date,
             subscription_end_date=self.subscription_end_date,
@@ -173,16 +149,23 @@ class PublicSaleModel(db.Model):
             down_payment_ratio=self.down_payment_ratio,
             reference_url=self.reference_url,
             offer_notice_url=self.offer_notice_url,
-            total_household=self.total_household,
-            total_park_number=self.total_park_number,
-            top_floor=self.top_floor,
-            dong_number=self.dong_number,
+            heating_type=self.heating_type,
+            vc_rat=self.vc_rat,
+            bc_rat=self.bc_rat,
+            hhld_total_cnt=self.hhld_total_cnt,
+            park_total_cnt=self.park_total_cnt,
+            highest_floor=self.highest_floor,
+            dong_cnt=self.dong_cnt,
             contract_amount=HouseHelper.convert_contract_amount_to_integer(
                 self.contract_amount
             ),
             middle_amount=self.middle_amount,
             remain_amount=self.remain_amount,
             sale_limit=self.sale_limit,
+            compulsory_residence=self.compulsory_residence,
+            hallway_type=self.hallway_type,
+            is_checked=self.is_checked,
+            is_available=self.is_available,
             created_at=self.created_at,
             updated_at=self.updated_at,
             public_sale_photos=[
@@ -197,8 +180,6 @@ class PublicSaleModel(db.Model):
             ]
             if self.public_sale_details
             else None,
-            is_checked=self.is_checked,
-            heating_type=self.heating_type,
         )
 
     def to_push_entity(self, message_type: str) -> PublicSalePushEntity:

@@ -33,8 +33,6 @@ from core.domains.house.enum.house_enum import (
     BoundingPrivateTypeEnum,
     BoundingPublicTypeEnum,
     BoundingIncludePrivateEnum,
-    HousingCategoryEnum,
-    RentTypeEnum,
 )
 from core.use_case_output import UseCaseSuccessOutput
 
@@ -282,6 +280,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
     make_authorization,
     create_real_estate_with_public_sale,
 ):
+
     # request header
     user_id = 1
     authorization = make_authorization(user_id=user_id)
@@ -290,12 +289,11 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         content_type="application/json",
         accept="application/json",
     )
-
     public_sale_detail_calendar = PublicSaleDetailCalendarEntity(
         id=1,
         real_estate_id=1,
         name="힐스테이트",
-        trade_type=PreSaleTypeEnum.PRE_SALE,
+        trade_type=PreSaleTypeEnum.PRE_SALE.value,
         offer_date="20210705",
         subscription_start_date="20210705",
         subscription_end_date="20210705",
@@ -308,8 +306,8 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
         notice_winner_date="20210705",
         contract_start_date="20210705",
         contract_end_date="20210705",
-        move_in_year=2023,
-        move_in_month=12,
+        move_in_year="2023",
+        move_in_month="12",
     )
     sample_calendar_info = DetailCalendarInfoEntity(
         is_like=True,
@@ -328,6 +326,7 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
                 url_for("api/tanos.house_calendar_list_view", year=2021, month=7),
                 headers=headers,
             )
+
 
     data = response.get_json()["data"]
     assert response.status_code == 200
@@ -354,15 +353,16 @@ def test_house_public_detail_view_when_valid_request_id(
         accept="application/json",
     )
     real_estate = real_estate_factory.build(public_sales=True, private_sales=False)
-    public_sales = public_sale_factory.build(public_sale_details=True)
-    public_sale_photo_1 = public_sale_photo_factory.build(id=1, public_sales_id=1)
-    public_sale_photo_2 = public_sale_photo_factory.build(id=2, public_sales_id=1)
-    session.add(public_sale_photo_1, public_sale_photo_2)
-    session.commit()
+    public_sales = public_sale_factory.build(id=1, public_sale_details=True)
+
+    public_sale_photo_1 = public_sale_photo_factory.build(id=1, public_sale_id=1)
+    public_sale_photo_2 = public_sale_photo_factory.build(id=2, public_sale_id=1)
+    # session.add(public_sale_photo_1, public_sale_photo_2)
+    # session.commit()
 
     detail_entity = PublicSaleDetailEntity(
         id=public_sales.public_sale_details[0].id,
-        public_sales_id=public_sales.public_sale_details[0].public_sales_id,
+        public_sale_id=public_sales.public_sale_details[0].public_sale_id,
         private_area=public_sales.public_sale_details[0].private_area,
         private_pyoung_number=10,
         supply_area=public_sales.public_sale_details[0].supply_area,
@@ -421,8 +421,8 @@ def test_house_public_detail_view_when_valid_request_id(
         ],
         public_sale_details=[detail_entity],
     )
+    real_estate.public_sales = [public_sales]
 
-    real_estate.public_sales = public_sales
     mock_query_result = [
         (
             real_estate,
@@ -552,7 +552,7 @@ def test_get_recent_view_list_use_case_when_watch_recently_view_then_result_one(
     create_real_estate_with_public_sale,
     public_sale_photo_factory,
 ):
-    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    public_sale_photo = public_sale_photo_factory.build(public_sale_id=1)
     session.add(public_sale_photo)
     session.commit()
 
@@ -648,7 +648,7 @@ def test_get_search_house_list_view_when_get_valid_keywords_then_return_null(
         accept="application/json",
     )
 
-    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    public_sale_photo = public_sale_photo_factory.build(public_sale_id=1)
     session.add(public_sale_photo)
     session.commit()
 
@@ -802,7 +802,7 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         section_type=SectionType.HOME_SCREEN.value,
         sub_topic=BannerSubTopic.HOME_SUBSCRIPTION_BY_REGION.value,
     )
-    public_sale_photo = public_sale_photo_factory.build(public_sales_id=1)
+    public_sale_photo = public_sale_photo_factory.build(public_sale_id=1)
 
     session.add_all([banner1, banner2, public_sale_photo])
     session.commit()
@@ -811,7 +811,7 @@ def test_get_home_banner_view_when_present_date_then_return_banner_list_with_cal
         id=1,
         real_estate_id=1,
         name="힐스테이트",
-        trade_type=PreSaleTypeEnum.PRE_SALE,
+        trade_type=PreSaleTypeEnum.PRE_SALE.value,
         subscription_start_date="20210705",
         subscription_end_date="20210705",
         special_supply_date="20210705",

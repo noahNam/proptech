@@ -20,7 +20,7 @@ class TempSummarySupplyAreaApiModel(db.Model):
     )
     real_estate_id = Column(BigInteger().with_variant(Integer, "sqlite"), nullable=True)
     real_estate_name = Column(String(50), nullable=True)
-    private_sales_id = Column(
+    private_sale_id = Column(
         BigInteger().with_variant(Integer, "sqlite"), nullable=True
     )
     private_sale_name = Column(String(50), nullable=True)

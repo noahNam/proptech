@@ -17,7 +17,7 @@ class PublicSaleAvgPriceModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
-    public_sales_id = Column(BigInteger, nullable=False, index=True)
+    public_sale_id = Column(BigInteger().with_variant(Integer, "sqlite"), nullable=False, index=True,)
     pyoung = Column(SmallInteger, nullable=False)
     default_pyoung = Column(SmallInteger, nullable=False)
     supply_price = Column(Integer, nullable=True)

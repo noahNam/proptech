@@ -3,6 +3,7 @@ from enum import Enum
 from typing import List, Optional, Dict
 
 from pydantic import BaseModel
+from sqlalchemy import Numeric
 
 from core.domains.banner.entity.banner_entity import BannerEntity, ButtonLinkEntity
 from core.domains.report.entity.report_entity import (
@@ -22,7 +23,7 @@ class InterestHouseEntity(BaseModel):
 
 class PublicSaleDetailPhotoEntity(BaseModel):
     id: int
-    public_sale_details_id: int
+    public_sale_detail_id: int
     file_name: str
     path: Optional[str]
     extension: str
@@ -32,7 +33,7 @@ class PublicSaleDetailPhotoEntity(BaseModel):
 
 class PublicSaleDetailEntity(BaseModel):
     id: int
-    public_sales_id: int
+    public_sale_id: int
     private_area: float
     private_pyoung_number: Optional[int]
     supply_area: float
@@ -48,12 +49,13 @@ class PublicSaleDetailEntity(BaseModel):
 
 class PublicSalePhotoEntity(BaseModel):
     id: int
-    public_sales_id: int
+    public_sale_id: int
     file_name: str
     path: Optional[str]
     extension: str
     is_thumbnail: bool
     seq: int
+    is_available: bool
     created_at: datetime
     updated_at: datetime
 
@@ -64,13 +66,11 @@ class PublicSaleEntity(BaseModel):
     name: str
     region: str
     housing_category: str
-    rent_type: Enum
-    trade_type: Enum
+    rent_type: str
+    trade_type: str
     construct_company: Optional[str]
     supply_household: int
-    is_available: bool
     offer_date: Optional[str]
-    offer_notice_url: Optional[str]
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
     status: int
@@ -86,31 +86,32 @@ class PublicSaleEntity(BaseModel):
     notice_winner_date: Optional[str]
     contract_start_date: Optional[str]
     contract_end_date: Optional[str]
-    move_in_year: int
-    move_in_month: int
+    move_in_year: str
+    move_in_month: str
     min_down_payment: int
     max_down_payment: int
     down_payment_ratio: int
     reference_url: Optional[str]
-
-    total_household: Optional[int]
-    total_park_number: Optional[int]
-    top_floor: Optional[int]
-    dong_number: Optional[int]
+    offer_notice_url: Optional[str]
+    heating_type: Optional[str]
+    vc_rat: Optional[float]
+    bc_rat: Optional[float]
+    hhld_total_cnt: Optional[int]
+    park_total_cnt: Optional[int]
+    highest_floor: Optional[int]
+    dong_cnt: Optional[int]
     contract_amount: Optional[int]
     middle_amount: Optional[float]
     remain_amount: Optional[float]
     sale_limit: Optional[str]
-
+    compulsory_residence: Optional[str]
+    hallway_type: Optional[str]
+    is_checked: bool
+    is_available: bool
     created_at: datetime
     updated_at: datetime
     public_sale_photos: Optional[List[PublicSalePhotoEntity]]
     public_sale_details: Optional[List[PublicSaleDetailEntity]]
-    is_checked: bool
-    heating_type: Optional[str]
-
-    class Config:
-        use_enum_values = True
 
 
 class PublicSalePushEntity(BaseModel):
@@ -122,16 +123,16 @@ class PublicSalePushEntity(BaseModel):
 
 class PrivateSaleDetailEntity(BaseModel):
     id: int
-    private_sales_id: int
-    private_area: float
-    supply_area: float
+    private_sale_id: int
+    private_area: Optional[float]
+    supply_area: Optional[float]
     contract_date: Optional[str]
     contract_ym: Optional[int]
-    deposit_price: int
-    rent_price: int
-    trade_price: int
-    floor: int
-    trade_type: Enum
+    deposit_price: Optional[int]
+    rent_price: Optional[int]
+    trade_price: Optional[int]
+    floor: Optional[int]
+    trade_type: str
     is_available: bool
     created_at: datetime
     updated_at: datetime
@@ -141,7 +142,7 @@ class PrivateSaleDetailEntity(BaseModel):
 
 
 class RecentlyContractedEntity(BaseModel):
-    private_sales_id: int
+    private_sale_id: int
     private_area: float
     supply_area: Optional[float]
     avg_trade_price: Optional[int]
@@ -151,18 +152,104 @@ class RecentlyContractedEntity(BaseModel):
     max_deposit_contract_date: Optional[str]
 
 
+class TypeInfoEntity(BaseModel):
+    id: int
+    dong_id: int
+    private_area: Optional[float]
+    supply_area : Optional[float]
+    created_at: datetime
+    updated_at: datetime
+
+
+class DongInfoEntity(BaseModel):
+    id: int
+    private_sale_id: int
+    name: Optional[str]
+    hhld_cnt : Optional[int]
+    grnd_flr_cnt : Optional[int]
+    created_at: datetime
+    updated_at: datetime
+    type_infos: List[TypeInfoEntity] = None
+
+
+class PrivateSaleAvgPriceTradeEntity(BaseModel):
+    pyoung: float
+    trade_price: Optional[int]
+    max_trade_contract_date: Optional[str]
+    default_trade_pyoung: Optional[float]
+
+
+class PrivateSaleAvgPriceDepositEntity(BaseModel):
+    pyoung: float
+    deposit_price: Optional[int]
+    max_deposit_contract_date: Optional[str]
+    default_deposit_pyoung: Optional[float]
+
+
+class PrivateSaleAvgPriceEntity(BaseModel):
+    trade_info: Optional[PrivateSaleAvgPriceTradeEntity]
+    deposit_info: Optional[PrivateSaleAvgPriceDepositEntity]
+
+
+class HousePhotoEntity(BaseModel):
+    id: int
+    private_sale_id: int
+    file_name: str
+    path: Optional[str]
+    extension: str
+    is_thumbnail: bool
+    seq: int
+    is_available: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class HouseTypePhotoEntity(BaseModel):
+    id: int
+    private_sale_id: int
+    type_name: str
+    file_name: str
+    path: Optional[str]
+    extension: str
+    is_available: bool
+    created_at: datetime
+    updated_at: datetime
+
+
 class PrivateSaleEntity(BaseModel):
     id: int
     real_estate_id: int
-    building_type: Enum
-    created_at: datetime
-    updated_at: datetime
+    name: Optional[str]
+    building_type: Optional[str]
+    build_year: Optional[str]
+    move_in_date: Optional[str]
+    dong_cnt: Optional[int]
+    hhld_cnt: Optional[int]
+    heat_type: Optional[str]
+    hallway_type: Optional[str]
+    builder: Optional[str]
+    park_total_cnt: Optional[int]
+    park_ground_cnt: Optional[int]
+    park_underground_cnt: Optional[int]
+    cctv_cnt: Optional[int]
+    welfare: Optional[str]
+    bc_rat: Optional[float]
+    vl_rat: Optional[float]
+    summer_mgmt_cost: Optional[int]
+    winter_mgmt_cost: Optional[int]
+    avg_mgmt_cost: Optional[int]
+    public_ref_id: Optional[int]
+    rebuild_ref_id: Optional[int]
     trade_status: Optional[int]
     deposit_status: Optional[int]
+    is_available: bool
+    created_at: datetime
+    updated_at: datetime
     private_sale_details: List[PrivateSaleDetailEntity] = None
-
-    class Config:
-        use_enum_values = True
+    dong_infos: List[DongInfoEntity] = None
+    house_photos: List[HousePhotoEntity] = None
+    house_type_photos: List[HouseTypePhotoEntity] = None
+    private_sale_avg_prices: List[PrivateSaleAvgPriceEntity] = None
 
 
 class AdministrativeDivisionEntity(BaseModel):
@@ -213,7 +300,7 @@ class GeneralSupplyResultReportEntity(BaseModel):
 
 class PublicSaleDetailReportEntity(BaseModel):
     id: int
-    public_sales_id: int
+    public_sale_id: int
     area_type: str
     private_area: float
     supply_area: float
@@ -229,8 +316,8 @@ class PublicSaleDetailReportEntity(BaseModel):
     pyoung_number: Optional[int] = 0
     price_per_meter: Optional[int] = 0
     public_sale_detail_photo: Optional[str]
-    special_supply_results: List[SpecialSupplyResultReportEntity] = None
-    general_supply_results: List[GeneralSupplyResultReportEntity] = None
+    special_supply_results: Optional[List[SpecialSupplyResultReportEntity]] = None
+    general_supply_results: Optional[List[GeneralSupplyResultReportEntity]] = None
 
 
 class RealEstateReportEntity(BaseModel):
@@ -303,7 +390,7 @@ class PublicSaleDetailCalendarEntity(BaseModel):
     id: int
     real_estate_id: int
     name: Optional[str]
-    trade_type: Enum
+    trade_type: str
     offer_date: Optional[str]
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
@@ -319,8 +406,8 @@ class PublicSaleDetailCalendarEntity(BaseModel):
     notice_winner_date: Optional[str]
     contract_start_date: Optional[str]
     contract_end_date: Optional[str]
-    move_in_year: int
-    move_in_month: int
+    move_in_year: str
+    move_in_month: str
 
     class Config:
         use_enum_values = True
@@ -330,7 +417,8 @@ class PublicSaleSimpleCalendarEntity(BaseModel):
     id: int
     real_estate_id: int
     name: Optional[str]
-    trade_type: Enum
+    trade_type: str
+    offer_date: Optional[str]
     subscription_start_date: Optional[str]
     subscription_end_date: Optional[str]
     special_supply_date: Optional[str]
@@ -343,9 +431,6 @@ class PublicSaleSimpleCalendarEntity(BaseModel):
     second_supply_etc_date: Optional[str]
     second_etc_gyeonggi_date: Optional[str]
     notice_winner_date: Optional[str]
-
-    class Config:
-        use_enum_values = True
 
 
 class DetailCalendarInfoEntity(BaseModel):
@@ -428,25 +513,6 @@ class GetHouseMainEntity(BaseModel):
     recent_public_infos: List[MainRecentPublicInfoEntity] = None
 
 
-class PrivateSaleAvgPriceTradeEntity(BaseModel):
-    pyoung: float
-    trade_price: Optional[int]
-    max_trade_contract_date: Optional[str]
-    default_trade_pyoung: Optional[int]
-
-
-class PrivateSaleAvgPriceDepositEntity(BaseModel):
-    pyoung: float
-    deposit_price: Optional[int]
-    max_deposit_contract_date: Optional[str]
-    default_deposit_pyoung: Optional[int]
-
-
-class PrivateSaleAvgPriceEntity(BaseModel):
-    trade_info: Optional[PrivateSaleAvgPriceTradeEntity]
-    deposit_info: Optional[PrivateSaleAvgPriceDepositEntity]
-
-
 class PublicSaleAvgPriceEntity(BaseModel):
     pyoung: int
     supply_price: Optional[int]
@@ -460,8 +526,8 @@ class PrivateSaleBoundingEntity(BaseModel):
     road_address: Optional[str]
     latitude: float
     longitude: float
-    private_sales_id: int
-    building_type: Enum
+    private_sale_id: int
+    building_type: str
     name: Optional[str]
     trade_status: Optional[int]
     deposit_status: Optional[int]
@@ -480,7 +546,7 @@ class PublicSaleBoundingEntity(BaseModel):
     road_address: Optional[str]
     latitude: float
     longitude: float
-    public_sales_id: int
+    public_sale_id: int
     housing_category: str
     name: Optional[str]
     status: int
@@ -514,18 +580,6 @@ class RealEstateLegalCodeEntity(BaseModel):
     dong_myun: str
 
 
-class PrivateSalePhotoEntity(BaseModel):
-    id: int
-    private_sales_id: int
-    file_name: str
-    path: Optional[str]
-    extension: str
-    is_thumbnail: bool
-    seq: int
-    created_at: datetime
-    updated_at: datetime
-
-
 class MapSearchEntity(BaseModel):
     id: int
     name: str
@@ -540,8 +594,8 @@ class NearHouseEntity(BaseModel):
     road_address: Optional[str]
     latitude: float
     longitude: float
-    private_sales_id: int
-    building_type: Enum
+    private_sale_id: int
+    building_type: str
     name: Optional[str]
     trade_pyoung: Optional[int]
     trade_price: Optional[int]
@@ -552,7 +606,7 @@ class NearHouseEntity(BaseModel):
 
 
 class UpdateContractStatusTargetEntity(BaseModel):
-    private_sales_id: int
+    private_sale_id: int
     min_contract_date: Optional[str]
     max_contract_date: Optional[str]
     trade_type: Enum
@@ -567,8 +621,8 @@ class CheckIdsRealEstateEntity(BaseModel):
     """
 
     real_estate_id: int
-    public_sales_id: int
-    private_sales_id: int
+    public_sale_id: int
+    private_sale_id: int
     supply_household: Optional[int]
     move_in_year: Optional[str]
     construct_company: Optional[str]
@@ -590,7 +644,7 @@ class AddSupplyAreaEntity(BaseModel):
     req_land_number: Optional[str]
     req_real_estate_id: Optional[int]
     req_real_estate_name: Optional[str]
-    req_private_sales_id: Optional[int]
+    req_private_sale_id: Optional[int]
     req_private_sale_name: Optional[str]
     req_private_building_type: Enum
     req_jibun_address: Optional[str]
@@ -620,7 +674,7 @@ class BindTargetSupplyAreaEntity(BaseModel):
     real_estate_name: Optional[str]
     private_sale_name: Optional[str]
     real_estate_id: Optional[int]
-    private_sales_id: Optional[int]
+    private_sale_id: Optional[int]
     private_area: Optional[float]
     supply_area: Optional[float]
     front_legal_code: Optional[str]
@@ -636,7 +690,7 @@ class BindSuccessSupplyAreaEntity(BaseModel):
     real_estate_name: Optional[str]
     private_sale_name: Optional[str]
     real_estate_id: Optional[int]
-    private_sales_id: Optional[int]
+    private_sale_id: Optional[int]
     private_area: Optional[float]
     supply_area: Optional[float]
     front_legal_code: Optional[str]
@@ -654,7 +708,7 @@ class BindFailureSupplyAreaEntity(BaseModel):
     real_estate_name: Optional[str]
     private_sale_name: Optional[str]
     real_estate_id: Optional[int]
-    private_sales_id: Optional[int]
+    private_sale_id: Optional[int]
     private_area: Optional[float]
     supply_area: Optional[float]
     front_legal_code: Optional[str]

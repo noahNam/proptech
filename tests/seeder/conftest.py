@@ -455,7 +455,6 @@ def create_notifications(session, notification_factory):
 @pytest.fixture
 def create_real_estate_with_public_sale(session, real_estate_factory):
     real_estates = list()
-
     for _ in range(3):
         real_estate_with_public_sale = real_estate_factory.build(
             private_sales=False, public_sales=True

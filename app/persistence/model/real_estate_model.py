@@ -6,10 +6,10 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    Boolean,
+    Boolean, DateTime, func,
 )
 from sqlalchemy.dialects.postgresql import TSVECTOR
-from sqlalchemy.orm import relationship, backref, column_property
+from sqlalchemy.orm import relationship, column_property
 
 from app import db
 from core.domains.house.entity.house_entity import (
@@ -30,6 +30,12 @@ class RealEstateModel(db.Model):
     name = Column(String(50), nullable=True)
     road_address = Column(String(100), nullable=False)
     jibun_address = Column(String(100), nullable=False)
+    road_address_ts = Column(
+        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
+    )
+    jibun_address_ts = Column(
+        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
+    )
     si_do = Column(String(20), nullable=False)
     si_gun_gu = Column(String(16), nullable=False)
     dong_myun = Column(String(16), nullable=False)
@@ -37,30 +43,25 @@ class RealEstateModel(db.Model):
     road_name = Column(String(30), nullable=True)
     road_number = Column(String(10), nullable=True)
     land_number = Column(String(10), nullable=False)
-    is_available = Column(Boolean, nullable=False, default=True)
-    front_legal_code = Column(String(5), nullable=False, unique=False, index=True)
-    back_legal_code = Column(String(5), nullable=False, unique=False, index=True)
     coordinates = Column(
         Geometry(geometry_type="POINT", srid=4326).with_variant(String, "sqlite"),
         nullable=True,
     )
-
-    jibun_address_ts = Column(
-        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
+    front_legal_code = Column(String(5), nullable=False, unique=False, index=True)
+    back_legal_code = Column(String(5), nullable=False, unique=False, index=True)
+    is_available = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime(), server_default=func.now(), nullable=False)
+    updated_at = Column(
+        DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
     )
-    road_address_ts = Column(
-        TSVECTOR().with_variant(String(100), "sqlite"), nullable=True
-    )
 
+    # geometry 위치정보
     latitude = column_property(coordinates.ST_Y())
     longitude = column_property(coordinates.ST_X())
 
-    private_sales = relationship(
-        "PrivateSaleModel", backref=backref("real_estates"), uselist=False,
-    )
-    public_sales = relationship(
-        "PublicSaleModel", backref=backref("real_estates"), uselist=False,
-    )
+    # relationship
+    private_sales = relationship("PrivateSaleModel", backref="real_estates", uselist=True, primaryjoin="RealEstateModel.id == foreign(PrivateSaleModel.real_estate_id)")
+    public_sales = relationship("PublicSaleModel", backref="real_estates", uselist=True, primaryjoin="RealEstateModel.id == foreign(PublicSaleModel.real_estate_id)")
 
     def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:
         return DetailCalendarInfoEntity(
@@ -128,7 +129,7 @@ class RealEstateModel(db.Model):
             req_land_number=self.req_land_number,
             req_real_estate_id=self.req_real_estate_id,
             req_real_estate_name=self.req_real_estate_name,
-            req_private_sales_id=self.req_private_sales_id,
+            req_private_sale_id=self.req_private_sale_id,
             req_private_sale_name=self.req_private_sale_name,
             req_jibun_address=self.req_jibun_address,
             req_road_address=self.req_road_address,

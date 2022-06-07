@@ -22,12 +22,12 @@ def upgrade():
         sa.Column(
             "id", sa.BigInteger().with_variant(sa.Integer(), "sqlite"), nullable=False
         ),
-        sa.Column("private_sales_id", sa.BigInteger(), nullable=False),
+        sa.Column("private_sale_id", sa.BigInteger(), nullable=False),
         sa.Column("dong", sa.String(length=10), nullable=True),
         sa.Column("floor", sa.SmallInteger(), nullable=True),
         sa.Column("structure_type", sa.String(length=3), nullable=True),
         sa.ForeignKeyConstraint(
-            ["private_sales_id"], ["private_sales.id"], ondelete="CASCADE"
+            ["private_sale_id"], ["private_sales.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
     )

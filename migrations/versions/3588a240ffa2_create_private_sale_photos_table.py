@@ -24,28 +24,28 @@ def upgrade():
             autoincrement=True,
             nullable=False,
         ),
-        sa.Column("private_sales_id", sa.BigInteger(), nullable=False),
+        sa.Column("private_sale_id", sa.BigInteger(), nullable=False),
         sa.Column("file_name", sa.String(length=20), nullable=False),
         sa.Column("path", sa.String(length=150), nullable=False),
         sa.Column("extension", sa.String(length=4), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.ForeignKeyConstraint(
-            ["private_sales_id"], ["private_sales.id"], ondelete="CASCADE"
+            ["private_sale_id"], ["private_sales.id"], ondelete="CASCADE"
         ),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
-        op.f("ix_private_sale_photos_private_sales_id"),
+        op.f("ix_private_sale_photos_private_sale_id"),
         "private_sale_photos",
-        ["private_sales_id"],
+        ["private_sale_id"],
         unique=False,
     )
 
 
 def downgrade():
     op.drop_index(
-        op.f("ix_private_sale_photos_private_sales_id"),
+        op.f("ix_private_sale_photos_private_sale_id"),
         table_name="private_sale_photos",
     )
     op.drop_table("private_sale_photos")

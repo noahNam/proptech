@@ -398,7 +398,7 @@ class PrivateSaleDetailFactory(BaseFactory):
     class Meta:
         model = PrivateSaleDetailModel
 
-    private_sales_id = 1
+    private_sale_id = 1
     private_area = random.uniform(40, 90)
     supply_area = random.uniform(50, 130)
     contract_date = get_random_date_about_one_month_from_today().strftime("%Y%m%d")
@@ -423,14 +423,15 @@ class PrivateSaleFactory(BaseFactory):
     @factory.post_generation
     def private_sale_details(obj, create, extracted, **kwargs):
         if extracted:
-            PrivateSaleDetailFactory(private_sales=obj, **kwargs)
+            for _ in range(1):
+                PrivateSaleDetailFactory(private_sales=obj, **kwargs)
 
 
 class PublicSaleDetailPhotoFactory(BaseFactory):
     class Meta:
         model = PublicSaleDetailPhotoModel
 
-    public_sale_details_id = factory.Sequence(lambda n: n + 1)
+    public_sale_detail_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
     path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
@@ -442,7 +443,8 @@ class PublicSaleDetailFactory(BaseFactory):
     class Meta:
         model = PublicSaleDetailModel
 
-    public_sales_id = 1
+    id = factory.Sequence(lambda n: n + 1)
+    public_sale_id = 1
     private_area = random.uniform(40, 90)
     supply_area = random.uniform(50, 130)
     supply_price = random.randint(10000, 50000)
@@ -453,19 +455,21 @@ class PublicSaleDetailFactory(BaseFactory):
     @factory.post_generation
     def private_sale_detail_photos(obj, create, extracted, **kwargs):
         if extracted:
-            PublicSaleDetailPhotoFactory(public_sale_details=obj, **kwargs)
+            for _ in range(3):
+                PublicSaleDetailPhotoFactory(public_sale_details=obj, **kwargs)
 
 
 class PublicSalePhotoFactory(BaseFactory):
     class Meta:
         model = PublicSalePhotoModel
 
-    public_sales_id = factory.Sequence(lambda n: n + 1)
+    public_sale_id = factory.Sequence(lambda n: n + 1)
     file_name = "photo_file"
     path = "public_sale_detail_photos/2021/790bd67d-0865-4f61-95a7-12cadba916b5.jpeg"
     extension = "jpeg"
     is_thumbnail = True
     seq = factory.Sequence(lambda n: n + 1)
+    is_available = True
     created_at = get_server_timestamp()
     updated_at = get_server_timestamp()
 
@@ -476,7 +480,6 @@ class PublicSaleFactory(BaseFactory):
 
     real_estate_id = factory.Sequence(lambda n: n + 1)
     name = factory.Sequence(lambda n: f"아파트_{n}")
-    name_ts = factory.Sequence(lambda n: f"아파트_{n}")
     region = "경기"
     housing_category = HousingCategoryEnum.PUBLIC.value
     rent_type = RentTypeEnum.PRE_SALE.value
@@ -533,12 +536,14 @@ class PublicSaleFactory(BaseFactory):
     @factory.post_generation
     def public_sale_photos(obj, create, extracted, **kwargs):
         if extracted:
-            PublicSalePhotoFactory(public_sales=obj, **kwargs)
+            for _ in range(1):
+                PublicSalePhotoFactory(public_sales=obj, **kwargs)
 
     @factory.post_generation
     def public_sale_details(obj, create, extracted, **kwargs):
         if extracted:
-            PublicSaleDetailFactory(public_sales=obj, **kwargs)
+            for _ in range(1):
+                PublicSaleDetailFactory(public_sales=obj, **kwargs)
 
 
 class RealEstateFactory(BaseFactory):
@@ -569,12 +574,14 @@ class RealEstateFactory(BaseFactory):
     @factory.post_generation
     def private_sales(obj, create, extracted, **kwargs):
         if extracted:
-            PrivateSaleFactory(real_estates=obj, **kwargs)
+            for _ in range(1):
+                PrivateSaleFactory(real_estates=obj, **kwargs)
 
     @factory.post_generation
     def public_sales(obj, create, extracted, **kwargs):
         if extracted:
-            PublicSaleFactory(real_estates=obj, **kwargs)
+            for _ in range(1):
+                PublicSaleFactory(real_estates=obj, **kwargs)
 
 
 class RecentlyViewFactory(BaseFactory):

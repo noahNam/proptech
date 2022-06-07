@@ -25,7 +25,7 @@ class TempFailureSupplyAreaModel(db.Model):
     real_estate_name = Column(String(50), nullable=True)
     private_sale_name = Column(String(50), nullable=True)
     real_estate_id = Column(BigInteger().with_variant(Integer, "sqlite"), nullable=True)
-    private_sales_id = Column(
+    private_sale_id = Column(
         BigInteger().with_variant(Integer, "sqlite"), nullable=True
     )
 
@@ -50,7 +50,7 @@ class TempFailureSupplyAreaModel(db.Model):
             real_estate_name=self.real_estate_name,
             private_sale_name=self.private_sale_name,
             real_estate_id=self.real_estate_id,
-            private_sales_id=self.private_sales_id,
+            private_sale_id=self.private_sale_id,
             private_area=self.private_area,
             supply_area=self.supply_area,
             front_legal_code=self.front_legal_code,

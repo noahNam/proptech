@@ -42,9 +42,10 @@ from .user_analysis_model import UserAnalysisModel
 from .user_analysis_category_model import UserAnalysisCategoryModel
 from .user_analysis_category_detail_model import UserAnalysisCategoryDetailModel
 from .dong_info_model import DongInfoModel
-from .room_info_model import RoomInfoModel
+from .type_info_model import TypeInfoModel
 from .room_photo_model import RoomPhotoModel
 from .notice_template_model import NoticeTemplateModel
 from .private_sale_avg_price_model import PrivateSaleAvgPriceModel
 from .public_sale_avg_price_model import PublicSaleAvgPriceModel
-from .private_sale_photo_model import PrivateSalePhotoModel
+from .house_photo_model import HousePhotoModel
+from .house_type_photo_model import HouseTypePhotoModel
