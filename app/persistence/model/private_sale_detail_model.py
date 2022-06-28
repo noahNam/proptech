@@ -5,7 +5,9 @@ from sqlalchemy import (
     DateTime,
     Boolean,
     String,
-    func, Numeric, SmallInteger,
+    func,
+    Numeric,
+    SmallInteger,
 )
 
 from app import db
@@ -16,26 +18,20 @@ class PrivateSaleDetailModel(db.Model):
     __tablename__ = "private_sale_details"
 
     id = Column(
-        BigInteger().with_variant(Integer, "sqlite"),
-        primary_key=True,
-        nullable=False,
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     private_sale_id = Column(
         BigInteger().with_variant(Integer, "sqlite"), nullable=False, index=True,
     )
-    private_area = Column(Numeric(6,2), nullable=True)
-    supply_area = Column(Numeric(6,2), nullable=True)
+    private_area = Column(Numeric(6, 2), nullable=True)
+    supply_area = Column(Numeric(6, 2), nullable=True)
     contract_date = Column(String(8), nullable=True)
     contract_ym = Column(SmallInteger, nullable=True, index=True)
     deposit_price = Column(Integer, nullable=True)
     rent_price = Column(Integer, nullable=True)
     trade_price = Column(Integer, nullable=True)
     floor = Column(SmallInteger, nullable=True)
-    trade_type = Column(
-        String(5),
-        nullable=False,
-        index=True,
-    )
+    trade_type = Column(String(5), nullable=False, index=True,)
     is_available = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(

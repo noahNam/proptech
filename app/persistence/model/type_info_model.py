@@ -2,7 +2,9 @@ from sqlalchemy import (
     Column,
     BigInteger,
     Integer,
-    Numeric, DateTime, func,
+    Numeric,
+    DateTime,
+    func,
 )
 
 from app import db
@@ -18,8 +20,8 @@ class TypeInfoModel(db.Model):
     dong_id = Column(
         BigInteger().with_variant(Integer, "sqlite"), nullable=False, index=True,
     )
-    private_area = Column(Numeric(6,2), nullable=True)
-    supply_area = Column(Numeric(6,2), nullable=True)
+    private_area = Column(Numeric(6, 2), nullable=True)
+    supply_area = Column(Numeric(6, 2), nullable=True)
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False

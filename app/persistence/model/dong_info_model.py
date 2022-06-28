@@ -3,7 +3,9 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    DateTime, func, SmallInteger,
+    DateTime,
+    func,
+    SmallInteger,
 )
 from sqlalchemy.orm import relationship
 
@@ -30,7 +32,10 @@ class DongInfoModel(db.Model):
 
     # relationship
     type_infos = relationship(
-        "TypeInfoModel", backref="dong_infos", uselist=True, primaryjoin="DongInfoModel.id == foreign(TypeInfoModel.dong_id)",
+        "TypeInfoModel",
+        backref="dong_infos",
+        uselist=True,
+        primaryjoin="DongInfoModel.id == foreign(TypeInfoModel.dong_id)",
     )
 
     def to_entity(self) -> DongInfoEntity:
@@ -42,10 +47,7 @@ class DongInfoModel(db.Model):
             grnd_flr_cnt=self.grnd_flr_cnt,
             created_at=self.created_at,
             updated_at=self.updated_at,
-            type_infos=[
-                type_info.to_entity()
-                for type_info in self.type_infos
-            ]
+            type_infos=[type_info.to_entity() for type_info in self.type_infos]
             if self.type_infos
             else None,
         )

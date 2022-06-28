@@ -17,9 +17,7 @@ class HouseTypePhotoModel(db.Model):
     __tablename__ = "house_type_photos"
 
     id = Column(
-        BigInteger().with_variant(Integer, "sqlite"),
-        primary_key=True,
-        nullable=False,
+        BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
     private_sale_id = Column(
         BigInteger().with_variant(Integer, "sqlite"), nullable=False, index=True,

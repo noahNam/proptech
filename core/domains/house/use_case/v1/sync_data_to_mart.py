@@ -10,12 +10,14 @@ from app.persistence.model import (
     PublicSaleModel,
     PrivateSaleModel,
     GeneralSupplyResultModel,
+    RealEstateModel,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 
 logger = logger_.getLogger(__name__)
 
 model_transfer_dict = dict(
+    real_estates=RealEstateModel,
     public_sales=PublicSaleModel,
     private_sales=PrivateSaleModel,
     general_supply_results=GeneralSupplyResultModel,
@@ -43,25 +45,24 @@ class SyncDataUseCase:
         key = sync(유형):CRUD유형(I,U):private-sales(테이블):pk(1)=value
         CRUD유형
             1. I -> Insert with PK
-            2. IA -> Insert with Auto-increment PK
-            3. U -> Update with PK
+            2. U -> Update with PK
         """
 
         logger.info(f"🚀\tSyncDataUseCase Start - {self.client_id}")
         while True:
-            messages = None
+            messages = {}
 
             try:
                 # Insert Model
-                self._redis_client.scan(pattern="sync:I*")
-                messages = self._get_messages()
+                self._redis_client.scan(pattern="sync:*")
+                messages: dict = self._get_messages()
 
                 if messages:
                     logger.info(
                         f"[*] Get length of insert sync data -> {self._get_sync_data_len(messages=messages)}"
                     )
 
-                    self._insert_target_model(messages=messages)
+                    self._upsert_target_model(messages=messages)
                     logger.info("🚀\tInsert target model success")
             except Exception as e:
                 logger.exception(f"☠️\tError insert process. {e}")
@@ -75,31 +76,6 @@ class SyncDataUseCase:
                     insert_list=failure_list
                 )
                 self._is_insert_failure = False
-
-            try:
-                # Update Model
-                self._redis_client.scan(pattern="sync:U*")
-                messages = self._get_messages()
-
-                if messages:
-                    logger.info(
-                        f"[*] Get length of update sync data -> {self._get_sync_data_len(messages=messages)}"
-                    )
-
-                    self._update_target_model(messages=messages)
-                    logger.info("🚀\tUpdate target model success")
-            except Exception as e:
-                logger.exception(f"☠️\tError update process. {e}")
-                self._is_update_failure = True
-
-            if self._is_update_failure:
-                failure_list: Union[
-                    List[Dict], List
-                ] = self._transfer_sync_failure_history_entity(messages=messages)
-                self._house_repo.bulk_insert_sync_failure_histories(
-                    insert_list=failure_list
-                )
-                self._is_update_failure = False
 
             # Clear cache
             if self._redis_client.copied_keys:
@@ -131,7 +107,7 @@ class SyncDataUseCase:
                 cnt += len(messages.get(message))
         return cnt
 
-    def _get_messages(self) -> Dict:
+    def _get_messages(self) -> dict:
         # limit 만큼 메세지를 scan (10000이면 메세지 10000개를 스캔)
         offset = 0
         limit = 10000
@@ -143,21 +119,27 @@ class SyncDataUseCase:
                 if data is None or offset >= limit:
                     break
 
-                key = data["key"].decode().split(":")[2]
+                key = (
+                    data["key"].decode().split(":")[2]
+                )  # private_sales, public_sales ...
                 messages.setdefault(key, []).append(json.loads(data["value"]))
                 offset += 1
             except Exception as e:
                 logger.info("_get_messages() exception")
                 logger.exception(str(e))
-                break
+                raise
 
         return messages
 
-    def _insert_target_model(self, messages: Dict) -> None:
+    def _upsert_target_model(self, messages: Dict) -> None:
         for key in model_transfer_dict.keys():
             # limit 만큼 메세지를 끊어서 처리
-            offset = 0
+            insert_offset = 0
+            update_offset = 0
             limit = 10000
+
+            insert_data = list()
+            update_data = list()
 
             message = messages.get(key)
             if not message:
@@ -165,42 +147,52 @@ class SyncDataUseCase:
 
             model = model_transfer_dict.get(key)
 
-            if len(message) > limit:
+            if model == RealEstateModel:
+                self.__set_coordinates(message=message)
+
+            for data in message:
+                is_exists = self._house_repo._is_exists_by_id(model=model, data=data)
+                if not is_exists:
+                    insert_data.append(data)
+                else:
+                    update_data.append(data)
+
+            # insert
+            if len(insert_data) > limit:
                 while True:
-                    insert_data = message[offset : offset + limit]
-                    if not insert_data:
+                    data = insert_data[insert_offset : insert_offset + limit]
+                    if not data:
                         break
                     self._house_repo.bulk_insert_target_model(
-                        model=model, insert_list=insert_data
+                        model=model, insert_list=data
                     )
-                    offset += limit
-            else:
+                    insert_offset += limit
+
+            elif insert_data and len(insert_data) <= limit:
                 self._house_repo.bulk_insert_target_model(
-                    model=model, insert_list=message
+                    model=model, insert_list=insert_data
                 )
 
-    def _update_target_model(self, messages: Dict) -> None:
-        for key in model_transfer_dict.keys():
-            # limit 만큼 메세지를 끊어서 처리
-            offset = 0
-            limit = 10000
-
-            message = messages.get(key)
-            if not message:
-                continue
-
-            model = model_transfer_dict.get(key)
-
-            if len(message) > limit:
+            # update
+            if len(update_data) > limit:
                 while True:
-                    update_data = message[offset : offset + limit]
-                    if not update_data:
+                    data = update_data[update_offset : update_offset + limit]
+                    if not data:
                         break
                     self._house_repo.bulk_update_target_model(
-                        model=model, update_list=update_data
+                        model=model, update_list=data
                     )
-                    offset += limit
-            else:
+                    update_offset += limit
+
+            elif update_data and len(update_data) <= limit:
                 self._house_repo.bulk_update_target_model(
-                    model=model, update_list=message
+                    model=model, update_list=update_data
                 )
+
+    def __set_coordinates(self, message: List[dict]):
+        for insert_data in message:
+            insert_data.update(
+                {
+                    "coordinates": f"SRID=4326;POINT({insert_data.get('x_vl')} {insert_data.get('y_vl')})"
+                }
+            )

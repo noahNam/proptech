@@ -2,7 +2,6 @@ import json
 from decimal import Decimal
 from unittest.mock import patch
 
-import pytest
 from flask import url_for
 
 from app.extensions.utils.house_helper import HouseHelper
@@ -326,7 +325,6 @@ def test_house_calendar_list_view_when_included_request_date_then_show_info_list
                 url_for("api/tanos.house_calendar_list_view", year=2021, month=7),
                 headers=headers,
             )
-
 
     data = response.get_json()["data"]
     assert response.status_code == 200
