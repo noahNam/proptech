@@ -3,7 +3,10 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    UniqueConstraint, Numeric, DateTime, func, SmallInteger,
+    UniqueConstraint,
+    DateTime,
+    func,
+    SmallInteger,
 )
 
 from app import db

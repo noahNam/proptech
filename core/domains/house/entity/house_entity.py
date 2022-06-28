@@ -3,7 +3,6 @@ from enum import Enum
 from typing import List, Optional, Dict
 
 from pydantic import BaseModel
-from sqlalchemy import Numeric
 
 from core.domains.banner.entity.banner_entity import BannerEntity, ButtonLinkEntity
 from core.domains.report.entity.report_entity import (
@@ -156,7 +155,7 @@ class TypeInfoEntity(BaseModel):
     id: int
     dong_id: int
     private_area: Optional[float]
-    supply_area : Optional[float]
+    supply_area: Optional[float]
     created_at: datetime
     updated_at: datetime
 
@@ -165,8 +164,8 @@ class DongInfoEntity(BaseModel):
     id: int
     private_sale_id: int
     name: Optional[str]
-    hhld_cnt : Optional[int]
-    grnd_flr_cnt : Optional[int]
+    hhld_cnt: Optional[int]
+    grnd_flr_cnt: Optional[int]
     created_at: datetime
     updated_at: datetime
     type_infos: List[TypeInfoEntity] = None
