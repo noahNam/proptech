@@ -1,8 +1,7 @@
-import datetime
 import re
 from datetime import timedelta
 from enum import Enum
-from typing import Optional, List, Any, Tuple, Union
+from typing import Optional, List, Any, Tuple, Union, Dict
 
 from geoalchemy2 import Geometry
 from sqlalchemy import (
@@ -439,8 +438,7 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sale_id
-                        == PrivateSaleModel.id,
+                        PrivateSaleAvgPriceModel.private_sale_id == PrivateSaleModel.id,
                     )
                     .filter(*private_filters)
                     .filter(*trade_pyoung_filters)
@@ -523,8 +521,7 @@ class HouseRepository:
                     )
                     .join(
                         PrivateSaleAvgPriceModel,
-                        PrivateSaleAvgPriceModel.private_sale_id
-                        == PrivateSaleModel.id,
+                        PrivateSaleAvgPriceModel.private_sale_id == PrivateSaleModel.id,
                     )
                     .filter(*private_filters)
                     .filter(*deposit_pyoung_filters)
@@ -3893,3 +3890,9 @@ class HouseRepository:
                 f"[HouseRepository][bulk_insert_sync_failure_histories] error : {e}"
             )
             raise InsertFailErrorException
+
+    def _is_exists_by_id(self, model: Any, data: Dict):
+        query = session.query(exists().where(model.id == data.get("id")))
+        if query.scalar():
+            return True
+        return False

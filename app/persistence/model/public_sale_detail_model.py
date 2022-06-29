@@ -3,7 +3,10 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    SmallInteger, Numeric, DateTime, func,
+    SmallInteger,
+    Numeric,
+    DateTime,
+    func,
 )
 from sqlalchemy.orm import relationship
 
@@ -29,7 +32,7 @@ class PublicSaleDetailModel(db.Model):
     )
     area_type = Column(String(5), nullable=True)
     private_area = Column(Numeric(6, 2), nullable=False)
-    supply_area =Column(Numeric(6, 2), nullable=False)
+    supply_area = Column(Numeric(6, 2), nullable=False)
     supply_price = Column(Integer, nullable=False)
     acquisition_tax = Column(Integer, nullable=False)
     special_household = Column(SmallInteger, nullable=True)
@@ -68,7 +71,7 @@ class PublicSaleDetailModel(db.Model):
         "GeneralSupplyResultModel",
         backref="public_sale_details",
         uselist=True,
-        primaryjoin="PublicSaleDetailModel.id == foreign(GeneralSupplyResultModel.public_sale_detail_id)"
+        primaryjoin="PublicSaleDetailModel.id == foreign(GeneralSupplyResultModel.public_sale_detail_id)",
     )
 
     def to_entity(self) -> PublicSaleDetailEntity:

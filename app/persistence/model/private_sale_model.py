@@ -6,7 +6,8 @@ from sqlalchemy import (
     String,
     SmallInteger,
     Boolean,
-    func, Numeric
+    func,
+    Numeric,
 )
 from sqlalchemy.orm import relationship
 
@@ -54,14 +55,28 @@ class PrivateSaleModel(db.Model):
 
     # relationship
     private_sale_details = relationship(
-        "PrivateSaleDetailModel", backref="private_sales", uselist=True, primaryjoin="PrivateSaleModel.id == foreign(PrivateSaleDetailModel.private_sale_id)"
+        "PrivateSaleDetailModel",
+        backref="private_sales",
+        uselist=True,
+        primaryjoin="PrivateSaleModel.id == foreign(PrivateSaleDetailModel.private_sale_id)",
     )
-    dong_infos = relationship("DongInfoModel", backref="private_sales", uselist=True, primaryjoin="PrivateSaleModel.id == foreign(DongInfoModel.private_sale_id)")
+    dong_infos = relationship(
+        "DongInfoModel",
+        backref="private_sales",
+        uselist=True,
+        primaryjoin="PrivateSaleModel.id == foreign(DongInfoModel.private_sale_id)",
+    )
     house_photos = relationship(
-        "HousePhotoModel", backref="private_sales", uselist=True, primaryjoin="PrivateSaleModel.id == foreign(HousePhotoModel.private_sale_id)",
+        "HousePhotoModel",
+        backref="private_sales",
+        uselist=True,
+        primaryjoin="PrivateSaleModel.id == foreign(HousePhotoModel.private_sale_id)",
     )
     house_type_photos = relationship(
-        "HouseTypePhotoModel", backref="private_sales", uselist=True, primaryjoin="PrivateSaleModel.id == foreign(HouseTypePhotoModel.private_sale_id)",
+        "HouseTypePhotoModel",
+        backref="private_sales",
+        uselist=True,
+        primaryjoin="PrivateSaleModel.id == foreign(HouseTypePhotoModel.private_sale_id)",
     )
     private_sale_avg_prices = relationship(
         "PrivateSaleAvgPriceModel",
@@ -106,16 +121,10 @@ class PrivateSaleModel(db.Model):
             ]
             if self.private_sale_details
             else None,
-            dong_infos=[
-                dong_info.to_entity()
-                for dong_info in self.dong_infos
-            ]
+            dong_infos=[dong_info.to_entity() for dong_info in self.dong_infos]
             if self.dong_infos
             else None,
-            house_photos=[
-                house_photo.to_entity()
-                for house_photo in self.house_photos
-            ]
+            house_photos=[house_photo.to_entity() for house_photo in self.house_photos]
             if self.house_photos
             else None,
             house_type_photos=[

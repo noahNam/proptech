@@ -22,7 +22,9 @@ class PrivateSaleAvgPriceModel(db.Model):
     id = Column(
         BigInteger().with_variant(Integer, "sqlite"), primary_key=True, nullable=False,
     )
-    private_sale_id = Column(BigInteger().with_variant(Integer, "sqlite"), nullable=False, index=True,)
+    private_sale_id = Column(
+        BigInteger().with_variant(Integer, "sqlite"), nullable=False, index=True,
+    )
     pyoung = Column(Float, nullable=False)
     default_trade_pyoung = Column(Float, nullable=True)
     default_deposit_pyoung = Column(Float, nullable=True)

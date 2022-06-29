@@ -6,7 +6,9 @@ from sqlalchemy import (
     BigInteger,
     Integer,
     String,
-    Boolean, DateTime, func,
+    Boolean,
+    DateTime,
+    func,
 )
 from sqlalchemy.dialects.postgresql import TSVECTOR
 from sqlalchemy.orm import relationship, column_property
@@ -60,8 +62,18 @@ class RealEstateModel(db.Model):
     longitude = column_property(coordinates.ST_X())
 
     # relationship
-    private_sales = relationship("PrivateSaleModel", backref="real_estates", uselist=True, primaryjoin="RealEstateModel.id == foreign(PrivateSaleModel.real_estate_id)")
-    public_sales = relationship("PublicSaleModel", backref="real_estates", uselist=True, primaryjoin="RealEstateModel.id == foreign(PublicSaleModel.real_estate_id)")
+    private_sales = relationship(
+        "PrivateSaleModel",
+        backref="real_estates",
+        uselist=True,
+        primaryjoin="RealEstateModel.id == foreign(PrivateSaleModel.real_estate_id)",
+    )
+    public_sales = relationship(
+        "PublicSaleModel",
+        backref="real_estates",
+        uselist=True,
+        primaryjoin="RealEstateModel.id == foreign(PublicSaleModel.real_estate_id)",
+    )
 
     def to_detail_calendar_info_entity(self, is_like: bool) -> DetailCalendarInfoEntity:
         return DetailCalendarInfoEntity(

@@ -8,7 +8,9 @@ from sqlalchemy import (
     Boolean,
     String,
     func,
-    Float, Numeric, SmallInteger,
+    Float,
+    Numeric,
+    SmallInteger,
 )
 from sqlalchemy.orm import relationship
 
@@ -67,9 +69,9 @@ class PublicSaleModel(db.Model):
     reference_url = Column(String(200), nullable=True)
     offer_notice_url = Column(String(100), nullable=True)
     heating_type = Column(String(10), nullable=True)
-    vc_rat = Column(Numeric(6,2), nullable=True)
-    bc_rat = Column(Numeric(6,2), nullable=True)
-    hhld_total_cnt  = Column(SmallInteger, nullable=True)
+    vc_rat = Column(Numeric(6, 2), nullable=True)
+    bc_rat = Column(Numeric(6, 2), nullable=True)
+    hhld_total_cnt = Column(SmallInteger, nullable=True)
     park_total_cnt = Column(SmallInteger, nullable=True)
     highest_floor = Column(SmallInteger, nullable=True)
     dong_cnt = Column(SmallInteger, nullable=True)
@@ -88,10 +90,16 @@ class PublicSaleModel(db.Model):
 
     # relationship
     public_sale_photos = relationship(
-        "PublicSalePhotoModel", backref="public_sales", uselist=True, primaryjoin="PublicSaleModel.id == foreign(PublicSalePhotoModel.public_sale_id)"
+        "PublicSalePhotoModel",
+        backref="public_sales",
+        uselist=True,
+        primaryjoin="PublicSaleModel.id == foreign(PublicSalePhotoModel.public_sale_id)",
     )
     public_sale_details = relationship(
-        "PublicSaleDetailModel", backref="public_sales", uselist=True, primaryjoin="PublicSaleModel.id == foreign(PublicSaleDetailModel.public_sale_id)"
+        "PublicSaleDetailModel",
+        backref="public_sales",
+        uselist=True,
+        primaryjoin="PublicSaleModel.id == foreign(PublicSaleDetailModel.public_sale_id)",
     )
 
     public_sale_avg_prices = relationship(
