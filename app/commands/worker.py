@@ -12,8 +12,6 @@ from core.domains.house.use_case.v1.house_worker_use_case import (
     AddSupplyAreaUseCase,
     BindSupplyAreaUseCase,
 )
-from core.domains.house.use_case.v1.set_redis import SetRedisUseCase
-from core.domains.house.use_case.v1.sync_data_to_mart import SyncDataUseCase
 from core.domains.notification.use_case.v1.notification_worker_use_case import (
     PrePrcsNotificationUseCase,
     ConvertNoticePushMessageUseCase,

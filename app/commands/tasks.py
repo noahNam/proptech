@@ -1,7 +1,7 @@
 from app.commands.enum import TopicEnum
 from celery_app import celery
 from core.domains.house.use_case.v1.set_redis import SetRedisUseCase
-from core.domains.house.use_case.v1.sync_data_to_mart import SyncDataUseCase
+from core.domains.house.use_case.v1.sync_data_from_datamart import SyncDataUseCase
 
 
 def get_task(topic: str):
