@@ -125,7 +125,7 @@ class SyncDataUseCase:
                     break
 
                 key = (
-                    data["key"].decode().split(":")[2]
+                    data["key"].decode().split(":")[1]
                 )  # private_sales, public_sales ...
                 messages.setdefault(key, []).append(json.loads(data["value"]))
                 offset += 1
