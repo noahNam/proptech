@@ -1,5 +1,6 @@
 import os
 from celery import Celery
+from celery.schedules import crontab
 
 from app import create_app
 from app.commands.enum import TopicEnum
@@ -16,6 +17,11 @@ def make_celery(app):
     )
 
     celery.conf.update(app.config)
+    celery.conf.task_routes = {
+        "app.commands.tasks.*": {
+            "queue": "tanos"
+        },
+    }
 
     class ContextTask(celery.Task):
         def __call__(self, *args, **kwargs):
@@ -35,7 +41,8 @@ app = application = create_app(os.environ.get("FLASK_CONFIG") or "default")
 celery = make_celery(app)
 
 
-@celery.on_after_configure.connect
+# @celery.on_after_configure.connect
+@celery.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):
     from app.commands import tasks
 
@@ -46,4 +53,10 @@ def setup_periodic_tasks(sender, **kwargs):
     #     name='set-redis',
     # )
 
-    tasks.start_worker.delay(topic=TopicEnum.SYNC_HOUSE_DATA.value)
+    # tasks.start_worker.delay(topic=TopicEnum.SYNC_HOUSE_DATA.value)
+    sender.add_periodic_task(
+        schedule=crontab(hour=16, minute=3),
+        sig=tasks.start_worker.s(topic=TopicEnum.SYNC_HOUSE_DATA.value),
+        name="mart_dong_type_infos",
+        queue="tanos"
+    )
