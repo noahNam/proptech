@@ -6,6 +6,7 @@ from sqlalchemy import (
     String,
     DateTime,
     func,
+    Boolean,
 )
 
 from app import db
@@ -34,6 +35,7 @@ class PublicSaleDetailPhotoModel(db.Model):
     file_name = Column(String(20), nullable=False)
     path = Column(String(150), nullable=False)
     extension = Column(String(4), nullable=False)
+    is_available = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(), server_default=func.now(), nullable=False)
     updated_at = Column(
         DateTime(), server_default=func.now(), onupdate=func.now(), nullable=False
@@ -46,6 +48,7 @@ class PublicSaleDetailPhotoModel(db.Model):
             file_name=self.file_name,
             path=S3Helper.get_cloudfront_url() + "/" + self.path if self.path else None,
             extension=self.extension,
+            is_available=self.is_available,
             created_at=self.created_at,
             updated_at=self.updated_at,
         )

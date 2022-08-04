@@ -23,7 +23,7 @@ class HouseHelper:
         """
 
         if area:
-            return int(MathHelper.round(area / CalcPyoungEnum.CALC_VAR.value))
+            return int(MathHelper.round(float(area) / CalcPyoungEnum.CALC_VAR.value))
         else:
             return None
 

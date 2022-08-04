@@ -89,7 +89,7 @@ class PublicSaleEntity(BaseModel):
     move_in_month: str
     min_down_payment: int
     max_down_payment: int
-    down_payment_ratio: int
+    down_payment_ratio: Optional[int]
     reference_url: Optional[str]
     offer_notice_url: Optional[str]
     heating_type: Optional[str]

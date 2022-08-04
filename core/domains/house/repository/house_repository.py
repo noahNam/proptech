@@ -862,7 +862,7 @@ class HouseRepository:
     ) -> float:
         if not avg_pyoung_number or not supply_price:
             return 0
-        return supply_price / avg_pyoung_number
+        return float(supply_price) / float(avg_pyoung_number)
 
     def make_house_public_detail_entity(
         self,
@@ -883,18 +883,26 @@ class HouseRepository:
         return house_with_public_sales[0].to_house_with_public_detail_entity(
             is_like=is_like,
             min_pyoung_number=HouseHelper.convert_area_to_pyoung(
-                house_with_public_sales[1]
+                float(house_with_public_sales[1])
+                if house_with_public_sales[1]
+                else house_with_public_sales[1]
             ),
             max_pyoung_number=HouseHelper.convert_area_to_pyoung(
-                house_with_public_sales[2]
+                float(house_with_public_sales[2])
+                if house_with_public_sales[2]
+                else house_with_public_sales[2]
             ),
             min_supply_area=house_with_public_sales[1],
             max_supply_area=house_with_public_sales[2],
             avg_supply_price=house_with_public_sales[3],
             supply_price_per_pyoung=self._get_supply_price_per_pyoung(
-                supply_price=float(house_with_public_sales[3]),
+                supply_price=float(house_with_public_sales[3])
+                if house_with_public_sales[3]
+                else house_with_public_sales[3],
                 avg_pyoung_number=HouseHelper.convert_area_to_pyoung(
-                    house_with_public_sales[4]
+                    float(house_with_public_sales[4])
+                    if house_with_public_sales[4]
+                    else house_with_public_sales[4]
                 ),
             ),
             min_acquisition_tax=house_with_public_sales[5],

@@ -18,9 +18,7 @@ def make_celery(app):
 
     celery.conf.update(app.config)
     celery.conf.task_routes = {
-        "app.commands.tasks.*": {
-            "queue": "tanos"
-        },
+        "app.commands.tasks.*": {"queue": "tanos"},
     }
 
     class ContextTask(celery.Task):
@@ -58,5 +56,5 @@ def setup_periodic_tasks(sender, **kwargs):
         schedule=crontab(hour=16, minute=3),
         sig=tasks.start_worker.s(topic=TopicEnum.SYNC_HOUSE_DATA.value),
         name="mart_dong_type_infos",
-        queue="tanos"
+        queue="tanos",
     )

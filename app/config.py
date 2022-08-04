@@ -40,7 +40,10 @@ class Config:
     IRONMAN_SERVICE_URL = os.environ.get("IRONMAN_SERVICE_URL") or ""
 
     # Celery
-    BACKEND_RESULT = os.environ.get("BACKEND_RESULT") or "db+mysql+pymysql://apartalk_admin:!wjstngks117@localhost:3306/apartalk_data_mart"
+    BACKEND_RESULT = (
+        os.environ.get("BACKEND_RESULT")
+        or "db+mysql+pymysql://apartalk_admin:!wjstngks117@localhost:3306/apartalk_data_mart"
+    )
     TIMEZONE = "Asia/Seoul"
     CELERY_ENABLE_UTC = False
 
