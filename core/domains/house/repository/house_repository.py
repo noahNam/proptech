@@ -977,6 +977,7 @@ class HouseRepository:
             .options(selectinload(RealEstateModel.public_sales))
             .filter(*search_filters)
         )
+
         queryset = query.all()
 
         return queryset

@@ -69,7 +69,7 @@ class PublicSaleModel(db.Model):
     reference_url = Column(String(200), nullable=True)
     offer_notice_url = Column(String(100), nullable=True)
     heating_type = Column(String(10), nullable=True)
-    vc_rat = Column(Numeric(6, 2), nullable=True)
+    vl_rat = Column(Numeric(6, 2), nullable=True)
     bc_rat = Column(Numeric(6, 2), nullable=True)
     hhld_total_cnt = Column(SmallInteger, nullable=True)
     park_total_cnt = Column(SmallInteger, nullable=True)
@@ -158,7 +158,7 @@ class PublicSaleModel(db.Model):
             reference_url=self.reference_url,
             offer_notice_url=self.offer_notice_url,
             heating_type=self.heating_type,
-            vc_rat=self.vc_rat,
+            vl_rat=self.vl_rat,
             bc_rat=self.bc_rat,
             hhld_total_cnt=self.hhld_total_cnt,
             park_total_cnt=self.park_total_cnt,
