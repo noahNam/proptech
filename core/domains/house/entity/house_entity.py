@@ -93,7 +93,7 @@ class PublicSaleEntity(BaseModel):
     reference_url: Optional[str]
     offer_notice_url: Optional[str]
     heating_type: Optional[str]
-    vc_rat: Optional[float]
+    vl_rat: Optional[float]
     bc_rat: Optional[float]
     hhld_total_cnt: Optional[int]
     park_total_cnt: Optional[int]

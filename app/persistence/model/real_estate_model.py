@@ -92,7 +92,7 @@ class RealEstateModel(db.Model):
             id=self.id,
             road_address=self.road_address,
             jibun_address=self.calender_address,
-            public_sale=self.public_sales.to_calendar_entity()
+            public_sale=self.public_sales[0].to_calendar_entity()
             if self.public_sales
             else None,
         )
