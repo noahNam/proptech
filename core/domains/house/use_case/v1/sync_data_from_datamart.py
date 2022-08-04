@@ -11,6 +11,15 @@ from app.persistence.model import (
     PrivateSaleModel,
     GeneralSupplyResultModel,
     RealEstateModel,
+    PrivateSaleDetailModel,
+    HousePhotoModel,
+    HouseTypePhotoModel,
+    DongInfoModel,
+    TypeInfoModel,
+    PublicSaleDetailModel,
+    SpecialSupplyResultModel,
+    PublicSaleDetailPhotoModel,
+    PublicSalePhotoModel,
 )
 from core.domains.house.repository.house_repository import HouseRepository
 
@@ -18,9 +27,18 @@ logger = logger_.getLogger(__name__)
 
 model_transfer_dict = dict(
     real_estates=RealEstateModel,
-    public_sales=PublicSaleModel,
     private_sales=PrivateSaleModel,
+    private_sale_details=PrivateSaleDetailModel,
+    house_photos=HousePhotoModel,
+    house_type_photos=HouseTypePhotoModel,
+    dong_infos=DongInfoModel,
+    type_infos=TypeInfoModel,
+    public_sales=PublicSaleModel,
+    public_sale_details=PublicSaleDetailModel,
     general_supply_results=GeneralSupplyResultModel,
+    special_supply_results=SpecialSupplyResultModel,
+    public_sale_detail_photos=PublicSaleDetailPhotoModel,
+    public_sale_photos=PublicSalePhotoModel,
 )
 
 
