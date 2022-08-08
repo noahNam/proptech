@@ -152,7 +152,7 @@ class PublicSaleDetailModel(db.Model):
             total_household=self.total_household,
             pyoung_number=HouseHelper.convert_area_to_pyoung(self.supply_area),
             price_per_meter=int(
-                self.supply_price / (self.supply_area / CalcPyoungEnum.CALC_VAR.value)
+                self.supply_price / (float(self.supply_area) / CalcPyoungEnum.CALC_VAR.value)
             )
             if self.supply_price
             else None,
