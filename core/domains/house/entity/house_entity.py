@@ -85,8 +85,8 @@ class PublicSaleEntity(BaseModel):
     notice_winner_date: Optional[str]
     contract_start_date: Optional[str]
     contract_end_date: Optional[str]
-    move_in_year: str
-    move_in_month: str
+    move_in_year: int
+    move_in_month: int
     min_down_payment: int
     max_down_payment: int
     down_payment_ratio: Optional[int]
