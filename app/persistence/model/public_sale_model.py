@@ -216,8 +216,8 @@ class PublicSaleModel(db.Model):
             notice_winner_date=self.notice_winner_date,
             contract_start_date=self.contract_start_date,
             contract_end_date=self.contract_end_date,
-            move_in_year=self.move_in_year,
-            move_in_month=self.move_in_month,
+            move_in_year=int(self.move_in_year),
+            move_in_month=int(self.move_in_month),
         )
 
     def to_report_entity(self) -> PublicSaleReportEntity:
