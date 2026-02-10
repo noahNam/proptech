@@ -1,3 +1,5 @@
+import os
+
 import pytest
 import requests
 
@@ -59,7 +61,7 @@ def send_slack_message(message, title):
     channel = "#engineering-class"
 
     text = title + " -> " + message
-    slack_token = "***REMOVED***"
+    slack_token = os.environ.get("SLACK_TOKEN")
     requests.post(
         "https://slack.com/api/chat.postMessage",
         headers={"Authorization": "Bearer " + slack_token},

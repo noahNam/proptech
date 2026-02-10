@@ -2,7 +2,7 @@ import os
 
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY") or "auckland"
+    SECRET_KEY = os.environ.get("SECRET_KEY") or ""
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_BINDS = {"read_only": "sqlite:///:memory:"}
     SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -13,7 +13,7 @@ class Config:
     DEBUG = False
 
     # JWT
-    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or "hawaii"
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or ""
     # JWT_ACCESS_TOKEN_EXPIRES = datetime.timedelta(minutes=60)
 
     # Redis
@@ -25,11 +25,8 @@ class Config:
     NCP_SECRET_KEY = os.environ.get("NCP_SECRET_KEY") or ""
 
     # AWS ENV
-    AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY") or "***REMOVED***"
-    AWS_SECRET_ACCESS_KEY = (
-        os.environ.get("AWS_SECRET_ACCESS_KEY")
-        or "***REMOVED***"
-    )
+    AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY") or ""
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY") or ""
     AWS_REGION_NAME = os.environ.get("AWS_REGION_NAME") or "ap-northeast-2"
 
     # SQS
@@ -40,10 +37,7 @@ class Config:
     IRONMAN_SERVICE_URL = os.environ.get("IRONMAN_SERVICE_URL") or ""
 
     # Celery
-    BACKEND_RESULT = (
-        os.environ.get("BACKEND_RESULT")
-        or "db+mysql+pymysql://apartalk_admin:***REMOVED***@localhost:3306/apartalk_data_mart"
-    )
+    BACKEND_RESULT = os.environ.get("BACKEND_RESULT") or ""
     TIMEZONE = "Asia/Seoul"
     CELERY_ENABLE_UTC = False
 
@@ -55,11 +49,15 @@ class LocalConfig(Config):
     DEBUG = True
 
     # Local environment configuration using Docker API service
-    SQLALCHEMY_DATABASE_URI = (
-        "postgresql+psycopg2://toadhome_tanos:***REMOVED***@localhost:5432/tanos"
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "LOCAL_DATABASE_URL",
+        "postgresql+psycopg2://toadhome_tanos@localhost:5432/tanos",
     )
     SQLALCHEMY_BINDS = {
-        "read_only": "postgresql+psycopg2://toadhome_tanos:***REMOVED***@localhost:5432/tanos"
+        "read_only": os.environ.get(
+            "LOCAL_DATABASE_URL",
+            "postgresql+psycopg2://toadhome_tanos@localhost:5432/tanos",
+        )
     }
     # Prod migrate
     # SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://postgres:%s@localhost:5432/tanos" % urlquote("password")
